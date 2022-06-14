@@ -137,6 +137,13 @@ public class RedisUtils {
     return value == null ? null : fromJson(value, clazz);
   }
 
+  /**
+   * 按delta递增
+   */
+  public Long incr(String key, long delta) {
+    return valueOperations.increment(key, delta);
+  }
+
 
   /**
    * 返回指定类型结果列表

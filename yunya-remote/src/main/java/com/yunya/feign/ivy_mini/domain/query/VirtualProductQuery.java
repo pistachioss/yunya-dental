@@ -19,7 +19,6 @@ import javax.validation.constraints.NotNull;
 public class VirtualProductQuery extends PageQuery {
 
     @ApiModelProperty(value = "产品分类id")
-    @NotNull(message = "服务分类不能为空")
     private Integer productCategoryId;
 
     @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")

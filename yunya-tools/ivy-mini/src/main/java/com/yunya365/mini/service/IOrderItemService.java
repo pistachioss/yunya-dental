@@ -1,0 +1,16 @@
+package com.yunya365.mini.service;
+
+import com.yunya365.mini.entity.OrderItem;
+import com.baomidou.mybatisplus.extension.service.IService;
+
+/**
+ * <p>
+ * 订单明细 服务类
+ * </p>
+ *
+ * @author xiangyang
+ * @since 2022-06-10
+ */
+public interface IOrderItemService extends IService<OrderItem> {
+
+}

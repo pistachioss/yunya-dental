@@ -2,10 +2,12 @@ package com.yunya365.mini.service;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
+import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -54,4 +56,6 @@ public interface IProductService {
      * @return List<ProductTypeVO>
      */
     List<ProductTypeVO> cateGoryList(Integer type);
+
+    List<OrderItemBO> listGoodsOrderItem(Collection<Integer> ids);
 }

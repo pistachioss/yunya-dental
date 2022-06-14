@@ -18,6 +18,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -1019,6 +1020,29 @@ public class DateUtil {
     Instant instant = date.toInstant();
     ZoneId zoneId = ZoneId.systemDefault();
     return instant.atZone(zoneId).toLocalDateTime();
+  }
+
+  /**
+   * 日期格式化
+   *
+   * @param temporal 时间
+   * @param pattern  表达式
+   * @return 格式化后的时间
+   */
+  public static String format(TemporalAccessor temporal, String pattern) {
+    return DateTimeFormatter.ofPattern(pattern).format(temporal);
+  }
+
+  /**
+   * 将字符串转换为时间
+   *
+   * @param dateStr 时间字符串
+   * @param pattern 表达式
+   * @return 时间
+   */
+  public static TemporalAccessor parseStr(String dateStr, String pattern) {
+    DateTimeFormatter format = DateTimeFormatter.ofPattern(pattern);
+    return format.parse(dateStr);
   }
 
   public static void main(String[] args) {

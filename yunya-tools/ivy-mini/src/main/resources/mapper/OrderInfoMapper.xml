@@ -21,6 +21,15 @@
     <result column="remark" property="remark" jdbcType="VARCHAR" />
     <result column="confirm_status" property="confirmStatus" jdbcType="TINYINT" />
     <result column="delete_status" property="deleteStatus" jdbcType="TINYINT" />
+
+    <result column="receiver_name" property="receiverName" jdbcType="VARCHAR" />
+    <result column="receiver_phone" property="receiverPhone" jdbcType="VARCHAR" />
+    <result column="receiver_post_code" property="receiverPostCode" jdbcType="VARCHAR" />
+    <result column="receiver_province" property="receiverProvince" jdbcType="VARCHAR" />
+    <result column="receiver_city" property="receiverCity" jdbcType="VARCHAR" />
+    <result column="receiver_region" property="receiverRegion" jdbcType="VARCHAR" />
+    <result column="receiver_detail_address" property="receiverDetailAddress" jdbcType="VARCHAR" />
+
     <result column="payment_time" property="paymentTime" jdbcType="TIMESTAMP" />
     <result column="delivery_time" property="deliveryTime" jdbcType="TIMESTAMP" />
     <result column="receive_time" property="receiveTime" jdbcType="TIMESTAMP" />

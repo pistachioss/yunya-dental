@@ -26,4 +26,8 @@ public class CreateGoodsOrderModel {
     @ApiModelProperty(value = "收货地址ID", required = true)
     @NotNull
     private Integer fansReceiveAddressId;
+    @ApiModelProperty("支付方式（1->支付宝；2->微信）")
+    private Byte payType;
+    @ApiModelProperty("备注")
+    private String remark;
 }

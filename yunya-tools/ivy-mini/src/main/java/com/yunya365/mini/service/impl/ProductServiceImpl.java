@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
+import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
@@ -57,7 +58,7 @@ public class ProductServiceImpl implements IProductService {
                 Integer id = Integer.valueOf(Objects.requireNonNull(t.getValue()));
                 Double score = t.getScore();
                 BaseOralTariff oralTariff = goodsMap.get(id);
-                HotSaleVO vo  = new HotSaleVO();
+                HotSaleVO vo = new HotSaleVO();
                 if (Objects.nonNull(oralTariff)) {
                     String itemPic = oralTariff.getItemPic();
                     vo.setProductId(id);
@@ -122,5 +123,32 @@ public class ProductServiceImpl implements IProductService {
 
         }
         return list;
+    }
+
+    @Override
+    public List<OrderItemBO> listGoodsOrderItem(Collection<Integer> ids) {
+        //原始商品集合
+        List<BaseOralTariff> itemList = treatmentServiceFeign.listOnSaleOral(ids);
+        List<ProductTypeVO> cateGoryList = cateGoryList(0);
+        List<OrderItemBO> orderItemBOS = itemList.stream().map(t -> {
+            String itemPic = t.getItemPic();
+            OrderItemBO bo = new OrderItemBO();
+            bo.setProductId(t.getId());
+            bo.setProductSn(t.getItemNumber());
+            bo.setProductName(t.getName());
+            bo.setProductPrice(t.getPrice());
+            bo.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
+            bo.setStock(t.getStock());
+            return bo;
+        }).collect(toList());
+        Map<Integer, ProductTypeVO> collect = cateGoryList.stream().collect(toMap(ProductTypeVO::getId, Function.identity()));
+        orderItemBOS.stream()
+                .filter(t -> collect.containsKey(t.getProductCategoryId()))
+                .forEach(t -> {
+                    ProductTypeVO category = collect.get(t.getProductCategoryId());
+                    t.setProductCategoryId(category.getId());
+                    t.setProductCategoryName(category.getName());
+                });
+        return orderItemBOS;
     }
 }

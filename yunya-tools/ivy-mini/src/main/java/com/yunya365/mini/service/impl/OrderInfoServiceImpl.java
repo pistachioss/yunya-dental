@@ -3,24 +3,31 @@ package com.yunya365.mini.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Joiner;
 import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.model.CreateGoodsOrderModel;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya365.mini.entity.OrderInfo;
+import com.yunya365.mini.entity.*;
 import com.yunya365.mini.mapper.OrderInfoMapper;
-import com.yunya365.mini.service.IOrderInfoService;
+import com.yunya365.mini.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
+import static java.util.stream.Collectors.*;
 
 /**
  * <p>
@@ -39,6 +46,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private RemoteDiscountFeign discountFeign;
     @Resource
+    private IProductService productService;
+    @Resource
+    private IFansReceiveAddressService receiveAddressService;
+    @Resource
+    private IOrderSettingService orderSettingService;
+    @Resource
+    private IOrderItemService orderItemService;
+    @Resource
     private RedisUtils redisUtils;
 
     @Override
@@ -53,11 +68,46 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         try {
             //加锁
             locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
-            //库存数量
-            BaseOralTariff tariff = treatmentServiceFeign.findBaseOralTariffById(productId);
-            if (tariff.getStock() < quantity) {
+            //原始商品集合
+            List<OrderItemBO> itemBoList = productService.listGoodsOrderItem(Collections.singleton(productId));
+            //判断购物车中商品是否都有库存
+            if (!hasStock(itemBoList, quantity)) {
                 throw ClientServiceException.wrap(STOCK_LACK);
             }
+            OrderInfo orderInfo = new OrderInfo();
+            orderInfo.setFansId(userId);
+            orderInfo.setPayType(model.getPayType());
+            orderInfo.setTotalAmount(calcTotalAmount(itemBoList));
+            orderInfo.setPayAmount(calcTotalAmount(itemBoList));
+            orderInfo.setSourceType((byte) 1);
+            //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
+            orderInfo.setStatus((byte)0);
+            orderInfo.setOrderType((byte)0);
+            orderInfo.setRemark(model.getRemark());
+            //收货人信息：姓名、电话、邮编、地址
+            FansReceiveAddress address = receiveAddressService.getById(model.getFansReceiveAddressId());
+            orderInfo.setReceiverName(address.getName());
+            orderInfo.setReceiverPhone(address.getPhoneNumber());
+            orderInfo.setReceiverPostCode(address.getPostCode());
+            orderInfo.setReceiverProvince(address.getProvince());
+            orderInfo.setReceiverCity(address.getCity());
+            orderInfo.setReceiverRegion(address.getRegion());
+            orderInfo.setReceiverDetailAddress(address.getDetailAddress());
+            //0->未确认；1->已确认
+            orderInfo.setConfirmStatus((byte)0);
+            orderInfo.setDeleteStatus((byte)0);
+            //生成订单号
+            orderInfo.setOrderSn(generateOrderSn(orderInfo));
+            baseMapper.insert(orderInfo);
+            List<OrderItem> itemList = itemBoList.stream().map(t -> {
+                OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
+                orderItem.setProductQuantity(quantity);
+                orderItem.setOrderId(orderInfo.getId());
+                orderItem.setOrderSn(orderInfo.getOrderSn());
+                return orderItem;
+            }).collect(toList());
+            orderItemService.saveBatch(itemList);
+            //发送延迟消息取消订单
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
@@ -72,22 +122,45 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     /**
+     * 判断下单商品是否都有库存
+     */
+    private boolean hasStock(List<OrderItemBO> list, Integer quantity) {
+        for (OrderItemBO orderItemBO : list) {
+            if (Objects.isNull(orderItemBO) || orderItemBO.getStock() - quantity < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 计算总金额
+     */
+    private BigDecimal calcTotalAmount(List<OrderItemBO> boList) {
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (OrderItemBO bo : boList) {
+            totalAmount = totalAmount.add(bo.getProductPrice().multiply(new BigDecimal(bo.getProductQuantity())));
+        }
+        return totalAmount;
+    }
+
+    /**
      * 生成18位订单编号:8位日期+2位平台号码+2位支付方式+6位以上自增id
      */
-//    private String generateOrderSn(OmsOrder order) {
-//        StringBuilder sb = new StringBuilder();
-//        String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
-//        String key = REDIS_DATABASE+":"+ REDIS_KEY_ORDER_ID + date;
-//        Long increment = redisService.incr(key, 1);
-//        sb.append(date);
-//        sb.append(String.format("%02d", order.getSourceType()));
-//        sb.append(String.format("%02d", order.getPayType()));
-//        String incrementStr = increment.toString();
-//        if (incrementStr.length() <= 6) {
-//            sb.append(String.format("%06d", increment));
-//        } else {
-//            sb.append(incrementStr);
-//        }
-//        return sb.toString();
-//    }
+    private String generateOrderSn(OrderInfo order) {
+        StringBuilder sb = new StringBuilder();
+        String date = DateUtil.format(LocalDate.now(), "yyyyMMdd");
+        String key = Joiner.on(":").join(ORDER_ID_GENERATE, date);
+        Long increment = redisUtils.incr(key, 1);
+        sb.append(date);
+        sb.append(String.format("%02d", order.getSourceType()));
+        sb.append(String.format("%02d", order.getPayType()));
+        String incrementStr = increment.toString();
+        if (incrementStr.length() <= 6) {
+            sb.append(String.format("%06d", increment));
+        } else {
+            sb.append(incrementStr);
+        }
+        return sb.toString();
+    }
 }
