@@ -1248,13 +1248,20 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   public PageInfo<GoodsVO> pageGoods(GoodsQuery query) {
     Page<BaseOralTariff> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
     Example example = new Example(BaseOralTariff.class);
-    Example.Criteria criteria = example.createCriteria().andEqualTo("oralTariffCategoryId", query.getProductCategoryId())
+    Example.Criteria criteria = example.createCriteria()
             .andEqualTo("isOnlineSale", true);
+    Example.Criteria criteria1 = example.createCriteria();
     if (StringUtils.isNotBlank(query.getKeyword())) {
-      criteria.orEqualTo("itemNumber", "%" + query.getKeyword() + "%");
-      criteria.orEqualTo("name", "%" + query.getKeyword() + "%");
-      criteria.orEqualTo("pinyin", "%" + query.getKeyword() + "%");
+      criteria1.orLike("itemNumber", "%" + query.getKeyword() + "%");
+      criteria1.orLike("name", "%" + query.getKeyword() + "%");
+      criteria1.orLike("pinyin", "%" + query.getKeyword() + "%");
     }
+    Example.Criteria criteria2 = example.createCriteria();
+    if (Objects.nonNull(query.getProductCategoryId())) {
+      criteria2.andEqualTo("oralTariffCategoryId", query.getProductCategoryId());
+    }
+    example.and(criteria1);
+    example.and(criteria2);
     mapper.selectByExample(example);
     List<GoodsVO> collect = page.getResult().stream().map(t -> {
       String itemPic = t.getItemPic();

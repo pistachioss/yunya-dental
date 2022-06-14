@@ -40,10 +40,12 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
     public PageInfo<VirtualProductVO> pageVirtual(VirtualProductQuery query) {
         Page<CouponCommonInfo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
         Example example = new Example(CouponCommonInfo.class);
-        Example.Criteria criteria = example.createCriteria().andEqualTo("productTypeId", query.getProductCategoryId())
-                .andEqualTo("isOnlineSale", true);
+        Example.Criteria criteria = example.createCriteria().andEqualTo("isOnlineSale", true);
+        if (Objects.nonNull(query.getProductCategoryId())) {
+            criteria.andEqualTo("productTypeId", query.getProductCategoryId());
+        }
         if (StringUtils.isNotBlank(query.getKeyword())) {
-            criteria.orEqualTo("name", "%" + query.getKeyword() + "%");
+            criteria.andLike("name", "%" + query.getKeyword() + "%");
         }
         mapper.selectByExample(example);
         List<CouponCommonInfo> coupons = page.getResult();

@@ -83,7 +83,7 @@ public interface RemoteDiscountFeign {
     List<ClinicTariffDiscountCouponVO> findClinicTariffCategoryDiscountCoupon(@RequestBody DiscountCouponQuery query);
 
     @RequestMapping(value = "/mini/virtual/page", method = RequestMethod.POST)
-    public PageInfo<VirtualProductVO> pageVirtual(@Validated @RequestBody VirtualProductQuery query);
+    PageInfo<VirtualProductVO> pageVirtual(@Validated @RequestBody VirtualProductQuery query);
 
     @RequestMapping(value = "/mini/coupon/{couponId}", method = RequestMethod.GET)
     VirtualDetailVO couponDetail(@PathVariable(value = "couponId") Integer couponId);
