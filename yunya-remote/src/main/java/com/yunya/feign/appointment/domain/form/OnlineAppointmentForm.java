@@ -131,4 +131,10 @@ public class OnlineAppointmentForm implements Serializable {
     @ApiModelProperty(value = "预约时间 0上午 1下午",required = true)
     @NotNull(message = "预约时间不能为空")
     private Integer appointMa;
+
+    /**
+     * 备注
+     */
+    @ApiModelProperty(value = "备注")
+    private String remark;
 }

@@ -103,6 +103,12 @@ public class OnlineAppointment {
      */
     @Column(name = "appoint_ma")
     private Integer appointMa;
+
+    /**
+     * 备注
+     */
+    @Column(name = "remark")
+    private String remark;
     /**
      * 创建人名称
      */

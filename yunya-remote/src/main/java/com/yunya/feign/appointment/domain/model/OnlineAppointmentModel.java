@@ -66,13 +66,13 @@ public class OnlineAppointmentModel implements Serializable {
      */
     @ApiModelProperty(value = "预约日期",required = true)
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    @NotNull(message = "预约日期不能为空")
+
     private Date appointDate;
 
     /**
      * 预约时间
      */
-    @ApiModelProperty(value = "预约时间",required = true)
+    @ApiModelProperty(value = "预约时间")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
     private Date appointTime;
 
@@ -113,4 +113,10 @@ public class OnlineAppointmentModel implements Serializable {
     @ApiModelProperty(value = "预约时间 0上午 1下午",required = true)
     @NotNull(message = "预约时间不能为空")
     private Integer appointMa;
+
+    /**
+     * 备注
+     */
+    @ApiModelProperty(value = "备注")
+    private String remark;
 }

@@ -20,6 +20,7 @@
     <result column="status" property="status" jdbcType="TINYINT" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
         <result column="union_id" property="unionId" jdbcType="VARCHAR" />
+        <result column="remark" property="remark" jdbcType="VARCHAR" />
         <result column="wx_type" property="wxType" jdbcType="INTEGER" />
         <result column="appoint_ma" property="appointMa" jdbcType="INTEGER" />
     <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
@@ -82,6 +83,7 @@
         oa.wx_type as wxType,
         oa.appoint_ma as appointMa,
         oa.union_id as unionId,
+        oa.remark as remark,
             date_format(oa.crt_time,'%Y-%m-%d') as crtTime
         from online_appointment oa inner join online_appoint_item oaitem on oaitem.item_id = oa.appoint_item_id
         <where>

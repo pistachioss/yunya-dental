@@ -51,7 +51,10 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
            clinicListVO.setId(addressSet.getId());
            clinicListVO.setAddress(addressSet.getAttendanceAddress());
            clinicListVO.setAbbreviation(addressSet.getOrganizationName());
-           double distance = LocationUtil.getDistance(query.getLongitude(),query.getLatitude(),Double.parseDouble(addressSet.getLongitude()) ,Double.parseDouble(addressSet.getLatitude()));
+           double distance = 0;
+           if(query.getLongitude()!=null){
+               distance = LocationUtil.getDistance(query.getLongitude(),query.getLatitude(),Double.parseDouble(addressSet.getLongitude()) ,Double.parseDouble(addressSet.getLatitude()));
+           }
            clinicListVO.setDistance(distance/1000);
            reList.add(clinicListVO);
        }
