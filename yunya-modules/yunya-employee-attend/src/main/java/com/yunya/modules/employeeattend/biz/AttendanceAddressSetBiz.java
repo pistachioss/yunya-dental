@@ -48,7 +48,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
         List<ClinicListVO>reList = new ArrayList<>();
        for(AttendanceAddressSet addressSet:list){
            ClinicListVO clinicListVO = new ClinicListVO();
-           clinicListVO.setId(addressSet.getId());
+           clinicListVO.setId(addressSet.getOrgId());
            clinicListVO.setAddress(addressSet.getAttendanceAddress());
            clinicListVO.setAbbreviation(addressSet.getOrganizationName());
            double distance = 0;
