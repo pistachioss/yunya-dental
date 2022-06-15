@@ -129,7 +129,7 @@
         and date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}
         and date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
         <if test="query.orgId != null">
-            AND br.org_id = #{query.orgId};
+            AND br.org_id = #{query.orgId}
         </if>
         <if test="query.orgIds!=null and query.orgIds.size()>0">
             AND br.org_id in
@@ -189,7 +189,7 @@
         and date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}
         and date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
         <if test="query.orgId != null">
-            AND br.org_id = #{query.orgId};
+            AND br.org_id = #{query.orgId}
         </if>
         <if test="query.orgIds!=null and query.orgIds.size()>0">
             AND br.org_id in

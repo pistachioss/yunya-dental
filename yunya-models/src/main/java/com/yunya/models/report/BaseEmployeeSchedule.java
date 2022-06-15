@@ -55,6 +55,11 @@ public class BaseEmployeeSchedule {
     private Integer scheduleDuration;
 
     /**
+     * 是否上班
+     */
+    private Boolean type;
+
+    /**
      * 获取员工排班ID
      *
      * @return employee_schedule_id - 员工排班ID
@@ -196,5 +201,13 @@ public class BaseEmployeeSchedule {
      */
     public void setScheduleDuration(Integer scheduleDuration) {
         this.scheduleDuration = scheduleDuration;
+    }
+
+    public void setType(Boolean type) {
+        this.type = type;
+    }
+
+    public Boolean getType() {
+        return type;
     }
 }

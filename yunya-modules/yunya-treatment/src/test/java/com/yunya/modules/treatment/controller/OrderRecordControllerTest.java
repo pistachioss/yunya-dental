@@ -61,7 +61,7 @@ public class OrderRecordControllerTest {
 
   @Test
   public void categoryIncomeList() throws Exception {
-    String param = "{\"orgIds\":[26, 27, 36, 35, 37, 28, 29, 30, 31, 32, 33, 34, 39, 40, 43, 44, 42],\"startDate\":\"2021-01\",\"startDate\":\"2021-12\",\"whetherPage\":false}";
+    String param = "{\"orgIds\":[45],\"startDate\":\"2022-05\",\"endDate\":\"2022-05\",\"whetherPage\":false}";
     CategoryIncomeQuery query = JSONObject.parseObject(param, CategoryIncomeQuery.class);
     long l = System.currentTimeMillis();
     PageInfo<CategoryInfoIncomeVO> pageInfo = orderDetailController.categoryIncomeList(query).getData();

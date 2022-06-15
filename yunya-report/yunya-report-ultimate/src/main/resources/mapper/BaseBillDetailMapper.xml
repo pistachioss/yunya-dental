@@ -2359,13 +2359,13 @@
         WHERE bbd.bill_id = #{billId}
     </select>
 
-    <select id="selectBillDetailByQuery" resultType="com.yunya.models.report.BaseBillDetail">
+    <select id="selectBillDetailByQuery" resultType="com.yunya.feign.report.domain.vo.BillItemAmountSharedVO">
         select
         t.org_id as orgId,
         t.bill_id as billId,
         t.executor_id as executorId,
-        IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount,
-        bbd.actual_amount AS discountAmount
+        IFNULL(t.price * t.quantity - t.discount_amount, 0) as itemReceivedAmount,
+        bbd.actual_amount AS billReceivedAmount
         from base_bill_detail t
         left join base_bill bbd on t.bill_id=bbd.bill_id
         <where>
@@ -2407,23 +2407,24 @@
         </where>
     </select>
 
-    <select id="selectBillDetailByBillIds" resultType="com.yunya.models.report.BaseBillDetail">
+    <select id="selectBillDetailByBillIds" resultType="com.yunya.feign.report.domain.vo.BillItemAmountSharedVO">
         select
         t.bill_id as billId,
         t.executor_id as executorId,
-        IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount,
-        bb.actual_amount AS discountAmount,
+        IFNULL(t.price * t.quantity - t.discount_amount, 0) as itemActualAmount,
+        bb.actual_amount AS billActualAmount,
+        bb.received_amount AS billReceivedAmount,
         t.item_type AS itemType,
         t.item_id AS itemId
         from base_bill_detail t
         left join base_bill bb ON bb.bill_id = t.bill_id
         <where>
-            AND t.executor_id > 0
             and bb.bill_id in
             <foreach collection="billIds" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </where>
+        ORDER BY t.item_type
     </select>
 
     <!-- 根据条件查询员工个人免单支付工作量明细列表 -->
