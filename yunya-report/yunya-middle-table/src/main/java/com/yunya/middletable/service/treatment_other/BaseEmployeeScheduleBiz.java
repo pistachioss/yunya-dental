@@ -32,8 +32,8 @@ public class BaseEmployeeScheduleBiz extends BaseBiz<BaseEmployeeScheduleMapper,
     private BaseScheduleMapper baseScheduleMapper;
     @Autowired
     private EmployeeScheduleMapper employeeScheduleMapper;
-    /** 班次类型*/
-    private static final String SHIFT_TYPE = "上班";
+    /** 班次类型：上班*/
+    private static final String SHIFT_WORK = "上班";
     /**
      * 排班消息
      *
@@ -80,7 +80,7 @@ public class BaseEmployeeScheduleBiz extends BaseBiz<BaseEmployeeScheduleMapper,
                     baseEmployeeSchedule.setStartWorkTime(baseSchedule.getFirstStartTime());
                     baseEmployeeSchedule.setUserId(employeeScheduleQueryForm.getEmployeeId());
                     baseEmployeeSchedule.setOrgId(employeeScheduleQueryForm.getClinicId());
-                    baseEmployeeSchedule.setType(baseSchedule.getType().trim().equals(SHIFT_TYPE));
+                    baseEmployeeSchedule.setType(baseSchedule.getType().trim().equals(SHIFT_WORK));
                     mapper.insertSelective(baseEmployeeSchedule);
                 }
                 break;
