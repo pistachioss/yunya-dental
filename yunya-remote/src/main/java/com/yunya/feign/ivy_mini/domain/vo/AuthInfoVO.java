@@ -34,6 +34,9 @@ public class AuthInfoVO implements Serializable{
   @ApiModelProperty(value = "openId")
   private String openId;
 
+  @ApiModelProperty(value = "unionid")
+  private String unionId;
+
   @ApiModelProperty(value = "最近一次访问时间")
   private LocalDateTime lastEnterDate;
 

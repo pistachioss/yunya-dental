@@ -16,6 +16,7 @@
     <result column="source_type" property="sourceType" jdbcType="TINYINT" />
     <result column="status" property="status" jdbcType="TINYINT" />
     <result column="order_type" property="orderType" jdbcType="TINYINT" />
+    <result column="delivery_type" property="deliveryType" jdbcType="TINYINT" />
     <result column="delivery_company" property="deliveryCompany" jdbcType="VARCHAR" />
     <result column="delivery_sn" property="deliverySn" jdbcType="VARCHAR" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />

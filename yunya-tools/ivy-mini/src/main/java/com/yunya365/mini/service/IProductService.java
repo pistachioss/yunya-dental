@@ -58,4 +58,6 @@ public interface IProductService {
     List<ProductTypeVO> cateGoryList(Integer type);
 
     List<OrderItemBO> listGoodsOrderItem(Collection<Integer> ids);
+
+    List<OrderItemBO> listVirtualOrderItem(Collection<Integer> ids);
 }

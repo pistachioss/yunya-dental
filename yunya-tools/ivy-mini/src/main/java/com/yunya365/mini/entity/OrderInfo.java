@@ -71,6 +71,13 @@ public class OrderInfo {
     @Column(name = "order_type")
     private Byte orderType;
 
+
+    /**
+     * 配送方式：0->自提 1->配送
+     */
+    @Column(name = "delivery_type")
+    private Byte deliveryType;
+
     /**
      * 物流公司(配送方式)
      */

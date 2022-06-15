@@ -9,6 +9,7 @@ import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
@@ -18,6 +19,7 @@ import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.model.ResponseResult;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -92,6 +94,11 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
 
     @Override
     public ResponseResult<PageInfo<ProductTypeVO>> findList(ProductTypeQueryForm queryForm) {
+        return null;
+    }
+
+    @Override
+    public List<ProductBO> listOnSaleOral(Collection<Integer> ids) {
         return null;
     }
 }

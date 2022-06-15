@@ -12,8 +12,8 @@ import javax.validation.constraints.NotNull;
  * @date 2022/5/13 13:15
  **/
 @Data
-@ApiModel(description = "创建商品订单参数")
-public class CreateGoodsOrderModel {
+@ApiModel(description = "创建虚拟订单参数")
+public class CreateVirtualOrderModel {
     @ApiModelProperty(value = "价目id", required = true)
     @NotNull
     private Integer productId;
@@ -23,13 +23,8 @@ public class CreateGoodsOrderModel {
     @ApiModelProperty(value = "商品分类", required = true)
     @NotNull
     private Integer productCategoryId;
-    @ApiModelProperty(value = "收货地址ID", required = true)
-    @NotNull
-    private Integer fansReceiveAddressId;
     @ApiModelProperty("支付方式（1->支付宝；2->微信）")
     private Byte payType;
-    @ApiModelProperty("配送方式（0->自提 1->配送）")
-    private Byte deliveryType;
     @ApiModelProperty("备注")
     private String remark;
 }

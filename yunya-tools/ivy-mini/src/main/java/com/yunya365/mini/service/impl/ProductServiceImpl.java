@@ -1,5 +1,6 @@
 package com.yunya365.mini.service.impl;
 
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -7,6 +8,7 @@ import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 
@@ -51,22 +54,22 @@ public class ProductServiceImpl implements IProductService {
             Set<Integer> productIds = typedTuples.stream()
                     .map(t -> Integer.valueOf(Objects.requireNonNull(t.getValue()))).collect(toSet());
             //查询线上商品集合
-            List<BaseOralTariff> baseOralTariffs = treatmentServiceFeign.listOnSaleOral(productIds);
-            Map<Integer, BaseOralTariff> goodsMap = baseOralTariffs.stream()
-                    .collect(toMap(BaseOralTariff::getId, Function.identity()));
+            List<ProductBO> baseOralTariffs = treatmentServiceFeign.listOnSaleOral(productIds);
+            Map<Integer, ProductBO> goodsMap = baseOralTariffs.stream()
+                    .collect(toMap(ProductBO::getProductId, Function.identity()));
             collect = typedTuples.stream().map(t -> {
                 Integer id = Integer.valueOf(Objects.requireNonNull(t.getValue()));
                 Double score = t.getScore();
-                BaseOralTariff oralTariff = goodsMap.get(id);
+                ProductBO oralTariff = goodsMap.get(id);
                 HotSaleVO vo = new HotSaleVO();
                 if (Objects.nonNull(oralTariff)) {
-                    String itemPic = oralTariff.getItemPic();
+                    String itemPic = oralTariff.getProductPic();
                     vo.setProductId(id);
-                    vo.setProductName(oralTariff.getName());
+                    vo.setProductName(oralTariff.getProductName());
                     vo.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
-                    vo.setProductPrice(oralTariff.getPrice());
+                    vo.setProductPrice(oralTariff.getProductPrice());
                     vo.setStock(oralTariff.getStock());
-                    vo.setSoldQuantity(oralTariff.getSale());
+                    vo.setSoldQuantity(oralTariff.getSoldQuantity());
                 }
                 vo.setSoldQuantity(Objects.requireNonNull(score).intValue());
                 vo.setProductType(0);
@@ -78,7 +81,21 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public PageInfo<GoodsVO> pageGoods(GoodsQuery query) {
-        return treatmentServiceFeign.pageGoods(query);
+        Page<BaseOralTariff> page = treatmentServiceFeign.pageGoods(query);
+        List<GoodsVO> collect = page.getResult().stream().map(t -> {
+            String itemPic = t.getItemPic();
+            GoodsVO goodsVO = new GoodsVO();
+            goodsVO.setProductId(t.getId());
+            goodsVO.setProductName(t.getName());
+            goodsVO.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
+            goodsVO.setProductPrice(t.getPrice());
+            goodsVO.setProductType(0);
+            return goodsVO;
+        }).collect(Collectors.toList());
+        PageInfo<GoodsVO> pageInfo = new PageInfo<>(collect);
+        pageInfo.setTotal(page.getTotal());
+        pageInfo.setPageNum(page.getPageNum());
+        return pageInfo;
     }
 
     @Override
@@ -128,27 +145,27 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public List<OrderItemBO> listGoodsOrderItem(Collection<Integer> ids) {
         //原始商品集合
-        List<BaseOralTariff> itemList = treatmentServiceFeign.listOnSaleOral(ids);
-        List<ProductTypeVO> cateGoryList = cateGoryList(0);
-        List<OrderItemBO> orderItemBOS = itemList.stream().map(t -> {
-            String itemPic = t.getItemPic();
-            OrderItemBO bo = new OrderItemBO();
-            bo.setProductId(t.getId());
-            bo.setProductSn(t.getItemNumber());
-            bo.setProductName(t.getName());
-            bo.setProductPrice(t.getPrice());
-            bo.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
-            bo.setStock(t.getStock());
-            return bo;
+        List<ProductBO> itemList = treatmentServiceFeign.listOnSaleOral(ids);
+        return assembleOrderItemBO(itemList);
+    }
+
+    @Override
+    public List<OrderItemBO> listVirtualOrderItem(Collection<Integer> ids) {
+        //原始商品集合
+        List<ProductBO> itemList = discountFeign.listOnSaleOral(ids);
+        return assembleOrderItemBO(itemList);
+    }
+
+    private List<OrderItemBO> assembleOrderItemBO(List<ProductBO> itemList) {
+        return itemList.stream().map(t -> {
+            OrderItemBO orderItemBO = BeanCopierUtils.generalCopyBean(t, OrderItemBO.class);
+            String itemPic = t.getProductPic();
+            orderItemBO.setProductId(t.getProductId());
+            orderItemBO.setProductSn(t.getProductCode());
+            orderItemBO.setProductCategoryId(t.getCategoryId());
+            orderItemBO.setProductCategoryName(t.getCategoryName());
+            orderItemBO.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
+            return orderItemBO;
         }).collect(toList());
-        Map<Integer, ProductTypeVO> collect = cateGoryList.stream().collect(toMap(ProductTypeVO::getId, Function.identity()));
-        orderItemBOS.stream()
-                .filter(t -> collect.containsKey(t.getProductCategoryId()))
-                .forEach(t -> {
-                    ProductTypeVO category = collect.get(t.getProductCategoryId());
-                    t.setProductCategoryId(category.getId());
-                    t.setProductCategoryName(category.getName());
-                });
-        return orderItemBOS;
     }
 }

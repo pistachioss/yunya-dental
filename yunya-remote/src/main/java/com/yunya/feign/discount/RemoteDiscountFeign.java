@@ -9,6 +9,7 @@ import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
@@ -23,7 +24,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 @FeignClient(
@@ -90,4 +93,7 @@ public interface RemoteDiscountFeign {
 
     @PostMapping("/productType/list")
     ResponseResult<PageInfo<ProductTypeVO>> findList(@RequestBody ProductTypeQueryForm queryForm);
+
+    @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.POST)
+    List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids);
 }

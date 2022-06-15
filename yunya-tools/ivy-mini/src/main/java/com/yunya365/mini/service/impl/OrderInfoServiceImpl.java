@@ -5,6 +5,8 @@ import com.google.common.base.Joiner;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.model.CreateGoodsOrderModel;
+import com.yunya.feign.ivy_mini.domain.model.CreateVirtualOrderModel;
+import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -57,7 +59,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private RedisUtils redisUtils;
 
     @Override
-    public void createGoodsOrder(CreateGoodsOrderModel model) {
+    public CreateOrderVO createGoodsOrder(CreateGoodsOrderModel model) {
         boolean locked = false;
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         Integer productId = model.getProductId();
@@ -81,8 +83,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setPayAmount(calcTotalAmount(itemBoList));
             orderInfo.setSourceType((byte) 1);
             //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
-            orderInfo.setStatus((byte)0);
-            orderInfo.setOrderType((byte)0);
+            orderInfo.setStatus((byte) 0);
+            orderInfo.setOrderType((byte) 0);
+            //配送方式：0->自提 1->配送
+            orderInfo.setDeliveryType(model.getDeliveryType());
             orderInfo.setRemark(model.getRemark());
             //收货人信息：姓名、电话、邮编、地址
             FansReceiveAddress address = receiveAddressService.getById(model.getFansReceiveAddressId());
@@ -94,8 +98,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setReceiverRegion(address.getRegion());
             orderInfo.setReceiverDetailAddress(address.getDetailAddress());
             //0->未确认；1->已确认
-            orderInfo.setConfirmStatus((byte)0);
-            orderInfo.setDeleteStatus((byte)0);
+            orderInfo.setConfirmStatus((byte) 0);
+            orderInfo.setDeleteStatus((byte) 0);
             //生成订单号
             orderInfo.setOrderSn(generateOrderSn(orderInfo));
             baseMapper.insert(orderInfo);
@@ -107,7 +111,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 return orderItem;
             }).collect(toList());
             orderItemService.saveBatch(itemList);
-            //发送延迟消息取消订单
+            //todo 发送延迟消息取消订单
+            return createVO(orderInfo, itemList, address);
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
@@ -115,6 +120,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             }
         }
     }
+
+    @Override
+    public CreateOrderVO createVirtualOrder(CreateVirtualOrderModel model) {
+
+        return null;
+    }
+
 
     @Override
     public void paySuccess() {
@@ -163,4 +175,23 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         return sb.toString();
     }
+
+    private CreateOrderVO createVO(OrderInfo orderInfo, List<OrderItem> itemList, FansReceiveAddress address) {
+        CreateOrderVO vo = new CreateOrderVO();
+        PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+        payOrderVO.setOrderId(orderInfo.getId());
+        payOrderVO.setOrderDate(orderInfo.getCrtTime());
+        vo.setOrderVO(payOrderVO);
+        List<PayOrderItemVO> collect = itemList.stream().map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
+        vo.setItemVO(collect);
+        PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class);
+        vo.setAddressVO(addressVO);
+        return vo;
+    }
+
+//    private boolean lock(Integer productId, Integer quantity) {
+//        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+//        String lockKey = Joiner.on(":").join(RedisConstants.CREATE_ORDER_LOCK, productId);
+//        String lockVal = String.valueOf(userId);
+//    }
 }

@@ -7,6 +7,7 @@ import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
@@ -24,7 +25,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -122,7 +125,12 @@ public class BenefitApiController {
     }
 
     @RequestMapping(value = "/mini/coupon/{couponId}", method = RequestMethod.GET)
-    VirtualDetailVO couponDetail(@PathVariable(value = "couponId") Integer couponId){
+    public VirtualDetailVO couponDetail(@PathVariable(value = "couponId") Integer couponId){
         return couponBiz.couponDetail(couponId);
+    }
+
+    @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.POST)
+    public List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids){
+        return couponBiz.listOnSaleOral(ids);
     }
 }

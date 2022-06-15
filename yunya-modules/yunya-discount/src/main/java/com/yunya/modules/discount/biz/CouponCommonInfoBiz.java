@@ -4,6 +4,9 @@ import com.github.pagehelper.*;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
@@ -22,6 +25,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.*;
+
 /**
  * 简介: 卡券公共信息业务层
  *
@@ -36,6 +41,8 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
 
     @Resource
     private CouponFileInfoBiz fileInfoBiz;
+    @Resource
+    private ProductTypeBiz productTypeBiz;
 
     public PageInfo<VirtualProductVO> pageVirtual(VirtualProductQuery query) {
         Page<CouponCommonInfo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
@@ -98,8 +105,45 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         return vo;
     }
 
-//  public int insertBackId(CouponCommonInfo couponCommonInfo){
-//    return mapper.insertBackId(couponCommonInfo);
-//  }
+    public List<ProductBO> listOnSaleOral(Collection<Integer> ids) {
+        Example example = new Example(CouponCommonInfo.class);
+        example.selectProperties("id","type","name","couponCode","soldAmount");
+        example.createCriteria().andIn("id", ids)
+                .andEqualTo("isOnlineSale", true)
+                .andEqualTo("inservice", true);
+        List<CouponCommonInfo> couponCommonInfos = mapper.selectByExample(example);
+        //产品图片
+        List<CouponFileInfo> couponFileInfos = fileInfoBiz.listByCouponIds(ids, 0);
+        //产品分类
+        ProductTypeQueryForm queryForm = new ProductTypeQueryForm();
+        queryForm.setWhetherPage(false);
+        PageInfo<ProductTypeVO> data = productTypeBiz.findList(queryForm);
+        return assembleProductBO(couponCommonInfos, couponFileInfos, data.getList());
+    }
 
+    private List<ProductBO> assembleProductBO(List<CouponCommonInfo> coupons, List<CouponFileInfo> files, List<ProductTypeVO> cateGoryList) {
+        Map<Integer, CouponFileInfo> fileInfoMap = files.stream()
+                .collect(Collectors.toMap(CouponFileInfo::getCouponId, Function.identity(), (o, n) -> n));
+        List<ProductBO> collect = coupons.stream().map(t -> {
+            CouponFileInfo couponFileInfo = fileInfoMap.get(t.getId());
+            String couponPic = Objects.nonNull(couponFileInfo) ? couponFileInfo.getPath() : null;
+            ProductBO bo = new ProductBO();
+            bo.setProductId(t.getId());
+            bo.setProductName(t.getName());
+            bo.setProductPic(couponPic);
+            bo.setProductCode(t.getCouponCode());
+            bo.setProductPrice(t.getSoldAmount());
+            bo.setProductType(0);
+            bo.setCategoryId(t.getProductTypeId());
+            return bo;
+        }).collect(Collectors.toList());
+        Map<Integer, ProductTypeVO> categoryMap = cateGoryList.stream().collect(toMap(ProductTypeVO::getId, Function.identity()));
+        collect.stream()
+                .filter(t -> categoryMap.containsKey(t.getCategoryId()))
+                .forEach(t -> {
+                    ProductTypeVO category = categoryMap.get(t.getCategoryId());
+                    t.setCategoryName(category.getName());
+                });
+        return collect;
+    }
 }
