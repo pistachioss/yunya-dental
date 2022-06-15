@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -96,4 +97,7 @@ public interface RemoteDiscountFeign {
 
     @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.POST)
     List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids);
+
+    @RequestMapping(value = "/coupon/lock/ids", method = RequestMethod.GET)
+    void lockGoodsStock(@NotNull @RequestParam(value = "productId") Integer productId, @NotNull @RequestParam(value = "quantity") Integer quantity);
 }

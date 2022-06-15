@@ -2,6 +2,7 @@ package com.yunya365.mini.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.model.CreateGoodsOrderModel;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
+import static com.yunya365.mini.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -70,12 +72,21 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         try {
             //加锁
             locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
-            //原始商品集合
-            List<OrderItemBO> itemBoList = productService.listGoodsOrderItem(Collections.singleton(productId));
+            List<OrderItemBO> itemBoList = Lists.newArrayList();
+            //原始商品集合(商品)
+            if (FALSE.equals(model.getProductType())) {
+                itemBoList = productService.listGoodsOrderItem(Collections.singleton(productId));
+            }
+            //原始商品集合(虚拟服务)
+            if (TRUE.equals(model.getProductType())) {
+                itemBoList = productService.listVirtualOrderItem(Collections.singleton(productId));
+            }
             //判断购物车中商品是否都有库存
             if (!hasStock(itemBoList, quantity)) {
                 throw ClientServiceException.wrap(STOCK_LACK);
             }
+            //进行库存锁定 todo
+
             OrderInfo orderInfo = new OrderInfo();
             orderInfo.setFansId(userId);
             orderInfo.setPayType(model.getPayType());
@@ -123,7 +134,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     public CreateOrderVO createVirtualOrder(CreateVirtualOrderModel model) {
-
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        Integer productId = model.getProductId();
+        //购买数量
+        Integer quantity = model.getQuantity();
+        List<OrderItemBO> itemBoList = productService.listGoodsOrderItem(Collections.singleton(productId));
         return null;
     }
 

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -132,5 +133,10 @@ public class BenefitApiController {
     @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.POST)
     public List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids){
         return couponBiz.listOnSaleOral(ids);
+    }
+
+    @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.GET)
+    void lockGoodsStock(@NotNull @RequestParam Integer productId, @NotNull @RequestParam Integer quantity){
+        couponBiz.lockGoodsStock(productId, quantity);
     }
 }

@@ -52,12 +52,15 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
     @Override
     public void add(AddCartModel model) {
         Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
+        String userName = BaseContextHandler.getName();
         CartItem existItem = getCartItem(userID, model.getProductId());
         if (Objects.nonNull(existItem)) {
             existItem.setQuantity(existItem.getQuantity() + model.getQuantity());
             updateById(existItem);
         } else {
             CartItem cartItem = BeanCopierUtils.generalCopyBean(model, CartItem.class);
+            cartItem.setFansId(userID);
+            cartItem.setNickName(userName);
             save(cartItem);
         }
     }

@@ -76,7 +76,10 @@ public class CouponCommonInfo {
      */
     @Column(name = "is_online_sale")
     private Boolean isOnlineSale;
-
+    /**
+     * 销量
+     */
+    private Integer sale;
     /**
      * 创建人ID
      */

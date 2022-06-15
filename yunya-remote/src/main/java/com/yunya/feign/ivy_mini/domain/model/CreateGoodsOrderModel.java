@@ -14,6 +14,9 @@ import javax.validation.constraints.NotNull;
 @Data
 @ApiModel(description = "创建商品订单参数")
 public class CreateGoodsOrderModel {
+    @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）", required = true)
+    @NotNull
+    private Integer productType;
     @ApiModelProperty(value = "价目id", required = true)
     @NotNull
     private Integer productId;

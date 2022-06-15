@@ -101,4 +101,9 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     public List<ProductBO> listOnSaleOral(Collection<Integer> ids) {
         return null;
     }
+
+    @Override
+    public void lockGoodsStock(Integer productId, Integer quantity) {
+
+    }
 }

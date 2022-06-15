@@ -146,4 +146,9 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
                 });
         return collect;
     }
+
+    public void lockGoodsStock(Integer productId, Integer quantity) {
+        CouponCommonInfo commonInfo = mapper.selectByPrimaryKey(productId);
+
+    }
 }

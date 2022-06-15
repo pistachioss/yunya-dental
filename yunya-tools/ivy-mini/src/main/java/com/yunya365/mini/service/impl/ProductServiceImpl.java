@@ -156,6 +156,16 @@ public class ProductServiceImpl implements IProductService {
         return assembleOrderItemBO(itemList);
     }
 
+    @Override
+    public void lockGoodsStock(Integer productId, Integer quantity) {
+//        discountFeign.lockGoodsStock(productId, quantity);
+    }
+
+    @Override
+    public void lockVirtualStock(Integer productId, Integer quantity) {
+
+    }
+
     private List<OrderItemBO> assembleOrderItemBO(List<ProductBO> itemList) {
         return itemList.stream().map(t -> {
             OrderItemBO orderItemBO = BeanCopierUtils.generalCopyBean(t, OrderItemBO.class);
