@@ -12,6 +12,7 @@ public class OnlineAppointment {
      * 主键
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

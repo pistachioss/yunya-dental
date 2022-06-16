@@ -133,7 +133,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         if (status <= 0) {
             ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
         }
-        return ResponseUtil.success();
+        return ResponseUtil.success(build.getId());
     }
 
     /**
