@@ -98,6 +98,6 @@ public interface RemoteDiscountFeign {
     @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.POST)
     List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids);
 
-    @RequestMapping(value = "/coupon/lock/ids", method = RequestMethod.GET)
-    void lockGoodsStock(@NotNull @RequestParam(value = "productId") Integer productId, @NotNull @RequestParam(value = "quantity") Integer quantity);
+    @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.GET)
+    void lockVirtualStock(@NotNull @RequestParam(value = "productId") Integer productId, @NotNull @RequestParam(value = "quantity") Integer quantity);
 }

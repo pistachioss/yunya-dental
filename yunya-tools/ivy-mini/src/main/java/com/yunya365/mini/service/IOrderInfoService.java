@@ -1,8 +1,9 @@
 package com.yunya365.mini.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.yunya.feign.ivy_mini.domain.model.CreateGoodsOrderModel;
-import com.yunya.feign.ivy_mini.domain.model.CreateVirtualOrderModel;
+import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
+import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
+import com.yunya.feign.ivy_mini.domain.vo.ConfirmOrderVO;
 import com.yunya.feign.ivy_mini.domain.vo.CreateOrderVO;
 import com.yunya365.mini.entity.OrderInfo;
 
@@ -16,9 +17,19 @@ import com.yunya365.mini.entity.OrderInfo;
  */
 public interface IOrderInfoService extends IService<OrderInfo> {
 
-    CreateOrderVO createGoodsOrder(CreateGoodsOrderModel model);
+    /**
+     * 根据产品生成确认订单信息
+     * @param query:
+     * @return ConfirmOrderVO
+     */
+    ConfirmOrderVO confirmProductOrder(ConfirmProductQuery query);
 
-    CreateOrderVO createVirtualOrder(CreateVirtualOrderModel model);
+    /**
+     * 创建商品或虚拟服务订单（商品详情界面下单）
+     * @param model:
+     * @return CreateOrderVO
+     */
+    CreateOrderVO createProductOrder(CreateProductOrderModel model);
 
     void paySuccess();
 }

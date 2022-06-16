@@ -2,11 +2,10 @@ package com.yunya365.mini.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
-import com.yunya.feign.ivy_mini.domain.model.CreateGoodsOrderModel;
-import com.yunya.feign.ivy_mini.domain.model.CreateVirtualOrderModel;
+import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
+import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.constant.RedisConstants;
@@ -30,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
-import static com.yunya365.mini.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -58,46 +56,62 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private IOrderItemService orderItemService;
     @Resource
+    private DistributionServiceImpl distributionService;
+    @Resource
     private RedisUtils redisUtils;
 
     @Override
-    public CreateOrderVO createGoodsOrder(CreateGoodsOrderModel model) {
+    public ConfirmOrderVO confirmProductOrder(ConfirmProductQuery query) {
+        ConfirmOrderVO vo = new ConfirmOrderVO();
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        AddressListVO address = receiveAddressService.getDefaultAddress(userId);
+        vo.setAddressVO(BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class));
+        List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(Collections.singleton(query.getProductId()), query.getProductType());
+        List<PayOrderItemVO> orderItemVOS = orderItemBOS.stream().map(t -> {
+            PayOrderItemVO itemVO = BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class);
+            itemVO.setProductQuantity(query.getQuantity());
+            return itemVO;
+        }).collect(toList());
+        vo.setProductList(orderItemVOS);
+        vo.setCalcAmountVO(calcOrderAmount(orderItemVOS));
+        return vo;
+    }
+
+    @Override
+    public CreateOrderVO createProductOrder(CreateProductOrderModel model) {
         boolean locked = false;
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         Integer productId = model.getProductId();
         //购买数量
         Integer quantity = model.getQuantity();
+        //商品类型
+        Integer productType = model.getProductType();
         String lockKey = Joiner.on(":").join(RedisConstants.CREATE_ORDER_LOCK, productId);
         String lockVal = String.valueOf(userId);
         try {
             //加锁
             locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
-            List<OrderItemBO> itemBoList = Lists.newArrayList();
-            //原始商品集合(商品)
-            if (FALSE.equals(model.getProductType())) {
-                itemBoList = productService.listGoodsOrderItem(Collections.singleton(productId));
-            }
-            //原始商品集合(虚拟服务)
-            if (TRUE.equals(model.getProductType())) {
-                itemBoList = productService.listVirtualOrderItem(Collections.singleton(productId));
-            }
+            //查询原始商品或虚拟服务
+            List<OrderItemBO> itemBoList = productService.listProductOrderItem(Collections.singleton(productId), productType);
             //判断购物车中商品是否都有库存
             if (!hasStock(itemBoList, quantity)) {
                 throw ClientServiceException.wrap(STOCK_LACK);
             }
             //进行库存锁定 todo
-
+            productService.lockProductStock(productId, quantity, productType);
             OrderInfo orderInfo = new OrderInfo();
             orderInfo.setFansId(userId);
-            orderInfo.setPayType(model.getPayType());
+            orderInfo.setPayType(model.getPayType().byteValue());
             orderInfo.setTotalAmount(calcTotalAmount(itemBoList));
             orderInfo.setPayAmount(calcTotalAmount(itemBoList));
             orderInfo.setSourceType((byte) 1);
             //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
             orderInfo.setStatus((byte) 0);
             orderInfo.setOrderType((byte) 0);
+            //商品类型 0-商品 1-虚拟服务
+            orderInfo.setProductType(productType.byteValue());
             //配送方式：0->自提 1->配送
-            orderInfo.setDeliveryType(model.getDeliveryType());
+            orderInfo.setDeliveryType(model.getDeliveryType().byteValue());
             orderInfo.setRemark(model.getRemark());
             //收货人信息：姓名、电话、邮编、地址
             FansReceiveAddress address = receiveAddressService.getById(model.getFansReceiveAddressId());
@@ -131,17 +145,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             }
         }
     }
-
-    @Override
-    public CreateOrderVO createVirtualOrder(CreateVirtualOrderModel model) {
-        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        Integer productId = model.getProductId();
-        //购买数量
-        Integer quantity = model.getQuantity();
-        List<OrderItemBO> itemBoList = productService.listGoodsOrderItem(Collections.singleton(productId));
-        return null;
-    }
-
 
     @Override
     public void paySuccess() {
@@ -204,9 +207,25 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return vo;
     }
 
-//    private boolean lock(Integer productId, Integer quantity) {
+    //    private boolean lock(Integer productId, Integer quantity) {
 //        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
 //        String lockKey = Joiner.on(":").join(RedisConstants.CREATE_ORDER_LOCK, productId);
 //        String lockVal = String.valueOf(userId);
 //    }
+    private CalcAmountVO calcOrderAmount(List<PayOrderItemVO> orderItemVOS) {
+        CalcAmountVO calcAmountVO = new CalcAmountVO();
+        Distribution distribution = distributionService.findList();
+        //运费
+        BigDecimal freightAmount = Objects.nonNull(distribution) ? distribution.getSendingPrice() : BigDecimal.ZERO;
+        BigDecimal startSendingPrice = Objects.nonNull(distribution) ? distribution.getStartSendingPrice() : BigDecimal.ZERO;
+        //总价
+        BigDecimal totalAmount = orderItemVOS.stream()
+                .map(t -> t.getProductPrice().multiply(BigDecimal.valueOf(t.getProductQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        calcAmountVO.setFreightAmount(freightAmount);
+        calcAmountVO.setTotalAmount(totalAmount);
+        calcAmountVO.setPayAmount(totalAmount);
+        calcAmountVO.setStartSendingPrice(startSendingPrice);
+        return calcAmountVO;
+    }
 }

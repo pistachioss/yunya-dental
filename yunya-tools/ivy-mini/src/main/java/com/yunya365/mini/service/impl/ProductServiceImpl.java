@@ -14,6 +14,7 @@ import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -30,6 +31,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yunya365.mini.enums.IvyMiniError.*;
+import static com.yunya365.mini.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -72,7 +75,7 @@ public class ProductServiceImpl implements IProductService {
                     vo.setSoldQuantity(oralTariff.getSoldQuantity());
                 }
                 vo.setSoldQuantity(Objects.requireNonNull(score).intValue());
-                vo.setProductType(0);
+                vo.setProductType(FALSE.getCode());
                 return vo;
             }).collect(toList());
         }
@@ -89,7 +92,7 @@ public class ProductServiceImpl implements IProductService {
             goodsVO.setProductName(t.getName());
             goodsVO.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
             goodsVO.setProductPrice(t.getPrice());
-            goodsVO.setProductType(0);
+            goodsVO.setProductType(FALSE.getCode());
             return goodsVO;
         }).collect(Collectors.toList());
         PageInfo<GoodsVO> pageInfo = new PageInfo<>(collect);
@@ -106,7 +109,11 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public GoodsDetailVO goodsDetail(Integer itemId) {
         BaseOralTariff tariff = treatmentServiceFeign.findBaseOralTariffById(itemId);
+        if (Objects.isNull(tariff)) {
+            throw ClientServiceException.wrap(PRODUCT_LACK);
+        }
         GoodsDetailVO detailVO = BeanCopierUtils.generalCopyBean(tariff, GoodsDetailVO.class);
+        detailVO.setProductType(FALSE.getCode());
         detailVO.setProductId(tariff.getId());
         detailVO.setProductName(tariff.getName());
         String itemPic = tariff.getItemPic();
@@ -125,13 +132,13 @@ public class ProductServiceImpl implements IProductService {
     public List<ProductTypeVO> cateGoryList(Integer type) {
         List<ProductTypeVO> list = Lists.newArrayList();
         // 产品类型（0-商品 1-虚拟服务）
-        if (Objects.equals(0, type)) {
+        if (Objects.equals(FALSE.getCode(), type)) {
             BaseOralTariffCategory queryForm = new BaseOralTariffCategory();
             queryForm.setInservice(true);
             List<BaseOralTariffCategory> categoryList = treatmentServiceFeign.findBaseOralTariffCategoryList(queryForm);
             list = categoryList.stream().map(t -> BeanCopierUtils.generalCopyBean(t, ProductTypeVO.class)).collect(toList());
         }
-        if (Objects.equals(1, type)) {
+        if (Objects.equals(TRUE.getCode(), type)) {
             ProductTypeQueryForm queryForm = new ProductTypeQueryForm();
             queryForm.setWhetherPage(false);
             ResponseResult<PageInfo<ProductTypeVO>> page = discountFeign.findList(queryForm);
@@ -143,28 +150,29 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public List<OrderItemBO> listGoodsOrderItem(Collection<Integer> ids) {
-        //原始商品集合
-        List<ProductBO> itemList = treatmentServiceFeign.listOnSaleOral(ids);
-        return assembleOrderItemBO(itemList);
+    public List<OrderItemBO> listProductOrderItem(Collection<Integer> ids, Integer type) {
+        List<ProductBO> itemBoList = Lists.newArrayList();
+        if (FALSE.equals(type)) {
+            itemBoList = treatmentServiceFeign.listOnSaleOral(ids);
+        }
+        //原始商品集合(虚拟服务)
+        if (TRUE.equals(type)) {
+            itemBoList = discountFeign.listOnSaleOral(ids);
+        }
+        return assembleOrderItemBO(itemBoList);
     }
+
 
     @Override
-    public List<OrderItemBO> listVirtualOrderItem(Collection<Integer> ids) {
-        //原始商品集合
-        List<ProductBO> itemList = discountFeign.listOnSaleOral(ids);
-        return assembleOrderItemBO(itemList);
+    public void lockProductStock(Integer productId, Integer quantity, Integer type) {
+        if (FALSE.equals(type)) {
+            treatmentServiceFeign.lockGoodsStock(productId, quantity);
+        }
+        if (TRUE.equals(type)) {
+            discountFeign.lockVirtualStock(productId, quantity);
+        }
     }
 
-    @Override
-    public void lockGoodsStock(Integer productId, Integer quantity) {
-//        discountFeign.lockGoodsStock(productId, quantity);
-    }
-
-    @Override
-    public void lockVirtualStock(Integer productId, Integer quantity) {
-
-    }
 
     private List<OrderItemBO> assembleOrderItemBO(List<ProductBO> itemList) {
         return itemList.stream().map(t -> {

@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -454,4 +455,7 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/list/oral", method = RequestMethod.POST)
   List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids);
+
+  @RequestMapping(value = "/rpc/goods/lock/stock", method = RequestMethod.GET)
+  void lockGoodsStock(@NotNull @RequestParam(value = "productId") Integer productId, @NotNull @RequestParam(value = "quantity") Integer quantity);
 }

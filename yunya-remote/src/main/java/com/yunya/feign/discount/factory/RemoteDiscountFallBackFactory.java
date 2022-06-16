@@ -103,7 +103,7 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     }
 
     @Override
-    public void lockGoodsStock(Integer productId, Integer quantity) {
+    public void lockVirtualStock(Integer productId, Integer quantity) {
 
     }
 }

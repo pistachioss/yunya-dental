@@ -1285,8 +1285,14 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       return assembleProductBO(tariffs, categoryList);
     }
 
-  private List<ProductBO> assembleProductBO(List<BaseOralTariff> tariffs, List<BaseOralTariffCategory> cateGoryList) {
+  public void lockGoodsStock(Integer productId, Integer quantity) {
+    BaseOralTariff baseOralTariff = mapper.selectByPrimaryKey(productId);
+    baseOralTariff.setSale(baseOralTariff.getSale() + quantity);
+    baseOralTariff.setStock(baseOralTariff.getStock() - quantity);
+    mapper.updateByPrimaryKeySelective(baseOralTariff);
+  }
 
+  private List<ProductBO> assembleProductBO(List<BaseOralTariff> tariffs, List<BaseOralTariffCategory> cateGoryList) {
     List<ProductBO> collect = tariffs.stream().map(t -> {
       String itemPic = t.getItemPic();
       ProductBO bo = new ProductBO();

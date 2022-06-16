@@ -135,8 +135,9 @@ public class BenefitApiController {
         return couponBiz.listOnSaleOral(ids);
     }
 
-    @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.GET)
-    void lockGoodsStock(@NotNull @RequestParam Integer productId, @NotNull @RequestParam Integer quantity){
-        couponBiz.lockGoodsStock(productId, quantity);
+    @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.GET)
+    void lockVirtualStock(@NotNull @RequestParam(value = "productId") Integer productId
+            , @NotNull @RequestParam(value = "quantity") Integer quantity){
+        couponBiz.lockVirtualStock(productId, quantity);
     }
 }

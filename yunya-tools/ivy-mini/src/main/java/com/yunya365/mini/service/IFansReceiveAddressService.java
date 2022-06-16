@@ -41,4 +41,11 @@ public interface IFansReceiveAddressService extends IService<FansReceiveAddress>
      * @param receiveId:
      */
     void deleteAddress(Integer receiveId);
+
+    /**
+     * 获取用户默认地址
+     * @param fansId:
+     * @return AddressListVO
+     */
+    AddressListVO getDefaultAddress(Integer fansId);
 }

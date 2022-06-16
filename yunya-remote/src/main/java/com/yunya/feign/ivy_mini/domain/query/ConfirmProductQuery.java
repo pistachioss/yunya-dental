@@ -1,4 +1,4 @@
-package com.yunya.feign.ivy_mini.domain.model;
+package com.yunya.feign.ivy_mini.domain.query;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -12,19 +12,15 @@ import javax.validation.constraints.NotNull;
  * @date 2022/5/13 13:15
  **/
 @Data
-@ApiModel(description = "创建虚拟订单参数")
-public class CreateVirtualOrderModel {
+@ApiModel(description = "确认产品订单")
+public class ConfirmProductQuery {
+    @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）", required = true)
+    @NotNull
+    private Integer productType;
     @ApiModelProperty(value = "价目id", required = true)
     @NotNull
     private Integer productId;
     @ApiModelProperty(value = "数量", required = true)
     @NotNull
     private Integer quantity;
-    @ApiModelProperty(value = "商品分类", required = true)
-    @NotNull
-    private Integer productCategoryId;
-    @ApiModelProperty("支付方式（1->支付宝；2->微信）")
-    private Byte payType;
-    @ApiModelProperty("备注")
-    private String remark;
 }

@@ -58,20 +58,13 @@ public interface IProductService {
     List<ProductTypeVO> cateGoryList(Integer type);
 
     /**
-     * 根据ids查询商品列表
+     * 根据ids查询商品或虚拟服务列表
      * @param ids:
+     * @param type: 0-商品 1-虚拟服务
      * @return List<OrderItemBO>
      */
-    List<OrderItemBO> listGoodsOrderItem(Collection<Integer> ids);
+    List<OrderItemBO> listProductOrderItem(Collection<Integer> ids, Integer type);
 
-    /**
-     *根据ids查询虚拟服务列表
-     * @param ids:
-     * @return List<OrderItemBO>
-     */
-    List<OrderItemBO> listVirtualOrderItem(Collection<Integer> ids);
+    void lockProductStock(Integer productId, Integer quantity, Integer type);
 
-    void lockGoodsStock(Integer productId, Integer quantity);
-
-    void lockVirtualStock(Integer productId, Integer quantity);
 }

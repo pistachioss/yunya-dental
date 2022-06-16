@@ -7,6 +7,8 @@ import lombok.Data;
 @Data
 @ApiModel(description = "订单收货地址")
 public class PayReceiveAddressVO {
+    @ApiModelProperty(value = "id")
+    private String id;
     @ApiModelProperty(value = "收货人")
     private String name;
     @ApiModelProperty(value = "收货人电话")

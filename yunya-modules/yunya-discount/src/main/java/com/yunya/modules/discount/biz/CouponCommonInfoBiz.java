@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -84,6 +85,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
     public VirtualDetailVO couponDetail(Integer couponId) {
         VirtualDetailVO vo = new VirtualDetailVO();
         CouponCommonInfo commonInfo = selectById(couponId);
+        vo.setProductType(TRUE.getCode());
         if (Objects.nonNull(commonInfo)) {
             vo.setProductId(commonInfo.getId());
             vo.setProductName(commonInfo.getName());
@@ -92,9 +94,9 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
             List<CouponFileInfo> couponFileInfos = fileInfoBiz.listByCouponIds(Lists.newArrayList(couponId), null);
             if (CollectionUtils.isNotEmpty(couponFileInfos)) {
                 Optional<CouponFileInfo> fileInfo = couponFileInfos.stream()
-                        .filter(t -> Objects.equals((byte) 0, t.getFileType())).findFirst();
+                        .filter(t -> Objects.equals((byte) 2, t.getFileType())).findFirst();
                 Optional<CouponFileInfo> fileInfo1 = couponFileInfos.stream()
-                        .filter(t -> Objects.equals((byte) 1, t.getFileType())).findFirst();
+                        .filter(t -> Objects.equals((byte) 0, t.getFileType())).findFirst();
                 vo.setDetailHtml(fileInfo.map(CouponFileInfo::getPath).orElse(null));
                 vo.setProductPics(fileInfo1.map(t -> {
                     String path = t.getPath();
@@ -147,8 +149,9 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         return collect;
     }
 
-    public void lockGoodsStock(Integer productId, Integer quantity) {
+    public void lockVirtualStock(Integer productId, Integer quantity) {
         CouponCommonInfo commonInfo = mapper.selectByPrimaryKey(productId);
-
+        commonInfo.setSale(commonInfo.getSale() + quantity);
+        mapper.updateByPrimaryKeySelective(commonInfo);
     }
 }

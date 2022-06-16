@@ -1,9 +1,19 @@
 package com.yunya365.mini.controller;
 
 
-import org.springframework.web.bind.annotation.RequestMapping;
+import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
+import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
+import com.yunya.feign.ivy_mini.domain.vo.ConfirmOrderVO;
+import com.yunya.feign.ivy_mini.domain.vo.CreateOrderVO;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya365.mini.service.IOrderInfoService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.RestController;
+import javax.annotation.Resource;
+import javax.validation.Valid;
 
 /**
  * <p>
@@ -14,8 +24,22 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2022-06-06
  */
 @RestController
-@RequestMapping("/orderInfo")
-public class OrderInfoController {
+@Api(tags = "订单")
+public class OrderInfoController extends BaseController{
 
+    @Resource
+    private IOrderInfoService orderInfoService;
+
+    @PostMapping("/product/confirm")
+    @ApiOperation("【小程序】产品生成确认订单信息")
+    public ResponseResult<ConfirmOrderVO> confirmProductOrder(@RequestBody @Valid ConfirmProductQuery query) {
+        return ResponseUtil.success(orderInfoService.confirmProductOrder(query));
+    }
+
+    @PostMapping("/product/create")
+    @ApiOperation("【小程序】产品详情页下单")
+    public ResponseResult<CreateOrderVO> createProductOrder(@RequestBody @Valid CreateProductOrderModel model) {
+        return ResponseUtil.success(orderInfoService.createProductOrder(model));
+    }
 }
 

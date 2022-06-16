@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -597,5 +598,10 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/list/oral", method = RequestMethod.POST)
   List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids){
     return baseOralTariffBiz.listOnSaleOral(ids);
+  }
+
+  @RequestMapping(value = "/goods/lock/stock", method = RequestMethod.GET)
+  void lockGoodsStock(@NotNull @RequestParam(value = "productId") Integer productId, @NotNull @RequestParam(value = "quantity") Integer quantity){
+    baseOralTariffBiz.lockGoodsStock(productId, quantity);
   }
 }

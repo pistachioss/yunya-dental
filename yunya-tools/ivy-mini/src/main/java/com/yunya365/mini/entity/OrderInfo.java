@@ -71,6 +71,11 @@ public class OrderInfo {
     @Column(name = "order_type")
     private Byte orderType;
 
+    /**
+     * 商品类型：0-商品 1-虚拟服务
+     */
+    @Column(name = "product_type")
+    private Byte productType;
 
     /**
      * 配送方式：0->自提 1->配送
