@@ -47,5 +47,5 @@ public interface IFansReceiveAddressService extends IService<FansReceiveAddress>
      * @param fansId:
      * @return AddressListVO
      */
-    AddressListVO getDefaultAddress(Integer fansId);
+    FansReceiveAddress getDefaultAddress(Integer fansId);
 }

@@ -69,7 +69,7 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
     public void delete(List<Integer> cartIds) {
         Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
         ChainWrappers.lambdaUpdateChain(baseMapper)
-                .eq(CartItem::getFansId, userID).in(CartItem::getProductId, cartIds).remove();
+                .eq(CartItem::getFansId, userID).in(CartItem::getId, cartIds).remove();
     }
 
     @Override

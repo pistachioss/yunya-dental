@@ -73,11 +73,10 @@ public class FansReceiveAddressServiceImpl extends ServiceImpl<FansReceiveAddres
     }
 
     @Override
-    public AddressListVO getDefaultAddress(Integer fansId) {
-        FansReceiveAddress address = ChainWrappers.lambdaQueryChain(baseMapper)
+    public FansReceiveAddress getDefaultAddress(Integer fansId) {
+        return ChainWrappers.lambdaQueryChain(baseMapper)
                 .eq(FansReceiveAddress::getFansId, fansId)
                 .eq(FansReceiveAddress::getDefaultStatus, 1).one();
-        return BeanCopierUtils.generalCopyBean(address, AddressListVO.class);
     }
 
     private void updateDefaultStatus(Integer fansId) {

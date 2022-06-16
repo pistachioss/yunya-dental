@@ -2,6 +2,7 @@ package com.yunya365.mini.service;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
+import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
@@ -65,6 +66,13 @@ public interface IProductService {
      */
     List<OrderItemBO> listProductOrderItem(Collection<Integer> ids, Integer type);
 
+    /**
+     * 减库存
+     * @param productId:
+	 * @param quantity:
+	 * @param type:
+     */
     void lockProductStock(Integer productId, Integer quantity, Integer type);
 
+    FansAddressBO getAddress(Integer fansId, Integer addressId, Integer type);
 }

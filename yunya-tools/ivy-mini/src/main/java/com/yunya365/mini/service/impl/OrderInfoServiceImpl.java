@@ -3,6 +3,7 @@ package com.yunya365.mini.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.base.Joiner;
 import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
 import static java.util.stream.Collectors.*;
 
@@ -50,8 +52,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private IProductService productService;
     @Resource
-    private IFansReceiveAddressService receiveAddressService;
-    @Resource
     private IOrderSettingService orderSettingService;
     @Resource
     private IOrderItemService orderItemService;
@@ -64,8 +64,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public ConfirmOrderVO confirmProductOrder(ConfirmProductQuery query) {
         ConfirmOrderVO vo = new ConfirmOrderVO();
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        AddressListVO address = receiveAddressService.getDefaultAddress(userId);
-        vo.setAddressVO(BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class));
+        //商品类产品有自提和配送区分
+        if (FALSE.getCode().equals(query.getProductType())) {
+            FansAddressBO address = productService.getAddress(userId, null, query.getDeliveryType());
+            vo.setAddressVO(BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class));
+        }
         List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(Collections.singleton(query.getProductId()), query.getProductType());
         List<PayOrderItemVO> orderItemVOS = orderItemBOS.stream().map(t -> {
             PayOrderItemVO itemVO = BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class);
@@ -97,7 +100,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if (!hasStock(itemBoList, quantity)) {
                 throw ClientServiceException.wrap(STOCK_LACK);
             }
-            //进行库存锁定 todo
+            //进行库存锁定
             productService.lockProductStock(productId, quantity, productType);
             OrderInfo orderInfo = new OrderInfo();
             orderInfo.setFansId(userId);
@@ -113,15 +116,19 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             //配送方式：0->自提 1->配送
             orderInfo.setDeliveryType(model.getDeliveryType().byteValue());
             orderInfo.setRemark(model.getRemark());
-            //收货人信息：姓名、电话、邮编、地址
-            FansReceiveAddress address = receiveAddressService.getById(model.getFansReceiveAddressId());
-            orderInfo.setReceiverName(address.getName());
-            orderInfo.setReceiverPhone(address.getPhoneNumber());
-            orderInfo.setReceiverPostCode(address.getPostCode());
-            orderInfo.setReceiverProvince(address.getProvince());
-            orderInfo.setReceiverCity(address.getCity());
-            orderInfo.setReceiverRegion(address.getRegion());
-            orderInfo.setReceiverDetailAddress(address.getDetailAddress());
+            FansAddressBO address = null;
+            //商品类产品有自提和配送区分
+            if (FALSE.getCode().equals(model.getProductType())) {
+                //收货人信息：姓名、电话、邮编、地址
+                address = productService.getAddress(null, model.getFansReceiveAddressId(), model.getDeliveryType());
+                orderInfo.setReceiverName(address.getName());
+                orderInfo.setReceiverPhone(address.getPhoneNumber());
+                orderInfo.setReceiverPostCode(address.getPostCode());
+                orderInfo.setReceiverProvince(address.getProvince());
+                orderInfo.setReceiverCity(address.getCity());
+                orderInfo.setReceiverRegion(address.getRegion());
+                orderInfo.setReceiverDetailAddress(address.getDetailAddress());
+            }
             //0->未确认；1->已确认
             orderInfo.setConfirmStatus((byte) 0);
             orderInfo.setDeleteStatus((byte) 0);
@@ -194,7 +201,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return sb.toString();
     }
 
-    private CreateOrderVO createVO(OrderInfo orderInfo, List<OrderItem> itemList, FansReceiveAddress address) {
+    private CreateOrderVO createVO(OrderInfo orderInfo, List<OrderItem> itemList, FansAddressBO address) {
         CreateOrderVO vo = new CreateOrderVO();
         PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
         payOrderVO.setOrderId(orderInfo.getId());
@@ -202,7 +209,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         vo.setOrderVO(payOrderVO);
         List<PayOrderItemVO> collect = itemList.stream().map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
         vo.setItemVO(collect);
-        PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class);
+        PayReceiveAddressVO addressVO = Objects.isNull(address) ? null : BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class);
         vo.setAddressVO(addressVO);
         return vo;
     }

@@ -17,6 +17,8 @@ public class ConfirmProductQuery {
     @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）", required = true)
     @NotNull
     private Integer productType;
+    @ApiModelProperty(value = "配送方式（0->自提 1->配送）")
+    private Integer deliveryType;
     @ApiModelProperty(value = "价目id", required = true)
     @NotNull
     private Integer productId;

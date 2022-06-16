@@ -7,8 +7,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
-import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
-import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
+import com.yunya.feign.ivy_mini.domain.bo.*;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
@@ -20,6 +19,8 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseOralTariffCategory;
+import com.yunya365.mini.entity.FansReceiveAddress;
+import com.yunya365.mini.service.IFansReceiveAddressService;
 import com.yunya365.mini.service.IProductService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +49,8 @@ public class ProductServiceImpl implements IProductService {
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
     @Resource
     private RemoteDiscountFeign discountFeign;
+    @Resource
+    private IFansReceiveAddressService fansReceiveAddressService;
 
     @Override
     public List<HotSaleVO> hotSale() {
@@ -170,6 +173,26 @@ public class ProductServiceImpl implements IProductService {
         if (TRUE.equals(type)) {
             discountFeign.lockVirtualStock(productId, quantity);
         }
+    }
+
+    @Override
+    public FansAddressBO getAddress(Integer fansId, Integer addressId, Integer type) {
+        FansAddressBO addressBO = null;
+        //配送方式（0->自提 1->配送）todo
+        if (FALSE.getCode().equals(type)) {
+
+        }
+        if (TRUE.getCode().equals(type)) {
+            if (Objects.nonNull(addressId)) {
+                FansReceiveAddress address = fansReceiveAddressService.getById(addressId);
+                addressBO = BeanCopierUtils.generalCopyBean(address, FansAddressBO.class);
+            }
+            if (Objects.isNull(addressId) && Objects.nonNull(fansId)) {
+                FansReceiveAddress defaultAddress = fansReceiveAddressService.getDefaultAddress(fansId);
+                addressBO = BeanCopierUtils.generalCopyBean(defaultAddress, FansAddressBO.class);
+            }
+        }
+        return addressBO;
     }
 
 
