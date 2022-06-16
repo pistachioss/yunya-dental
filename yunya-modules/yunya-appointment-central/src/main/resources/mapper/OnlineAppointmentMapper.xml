@@ -46,6 +46,10 @@
             oa.patient_name as patientName,
             oa.patient_phone as patientPhone,
             oa.status as status,
+             oa.wx_type as wxType,
+        oa.appoint_ma as appointMa,
+        oa.union_id as unionId,
+        oa.remark as remark,
             date_format(oa.crt_time,'%Y-%m-%d') as crtTime,
             a.id as appointmentId,
             a.confirm_status as confirmStatus

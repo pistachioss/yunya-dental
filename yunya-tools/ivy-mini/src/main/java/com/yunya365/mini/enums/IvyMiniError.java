@@ -19,6 +19,7 @@ public enum IvyMiniError implements RestError {
     FANS_NOT_EXIST(8, "用户不存在"),
     STOCK_LACK(9, "库存不足，无法下单"),
     PRODUCT_LACK(10, "产品不存在"),
+    PICKUP_NOT_EXIST(11, "取件人信息不存在"),
     ;
     private final Integer code;
     private final String value;
