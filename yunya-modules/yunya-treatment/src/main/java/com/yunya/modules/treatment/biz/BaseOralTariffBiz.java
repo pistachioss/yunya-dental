@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -1303,7 +1304,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       bo.setStock(t.getStock());
       bo.setSoldQuantity(t.getSale());
       bo.setProductPrice(t.getPrice());
-      bo.setProductType(1);
+      bo.setProductType(FALSE.getCode());
       bo.setCategoryId(t.getOralTariffCategoryId());
       return bo;
     }).collect(Collectors.toList());

@@ -73,7 +73,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
             virtualProductVO.setProductName(t.getName());
             virtualProductVO.setProductPic(couponPic);
             virtualProductVO.setProductPrice(t.getSoldAmount());
-            virtualProductVO.setProductType(0);
+            virtualProductVO.setProductType(TRUE.getCode());
             return virtualProductVO;
         }).collect(Collectors.toList());
         PageInfo<VirtualProductVO> pageInfo = new PageInfo<>(collect);
@@ -135,7 +135,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
             bo.setProductPic(couponPic);
             bo.setProductCode(t.getCouponCode());
             bo.setProductPrice(t.getSoldAmount());
-            bo.setProductType(0);
+            bo.setProductType(TRUE.getCode());
             bo.setCategoryId(t.getProductTypeId());
             return bo;
         }).collect(Collectors.toList());

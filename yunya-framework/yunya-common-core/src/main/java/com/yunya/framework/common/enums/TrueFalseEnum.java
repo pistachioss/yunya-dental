@@ -1,4 +1,4 @@
-package com.yunya365.mini.enums;
+package com.yunya.framework.common.enums;
 
 import java.util.Objects;
 

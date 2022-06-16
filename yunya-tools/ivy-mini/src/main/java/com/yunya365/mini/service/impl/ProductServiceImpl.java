@@ -31,8 +31,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
-import static com.yunya365.mini.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -144,7 +144,6 @@ public class ProductServiceImpl implements IProductService {
             ResponseResult<PageInfo<ProductTypeVO>> page = discountFeign.findList(queryForm);
             PageInfo<ProductTypeVO> data = page.getData();
             list = Objects.nonNull(data) ? data.getList() : list;
-
         }
         return list;
     }
