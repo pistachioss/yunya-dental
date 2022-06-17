@@ -97,7 +97,20 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         }
         return ResponseUtil.success(onlineAppointment);
     }
+    public ResponseResult cancelOnlineAppointment(Integer id) {
+        Example example = new Example(OnlineAppointment.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("id",id);
+        int count = mapper.selectCountByExample(example);
+        if (count <= 0) {
+            return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
+        }
+        OnlineAppointment build = new OnlineAppointment();
+        build.setId(id);
+        build.setStatus(new Byte("2"));
+        return ResponseUtil.success(mapper.updateByPrimaryKeySelective(build));
 
+    }
     /**
      * 新增在线预约申请
      * @param model 预约申请参数

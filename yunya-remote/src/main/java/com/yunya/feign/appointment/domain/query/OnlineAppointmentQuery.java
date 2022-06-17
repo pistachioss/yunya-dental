@@ -44,7 +44,7 @@ public class OnlineAppointmentQuery implements Serializable {
     /**
      * 微信用户唯一标识
      */
-    @ApiModelProperty("微信用户唯一标识")
+    @ApiModelProperty(value = "微信用户唯一标识" ,required = true)
     private String openId;
 
     /**
@@ -100,7 +100,7 @@ public class OnlineAppointmentQuery implements Serializable {
     /**
      * 是否有效，是否删除(默认有效) 1-有效；0删除
      */
-    @ApiModelProperty("是否有效，是否删除(默认有效) 1-有效；0删除")
+    @ApiModelProperty(value = "是否有效，是否删除(默认有效) 1-有效；0删除",required = true)
     private Boolean inservice;
 
     /**
@@ -113,6 +113,6 @@ public class OnlineAppointmentQuery implements Serializable {
     /**
      * 预约确认状态
      */
-    @ApiModelProperty("预约确认状态 ")
+    @ApiModelProperty(value = "预约确认状态 ")
     private Boolean confirmStatus;
 }

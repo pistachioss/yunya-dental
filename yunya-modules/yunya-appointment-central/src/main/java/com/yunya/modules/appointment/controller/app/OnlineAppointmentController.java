@@ -68,6 +68,12 @@ public class OnlineAppointmentController {
         return onlineAppointmentBiz.addOnlineAppointment(model);
     }
 
+    @ApiOperation("取消在线预约申请")
+    @PutMapping("/cancel/{id}")
+    public ResponseResult<T> cancelOnlineAppointment(@PathVariable("id") Integer id) {
+        return onlineAppointmentBiz.cancelOnlineAppointment(id);
+    }
+
     @ApiOperation("修改在线预约申请")
     @PutMapping
     public ResponseResult<T> updateOnlineAppointment(@RequestBody @Validated OnlineAppointmentForm form) {
