@@ -16,8 +16,8 @@ import java.util.List;
 public class ConfirmOrderVO {
     @ApiModelProperty("计算的金额")
     private CalcAmountVO calcAmountVO;
-    @ApiModelProperty("用户收货地址")
-    private PayReceiveAddressVO addressVO;
+    @ApiModelProperty("用户配送方式")
+    private DeliveryOrderVO deliveryVO;
     @ApiModelProperty("产品列表信息")
     private List<PayOrderItemVO> productList;
 }

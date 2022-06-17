@@ -1300,20 +1300,20 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       bo.setProductId(t.getId());
       bo.setProductName(t.getName());
       bo.setProductPic(itemPic);
-      bo.setProductCode(t.getItemNumber());
+      bo.setProductSn(t.getItemNumber());
       bo.setStock(t.getStock());
       bo.setSoldQuantity(t.getSale());
       bo.setProductPrice(t.getPrice());
       bo.setProductType(FALSE.getCode());
-      bo.setCategoryId(t.getOralTariffCategoryId());
+      bo.setProductCategoryId(t.getOralTariffCategoryId());
       return bo;
     }).collect(Collectors.toList());
     Map<Integer, BaseOralTariffCategory> categoryMap = cateGoryList.stream().collect(toMap(BaseOralTariffCategory::getId, Function.identity()));
     collect.stream()
-            .filter(t -> categoryMap.containsKey(t.getCategoryId()))
+            .filter(t -> categoryMap.containsKey(t.getProductCategoryId()))
             .forEach(t -> {
-              BaseOralTariffCategory category = categoryMap.get(t.getCategoryId());
-              t.setCategoryName(category.getName());
+              BaseOralTariffCategory category = categoryMap.get(t.getProductCategoryId());
+              t.setProductCategoryName(category.getName());
             });
     return collect;
   }

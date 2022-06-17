@@ -1,11 +1,13 @@
 package com.yunya365.mini.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.form.UpdateCartForm;
 import com.yunya.feign.ivy_mini.domain.model.AddCartModel;
 import com.yunya.feign.ivy_mini.domain.vo.CartVO;
 import com.yunya365.mini.entity.CartItem;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -47,4 +49,9 @@ public interface ICartItemService extends IService<CartItem> {
      * 清空购物车
      */
     void clear();
+
+    /**
+     * 根据购物车ids获取购物车商品列表
+     */
+    List<OrderItemBO> listProductByIds(Collection<Integer> cartIds);
 }

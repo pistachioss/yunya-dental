@@ -58,23 +58,48 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private DistributionServiceImpl distributionService;
     @Resource
+    private ICartItemService cartItemService;
+    @Resource
     private RedisUtils redisUtils;
 
     @Override
     public ConfirmOrderVO confirmProductOrder(ConfirmProductQuery query) {
         ConfirmOrderVO vo = new ConfirmOrderVO();
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        //商品类产品有自提和配送区分
-        if (FALSE.getCode().equals(query.getProductType())) {
-            FansAddressBO address = productService.getAddress(userId, null, query.getDeliveryType());
-            vo.setAddressVO(BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class));
-        }
         List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(Collections.singleton(query.getProductId()), query.getProductType());
+        //判断购物车中商品是否都有库存
+        if (!hasStock(orderItemBOS, query.getQuantity())) {
+            throw ClientServiceException.wrap(STOCK_LACK);
+        }
         List<PayOrderItemVO> orderItemVOS = orderItemBOS.stream().map(t -> {
             PayOrderItemVO itemVO = BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class);
             itemVO.setProductQuantity(query.getQuantity());
             return itemVO;
         }).collect(toList());
+        //商品类产品有自提和配送区分
+        if (FALSE.getCode().equals(query.getProductType())) {
+            vo.setDeliveryVO(confirmAddress(userId));
+        }
+        vo.setProductList(orderItemVOS);
+        vo.setCalcAmountVO(calcOrderAmount(orderItemVOS));
+        return vo;
+    }
+
+    @Override
+    public ConfirmOrderVO confirmCartOrder(List<Integer> cartIds) {
+        ConfirmOrderVO vo = new ConfirmOrderVO();
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        //查询购物车产品信息
+        List<OrderItemBO> orderItemBOS = cartItemService.listProductByIds(cartIds);
+        //判断购物车中商品是否都有库存
+        if (!hasCartStock(orderItemBOS)) {
+            throw ClientServiceException.wrap(STOCK_LACK);
+        }
+        List<PayOrderItemVO> orderItemVOS = orderItemBOS.stream()
+                .map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)
+        ).collect(toList());
+        //商品类产品有自提和配送区分
+        vo.setDeliveryVO(confirmAddress(userId));
         vo.setProductList(orderItemVOS);
         vo.setCalcAmountVO(calcOrderAmount(orderItemVOS));
         return vo;
@@ -171,6 +196,18 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     /**
+     * 判断购物车商品是否都有库存
+     */
+    private boolean hasCartStock(List<OrderItemBO> list) {
+        for (OrderItemBO orderItemBO : list) {
+            if (Objects.isNull(orderItemBO) || orderItemBO.getStock() - orderItemBO.getProductQuantity() < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * 计算总金额
      */
     private BigDecimal calcTotalAmount(List<OrderItemBO> boList) {
@@ -234,5 +271,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         calcAmountVO.setPayAmount(totalAmount);
         calcAmountVO.setStartSendingPrice(startSendingPrice);
         return calcAmountVO;
+    }
+
+    private DeliveryOrderVO confirmAddress(Integer userId) {
+        DeliveryOrderVO deliveryOrderVO = new DeliveryOrderVO();
+        FansAddressBO pickUp = productService.getAddress(userId, null, FALSE.getCode());
+        FansAddressBO address = productService.getAddress(userId, null, TRUE.getCode());
+        deliveryOrderVO.setPickUp(BeanCopierUtils.generalCopyBean(pickUp, PayReceiveAddressVO.class));
+        deliveryOrderVO.setDelivery(BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class));
+        return deliveryOrderVO;
     }
 }

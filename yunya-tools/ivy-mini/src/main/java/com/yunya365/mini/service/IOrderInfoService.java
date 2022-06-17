@@ -7,6 +7,8 @@ import com.yunya.feign.ivy_mini.domain.vo.ConfirmOrderVO;
 import com.yunya.feign.ivy_mini.domain.vo.CreateOrderVO;
 import com.yunya365.mini.entity.OrderInfo;
 
+import java.util.List;
+
 /**
  * <p>
  * 订单表 服务类
@@ -23,6 +25,8 @@ public interface IOrderInfoService extends IService<OrderInfo> {
      * @return ConfirmOrderVO
      */
     ConfirmOrderVO confirmProductOrder(ConfirmProductQuery query);
+
+    ConfirmOrderVO confirmCartOrder(List<Integer> cartIds);
 
     /**
      * 创建商品或虚拟服务订单（商品详情界面下单）

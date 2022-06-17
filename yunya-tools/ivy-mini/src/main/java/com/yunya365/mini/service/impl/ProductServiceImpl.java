@@ -19,6 +19,7 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseOralTariffCategory;
+import com.yunya365.mini.entity.FansPickUp;
 import com.yunya365.mini.entity.FansReceiveAddress;
 import com.yunya365.mini.service.IFansReceiveAddressService;
 import com.yunya365.mini.service.IProductService;
@@ -51,6 +52,8 @@ public class ProductServiceImpl implements IProductService {
     private RemoteDiscountFeign discountFeign;
     @Resource
     private IFansReceiveAddressService fansReceiveAddressService;
+    @Resource
+    private FansPickUpServiceImpl pickUpService;
 
     @Override
     public List<HotSaleVO> hotSale() {
@@ -176,18 +179,27 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public FansAddressBO getAddress(Integer fansId, Integer addressId, Integer type) {
+    public FansAddressBO getAddress(Integer fansId, Integer addressId, Integer deliveryType) {
         FansAddressBO addressBO = null;
-        //配送方式（0->自提 1->配送）todo
-        if (FALSE.getCode().equals(type)) {
-
+        //配送方式（0->自提 1->配送）
+        boolean b = Objects.isNull(addressId) && Objects.nonNull(fansId);
+        if (Objects.equals(FALSE.getCode(), deliveryType)) {
+            FansPickUp pickUp;
+            if (Objects.nonNull(addressId)) {
+                pickUp = pickUpService.selectById(addressId);
+                addressBO = BeanCopierUtils.generalCopyBean(pickUp, FansAddressBO.class);
+            }
+            if (b) {
+                pickUp = pickUpService.getDefaultAddress(fansId);
+                addressBO = BeanCopierUtils.generalCopyBean(pickUp, FansAddressBO.class);
+            }
         }
-        if (TRUE.getCode().equals(type)) {
+        if (Objects.equals(TRUE.getCode(), deliveryType)) {
             if (Objects.nonNull(addressId)) {
                 FansReceiveAddress address = fansReceiveAddressService.getById(addressId);
                 addressBO = BeanCopierUtils.generalCopyBean(address, FansAddressBO.class);
             }
-            if (Objects.isNull(addressId) && Objects.nonNull(fansId)) {
+            if (b) {
                 FansReceiveAddress defaultAddress = fansReceiveAddressService.getDefaultAddress(fansId);
                 addressBO = BeanCopierUtils.generalCopyBean(defaultAddress, FansAddressBO.class);
             }
@@ -200,10 +212,6 @@ public class ProductServiceImpl implements IProductService {
         return itemList.stream().map(t -> {
             OrderItemBO orderItemBO = BeanCopierUtils.generalCopyBean(t, OrderItemBO.class);
             String itemPic = t.getProductPic();
-            orderItemBO.setProductId(t.getProductId());
-            orderItemBO.setProductSn(t.getProductCode());
-            orderItemBO.setProductCategoryId(t.getCategoryId());
-            orderItemBO.setProductCategoryName(t.getCategoryName());
             orderItemBO.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
             return orderItemBO;
         }).collect(toList());

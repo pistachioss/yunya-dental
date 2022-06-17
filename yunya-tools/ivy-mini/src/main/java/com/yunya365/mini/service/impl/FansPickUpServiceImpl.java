@@ -1,24 +1,26 @@
 package com.yunya365.mini.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.yunya.feign.ivy_mini.domain.form.FansPickUpForm;
 import com.yunya.feign.ivy_mini.domain.model.FansPickUpModel;
 import com.yunya.feign.ivy_mini.domain.vo.FansPickUpVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya365.mini.entity.FansPickUp;
+import com.yunya365.mini.entity.FansReceiveAddress;
 import com.yunya365.mini.mapper.FansPickUpMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 import java.util.Objects;
 
-import static com.yunya365.mini.enums.IvyMiniError.PICKUP_NOT_EXIST;
-import static com.yunya365.mini.enums.IvyMiniError.RECEIVE_NOT_EXIST;
+import static com.yunya365.mini.enums.IvyMiniError.*;
 
 /**
  * 简介:
@@ -54,5 +56,12 @@ public class FansPickUpServiceImpl extends BaseBiz<FansPickUpMapper, FansPickUp>
         Integer fansId = Integer.valueOf(BaseContextHandler.getUserID());
         List<FansPickUpVO>list =  mapper.findList(fansId);
         return list;
+    }
+
+    public FansPickUp getDefaultAddress(Integer fansId) {
+        Example example = new Example(FansPickUp.class);
+        example.createCriteria().andEqualTo("fansId", fansId)
+                .andEqualTo("defaultStatus", 1);
+        return mapper.selectOneByExample(example);
     }
 }

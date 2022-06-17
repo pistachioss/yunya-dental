@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * <p>
@@ -34,6 +35,12 @@ public class OrderInfoController extends BaseController{
     @ApiOperation("【小程序】产品生成确认订单信息")
     public ResponseResult<ConfirmOrderVO> confirmProductOrder(@RequestBody @Valid ConfirmProductQuery query) {
         return ResponseUtil.success(orderInfoService.confirmProductOrder(query));
+    }
+
+    @PostMapping(value = "/cart/confirm")
+    @ApiOperation("【小程序】根据购物车信息生成确认单")
+    public ResponseResult<ConfirmOrderVO> generateConfirmOrder(@RequestBody List<Integer> cartIds) {
+        return ResponseUtil.success(orderInfoService.confirmCartOrder(cartIds));
     }
 
     @PostMapping("/product/create")

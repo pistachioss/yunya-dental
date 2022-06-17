@@ -4,22 +4,25 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
+import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.form.UpdateCartForm;
 import com.yunya.feign.ivy_mini.domain.model.AddCartModel;
-import com.yunya.feign.ivy_mini.domain.vo.CartItemVO;
-import com.yunya.feign.ivy_mini.domain.vo.CartVO;
+import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya365.mini.entity.CartItem;
 import com.yunya365.mini.mapper.CartItemMapper;
 import com.yunya365.mini.service.ICartItemService;
+import com.yunya365.mini.service.IProductService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 
+import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -32,6 +35,9 @@ import static java.util.stream.Collectors.*;
  */
 @Service
 public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> implements ICartItemService {
+
+    @Resource
+    private IProductService productService;
 
     @Override
     public CartVO listCart() {
@@ -85,6 +91,22 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
         Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
         ChainWrappers.lambdaUpdateChain(baseMapper)
                 .eq(CartItem::getFansId, userID).remove();
+    }
+
+    @Override
+    public List<OrderItemBO> listProductByIds(Collection<Integer> cartIds) {
+        //购物车商品信息
+        List<CartItem> list = ChainWrappers.lambdaQueryChain(baseMapper).eq(CartItem::getId, cartIds).list();
+        Set<Integer> productIds = list.stream().map(CartItem::getProductId).collect(toSet());
+        Map<Integer, CartItem> cartMap = list.stream().collect(toMap(CartItem::getProductId, Function.identity()));
+        List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(productIds, FALSE.getCode());
+        orderItemBOS.stream()
+                .filter(t -> cartMap.containsKey(t.getProductId()))
+                .forEach(t -> {
+                    CartItem cartItem = cartMap.get(t.getProductId());
+                    t.setProductQuantity(cartItem.getQuantity());
+                });
+        return orderItemBOS;
     }
 
     private CartItem getCartItem(Integer fansId, Integer productId) {

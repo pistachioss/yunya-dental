@@ -74,5 +74,12 @@ public interface IProductService {
      */
     void lockProductStock(Integer productId, Integer quantity, Integer type);
 
-    FansAddressBO getAddress(Integer fansId, Integer addressId, Integer type);
+    /**
+     * 根据id查询收货地址或查询用户默认地址
+     * @param fansId:
+	 * @param addressId:
+	 * @param deliveryType:配送方式（0->自提 1->配送）
+     * @return FansAddressBO
+     */
+    FansAddressBO getAddress(Integer fansId, Integer addressId, Integer deliveryType);
 }

@@ -133,18 +133,18 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
             bo.setProductId(t.getId());
             bo.setProductName(t.getName());
             bo.setProductPic(couponPic);
-            bo.setProductCode(t.getCouponCode());
+            bo.setProductSn(t.getCouponCode());
             bo.setProductPrice(t.getSoldAmount());
             bo.setProductType(TRUE.getCode());
-            bo.setCategoryId(t.getProductTypeId());
+            bo.setProductCategoryId(t.getProductTypeId());
             return bo;
         }).collect(Collectors.toList());
         Map<Integer, ProductTypeVO> categoryMap = cateGoryList.stream().collect(toMap(ProductTypeVO::getId, Function.identity()));
         collect.stream()
-                .filter(t -> categoryMap.containsKey(t.getCategoryId()))
+                .filter(t -> categoryMap.containsKey(t.getProductCategoryId()))
                 .forEach(t -> {
-                    ProductTypeVO category = categoryMap.get(t.getCategoryId());
-                    t.setCategoryName(category.getName());
+                    ProductTypeVO category = categoryMap.get(t.getProductCategoryId());
+                    t.setProductCategoryName(category.getName());
                 });
         return collect;
     }
