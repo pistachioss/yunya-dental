@@ -35,7 +35,8 @@ public class OnlineAppointmentVo implements Serializable {
      */
     @ApiModelProperty("预约ID,可能为空")
     private Integer appointmentId;
-
+    @ApiModelProperty("头像")
+    private String headImgurl;
     /**
      * 门诊ID
      */

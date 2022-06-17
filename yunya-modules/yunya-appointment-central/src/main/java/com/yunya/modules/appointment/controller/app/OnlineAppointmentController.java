@@ -8,6 +8,7 @@ import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
 import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
 import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -39,6 +40,8 @@ public class OnlineAppointmentController {
 
     @Autowired
     private OnlineAppointmentBiz onlineAppointmentBiz;
+
+
 
     @ApiOperation("根据id查询线上预约申请")
     @ApiImplicitParams(

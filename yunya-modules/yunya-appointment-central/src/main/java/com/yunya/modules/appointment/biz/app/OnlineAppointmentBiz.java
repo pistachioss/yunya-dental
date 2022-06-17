@@ -7,7 +7,9 @@ import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
 import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.WxFanByNameForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -269,10 +271,22 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             setDentistInfo(results);
             setOrgInfo(results);
             setPatientInfo(results);
+            setHeadImgurl(results);
         }
         return results;
     }
 
+    private void setHeadImgurl(List<OnlineAppointmentVo> results) {
+        List<WxFansVo>list = remotePatientCentralServiceFeign.findListByName(new WxFanByNameForm());
+        if (StringHelper.isNotEmpty(list)) {
+            results.forEach(onlineAppointmentVo -> {
+                list.stream().filter(
+                        e -> e.getOpenId().equals(onlineAppointmentVo.getOpenId()))
+                        .findAny()
+                        .ifPresent(entity -> onlineAppointmentVo.setHeadImgurl(entity.getHeadImgurl()));
+            });
+        }
+    }
     /**
      * 设置患者信息
      * @param results 预约申请列表
