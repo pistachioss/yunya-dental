@@ -31,129 +31,107 @@ import java.util.List;
  * @description:
  * @author: xy
  * @date 2021/3/25 10:27
- **/
+ */
 @Slf4j
 @Service
 @NotifyType({NotifyEnum.TEXT, NotifyEnum.IMAGE, NotifyEnum.VOICE, NotifyEnum.VIDEO})
-public class KfReply  extends AbstractWxBaseApi implements WeChatNotify {
+public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
 
-    @Resource
-    private WXService wxService;
-    @Resource
-    private WxAutomsgMapper wxAutomsgMapper;
+  @Resource private WXService wxService;
+  @Resource private WxAutomsgMapper wxAutomsgMapper;
+  @Resource private MsgReply msgReply;
 
-    @Override
-    public WxSendMsgVo weChatNotify(WxUserMsgModel msg) throws Exception{
-        log.info("消息接受：{}，时间：{}", msg, LocalDateTime.now());
-        //创建消息响应对象
-        WxSendMsgVo out = new WxSendMsgVo();
-        //把原来的发送方设置为接收方
-        out.setToUserName(msg.getFromUserName());
-        //把原来的接收方设置为发送方
-        out.setFromUserName(msg.getToUserName());
-        //获取接收的消息类型
-        String msgType = msg.getMsgType();
-        //设置消息创建时间
-        out.setCreateTime(new Date().getTime());
-        //设置消息的响应类型
-        out.setMsgType("transfer_customer_service");
-//        out.setContent("您好");
-        if(msgType.equals("text")){
-            String reply = "";
-//            switch (msg.getContent().toLowerCase()){
-//                case "aa":
-//                    reply = "hello yunya.";
-//                    break;
-//                default:
-//                    reply = "";
-//                    break;
-//            }
-            Example example = new Example(WxAutomsg.class);
-            example.createCriteria().andEqualTo("eventname", msg.getContent());
-            List<WxAutomsg> res = wxAutomsgMapper.selectByExample(example);
-            if(res != null && res.size() > 0 ){
-                reply = res.get(0).getMsgtext();
-            }
-            if(reply != ""){
-                WxAutoReplyModel msgModel = new WxAutoReplyModel();
-                WxAutoReplyText msgText = new WxAutoReplyText();
-                msgText.setContent(reply);
-                msgModel.setMsgtype(msgType);
-                msgModel.setText(msgText);
-                msgModel.setTouser(msg.getFromUserName());
-                wxService.pushAutoReplyMsg(msgModel);
-            }
-        }
-        WxKfOnlineVo kfOnlineRes = super.listOnlineKf();
-        if (kfOnlineRes != null) {
-            out.setKfAccount(kfOnlineRes.getKf_account());
-        }
-        log.info("回复消息：{}，时间：{}", out, LocalDateTime.now());
-        return out;
+  @Override
+  public WxSendMsgVo weChatNotify(WxUserMsgModel msg) throws Exception {
+    log.info("消息接受：{}，时间：{}", msg, LocalDateTime.now());
+    // 创建消息响应对象
+    WxSendMsgVo out = new WxSendMsgVo();
+    // 把原来的发送方设置为接收方
+    out.setToUserName(msg.getFromUserName());
+    // 把原来的接收方设置为发送方
+    out.setFromUserName(msg.getToUserName());
+    // 获取接收的消息类型
+    String msgType = msg.getMsgType();
+    // 设置消息创建时间
+    out.setCreateTime(new Date().getTime());
+    // 设置消息的响应类型
+    out.setMsgType("transfer_customer_service");
+    //        out.setContent("您好");
+    if (msgType.equals("text") && !"公众号关注自动回复".equals(msg.getContent())) {
+      msgReply.setTextReply(msg, msg.getContent());
+    }
+    WxKfOnlineVo kfOnlineRes = super.listOnlineKf();
+    if (kfOnlineRes != null) {
+      out.setKfAccount(kfOnlineRes.getKf_account());
+    }
+    log.info("回复消息：{}，时间：{}", out, LocalDateTime.now());
+    return out;
+  }
+
+  public List<WxAutomsg> list() {
+    return wxAutomsgMapper.selectAll();
+  }
+
+  public int create(WxAutoReplyForm wxAutoReplyForm) {
+    Example example = new Example(WxAutomsg.class);
+    example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
+    if (wxAutomsgMapper.selectByExample(example).size() > 0) {
+      throw new ClientServiceException(
+          WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
     }
 
-    public List<WxAutomsg> list() {
-        return wxAutomsgMapper.selectAll();
+    WxAutomsg wxAutomsg = new WxAutomsg();
+    wxAutomsg.setEventname(wxAutoReplyForm.getEventname());
+    wxAutomsg.setCompid("A000446");
+    wxAutomsg.setEventkey("");
+    wxAutomsg.setMsgtext(wxAutoReplyForm.getMsgtext());
+    wxAutomsg.setIsvalid(true);
+
+    Date now = new Date(System.currentTimeMillis());
+    Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+    wxAutomsg.setCreateuser(userId.toString());
+    wxAutomsg.setCreatetime(now);
+    wxAutomsg.setUpdateuser(userId.toString());
+    wxAutomsg.setUpdatetime(now);
+    return wxAutomsgMapper.insert(wxAutomsg);
+  }
+
+  public int edit(WxAutoReplyForm wxAutoReplyForm, Integer id) {
+    if (wxAutomsgMapper.selectByPrimaryKey(id) == null) {
+      return 0;
     }
 
-    public int create(WxAutoReplyForm wxAutoReplyForm) {
-        Example example = new Example(WxAutomsg.class);
-        example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
-        if(wxAutomsgMapper.selectByExample(example).size()>0) {
-            throw new ClientServiceException(WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
-        }
-
-        WxAutomsg wxAutomsg = new WxAutomsg();
-        wxAutomsg.setEventname(wxAutoReplyForm.getEventname());
-        wxAutomsg.setCompid("A000446");
-        wxAutomsg.setEventkey("");
-        wxAutomsg.setMsgtext(wxAutoReplyForm.getMsgtext());
-        wxAutomsg.setIsvalid(true);
-
-        Date now = new Date(System.currentTimeMillis());
-        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-        wxAutomsg.setCreateuser(userId.toString());
-        wxAutomsg.setCreatetime(now);
-        wxAutomsg.setUpdateuser(userId.toString());
-        wxAutomsg.setUpdatetime(now);
-        return wxAutomsgMapper.insert(wxAutomsg);
+    Example example = new Example(WxAutomsg.class);
+    example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
+    if (wxAutomsgMapper.selectByExample(example).size() > 0) {
+      if (wxAutomsgMapper.selectByExample(example).size() == 1
+          && wxAutomsgMapper.selectByExample(example).get(0).getId() != id) {
+        throw new ClientServiceException(
+            WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
+      }
     }
 
-    public int edit(WxAutoReplyForm wxAutoReplyForm, Integer id) {
-        if(wxAutomsgMapper.selectByPrimaryKey(id) == null) {
-            return 0;
-        }
+    WxAutomsg wxAutomsg = new WxAutomsg();
+    wxAutomsg.setId(id);
+    wxAutomsg.setCompid("A000446");
+    wxAutomsg.setEventkey("");
+    wxAutomsg.setEventname(wxAutoReplyForm.getEventname());
+    wxAutomsg.setMsgtext(wxAutoReplyForm.getMsgtext());
+    wxAutomsg.setIsvalid(true);
 
-        Example example = new Example(WxAutomsg.class);
-        example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
-        if(wxAutomsgMapper.selectByExample(example).size()>0) {
-            if (wxAutomsgMapper.selectByExample(example).size()==1 && wxAutomsgMapper.selectByExample(example).get(0).getId() != id ){
-                throw new ClientServiceException(WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
-            }
-        }
+    Date now = new Date(System.currentTimeMillis());
+    Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+    wxAutomsg.setCreateuser(userId.toString());
+    wxAutomsg.setCreatetime(now);
+    wxAutomsg.setUpdateuser(userId.toString());
+    wxAutomsg.setUpdatetime(now);
+    return wxAutomsgMapper.updateByPrimaryKey(wxAutomsg);
+  }
 
-        WxAutomsg wxAutomsg = new WxAutomsg();
-        wxAutomsg.setId(id);
-        wxAutomsg.setCompid("A000446");
-        wxAutomsg.setEventkey("");
-        wxAutomsg.setEventname(wxAutoReplyForm.getEventname());
-        wxAutomsg.setMsgtext(wxAutoReplyForm.getMsgtext());
-        wxAutomsg.setIsvalid(true);
-
-        Date now = new Date(System.currentTimeMillis());
-        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-        wxAutomsg.setCreateuser(userId.toString());
-        wxAutomsg.setCreatetime(now);
-        wxAutomsg.setUpdateuser(userId.toString());
-        wxAutomsg.setUpdatetime(now);
-        return wxAutomsgMapper.updateByPrimaryKey(wxAutomsg);
+  public int delete(Integer id) {
+    if (wxAutomsgMapper.selectByPrimaryKey(id) == null) {
+      return 0;
     }
-
-    public int delete(Integer id) {
-        if(wxAutomsgMapper.selectByPrimaryKey(id) == null) {
-            return 0;
-        }
-        return wxAutomsgMapper.deleteByPrimaryKey(id);
-    }
-
+    return wxAutomsgMapper.deleteByPrimaryKey(id);
+  }
 }

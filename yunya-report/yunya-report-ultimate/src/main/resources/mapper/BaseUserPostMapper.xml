@@ -435,6 +435,7 @@
         FROM
         base_employee_schedule bes
         <where>
+            bes.type = true
             <if test="query.orgId != null">
                 and bes.org_id = #{query.orgId}
             </if>

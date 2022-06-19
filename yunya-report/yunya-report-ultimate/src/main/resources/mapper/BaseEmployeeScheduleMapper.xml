@@ -13,5 +13,6 @@
     <result column="start_work_time" property="startWorkTime" jdbcType="TIMESTAMP" />
     <result column="off_work_time" property="offWorkTime" jdbcType="TIMESTAMP" />
     <result column="schedule_duration" property="scheduleDuration" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="BIT" />
   </resultMap>
 </mapper>
