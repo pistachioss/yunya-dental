@@ -13,4 +13,6 @@ import org.springframework.stereotype.Component;
 public class WxMiniProperties {
     private String appId;
     private String appSecret;
+    private String corpId;
+    private String corpSecret;
 }

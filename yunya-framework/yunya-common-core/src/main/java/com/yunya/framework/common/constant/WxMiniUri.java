@@ -23,4 +23,13 @@ public interface WxMiniUri {
      * 获取微信小程序二维码
      */
     String WX_MINIPROGRAM_QR_URL = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=%s";
+    /**
+     * 企业微信获取客服链接列表
+     */
+    String WX_CUSTOMER_URL = "https://qyapi.weixin.qq.com/cgi-bin/kf/account/list?access_token=%s";
+
+    /**
+     * 获取企业微信的access_token
+     */
+    String WXCORP_ACCESS_TOKEN_URL = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s";
 }
