@@ -184,7 +184,7 @@ public class SmsQueryScheduledAsync{
         log.info("开始更新短信充值支付记录");
         SmsChargeOrderQueryForm orderQueryForm = new SmsChargeOrderQueryForm();
         orderQueryForm.setWhetherPage(false);
-        orderQueryForm.setOrderStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
+        orderQueryForm.setOrderStatus(SmsOrderStatusEnum.WAIT_PAY.getCode());
         List<SmsChargeOrderVO> smsChargeOrderVOS = smsChargeOrderBiz.findSmsChargeOrderList(orderQueryForm);
         if (smsChargeOrderVOS!=null && !smsChargeOrderVOS.isEmpty()) {
             Date now = new Date(System.currentTimeMillis());
@@ -211,6 +211,11 @@ public class SmsQueryScheduledAsync{
                     smsChargeOrder.setPaymentChannel(data.getString("payment_channel"));
                     smsChargeOrder.setUptTime(now);
                     smsChargeOrderBiz.uptSelectiveById(smsChargeOrder);
+                    // 补充短信总额
+                    if (SmsOrderStatusEnum.PAY_SUC.equals(status)) {
+                        smsOrgStatisticsBiz.incrByOrgId(smsChargeOrderVO.getSmsNum(),
+                                smsChargeOrderVO.getPrice(), smsChargeOrderVO.getOrgId());
+                    }
                 } catch (Exception e) {
                     log.error("smsQueryAsync update order error",e);
                 }
