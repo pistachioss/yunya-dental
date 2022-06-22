@@ -212,8 +212,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             goodsListModel.setGoodsPrice(t.getProductPrice().toPlainString());
             return goodsListModel;
         }).collect(toList());
-        CBMiniPayModel miniPayModel = assemblePayModel(orderInfo, goodsListModels);
         //采宝支付
+        CBMiniPayModel miniPayModel = assemblePayModel(orderInfo, goodsListModels);
         CBWxPayVO cbPayVO = caiBaoApi.cbPostFormObject(convertFromMap(miniPayModel), CBWxPayVO.class);
         CBDataVO data = cbPayVO.getData();
         String sign = cbPayVO.getSign();
@@ -241,7 +241,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         miniPayModel.setRequestId(UUID.randomUUID().toString());
         miniPayModel.setRequestTime(LocalDateTime.now().toString("yyyyMMddHHmmss"));
         miniPayModel.setLocalOrderNo(orderInfo.getOrderSn());
-        miniPayModel.setAmount(orderInfo.getPayAmount().longValue());
+//        miniPayModel.setAmount(orderInfo.getPayAmount().multiply(BigDecimal.valueOf(100)).longValue());
+        miniPayModel.setAmount(BigDecimal.valueOf(0.01).multiply(BigDecimal.valueOf(100)).longValue());
         miniPayModel.setRemark(orderInfo.getRemark());
         miniPayModel.setGoodsList(JSONObject.toJSONString(goodsListModels));
         miniPayModel.setNotifyUrl(caiBaoMiniProperties.getNotifyUrl());
