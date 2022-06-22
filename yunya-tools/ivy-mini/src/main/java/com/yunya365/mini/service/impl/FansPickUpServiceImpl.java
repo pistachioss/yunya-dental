@@ -48,6 +48,9 @@ public class FansPickUpServiceImpl extends BaseBiz<FansPickUpMapper, FansPickUp>
             throw ClientServiceException.wrap(PICKUP_NOT_EXIST);
         }
         FansPickUp fans = new FansPickUp();
+        if(form.getDefaultStatus()==1){
+            mapper.updateDefaultStatus(form.getFansId());
+        }
         BeanUtil.copy(form,fans);
         mapper.updateByPrimaryKeySelective(fans);
     }

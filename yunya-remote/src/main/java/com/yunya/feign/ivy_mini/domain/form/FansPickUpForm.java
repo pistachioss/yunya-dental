@@ -32,4 +32,7 @@ public class FansPickUpForm {
     private String phoneNumber;
     @ApiModelProperty(value = "是否为默认 0-否 1-是")
     private Integer defaultStatus;
+
+    @ApiModelProperty(value = "微信用户id")
+    private Integer fansId;
 }

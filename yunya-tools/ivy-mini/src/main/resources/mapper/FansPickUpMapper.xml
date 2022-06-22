@@ -17,5 +17,12 @@
     select id,fans_id as fansId,name,phone_number as phoneNumber,default_status as defaultStatus
     from fans_pick_up
     where fans_id = #{fansId}
+    order by default_status desc
   </select>
+  <update id="updateDefaultStatus">
+      UPDATE fans_pick_up
+      SET default_status = 0
+      where fans_id = #{fansId}
+  </update>
+
 </mapper>

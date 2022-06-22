@@ -9,4 +9,6 @@ import java.util.List;
 public interface FansPickUpMapper extends Mapper<FansPickUp> {
 
      List<FansPickUpVO> findList(Integer fansId);
+
+     void updateDefaultStatus(Integer fansIds);
 }
