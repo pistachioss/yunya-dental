@@ -35,7 +35,7 @@ public class WxFansMapQueryForm {
     @NotNull(message = "半径不能为空!")
     private Integer distance;
 
-    @ApiModelProperty("绑定状态0:已绑定患者 1:未绑定患者 不传为全部")
+    @ApiModelProperty("绑定状态0:为绑定患者 1:已绑定患者 不传为全部")
     private Integer isBind;
 
 }

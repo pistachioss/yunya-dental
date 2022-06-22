@@ -22,7 +22,7 @@ public class WxWechatMapFansVo {
     private Double longitude;
     @ApiModelProperty("纬度")
     private Double latitude;
-    @ApiModelProperty("绑定状态0:已绑定患者 1:未绑定患者")
+    @ApiModelProperty("绑定状态0:未绑定患者 1:已绑定患者")
     private Integer isBind;
     @ApiModelProperty("昵称")
     private String nickName;

@@ -36,7 +36,7 @@ public class WxWechatFansVo implements Serializable {
     @ApiModelProperty("注册日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date crtTime;
-    @ApiModelProperty("绑定状态0:已绑定患者 1:未绑定患者")
+    @ApiModelProperty("绑定状态0:未绑定患者 1:已绑定患者")
     private Integer isBind;
     @ApiModelProperty("常驻地址")
     private String address;
