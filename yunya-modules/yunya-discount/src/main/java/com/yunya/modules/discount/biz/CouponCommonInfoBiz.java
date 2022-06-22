@@ -4,6 +4,7 @@ import com.github.pagehelper.*;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
@@ -149,9 +150,11 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         return collect;
     }
 
-    public void lockVirtualStock(Integer productId, Integer quantity) {
-        CouponCommonInfo commonInfo = mapper.selectByPrimaryKey(productId);
-        commonInfo.setSale(commonInfo.getSale() + quantity);
-        mapper.updateByPrimaryKeySelective(commonInfo);
+    public void lockVirtualStock(List<LockStockForm> form) {
+        for (LockStockForm lockStockForm : form) {
+            CouponCommonInfo commonInfo = mapper.selectByPrimaryKey(lockStockForm.getProductId());
+            commonInfo.setSale(commonInfo.getSale() + lockStockForm.getQuantity());
+            mapper.updateByPrimaryKeySelective(commonInfo);
+        }
     }
 }

@@ -1,8 +1,7 @@
 package com.yunya.feign.discount;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
-import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
+import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -98,6 +96,6 @@ public interface RemoteDiscountFeign {
     @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.POST)
     List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids);
 
-    @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.GET)
-    void lockVirtualStock(@NotNull @RequestParam(value = "productId") Integer productId, @NotNull @RequestParam(value = "quantity") Integer quantity);
+    @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.POST)
+    void lockVirtualStock(@Valid @RequestBody List<LockStockForm> form);
 }

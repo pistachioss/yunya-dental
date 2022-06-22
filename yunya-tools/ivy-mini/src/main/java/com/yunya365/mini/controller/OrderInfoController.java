@@ -1,6 +1,7 @@
 package com.yunya365.mini.controller;
 
 
+import com.yunya.feign.ivy_mini.domain.model.CreateCartOrderModel;
 import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.ConfirmOrderVO;
@@ -31,22 +32,28 @@ public class OrderInfoController extends BaseController{
     @Resource
     private IOrderInfoService orderInfoService;
 
-    @PostMapping("/product/confirm")
+    @PostMapping("/product/order/confirm")
     @ApiOperation("【小程序】产品生成确认订单信息")
     public ResponseResult<ConfirmOrderVO> confirmProductOrder(@RequestBody @Valid ConfirmProductQuery query) {
         return ResponseUtil.success(orderInfoService.confirmProductOrder(query));
     }
 
-    @PostMapping(value = "/cart/confirm")
+    @PostMapping(value = "/cart/order/confirm")
     @ApiOperation("【小程序】根据购物车信息生成确认单")
     public ResponseResult<ConfirmOrderVO> generateConfirmOrder(@RequestBody List<Integer> cartIds) {
         return ResponseUtil.success(orderInfoService.confirmCartOrder(cartIds));
     }
 
-    @PostMapping("/product/create")
+    @PostMapping("/product/order/create")
     @ApiOperation("【小程序】产品详情页下单")
     public ResponseResult<CreateOrderVO> createProductOrder(@RequestBody @Valid CreateProductOrderModel model) {
         return ResponseUtil.success(orderInfoService.createProductOrder(model));
+    }
+
+    @PostMapping("/cart/order/create")
+    @ApiOperation("【小程序】购物车页下单")
+    public ResponseResult<CreateOrderVO> createProductOrder(@RequestBody @Valid CreateCartOrderModel model) {
+        return ResponseUtil.success(orderInfoService.createCartOrder(model));
     }
 }
 

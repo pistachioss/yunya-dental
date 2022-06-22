@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.bo.*;
@@ -169,12 +170,12 @@ public class ProductServiceImpl implements IProductService {
 
 
     @Override
-    public void lockProductStock(Integer productId, Integer quantity, Integer type) {
+    public void lockProductStock(List<LockStockForm> form, Integer type) {
         if (FALSE.equals(type)) {
-            treatmentServiceFeign.lockGoodsStock(productId, quantity);
+            treatmentServiceFeign.lockGoodsStock(form);
         }
         if (TRUE.equals(type)) {
-            discountFeign.lockVirtualStock(productId, quantity);
+            discountFeign.lockVirtualStock(form);
         }
     }
 

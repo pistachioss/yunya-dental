@@ -20,6 +20,11 @@ public enum IvyMiniError implements RestError {
     STOCK_LACK(9, "库存不足，无法下单"),
     PRODUCT_LACK(10, "产品不存在"),
     PICKUP_NOT_EXIST(11, "取件人信息不存在"),
+    SIGN_TYPE_ERROR(12, "验证签名类错误：%s"),
+    SIGNATURE_ERROR(13, "验签失败"),
+    ORDER_ERROR(14, "订单异常"),
+    CB_SERVER_ERROR(15, "采宝服务器异常，error_code：%s, error_msg：%s"),
+    CB_PAY_ERROR(16, "支付异常"),
     ;
     private final Integer code;
     private final String value;

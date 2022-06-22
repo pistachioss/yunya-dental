@@ -1,6 +1,7 @@
 package com.yunya365.mini.service;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
@@ -68,11 +69,10 @@ public interface IProductService {
 
     /**
      * 减库存
-     * @param productId:
-	 * @param quantity:
+     * @param form:
 	 * @param type:
      */
-    void lockProductStock(Integer productId, Integer quantity, Integer type);
+    void lockProductStock(List<LockStockForm> form, Integer type);
 
     /**
      * 根据id查询收货地址或查询用户默认地址

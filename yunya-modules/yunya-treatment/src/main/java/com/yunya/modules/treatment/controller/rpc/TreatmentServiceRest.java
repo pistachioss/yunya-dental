@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
@@ -22,8 +23,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -600,8 +601,8 @@ public class TreatmentServiceRest {
     return baseOralTariffBiz.listOnSaleOral(ids);
   }
 
-  @RequestMapping(value = "/goods/lock/stock", method = RequestMethod.GET)
-  void lockGoodsStock(@NotNull @RequestParam(value = "productId") Integer productId, @NotNull @RequestParam(value = "quantity") Integer quantity){
-    baseOralTariffBiz.lockGoodsStock(productId, quantity);
+  @RequestMapping(value = "/goods/lock/stock", method = RequestMethod.POST)
+  void lockGoodsStock(@Valid @RequestBody List<LockStockForm> form){
+    baseOralTariffBiz.lockGoodsStock(form);
   }
 }

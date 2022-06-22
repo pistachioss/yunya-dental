@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.rpc;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -135,9 +135,8 @@ public class BenefitApiController {
         return couponBiz.listOnSaleOral(ids);
     }
 
-    @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.GET)
-    void lockVirtualStock(@NotNull @RequestParam(value = "productId") Integer productId
-            , @NotNull @RequestParam(value = "quantity") Integer quantity){
-        couponBiz.lockVirtualStock(productId, quantity);
+    @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.POST)
+    void lockVirtualStock(@Valid @RequestBody List<LockStockForm> form){
+        couponBiz.lockVirtualStock(form);
     }
 }

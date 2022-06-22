@@ -1,10 +1,10 @@
 package com.yunya365.mini.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yunya.feign.ivy_mini.domain.model.CreateCartOrderModel;
 import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
-import com.yunya.feign.ivy_mini.domain.vo.ConfirmOrderVO;
-import com.yunya.feign.ivy_mini.domain.vo.CreateOrderVO;
+import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya365.mini.entity.OrderInfo;
 
 import java.util.List;
@@ -26,6 +26,11 @@ public interface IOrderInfoService extends IService<OrderInfo> {
      */
     ConfirmOrderVO confirmProductOrder(ConfirmProductQuery query);
 
+    /**
+     * 购物车生成确认订单信息
+     * @param cartIds:
+     * @return ConfirmOrderVO
+     */
     ConfirmOrderVO confirmCartOrder(List<Integer> cartIds);
 
     /**
@@ -34,6 +39,13 @@ public interface IOrderInfoService extends IService<OrderInfo> {
      * @return CreateOrderVO
      */
     CreateOrderVO createProductOrder(CreateProductOrderModel model);
+
+    /**
+     * 创建商品或虚拟服务订单（购物车下单）
+     * @param model:
+     * @return CreateOrderVO
+     */
+    CreateOrderVO createCartOrder(CreateCartOrderModel model);
 
     void paySuccess();
 }

@@ -18,4 +18,6 @@ public class CreateOrderVO {
     private PayReceiveAddressVO addressVO;
     @ApiModelProperty(value = "应付金额（实际支付金额）")
     private BigDecimal payAmount;
+    @ApiModelProperty(value = "预付单信息")
+    private WxPaymentVO paymentVO;
 }

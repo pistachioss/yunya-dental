@@ -63,7 +63,7 @@ public class LoginServiceImpl {
         //登录
         AuthInfoVO authInfoVO = login(openId, request, wxFans);
         //存储session_key
-//        wxApi.storageSessionKey(openId, sessionBO.getSessionKey());
+        wxApi.storageSessionKey(openId, sessionBO.getSessionKey());
         authInfoVO.setUnionId(sessionBO.getUnionId());
         return authInfoVO;
     }

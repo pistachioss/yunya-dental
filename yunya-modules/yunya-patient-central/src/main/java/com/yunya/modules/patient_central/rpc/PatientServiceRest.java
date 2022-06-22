@@ -329,7 +329,7 @@ public class PatientServiceRest {
     return wxFansBiz.findListByName(wxFanByNameForm);
   }
 
-  @ApiOperation("查询微信用户信息")
+  @ApiOperation("根据患者id查询微信用户信息")
   @RequestMapping(value = "/wx/patient/{patientId}", method = RequestMethod.GET)
   public WxPatientVo getWxPatientInfo(@PathVariable("patientId") Integer patientId) {
     return wxFansBiz.getWxPatientInfo(patientId);

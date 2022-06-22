@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.biz;
 import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -1286,11 +1287,13 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       return assembleProductBO(tariffs, categoryList);
     }
 
-  public void lockGoodsStock(Integer productId, Integer quantity) {
-    BaseOralTariff baseOralTariff = mapper.selectByPrimaryKey(productId);
-    baseOralTariff.setSale(baseOralTariff.getSale() + quantity);
-    baseOralTariff.setStock(baseOralTariff.getStock() - quantity);
-    mapper.updateByPrimaryKeySelective(baseOralTariff);
+  public void lockGoodsStock(List<LockStockForm> form) {
+    for (LockStockForm lockStockForm : form) {
+      BaseOralTariff baseOralTariff = mapper.selectByPrimaryKey(lockStockForm.getProductId());
+      baseOralTariff.setSale(baseOralTariff.getSale() + lockStockForm.getQuantity());
+      baseOralTariff.setStock(baseOralTariff.getStock() - lockStockForm.getQuantity());
+      mapper.updateByPrimaryKeySelective(baseOralTariff);
+    }
   }
 
   private List<ProductBO> assembleProductBO(List<BaseOralTariff> tariffs, List<BaseOralTariffCategory> cateGoryList) {
