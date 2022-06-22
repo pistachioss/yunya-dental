@@ -1,5 +1,6 @@
 package com.yunya365.mini.controller;
 
+import com.yunya.feign.ivy_mini.domain.vo.CustomerOneVO;
 import com.yunya.feign.ivy_mini.domain.vo.CustomerVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -29,9 +30,15 @@ public class CustomerController extends BaseController {
     private CustomerServiceImpl customerService;
 
     @PostMapping("/customer/list")
-    @ApiOperation("客服链接列表")
+    @ApiOperation("客服列表")
     public ResponseResult<List<CustomerVO>> customerList() {
         return ResponseUtil.success(customerService.customerList());
+    }
+
+    @PostMapping("/customer/findOne")
+    @ApiOperation("单个客服链接")
+    public ResponseResult<CustomerOneVO> customerFindOne() {
+        return ResponseUtil.success(customerService.customerFindOne());
     }
 
 }

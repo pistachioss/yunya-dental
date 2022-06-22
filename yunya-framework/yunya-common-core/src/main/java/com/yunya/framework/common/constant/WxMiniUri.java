@@ -24,7 +24,7 @@ public interface WxMiniUri {
      */
     String WX_MINIPROGRAM_QR_URL = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=%s";
     /**
-     * 企业微信获取客服链接列表
+     * 企业微信获取客服列表
      */
     String WX_CUSTOMER_URL = "https://qyapi.weixin.qq.com/cgi-bin/kf/account/list?access_token=%s";
 
@@ -32,4 +32,9 @@ public interface WxMiniUri {
      * 获取企业微信的access_token
      */
     String WXCORP_ACCESS_TOKEN_URL = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s";
+
+    /**
+     * 企业微信获取单个客服链接
+     */
+    String WX_FINDONE_CUSTOMER_URL = "https://qyapi.weixin.qq.com/cgi-bin/kf/add_contact_way?access_token=%s";
 }
