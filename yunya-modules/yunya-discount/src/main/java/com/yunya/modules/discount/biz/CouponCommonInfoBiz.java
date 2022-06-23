@@ -153,7 +153,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
     public void lockVirtualStock(List<LockStockForm> form) {
         for (LockStockForm lockStockForm : form) {
             CouponCommonInfo commonInfo = mapper.selectByPrimaryKey(lockStockForm.getProductId());
-            commonInfo.setSale(commonInfo.getSale() + lockStockForm.getQuantity());
+            commonInfo.setSale((Objects.isNull(commonInfo.getSale()) ? 0 : commonInfo.getSale()) + lockStockForm.getQuantity());
             mapper.updateByPrimaryKeySelective(commonInfo);
         }
     }

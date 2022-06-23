@@ -8,8 +8,8 @@ import lombok.Data;
  * @date 2022/5/13 13:15
  **/
 @Data
-public class CBWxPayVO {
-    private CBWxPayDataVO data;
+public class CBQueryVO {
+    private CBQueryDataVO data;
     private CBResultVO result;
     private String sign;
 }

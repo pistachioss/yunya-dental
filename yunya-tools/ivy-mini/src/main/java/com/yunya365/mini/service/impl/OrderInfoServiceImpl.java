@@ -2,6 +2,7 @@ package com.yunya365.mini.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
@@ -26,12 +27,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDateTime;
-import org.springframework.cglib.beans.BeanMap;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
@@ -41,6 +46,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
 import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
+import static com.yunya365.mini.enums.OrderStatusEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -113,7 +119,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         List<PayOrderItemVO> orderItemVOS = orderItemBOS.stream()
                 .map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)
-        ).collect(toList());
+                ).collect(toList());
         //商品类产品有自提和配送区分
         vo.setDeliveryVO(confirmAddress(userId));
         vo.setProductList(orderItemVOS);
@@ -122,6 +128,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CreateOrderVO createProductOrder(CreateProductOrderModel model) {
         boolean locked = false;
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -137,6 +144,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
             //查询原始商品或虚拟服务
             List<OrderItemBO> itemBoList = productService.listProductOrderItem(Collections.singleton(productId), productType);
+            itemBoList.forEach(t -> t.setProductQuantity(quantity));
             //判断购物车中商品是否都有库存
             if (hasStock(itemBoList, quantity)) {
                 throw ClientServiceException.wrap(STOCK_LACK);
@@ -145,18 +153,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             lockStock(productId, quantity, null, productType);
             //创建订单
             OrderInfo orderInfo = assembleOrder(userId, model, itemBoList);
+            //生成支付单
+            WxPaymentVO wxPaymentVO = wxPay(orderInfo, itemBoList);
             baseMapper.insert(orderInfo);
             List<OrderItem> itemList = itemBoList.stream().map(t -> {
                 OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
-                orderItem.setProductQuantity(quantity);
                 orderItem.setOrderId(orderInfo.getId());
                 orderItem.setOrderSn(orderInfo.getOrderSn());
                 return orderItem;
             }).collect(toList());
             orderItemService.saveBatch(itemList);
             //todo 发送延迟消息取消订单
-            //生成支付单
-            WxPaymentVO wxPaymentVO = wxPay(orderInfo, itemList);
             return createVO(orderInfo, itemList, wxPaymentVO);
         } finally {
             if (locked) {
@@ -167,6 +174,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CreateOrderVO createCartOrder(CreateCartOrderModel model) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         List<OrderItemBO> orderItemBOS = cartItemService.listProductByIds(model.getCartIds());
@@ -178,6 +186,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         lockStock(null, null, orderItemBOS, model.getProductType());
         //创建订单
         OrderInfo orderInfo = assembleOrder(userId, model, orderItemBOS);
+        //删除购物车中的下单商品
+        cartItemService.delete(model.getCartIds());
+        //生成支付单
+        WxPaymentVO wxPaymentVO = wxPay(orderInfo, orderItemBOS);
         baseMapper.insert(orderInfo);
         List<OrderItem> itemList = orderItemBOS.stream().map(t -> {
             OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
@@ -187,25 +199,131 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             return orderItem;
         }).collect(toList());
         orderItemService.saveBatch(itemList);
-        //删除购物车中的下单商品
-        cartItemService.delete(model.getCartIds());
-        //生成支付单
-        WxPaymentVO wxPaymentVO = wxPay(orderInfo, itemList);
+        //todo 发送延迟消息取消订单
         return createVO(orderInfo, itemList, wxPaymentVO);
     }
 
     @Override
-    public void paySuccess() {
-
+    @Transactional(rollbackFor = Exception.class)
+    public void cbNotify(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            String result = parseNotify(request);
+            //回调结果验签
+            Map<String, Object> data = JSONObject.parseObject(result, Map.class);
+            String sign = Objects.toString(data.remove("sign"));
+            if (!caiBaoApi.verifySign(data, sign)) {
+                throw ClientServiceException.wrap(CB_NOTIFY_ERROR);
+            }
+            String localOrderNo = Objects.toString(data.get("appOrderNo"));
+            //本次支付的订单
+            OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, localOrderNo).one();
+            if (Objects.isNull(orderInfo)) {
+                throw ClientServiceException.wrap(ORDER_DATA_ERROR);
+            }
+            //订单状态
+            int status = orderInfo.getStatus().intValue();
+            //0->商品 1->虚拟服务
+            int productType = orderInfo.getProductType().intValue();
+            //0->自提 1->配送
+            int deliveryType = orderInfo.getDeliveryType().intValue();
+            if (Objects.equals(PAY_PENDING.getCode(), status)) {
+//                WAIT_PAY	等待付款
+//                PAY_SUC	付款成功
+//                PART_REFUND	部分退款成功
+//                ALL_REFUND	退款成功
+//                REVERSED	订单撤销成功
+//                CLOSED	订单撤销成功
+//                CANCEL	已取消 (历史状态，已废弃，新接入用户不用考虑)
+//                PAY_FAIL	付款失败
+                String orderStatus = Objects.toString(data.get("orderStatus"));
+                if (Objects.equals("PAY_SUC", orderStatus)) {
+                    //商品
+                    if (Objects.equals(FALSE.getCode(), productType)) {
+                        //自提
+                        if (Objects.equals(FALSE.getCode(), deliveryType)) {
+                            orderInfo.setStatus(HAS_SHIP.getCode().byteValue());
+                            //配送
+                        } else {
+                            orderInfo.setStatus(SHIP_PENDING.getCode().byteValue());
+                        }
+                        //虚拟服务
+                    } else {
+                        orderInfo.setStatus(FINISH.getCode().byteValue());
+                    }
+                    orderInfo.setPaymentTime(new Date(Long.parseLong(Objects.toString(data.get("cbOrderNo")))));
+                }
+                orderInfo.setCbOrderNo(Objects.toString(data.get("cbOrderNo")));
+                orderInfo.setCbOrderNo(Objects.toString(data.get("outOrderNo")));
+                baseMapper.updateByPrimaryKeySelective(orderInfo);
+            }
+        } catch (Exception e) {
+            log.error("支付回调结果异常", e);
+            throw ClientServiceException.wrap(CB_NOTIFY_ERROR, e);
+        } finally {
+            try {
+                // 处理业务完毕
+                ServletOutputStream outputStream = response.getOutputStream();
+                outputStream.print("success");
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException e) {
+                log.error("支付回调响应异常", e);
+            }
+        }
     }
 
-    private WxPaymentVO wxPay(OrderInfo orderInfo, List<OrderItem> itemList) {
+    @Override
+    public List<CBQueryVO> queryPayOrder(Collection<Integer> orderIds) {
+        List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper)
+                .in(OrderInfo::getId, orderIds).eq(OrderInfo::getStatus, PAY_PENDING.getCode()).list();
+        List<String> cbNos = list.stream().map(OrderInfo::getCbOrderNo).collect(toList());
+        List<CBMiniQueryModel> queryModels = assembleQueryModel(cbNos);
+        List<CBQueryVO> queryVOS = Lists.newArrayListWithCapacity(orderIds.size());
+        for (CBMiniQueryModel queryModel : queryModels) {
+            CBQueryVO cbQueryVO = caiBaoApi.cbPostFormObject(convertFromMap(queryModel), CBQueryVO.class);
+            CBQueryDataVO data = cbQueryVO.getData();
+            String sign = cbQueryVO.getSign();
+            if (!caiBaoApi.verifySign(BeanUtil.toMap(data), sign)) {
+                throw ClientServiceException.wrap(CB_QUERY_ERROR);
+            }
+            queryVOS.add(cbQueryVO);
+        }
+        return queryVOS;
+    }
+
+    private String parseNotify(HttpServletRequest request) throws IOException {
+        InputStream inStream = null;
+        ByteArrayOutputStream outSteam = null;
+        String result = null;
+        try {
+            inStream = request.getInputStream();
+            outSteam = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len = 0;
+            while ((len = inStream.read(buffer)) != -1) {
+                outSteam.write(buffer, 0, len);
+            }
+            // 获取采宝调的notify_url的返回信息
+            result = outSteam.toString("utf-8");
+            log.info("采宝支付回调结果：{}", result);
+        } catch (Exception e) {
+            log.error("采宝支付回调结果解析失败：{}", result, e);
+        } finally {
+            assert inStream != null;
+            assert outSteam != null;
+            inStream.close();
+            outSteam.close();
+        }
+        return result;
+    }
+
+    private WxPaymentVO wxPay(OrderInfo orderInfo, List<OrderItemBO> itemBoList) {
         if (Objects.isNull(orderInfo)) {
             throw ClientServiceException.wrap(ORDER_ERROR);
         }
-        List<CBGoodsListModel> goodsListModels = itemList.stream().map(t -> {
+        List<CBGoodsListModel> goodsListModels = itemBoList.stream().map(t -> {
             CBGoodsListModel goodsListModel = new CBGoodsListModel();
-            goodsListModel.setGoodsId(t.getId().toString());
+            goodsListModel.setGoodsId(t.getProductId().toString());
             goodsListModel.setGoodsNum(t.getProductSn());
             goodsListModel.setGoodsName(t.getProductName());
             goodsListModel.setSellAmount(t.getProductQuantity().toString());
@@ -215,7 +333,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //采宝支付
         CBMiniPayModel miniPayModel = assemblePayModel(orderInfo, goodsListModels);
         CBWxPayVO cbPayVO = caiBaoApi.cbPostFormObject(convertFromMap(miniPayModel), CBWxPayVO.class);
-        CBDataVO data = cbPayVO.getData();
+        CBWxPayDataVO data = cbPayVO.getData();
         String sign = cbPayVO.getSign();
         if (!caiBaoApi.verifySign(BeanUtil.toMap(data), sign)) {
             throw ClientServiceException.wrap(CB_PAY_ERROR);
@@ -227,6 +345,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         paymentVO.setSignType(data.getSignType());
         paymentVO.setTimeStamp(data.getTimestamp());
         paymentVO.setPaySign(caiBaoApi.generateSign(BeanUtil.toMap(paymentVO)));
+        orderInfo.setCbOrderNo(data.getCbOrderNo());
         return paymentVO;
     }
 
@@ -244,19 +363,37 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 //        miniPayModel.setAmount(orderInfo.getPayAmount().multiply(BigDecimal.valueOf(100)).longValue());
         miniPayModel.setAmount(BigDecimal.valueOf(0.01).multiply(BigDecimal.valueOf(100)).longValue());
         miniPayModel.setRemark(orderInfo.getRemark());
-        miniPayModel.setGoodsList(JSONObject.toJSONString(goodsListModels));
+//        miniPayModel.setGoodsList(JSONObject.toJSONString(goodsListModels));
         miniPayModel.setNotifyUrl(caiBaoMiniProperties.getNotifyUrl());
         miniPayModel.setPaymentChannel(caiBaoMiniProperties.getPaymentChannel());
         miniPayModel.setSubAppId(wxMiniProperties.getAppId());
         miniPayModel.setOpenId(openId);
-        miniPayModel.setSign(caiBaoApi.generateSign(BeanUtil.toMap(miniPayModel)));
+        miniPayModel.setSign(caiBaoApi.generateSign(JSONObject.parseObject(JSONObject.toJSONString(miniPayModel), Map.class)));
         return miniPayModel;
     }
 
+    private List<CBMiniQueryModel> assembleQueryModel(List<String> cbNos) {
+        List<CBMiniQueryModel> list = Lists.newArrayListWithCapacity(cbNos.size());
+        CBMiniQueryModel queryModel;
+        for (String cbNo : cbNos) {
+            queryModel = new CBMiniQueryModel();
+            queryModel.setCommand("open.api.query");
+            queryModel.setApp(caiBaoMiniProperties.getAppId());
+            queryModel.setOperatorId(caiBaoMiniProperties.getOperatorId());
+            queryModel.setVersion("2.0");
+            queryModel.setSignType("MD5");
+            queryModel.setRequestId(UUID.randomUUID().toString());
+            queryModel.setRequestTime(LocalDateTime.now().toString("yyyyMMddHHmmss"));
+            queryModel.setCbOrderNo(cbNo);
+            list.add(queryModel);
+        }
+        return list;
+    }
+
     @SuppressWarnings("unchecked")
-    private MultiValueMap<String, String> convertFromMap(CBMiniPayModel miniPayModel) {
+    private MultiValueMap<String, String> convertFromMap(CBPublicModel miniPayModel) {
         MultiValueMap<String, String> param = new LinkedMultiValueMap<>();
-        Map<String, Object> beanMap = BeanMap.create(miniPayModel);
+        Map<String, Object> beanMap = JSONObject.parseObject(JSONObject.toJSONString(miniPayModel), Map.class);
         for (Map.Entry<String, Object> entry : beanMap.entrySet()) {
             if (StringUtils.isNotBlank(entry.getKey()) && Objects.nonNull(entry.getValue())) {
                 param.add(entry.getKey(), entry.getValue().toString());

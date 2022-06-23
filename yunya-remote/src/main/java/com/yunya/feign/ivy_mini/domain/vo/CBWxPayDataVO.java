@@ -9,7 +9,7 @@ import lombok.Data;
  * @date 2022/5/13 13:15
  **/
 @Data
-public class CBDataVO {
+public class CBWxPayDataVO {
     @JSONField(name = "local_order_no")
     private String localOrderNo;
     @JSONField(name = "cb_order_no")

@@ -26,6 +26,10 @@ public class ClientServiceException extends BaseException {
     super(cause);
   }
 
+  public ClientServiceException(int code, Throwable cause) {
+    super(code, cause);
+  }
+
   public ClientServiceException(int code, String message, Throwable cause) {
     super(code, message, cause);
   }

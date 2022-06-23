@@ -34,7 +34,7 @@ wx:
     appId: A55905710000004
     key: dc38b14f74888b3a88b51ace677cc3b8
     paymentChannel: WECHAT
-    notifyUrl: xxx
+    notifyUrl: https://bab3-115-192-223-246.jp.ngrok.io/api/ivy/mini/cb/notify
 
 
 cloopen:

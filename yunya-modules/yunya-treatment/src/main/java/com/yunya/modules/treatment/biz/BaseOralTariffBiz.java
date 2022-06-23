@@ -1290,8 +1290,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   public void lockGoodsStock(List<LockStockForm> form) {
     for (LockStockForm lockStockForm : form) {
       BaseOralTariff baseOralTariff = mapper.selectByPrimaryKey(lockStockForm.getProductId());
-      baseOralTariff.setSale(baseOralTariff.getSale() + lockStockForm.getQuantity());
-      baseOralTariff.setStock(baseOralTariff.getStock() - lockStockForm.getQuantity());
+      baseOralTariff.setSale((Objects.isNull(baseOralTariff.getSale()) ? 0 : baseOralTariff.getSale()) + lockStockForm.getQuantity());
+      baseOralTariff.setStock((Objects.isNull(baseOralTariff.getStock()) ? 0 : baseOralTariff.getStock()) - lockStockForm.getQuantity());
       mapper.updateByPrimaryKeySelective(baseOralTariff);
     }
   }
@@ -1304,8 +1304,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       bo.setProductName(t.getName());
       bo.setProductPic(itemPic);
       bo.setProductSn(t.getItemNumber());
-      bo.setStock(t.getStock());
-      bo.setSoldQuantity(t.getSale());
+      bo.setStock(Objects.isNull(t.getStock()) ? 0 : t.getStock());
+      bo.setSoldQuantity(Objects.isNull(t.getSale()) ? 0 : t.getSale());
       bo.setProductPrice(t.getPrice());
       bo.setProductType(FALSE.getCode());
       bo.setProductCategoryId(t.getOralTariffCategoryId());

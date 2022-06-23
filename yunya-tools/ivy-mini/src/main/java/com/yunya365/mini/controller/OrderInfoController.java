@@ -6,6 +6,7 @@ import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.ConfirmOrderVO;
 import com.yunya.feign.ivy_mini.domain.vo.CreateOrderVO;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.IOrderInfoService;
@@ -14,6 +15,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -27,7 +30,7 @@ import java.util.List;
  */
 @RestController
 @Api(tags = "订单")
-public class OrderInfoController extends BaseController{
+public class OrderInfoController extends BaseController {
 
     @Resource
     private IOrderInfoService orderInfoService;
@@ -54,6 +57,13 @@ public class OrderInfoController extends BaseController{
     @ApiOperation("【小程序】购物车页下单")
     public ResponseResult<CreateOrderVO> createProductOrder(@RequestBody @Valid CreateCartOrderModel model) {
         return ResponseUtil.success(orderInfoService.createCartOrder(model));
+    }
+
+    @PostMapping("/cb/notify")
+    @IgnoreUserToken
+    public ResponseResult<Boolean> cbNotify(HttpServletRequest request, HttpServletResponse response) {
+        orderInfoService.cbNotify(request, response);
+        return ResponseUtil.success();
     }
 }
 

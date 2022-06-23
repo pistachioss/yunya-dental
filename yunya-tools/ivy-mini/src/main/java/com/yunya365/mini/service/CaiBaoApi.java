@@ -59,6 +59,7 @@ public class CaiBaoApi {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<MultiValueMap<String, String>> request =
                 new HttpEntity<>(param, headers);
+        log.info("调用采宝参数：{}", param);
         JSONObject resultStr = cbPostObject(request);
         return resultStr.toJavaObject(clazz);
     }

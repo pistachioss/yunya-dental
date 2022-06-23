@@ -7,6 +7,9 @@ import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya365.mini.entity.OrderInfo;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -47,5 +50,12 @@ public interface IOrderInfoService extends IService<OrderInfo> {
      */
     CreateOrderVO createCartOrder(CreateCartOrderModel model);
 
-    void paySuccess();
+    /**
+     * 采宝支付回调
+     * @param request:
+	 * @param response:
+     */
+    void cbNotify(HttpServletRequest request, HttpServletResponse response);
+
+    public List<CBQueryVO> queryPayOrder(Collection<Integer> orderIds);
 }
