@@ -29,7 +29,7 @@ public class ExpertIntroductionController extends BaseController{
     @Resource
     private ExpertIntroductionServiceImpl expertIntroductionService;
 
-    @PostMapping("/expertIntroduction/zjjs/findlist")
+    @PostMapping("/expertIntroduction/findlist")
     @ApiOperation("小程序-专家介绍-列表")
     public ResponseResult<PageInfo<ExpertIntroductionVO>> findList(@RequestBody @Valid ExpertIntroductionForm form) {
         return ResponseUtil.success(expertIntroductionService.findList(form));
