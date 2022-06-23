@@ -37,29 +37,40 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper, AttendanceAddressSet> {
-    /** 注入对象 */
+    /**
+     * 注入对象
+     */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
     /**
      * 查询门诊列表
      */
     public List<ClinicListVO> findClinicList(ClinicListQuery query) {
-       List<AttendanceAddressSet>list = mapper.selectAll();
-        List<ClinicListVO>reList = new ArrayList<>();
-       for(AttendanceAddressSet addressSet:list){
-           ClinicListVO clinicListVO = new ClinicListVO();
-           clinicListVO.setId(addressSet.getOrgId());
-           clinicListVO.setAddress(addressSet.getAttendanceAddress());
-           clinicListVO.setAbbreviation(addressSet.getOrganizationName());
-           double distance = 0;
-           if(query.getLongitude()!=null){
-               distance = LocationUtil.getDistance(query.getLongitude(),query.getLatitude(),Double.parseDouble(addressSet.getLongitude()) ,Double.parseDouble(addressSet.getLatitude()));
-           }
-           clinicListVO.setDistance(distance/1000);
-           reList.add(clinicListVO);
-       }
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
+        clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
+        List<AttendanceAddressSet> list = mapper.selectAll();
+        List<ClinicListVO> reList = new ArrayList<>();
+        for (AttendanceAddressSet addressSet : list) {
+            ClinicListVO clinicListVO = new ClinicListVO();
+            clinicListVO.setId(addressSet.getOrgId());
+            clinicListVO.setAddress(addressSet.getAttendanceAddress());
+            clinicListVO.setAbbreviation(addressSet.getOrganizationName());
+            clinicListVO.setBusinessEndTime(clinicMap.get(addressSet.getOrgId()+"").getBusinessEndTime());
+            clinicListVO.setBusinessStartTime(clinicMap.get(addressSet.getOrgId()+"").getBusinessStartTime());
+            double distance = 0;
+            if (query.getLongitude() != null) {
+                distance = LocationUtil.getDistance(query.getLongitude(), query.getLatitude(), Double.parseDouble(addressSet.getLongitude()), Double.parseDouble(addressSet.getLatitude()));
+            }
+            clinicListVO.setDistance(distance / 1000);
+            reList.add(clinicListVO);
+        }
         return reList;
     }
+
     /**
      * 分页查询考勤地址设置列表
      *
@@ -82,7 +93,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
         }
         List<AttendanceAddressSetVO> attendanceAddressSetVOList = findAttendanceAddressSets(queryForm);
         List<Integer> orgIds = new ArrayList<>(10);
-        attendanceAddressSetVOList.forEach(attendanceAddressSetVO->{
+        attendanceAddressSetVOList.forEach(attendanceAddressSetVO -> {
             Integer orgId = attendanceAddressSetVO.getOrgId();
             if (!orgIds.contains(orgId)) {
                 orgIds.add(orgId);
@@ -91,7 +102,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
 
         if (!orgIds.isEmpty()) {
             List<OrganizationInfoDetail> organizationInfoDetails = remoteSystemServiceFeign.findOrgInfoInIds(orgIds);
-            organizationInfoDetails.forEach(organizationInfoDetail->{
+            organizationInfoDetails.forEach(organizationInfoDetail -> {
                 Integer orgId = organizationInfoDetail.getId();
                 attendanceAddressSetVOList.forEach(attendanceAddressSetVO -> {
                     Integer attendOrgId = attendanceAddressSetVO.getOrgId();
@@ -157,7 +168,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
     /**
      * 修改考勤地址设置信息
      *
-     * @param id 主键id
+     * @param id                       主键id
      * @param attendanceAddressSetForm 考勤地址设置模型
      * @return
      */
@@ -209,7 +220,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
         }
         List<OrganizationInfoDetail> organizationInfoDetails = remoteSystemServiceFeign.findOrgInfoList(model);
         Map<Integer, String> organizationMap = new HashMap<>();
-        if (organizationInfoDetails!=null && !organizationInfoDetails.isEmpty()) {
+        if (organizationInfoDetails != null && !organizationInfoDetails.isEmpty()) {
             organizationInfoDetails.forEach(organizationInfoDetail -> {
                 Integer orgId = organizationInfoDetail.getId();
                 String orgName = organizationInfoDetail.getName();
@@ -229,7 +240,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
                 return false;
             }).collect(Collectors.toList());
             if (!organizationMap.isEmpty()) {
-                organizationMap.entrySet().forEach(entry->{
+                organizationMap.entrySet().forEach(entry -> {
                     AttendanceAddressSetVO attendanceAddressSetVO = new AttendanceAddressSetVO();
                     attendanceAddressSetVO.setOrgId(entry.getKey());
                     attendanceAddressSetVO.setOrganizationName(entry.getValue());

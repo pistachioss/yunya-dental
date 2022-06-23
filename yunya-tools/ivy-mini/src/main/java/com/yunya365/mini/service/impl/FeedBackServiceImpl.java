@@ -2,6 +2,7 @@ package com.yunya365.mini.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.ivy_mini.domain.form.FeedBackAddForm;
 import com.yunya.feign.ivy_mini.domain.form.FeedBackForm;
 import com.yunya.feign.ivy_mini.domain.vo.FeedBackVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
@@ -9,6 +10,7 @@ import com.yunya.feign.patient_central.domain.query.WxFanByNameForm;
 import com.yunya.feign.patient_central.domain.query.WxFansDetailForm;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.entity.FeedBack;
@@ -70,5 +72,12 @@ public class FeedBackServiceImpl extends BaseBiz<FeedBackMapper, FeedBack> {
             return ResponseUtil.success("数据删除失败！");
         }
         return ResponseUtil.success();
+    }
+    public ResponseResult add(FeedBackAddForm form) {
+        FeedBack feedBack = new FeedBack();
+        Integer fansId = Integer.valueOf(BaseContextHandler.getUserID());
+        feedBack.setContext(form.getContext());
+        feedBack.setFanId(fansId);
+        return ResponseUtil.success(mapper.insertSelective(feedBack));
     }
 }

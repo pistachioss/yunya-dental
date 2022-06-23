@@ -1,14 +1,18 @@
 package com.yunya365.mini.controller;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.ivy_mini.domain.form.ArticleForm;
+import com.yunya.feign.ivy_mini.domain.vo.ArticleVO;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.impl.ArticleServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 简介:
@@ -28,4 +32,12 @@ public class ArticleAppletController extends BaseController{
     public ResponseResult addReading(@PathVariable(value = "id") Integer id) {
         return articleService.addReading(id);
     }
+
+
+    @PostMapping("/article/kqkp/findlist")
+    @ApiOperation("小程序-口腔科普/艾维动态-列表(传type和status即可)")
+    public ResponseResult<PageInfo<ArticleVO>> findList(@RequestBody @Valid ArticleForm form) {
+        return ResponseUtil.success(articleService.findList(form));
+    }
+
 }

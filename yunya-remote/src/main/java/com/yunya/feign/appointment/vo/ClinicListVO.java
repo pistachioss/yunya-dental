@@ -31,4 +31,11 @@ public class ClinicListVO  implements Serializable {
 
     @ApiModelProperty(value = "距离")
     private Double distance;
+
+    /** 营业开始时间*/
+    @ApiModelProperty("营业开始时间")
+    private String businessStartTime;
+    /** 营业结束时间*/
+    @ApiModelProperty("营业结束时间")
+    private String businessEndTime;
 }
