@@ -1,7 +1,7 @@
 package com.yunya365.wechat.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.yunya.feign.wechat.domain.model.WxAutoReplyModel;
+import com.yunya.feign.wechat.domain.model.WxAutoTextReplyModel;
 import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
 import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.constant.WXConstant;
@@ -79,7 +79,7 @@ public abstract class AbstractWxBaseApi {
         return jsonObject.getString("msgid");
     }
 
-    public String pushAutoReply(WxAutoReplyModel pushModel) {
+    public String pushAutoReply(Object pushModel) {
         String accessToken = getAccessToken();
         String url = String.format(WXConstant.WX_SET_AUTO_REPLY_URL, accessToken);
         String resultStr = restTemplate.postForObject(url, pushModel, String.class);

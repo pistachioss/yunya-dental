@@ -316,7 +316,7 @@ public class WXService extends AbstractWxBaseApi {
         }
     }
 
-    public void pushAutoReplyMsg(WxAutoReplyModel msgModel) {
+    public void pushAutoReplyMsg(Object msgModel) {
         log.info("自动回复推送消息：{}", msgModel);
         if (msgModel != null) {
             //推送消息

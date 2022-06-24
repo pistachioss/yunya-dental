@@ -1,7 +1,9 @@
 package com.yunya.models.wechat;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "wx_automsg")
 public class WxAutomsg {
@@ -65,6 +67,15 @@ public class WxAutomsg {
      */
     @Column(name = "CreateUser")
     private String createuser;
+
+    @Column(name = "MsgTitle")
+    private String msgtitle;
+
+    @Column(name = "MsgUrl")
+    private String msgurl;
+
+    @Column(name = "MsgPicUrl")
+    private String msgpicurl;
 
     /**
      * 获取记录ID
@@ -244,5 +255,47 @@ public class WxAutomsg {
      */
     public void setCreateuser(String createuser) {
         this.createuser = createuser;
+    }
+
+    /**
+     * @return MsgTitle
+     */
+    public String getMsgtitle() {
+        return msgtitle;
+    }
+
+    /**
+     * @param msgtitle
+     */
+    public void setMsgtitle(String msgtitle) {
+        this.msgtitle = msgtitle;
+    }
+
+    /**
+     * @return MsgUrl
+     */
+    public String getMsgurl() {
+        return msgurl;
+    }
+
+    /**
+     * @param msgurl
+     */
+    public void setMsgurl(String msgurl) {
+        this.msgurl = msgurl;
+    }
+
+    /**
+     * @return MsgPicUrl
+     */
+    public String getMsgpicurl() {
+        return msgpicurl;
+    }
+
+    /**
+     * @param msgpicurl
+     */
+    public void setMsgpicurl(String msgpicurl) {
+        this.msgpicurl = msgpicurl;
     }
 }

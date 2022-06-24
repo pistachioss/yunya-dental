@@ -22,7 +22,7 @@ public class WxAutoReplyController {
   @Resource
   KfReply kfReply;
 
-  @ApiOperation(value = "新建微信关键字")
+  @ApiOperation(value = "获取微信关键字列表")
   @GetMapping(value = "/wxAutoReply")
   @CurrentUser
   public ResponseResult list() {

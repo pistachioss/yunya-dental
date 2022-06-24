@@ -29,7 +29,7 @@ public class Subscribe implements WeChatNotify {
   @Override
   public WxSendMsgVo weChatNotify(WxUserMsgModel msgReq) throws Exception {
     log.info("用户关注公众号回调结果：{}", msgReq);
-    msgReply.setTextReply(msgReq, "公众号关注自动回复");
+    msgReply.setAutoReply(msgReq, "公众号关注自动回复");
     String openId = msgReq.getFromUserName();
     WxFans wxFansReg = wxService.getOwnInfo(openId, null);
     if (wxFansReg != null && Objects.equals(true, wxFansReg.getSubscribe())) {

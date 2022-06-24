@@ -1,18 +1,12 @@
 package com.yunya365.wechat.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.wechat.domain.form.WxAutoReplyForm;
-import com.yunya.feign.wechat.domain.model.WxAutoReplyModel;
-import com.yunya.feign.wechat.domain.model.WxAutoReplyText;
 import com.yunya.feign.wechat.domain.model.WxUserMsgModel;
 import com.yunya.feign.wechat.domain.vo.WxKfOnlineVo;
 import com.yunya.feign.wechat.domain.vo.WxSendMsgVo;
-import com.yunya.feign.wechat.domain.vo.WxSignatureVo;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.wechat.WxAutomsg;
-import com.yunya.models.wechat.WxMsgTemplates;
-import com.yunya.models.wechat.WxTemplateMsgRecords;
 import com.yunya365.wechat.config.NotifyType;
 import com.yunya365.wechat.enums.NotifyEnum;
 import com.yunya365.wechat.enums.WeChatError;
@@ -58,7 +52,7 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     out.setMsgType("transfer_customer_service");
     //        out.setContent("您好");
     if (msgType.equals("text") && !"公众号关注自动回复".equals(msg.getContent())) {
-      msgReply.setTextReply(msg, msg.getContent());
+      msgReply.setAutoReply(msg, msg.getContent());
     }
     WxKfOnlineVo kfOnlineRes = super.listOnlineKf();
     if (kfOnlineRes != null) {
