@@ -37,9 +37,11 @@ import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.BaseTariffCategory;
 import com.yunya.models.tariff.BaseTariffHistory;
 import com.yunya.models.tariff.ClinicTariff;
+import com.yunya.models.treatment.OrderDetail;
 import com.yunya.modules.treatment.mapper.BaseTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseTariffHistoryMapper;
 import com.yunya.modules.treatment.mapper.BaseTariffMapper;
+import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +101,8 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   @Resource private BaseTariffHistoryMapper baseTariffHistoryMapper;
   /** 门诊价目表 */
   @Resource private ClinicTariffBiz clinicTariffBiz;
+  /** 开单明细映射 */
+  @Resource private OrderDetailMapper orderDetailMapper;
   /** 线程池 */
   @Resource(name = "treatmentThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -382,6 +386,13 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     Long count = clinicTariffBiz.selectCount(entity);
     if (count > 0) {
       throw new ClientServiceException("价目表删除失败，ID为" + TariffId + "'的价目表已被关联！", DELETE_NOT_ALLOW);
+    }
+    OrderDetail orderDetail = new OrderDetail();
+    orderDetail.setType((byte) 0);
+    orderDetail.setBillingItemId(TariffId);
+    int count1 = orderDetailMapper.selectCount(orderDetail);
+    if (count1 > 0) {
+      throw new ClientServiceException("价目表删除失败，ID为" + TariffId + "'的价目表已被开单！", DELETE_NOT_ALLOW);
     }
     int i = mapper.deleteByPrimaryKey(TariffId);
     BaseTariffHistory historyEntity = new BaseTariffHistory();
