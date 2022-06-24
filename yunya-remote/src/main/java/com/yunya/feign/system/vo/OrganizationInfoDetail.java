@@ -49,4 +49,6 @@ public class OrganizationInfoDetail implements Serializable {
   /** 营业结束时间*/
   @ApiModelProperty("营业结束时间")
   private String businessEndTime;
+  @ApiModelProperty("门诊图片")
+  private String path;
 }

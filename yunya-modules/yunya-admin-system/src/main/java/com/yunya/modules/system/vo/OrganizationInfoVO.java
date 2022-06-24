@@ -35,6 +35,8 @@ public class OrganizationInfoVO implements Serializable {
   /** 组织类型 */
   @ApiModelProperty("组织类型")
   private String type;
+  @ApiModelProperty("门诊图片")
+  private String path;
   /** 自定义组织排序 */
   @ApiModelProperty("自定义组织排序")
   private Integer orderNum;
