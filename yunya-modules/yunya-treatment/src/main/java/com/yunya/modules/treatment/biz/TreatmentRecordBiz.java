@@ -192,6 +192,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     }*/
 
     regResult.setStatus((byte) 1);
+    regResult.setFirstVisit(entity.getType());
     regResult.setUpdId(userId);
     regResult.setUpdName(name);
     registeredMapper.updateByPrimaryKeySelective(regResult);

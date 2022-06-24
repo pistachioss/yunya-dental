@@ -17,7 +17,6 @@ import com.yunya.feign.treatment.domain.model.BaseOralTariffModel;
 import com.yunya.feign.treatment.domain.model.ClinicItemPriceModel;
 import com.yunya.feign.treatment.domain.model.TariffUniteModel;
 import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
-import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffExportVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffVO;
@@ -33,8 +32,10 @@ import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseOralTariffCategory;
 import com.yunya.models.tariff.BaseOralTariffHistory;
 import com.yunya.models.tariff.ClinicOralTariff;
+import com.yunya.models.treatment.OrderDetail;
 import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
+import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +93,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   @Autowired private BaseOralTariffHistoryBiz baseOralTariffHistoryBiz;
   /** 门诊商品商品 */
   @Autowired private ClinicOralTariffBiz clinicOralTariffBiz;
+  /** 开单明细映射 */
+  @Resource private OrderDetailMapper orderDetailMapper;
   /** 线程池 */
   @Resource(name = "treatmentThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -384,6 +387,13 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     if (count > 0) {
       throw new ClientServiceException(
           "商品商品删除失败，ID为" + oralTariffId + "'的商品商品已被关联！", DELETE_NOT_ALLOW);
+    }
+    OrderDetail orderDetail = new OrderDetail();
+    orderDetail.setType((byte) 1);
+    orderDetail.setBillingItemId(oralTariffId);
+    int count1 = orderDetailMapper.selectCount(orderDetail);
+    if (count1 > 0) {
+      throw new ClientServiceException("价目表删除失败，ID为" + oralTariffId + "'的商品已被开单！", DELETE_NOT_ALLOW);
     }
     int i = mapper.deleteByPrimaryKey(oralTariffId);
     BaseOralTariffHistory historyEntity = new BaseOralTariffHistory();
