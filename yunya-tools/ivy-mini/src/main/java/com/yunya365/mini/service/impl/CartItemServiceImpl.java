@@ -96,7 +96,7 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
     @Override
     public List<OrderItemBO> listProductByIds(Collection<Integer> cartIds) {
         //购物车商品信息
-        List<CartItem> list = ChainWrappers.lambdaQueryChain(baseMapper).eq(CartItem::getId, cartIds).list();
+        List<CartItem> list = ChainWrappers.lambdaQueryChain(baseMapper).in(CartItem::getId, cartIds).list();
         Set<Integer> productIds = list.stream().map(CartItem::getProductId).collect(toSet());
         Map<Integer, CartItem> cartMap = list.stream().collect(toMap(CartItem::getProductId, Function.identity()));
         List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(productIds, FALSE.getCode());

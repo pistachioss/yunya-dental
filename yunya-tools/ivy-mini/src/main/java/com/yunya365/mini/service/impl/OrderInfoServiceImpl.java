@@ -1,5 +1,6 @@
 package com.yunya365.mini.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
@@ -363,7 +364,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 //        miniPayModel.setAmount(orderInfo.getPayAmount().multiply(BigDecimal.valueOf(100)).longValue());
         miniPayModel.setAmount(BigDecimal.valueOf(0.01).multiply(BigDecimal.valueOf(100)).longValue());
         miniPayModel.setRemark(orderInfo.getRemark());
-//        miniPayModel.setGoodsList(JSONObject.toJSONString(goodsListModels));
+        miniPayModel.setGoodsList(JSONArray.toJSONString(goodsListModels));
         miniPayModel.setNotifyUrl(caiBaoMiniProperties.getNotifyUrl());
         miniPayModel.setPaymentChannel(caiBaoMiniProperties.getPaymentChannel());
         miniPayModel.setSubAppId(wxMiniProperties.getAppId());
@@ -497,6 +498,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         DeliveryOrderVO deliveryOrderVO = new DeliveryOrderVO();
         FansAddressBO pickUp = productService.getAddress(userId, null, FALSE.getCode());
         FansAddressBO address = productService.getAddress(userId, null, TRUE.getCode());
+        address.setDetailAddress(address.getProvince() + address.getCity() + address.getRegion() + address.getDetailAddress());
         deliveryOrderVO.setPickUp(BeanCopierUtils.generalCopyBean(pickUp, PayReceiveAddressVO.class));
         deliveryOrderVO.setDelivery(BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class));
         return deliveryOrderVO;

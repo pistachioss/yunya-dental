@@ -181,18 +181,17 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public FansAddressBO getAddress(Integer fansId, Integer addressId, Integer deliveryType) {
-        FansAddressBO addressBO = null;
+        FansAddressBO addressBO = new FansAddressBO();
         //配送方式（0->自提 1->配送）
         boolean b = Objects.isNull(addressId) && Objects.nonNull(fansId);
         if (Objects.equals(FALSE.getCode(), deliveryType)) {
-            FansPickUp pickUp;
             if (Objects.nonNull(addressId)) {
-                pickUp = pickUpService.selectById(addressId);
+                FansPickUp pickUp = pickUpService.selectById(addressId);
                 addressBO = BeanCopierUtils.generalCopyBean(pickUp, FansAddressBO.class);
             }
             if (b) {
-                pickUp = pickUpService.getDefaultAddress(fansId);
-                addressBO = BeanCopierUtils.generalCopyBean(pickUp, FansAddressBO.class);
+                FansPickUp defaultAddress = pickUpService.getDefaultAddress(fansId);
+                addressBO = Objects.isNull(defaultAddress) ? addressBO : BeanCopierUtils.generalCopyBean(defaultAddress, FansAddressBO.class);
             }
         }
         if (Objects.equals(TRUE.getCode(), deliveryType)) {
@@ -202,7 +201,7 @@ public class ProductServiceImpl implements IProductService {
             }
             if (b) {
                 FansReceiveAddress defaultAddress = fansReceiveAddressService.getDefaultAddress(fansId);
-                addressBO = BeanCopierUtils.generalCopyBean(defaultAddress, FansAddressBO.class);
+                addressBO = Objects.isNull(defaultAddress) ? addressBO : BeanCopierUtils.generalCopyBean(defaultAddress, FansAddressBO.class);
             }
         }
         return addressBO;
