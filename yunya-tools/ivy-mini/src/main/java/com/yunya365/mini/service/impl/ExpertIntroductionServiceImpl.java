@@ -40,6 +40,14 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
         List<ExpertIntroductionVO> result = mapper.findExpertIntroductionList(form);
         return new PageInfo<>(result);
     }
+
+    public ExpertIntroductionVO findDetail(Integer id) {
+        ExpertIntroductionVO result = new ExpertIntroductionVO();
+        ExpertIntroduction expertIntroduction = mapper.selectByPrimaryKey(id);
+        BeanUtils.copyProperties(expertIntroduction,result);
+        return result;
+    }
+
     public void add(ExpertIntroductionAddAndUpdateForm form) {
         ExpertIntroduction entity = new ExpertIntroduction();
         BeanUtils.copyProperties(form, entity);

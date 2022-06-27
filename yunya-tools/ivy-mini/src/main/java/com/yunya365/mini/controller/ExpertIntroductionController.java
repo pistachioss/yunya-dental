@@ -8,6 +8,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.impl.ExpertIntroductionServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,5 +34,10 @@ public class ExpertIntroductionController extends BaseController{
     @ApiOperation("小程序-专家介绍-列表")
     public ResponseResult<PageInfo<ExpertIntroductionVO>> findList(@RequestBody @Valid ExpertIntroductionForm form) {
         return ResponseUtil.success(expertIntroductionService.findList(form));
+    }
+    @PostMapping("/expertIntroduction/detail/{id}")
+    @ApiOperation("小程序-专家介绍-详情")
+    public ResponseResult<ExpertIntroductionVO> findDetail(@PathVariable(value = "id") Integer id) {
+        return ResponseUtil.success(expertIntroductionService.findDetail(id));
     }
 }
