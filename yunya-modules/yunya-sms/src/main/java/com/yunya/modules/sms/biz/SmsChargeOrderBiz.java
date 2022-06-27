@@ -10,7 +10,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.RetryUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsChargeOrder;
 import com.yunya.modules.sms.enums.SmsOrderStatusEnum;
@@ -19,13 +19,19 @@ import com.yunya.modules.sms.mapper.SmsChargeOrderMapper;
 import com.yunya.modules.sms.utl.WikiUtl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
@@ -45,6 +51,11 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
 
     @Autowired
     private SmsOrgStatisticsBiz smsOrgStatisticsBiz;
+    /** 线程池 */
+    @Resource(name = "poolExecutor")
+    private ExecutorService executorService;
+    /** 采宝订单过期时长：两个小时 */
+    private final long expireIn = 3600000 * 2;
 
     /**
      * 分页查询短信充值列表
@@ -66,6 +77,7 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
      */
     public SmsChargeOrderVO create(SmsChargeOrderModel smsChargeOrderModel) {
         SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
+        smsChargeOrderModel.setPrice(new BigDecimal(0.01));
         BeanUtil.copyProperties(smsChargeOrderModel, smsChargeOrder);
         smsChargeOrder.setOrderStatus(SmsOrderStatusEnum.WAIT_PAY.getCode());
         Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
@@ -86,7 +98,82 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         SmsChargeOrderVO smsChargeOrderVO = new SmsChargeOrderVO();
         smsChargeOrderVO.setId(smsChargeOrder.getId());
         smsChargeOrderVO.setQrcode(WikiUtl.createOrder(orderNo, amount, goods));
+        asyncWikiOrder(smsChargeOrder);
         return smsChargeOrderVO;
+    }
+
+    /**
+     * 重试同步采宝上订单信息
+     *  第一次在5秒后执行，后面每隔15秒重试一次，总共执行5次
+     *      0   5    20    35    50    65
+     * @param order
+     */
+    private void asyncWikiOrder(SmsChargeOrder order) {
+        executorService.submit(()->{
+            try {
+                int retryTimes = 5;
+                Integer smsOrderId = order.getId();
+                SmsChargeOrderVO orderVO = new SmsChargeOrderVO();
+                BeanUtils.copyProperties(order, orderVO);
+                TimeUnit.SECONDS.sleep(5);
+                log.info("SMS_ORDER_RETRY: orderId: {}, retry {} times to sync Wiki order", smsOrderId, retryTimes);
+                RetryUtl.retry(
+                        (a)->{
+                            SmsChargeOrderVO smsOrder = findSmsChargeOrderById(smsOrderId);
+                            return !ObjectUtils.isEmpty(smsOrder) && SmsOrderStatusEnum.WAIT_PAY.equals(smsOrder.getOrderStatus());
+                        }, // 重试条件
+                        ()-> syncWikiOrder(Collections.singleton(orderVO)), // 重试任务（比如调用接口）
+                        15, // 重试间隔时长
+                        retryTimes);  // 重试次数
+            } catch (Exception e) {
+                log.error("asyncWikiOrder error", e);
+            }
+            return null;
+        });
+    }
+
+    /**
+     * 同步采宝订单信息
+     * @param smsChargeOrderVOS
+     * @return
+     */
+    public Object syncWikiOrder(Collection<SmsChargeOrderVO> smsChargeOrderVOS) {
+        Date now = new Date(System.currentTimeMillis());
+        smsChargeOrderVOS.forEach(smsChargeOrderVO -> {
+            Date crtTime = smsChargeOrderVO.getCrtTime();
+            SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
+            try {
+                JSONObject data = WikiUtl.queryOrder(smsChargeOrderVO.getOrderNo(), smsChargeOrderVO.getCbOrderNo());
+                String orderStatus = data.getString("order_status");
+                if (StringHelper.isNotEmpty(orderStatus)) {
+                    byte status = SmsOrderStatusEnum.CLOSED.getCode();//关闭
+                    if (now.getTime() - crtTime.getTime() <= expireIn) {//未超时
+                        if ("PAY_SUC".equals(orderStatus)) {
+                            status = SmsOrderStatusEnum.PAY_SUC.getCode();
+                        } else if ("PAY_FAIL".equals(orderStatus)) {
+                            status = SmsOrderStatusEnum.PAY_FAIL.getCode();
+                        } else if ("PAY_WAIT".equals(orderStatus)) {
+                            status = SmsOrderStatusEnum.WAIT_PAY.getCode();
+                        }
+                    }
+                    smsChargeOrder.setId(smsChargeOrderVO.getId());
+                    smsChargeOrder.setCbOrderNo(data.getString("cb_order_no"));
+                    smsChargeOrder.setOutOrderNo(data.getString("out_order_no"));
+                    smsChargeOrder.setOrderStatus(status);
+                    smsChargeOrder.setPaymentChannel(data.getString("payment_channel"));
+                    smsChargeOrder.setUptTime(now);
+                    uptSelectiveById(smsChargeOrder);
+                    // 补充短信总额
+                    if (SmsOrderStatusEnum.PAY_SUC.equals(status)) {
+                        smsOrgStatisticsBiz.incrByOrgId(smsChargeOrderVO.getSmsNum(),
+                                smsChargeOrderVO.getPrice(), smsChargeOrderVO.getOrgId());
+                    }
+                }
+            } catch (Exception e) {
+                log.error("smsChargeOrder sync update order error",e);
+            }
+        });
+        return null;
     }
 
     /**

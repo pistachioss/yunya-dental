@@ -52,7 +52,7 @@ public class SmsSendMessageScheduledAsync {
      * 消费redis队列的短信数据
      */
     @Async("customizeExecutor")
-    @Scheduled(cron = "*/5 * * * * ?")
+//    @Scheduled(cron = "*/5 * * * * ?")
     public void smsSendMessageAsyncByEventCode() {
         List<OrganizationInfoDetail> orgInfos = getOrganizationList();
         if (StringHelper.isEmpty(orgInfos)) {
