@@ -1024,4 +1024,15 @@ public class DateUtil {
     }
     return pregnancyWeek / 4;
   }
+
+  /**
+   * 时间戳 转 日期时间
+   * @param timestamp
+   * @param pattern
+   * @return
+   */
+  public static String timestamp2DateStr(Long timestamp,String pattern){
+    SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+    return sdf.format(new Date(timestamp)); // 时间戳转换日期
+  }
 }

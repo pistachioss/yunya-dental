@@ -52,6 +52,7 @@ import com.yunya365.wechat.mapper.WxTemplateMsgRecordsMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Value;
@@ -730,5 +731,19 @@ public class WXService extends AbstractWxBaseApi {
         wxFans.setUnionId(userJson.getString("unionid"));
         fansSaveForm.setWxFans(wxFans);
         patientFeign.saveWx(fansSaveForm);
+    }
+
+    /**
+     * 根据用户授权code获取微信用户信息
+     *
+     * @param code
+     * @return
+     */
+    public WxUserInfoVO getAuthWxUserInfo(String code) {
+        JSONObject user = super.getAuthOpenId(code);
+        if (ObjectUtils.isEmpty(user)) {
+            return null;
+        }
+        return user.toJavaObject(WxUserInfoVO.class);
     }
 }
