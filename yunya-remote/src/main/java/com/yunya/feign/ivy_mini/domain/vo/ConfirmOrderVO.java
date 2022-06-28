@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -14,6 +15,8 @@ import java.util.List;
 @Data
 @ApiModel(description = "确认订单返回")
 public class ConfirmOrderVO {
+    @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")
+    private Integer productType;
     @ApiModelProperty("计算的金额")
     private CalcAmountVO calcAmountVO;
     @ApiModelProperty("用户配送方式")

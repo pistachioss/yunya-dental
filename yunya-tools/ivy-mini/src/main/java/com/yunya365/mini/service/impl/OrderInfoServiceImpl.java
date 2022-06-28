@@ -106,6 +106,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         vo.setProductList(orderItemVOS);
         vo.setCalcAmountVO(calcOrderAmount(orderItemVOS));
+        vo.setProductType(query.getProductType());
         return vo;
     }
 
