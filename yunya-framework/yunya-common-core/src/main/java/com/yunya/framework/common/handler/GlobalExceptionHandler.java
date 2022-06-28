@@ -1,12 +1,10 @@
 package com.yunya.framework.common.handler;
 
+import com.github.binarywang.wxpay.exception.WxPayException;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.exception.auth.ClientInvalidException;
-import com.yunya.framework.common.exception.auth.ClientTokenException;
-import com.yunya.framework.common.exception.auth.UserAuthException;
-import com.yunya.framework.common.exception.auth.UserTokenException;
+import com.yunya.framework.common.exception.auth.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +14,7 @@ import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -129,6 +125,19 @@ public class GlobalExceptionHandler {
           HttpServletResponse response, CompletionException ex) {
     response.setStatus(200);
     log.error("CompletableFuture异常：{}",ex.getMessage(), ex);
+    Throwable cause = ex.getCause();
+    if (cause instanceof ClientServiceException) {
+      ClientServiceException cex = (ClientServiceException) ex.getCause();
+      return ResponseUtil.fail(cex.getStatus(), cex.getMessage(), null);
+    }
+    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, cause.getMessage(), null);
+  }
+
+  @ExceptionHandler(WxPayException.class)
+  public ResponseResult handleWxPayException(
+          HttpServletResponse response, WxPayException ex) {
+    response.setStatus(200);
+    log.error("微信支付：{}",ex.getMessage(), ex);
     Throwable cause = ex.getCause();
     if (cause instanceof ClientServiceException) {
       ClientServiceException cex = (ClientServiceException) ex.getCause();

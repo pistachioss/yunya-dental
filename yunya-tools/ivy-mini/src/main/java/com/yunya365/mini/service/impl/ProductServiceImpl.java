@@ -17,6 +17,7 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseOralTariffCategory;
@@ -76,7 +77,7 @@ public class ProductServiceImpl implements IProductService {
                     String itemPic = oralTariff.getProductPic();
                     vo.setProductId(id);
                     vo.setProductName(oralTariff.getProductName());
-                    vo.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
+                    vo.setProductPic(StringHelper.splitFirst(itemPic));
                     vo.setProductPrice(oralTariff.getProductPrice());
                     vo.setStock(oralTariff.getStock());
                     vo.setSoldQuantity(oralTariff.getSoldQuantity());
@@ -97,7 +98,7 @@ public class ProductServiceImpl implements IProductService {
             GoodsVO goodsVO = new GoodsVO();
             goodsVO.setProductId(t.getId());
             goodsVO.setProductName(t.getName());
-            goodsVO.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
+            goodsVO.setProductPic(StringHelper.splitFirst(itemPic));
             goodsVO.setProductPrice(t.getPrice());
             goodsVO.setProductType(FALSE.getCode());
             return goodsVO;
@@ -212,7 +213,7 @@ public class ProductServiceImpl implements IProductService {
         return itemList.stream().map(t -> {
             OrderItemBO orderItemBO = BeanCopierUtils.generalCopyBean(t, OrderItemBO.class);
             String itemPic = t.getProductPic();
-            orderItemBO.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
+            orderItemBO.setProductPic(StringHelper.splitFirst(itemPic));
             return orderItemBO;
         }).collect(toList());
     }

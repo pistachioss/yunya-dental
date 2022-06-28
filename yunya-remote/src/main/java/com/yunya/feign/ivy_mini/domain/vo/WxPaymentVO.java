@@ -19,7 +19,7 @@ public class WxPaymentVO {
     @ApiModelProperty(value="随机字符串")
     private String nonceStr;
     @ApiModelProperty(value="订单详情扩展字符串")
-    private String _package;
+    private String packageValue;
     @ApiModelProperty(value="签名方式")
     private String signType;
     @ApiModelProperty(value="签名")

@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties(prefix = "wx.pay")
-public class CaiBaoMiniProperties {
-    private String operatorId;
+public class WxMiniPayProperties {
     private String appId;
-    private String key;
-    private String paymentChannel;
+    private String michId;
+    private String appSecret;
     private String notifyUrl;
-    private String publicKey;
+    private boolean useSandboxEnv;
+
 }

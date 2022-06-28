@@ -25,12 +25,6 @@ public class OrderInfo {
     private String orderSn;
 
     /**
-     * 采宝订单号
-     */
-    @Column(name = "cb_order_no")
-    private String cbOrderNo;
-
-    /**
      * 微信产生的订单号
      */
     @Column(name = "out_order_no")

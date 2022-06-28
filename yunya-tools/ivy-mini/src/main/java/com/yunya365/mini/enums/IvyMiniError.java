@@ -23,7 +23,6 @@ public enum IvyMiniError implements RestError {
     SIGN_TYPE_ERROR(12, "验证签名类错误：%s"),
     SIGNATURE_ERROR(13, "验签失败"),
     ORDER_ERROR(14, "订单异常"),
-    CB_SERVER_ERROR(15, "采宝服务器异常，error_code：%s, error_msg：%s"),
     CB_PAY_ERROR(16, "支付异常"),
     CB_NOTIFY_ERROR(17, "支付回调异常"),
     ORDER_DATA_ERROR(18, "订单数据异常"),

@@ -27,14 +27,12 @@ wx:
     corpId: ww853499493423c56e
     corpSecret: Rzu-GfUVBgsKXGyD_3Tipfq6I_usU-sodY4U8MF1Cts
   pay:
+    appId: wx9d9209edf9634d94
     michId: 1319671401
     appSecret: 2cfb0904bc87f47fe73ddaaeb3d7359a
-    publicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq+iElxN5xzGpN81gjLSzTROPWvYw+06YPyjG5bufC2NHjoaiISbdw6AnYcdIAT8g5dOgYB4SyDPSxvfje2k9CTUFbmNTTm5humwwbCz94UVJf6XwAWT1432WtW1VtrC3tK3BTM5v1rY4Bt7yjQPD/ao4ZGe/RsVOYIT7KGD8g/eLLuWPMcCJmCA0P8Vl65ouS3ioReLMWdEFwTGUNeWfA14/ki9Z+p1ldSz1uq+YE1eoYF18kyF3nlQbIjHdBhk9bRhodLBLrHP0SndawDUy6cdO7YbCsP2utYGVkWTxrCezszPhtGDfP9Jvvtw1J1yKCPNtfbDOz1uczhBO/u6P6QIDAQAB
-    operatorId: 8fe21621f6e999a05c8f34226ff24791
-    appId: A55905710000004
-    key: dc38b14f74888b3a88b51ace677cc3b8
-    paymentChannel: WECHAT
+    useSandboxEnv: false
     notifyUrl: https://bab3-115-192-223-246.jp.ngrok.io/api/ivy/mini/cb/notify
+
 
 
 cloopen:

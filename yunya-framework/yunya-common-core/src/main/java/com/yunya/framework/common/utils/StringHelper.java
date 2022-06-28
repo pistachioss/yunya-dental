@@ -1,6 +1,8 @@
 package com.yunya.framework.common.utils;
 
 import cn.hutool.core.text.StrFormatter;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.yunya.framework.common.constant.StringPool;
 import org.apache.commons.lang3.StringUtils;
 
@@ -521,5 +523,9 @@ public class StringHelper extends StringUtils {
       return StringPool.EMPTY;
     }
     return str.substring(pos + separator.length());
+  }
+
+  public static String splitFirst(String str) {
+    return StringUtils.isNotBlank(str) ? Lists.newArrayList(Splitter.on(",").split(str).iterator()).get(0) : null;
   }
 }

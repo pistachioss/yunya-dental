@@ -1,31 +1,38 @@
 package com.yunya365.mini.service.impl;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
+import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
+import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
+import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
+import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
+import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
+import com.github.binarywang.wxpay.bean.result.BaseWxPayResult;
+import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
+import com.github.binarywang.wxpay.constant.WxPayConstants;
+import com.github.binarywang.wxpay.exception.WxPayException;
+import com.github.binarywang.wxpay.service.WxPayService;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.model.*;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
-import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.*;
+import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya365.mini.config.CaiBaoMiniProperties;
-import com.yunya365.mini.config.WxMiniProperties;
 import com.yunya365.mini.entity.*;
 import com.yunya365.mini.mapper.OrderInfoMapper;
 import com.yunya365.mini.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDateTime;
 import org.springframework.stereotype.Service;
@@ -37,9 +44,11 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -63,10 +72,6 @@ import static java.util.stream.Collectors.*;
 public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo> implements IOrderInfoService {
 
     @Resource
-    private RemoteTreatmentServiceFeign treatmentServiceFeign;
-    @Resource
-    private RemoteDiscountFeign discountFeign;
-    @Resource
     private IProductService productService;
     @Resource
     private IOrderSettingService orderSettingService;
@@ -77,11 +82,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private ICartItemService cartItemService;
     @Resource
-    private CaiBaoApi caiBaoApi;
-    @Resource
-    private CaiBaoMiniProperties caiBaoMiniProperties;
-    @Resource
-    private WxMiniProperties wxMiniProperties;
+    private WxPayService wxPayService;
     @Resource
     private RedisUtils redisUtils;
 
@@ -130,7 +131,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CreateOrderVO createProductOrder(CreateProductOrderModel model) {
+    public CreateOrderVO createProductOrder(CreateProductOrderModel model){
         boolean locked = false;
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         Integer productId = model.getProductId();
@@ -155,7 +156,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             //创建订单
             OrderInfo orderInfo = assembleOrder(userId, model, itemBoList);
             //生成支付单
-            WxPaymentVO wxPaymentVO = wxPay(orderInfo, itemBoList);
+            WxPaymentVO wxPaymentVO = wxPay(orderInfo);
             baseMapper.insert(orderInfo);
             List<OrderItem> itemList = itemBoList.stream().map(t -> {
                 OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
@@ -190,7 +191,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //删除购物车中的下单商品
         cartItemService.delete(model.getCartIds());
         //生成支付单
-        WxPaymentVO wxPaymentVO = wxPay(orderInfo, orderItemBOS);
+        WxPaymentVO wxPaymentVO = wxPay(orderInfo);
         baseMapper.insert(orderInfo);
         List<OrderItem> itemList = orderItemBOS.stream().map(t -> {
             OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
@@ -206,18 +207,20 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void cbNotify(HttpServletRequest request, HttpServletResponse response) {
+    public String cbNotify(HttpServletRequest request, HttpServletResponse response) {
         try {
-            String result = parseNotify(request);
-            //回调结果验签
-            Map<String, Object> data = JSONObject.parseObject(result, Map.class);
-            String sign = Objects.toString(data.remove("sign"));
-            if (!caiBaoApi.verifySign(data, sign)) {
-                throw ClientServiceException.wrap(CB_NOTIFY_ERROR);
+            String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
+            log.info("微信回调结果：{}", xmlResult);
+            WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(xmlResult);
+            if (!Objects.equals(WxPayConstants.ResultCode.SUCCESS, result.getReturnCode())) {
+                return WxPayNotifyResponse.fail("处理失败!");
             }
-            String localOrderNo = Objects.toString(data.get("appOrderNo"));
+            // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
+            String orderId = result.getOutTradeNo();
+            String tradeNo = result.getTransactionId();
+            String totalFee = BaseWxPayResult.fenToYuan(result.getTotalFee());
             //本次支付的订单
-            OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, localOrderNo).one();
+            OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, orderId).one();
             if (Objects.isNull(orderInfo)) {
                 throw ClientServiceException.wrap(ORDER_DATA_ERROR);
             }
@@ -228,33 +231,22 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             //0->自提 1->配送
             int deliveryType = orderInfo.getDeliveryType().intValue();
             if (Objects.equals(PAY_PENDING.getCode(), status)) {
-//                WAIT_PAY	等待付款
-//                PAY_SUC	付款成功
-//                PART_REFUND	部分退款成功
-//                ALL_REFUND	退款成功
-//                REVERSED	订单撤销成功
-//                CLOSED	订单撤销成功
-//                CANCEL	已取消 (历史状态，已废弃，新接入用户不用考虑)
-//                PAY_FAIL	付款失败
-                String orderStatus = Objects.toString(data.get("orderStatus"));
-                if (Objects.equals("PAY_SUC", orderStatus)) {
-                    //商品
-                    if (Objects.equals(FALSE.getCode(), productType)) {
-                        //自提
-                        if (Objects.equals(FALSE.getCode(), deliveryType)) {
-                            orderInfo.setStatus(HAS_SHIP.getCode().byteValue());
-                            //配送
-                        } else {
-                            orderInfo.setStatus(SHIP_PENDING.getCode().byteValue());
-                        }
-                        //虚拟服务
+                //商品
+                if (Objects.equals(FALSE.getCode(), productType)) {
+                    //自提
+                    if (Objects.equals(FALSE.getCode(), deliveryType)) {
+                        orderInfo.setStatus(HAS_SHIP.getCode().byteValue());
+                        //配送
                     } else {
-                        orderInfo.setStatus(FINISH.getCode().byteValue());
+                        orderInfo.setStatus(SHIP_PENDING.getCode().byteValue());
                     }
-                    orderInfo.setPaymentTime(new Date(Long.parseLong(Objects.toString(data.get("cbOrderNo")))));
+                    //虚拟服务
+                } else {
+                    orderInfo.setStatus(FINISH.getCode().byteValue());
                 }
-                orderInfo.setCbOrderNo(Objects.toString(data.get("cbOrderNo")));
-                orderInfo.setCbOrderNo(Objects.toString(data.get("outOrderNo")));
+                Date payTime = Date.from(java.time.LocalDateTime.parse(result.getTimeEnd(), DateTimeFormatter.ofPattern("yyyyMMddHHmmss")).atZone(ZoneOffset.ofHours(8)).toInstant());
+                orderInfo.setPaymentTime(payTime);
+                orderInfo.setOutOrderNo(tradeNo);
                 baseMapper.updateByPrimaryKeySelective(orderInfo);
             }
         } catch (Exception e) {
@@ -271,124 +263,49 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 log.error("支付回调响应异常", e);
             }
         }
+        return WxPayNotifyResponse.success("处理成功!");
     }
 
     @Override
-    public List<CBQueryVO> queryPayOrder(Collection<Integer> orderIds) {
+    public List<WxPayOrderQueryResult> queryPayOrder(Collection<Integer> orderIds) throws WxPayException {
         List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper)
                 .in(OrderInfo::getId, orderIds).eq(OrderInfo::getStatus, PAY_PENDING.getCode()).list();
-        List<String> cbNos = list.stream().map(OrderInfo::getCbOrderNo).collect(toList());
-        List<CBMiniQueryModel> queryModels = assembleQueryModel(cbNos);
-        List<CBQueryVO> queryVOS = Lists.newArrayListWithCapacity(orderIds.size());
-        for (CBMiniQueryModel queryModel : queryModels) {
-            CBQueryVO cbQueryVO = caiBaoApi.cbPostFormObject(convertFromMap(queryModel), CBQueryVO.class);
-            CBQueryDataVO data = cbQueryVO.getData();
-            String sign = cbQueryVO.getSign();
-            if (!caiBaoApi.verifySign(BeanUtil.toMap(data), sign)) {
-                throw ClientServiceException.wrap(CB_QUERY_ERROR);
-            }
-            queryVOS.add(cbQueryVO);
+        List<WxPayOrderQueryResult> queryVOS = Lists.newArrayListWithCapacity(orderIds.size());
+        for (OrderInfo orderInfo : list) {
+            WxPayOrderQueryResult queryResult = wxPayService.queryOrder(null, orderInfo.getOrderSn());
+            queryVOS.add(queryResult);
         }
         return queryVOS;
     }
 
-    private String parseNotify(HttpServletRequest request) throws IOException {
-        InputStream inStream = null;
-        ByteArrayOutputStream outSteam = null;
-        String result = null;
-        try {
-            inStream = request.getInputStream();
-            outSteam = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len = 0;
-            while ((len = inStream.read(buffer)) != -1) {
-                outSteam.write(buffer, 0, len);
-            }
-            // 获取采宝调的notify_url的返回信息
-            result = outSteam.toString("utf-8");
-            log.info("采宝支付回调结果：{}", result);
-        } catch (Exception e) {
-            log.error("采宝支付回调结果解析失败：{}", result, e);
-        } finally {
-            assert inStream != null;
-            assert outSteam != null;
-            inStream.close();
-            outSteam.close();
-        }
-        return result;
-    }
-
-    private WxPaymentVO wxPay(OrderInfo orderInfo, List<OrderItemBO> itemBoList) {
+    private WxPaymentVO wxPay(OrderInfo orderInfo) {
         if (Objects.isNull(orderInfo)) {
             throw ClientServiceException.wrap(ORDER_ERROR);
         }
-        List<CBGoodsListModel> goodsListModels = itemBoList.stream().map(t -> {
-            CBGoodsListModel goodsListModel = new CBGoodsListModel();
-            goodsListModel.setGoodsId(t.getProductId().toString());
-            goodsListModel.setGoodsNum(t.getProductSn());
-            goodsListModel.setGoodsName(t.getProductName());
-            goodsListModel.setSellAmount(t.getProductQuantity().toString());
-            goodsListModel.setGoodsPrice(t.getProductPrice().toPlainString());
-            return goodsListModel;
-        }).collect(toList());
-        //采宝支付
-        CBMiniPayModel miniPayModel = assemblePayModel(orderInfo, goodsListModels);
-        CBWxPayVO cbPayVO = caiBaoApi.cbPostFormObject(convertFromMap(miniPayModel), CBWxPayVO.class);
-        CBWxPayDataVO data = cbPayVO.getData();
-        String sign = cbPayVO.getSign();
-        if (!caiBaoApi.verifySign(BeanUtil.toMap(data), sign)) {
+        //微信支付
+        WxPayUnifiedOrderRequest miniPayRequest = assemblePayModel(orderInfo);
+        try {
+            WxPayMpOrderResult result = wxPayService.createOrder(miniPayRequest);
+            return BeanCopierUtils.generalCopyBean(result, WxPaymentVO.class);
+        } catch (WxPayException e) {
+            log.error("微信支付失败！订单号：{},原因:{}", orderInfo.getOrderSn(), e.getMessage());
             throw ClientServiceException.wrap(CB_PAY_ERROR);
         }
-        WxPaymentVO paymentVO = new WxPaymentVO();
-        paymentVO.setAppId(data.getAppId());
-        paymentVO.set_package("prepay_id=" + data.getPrepayId());
-        paymentVO.setNonceStr(data.getNonceStr());
-        paymentVO.setSignType(data.getSignType());
-        paymentVO.setTimeStamp(data.getTimestamp());
-        paymentVO.setPaySign(caiBaoApi.generateSign(BeanUtil.toMap(paymentVO)));
-        orderInfo.setCbOrderNo(data.getCbOrderNo());
-        return paymentVO;
     }
 
-    private CBMiniPayModel assemblePayModel(OrderInfo orderInfo, List<CBGoodsListModel> goodsListModels) {
+
+    private WxPayUnifiedOrderRequest assemblePayModel(OrderInfo orderInfo){
         String openId = BaseContextHandler.getOpenId();
-        CBMiniPayModel miniPayModel = new CBMiniPayModel();
-        miniPayModel.setCommand("open.api.mini.pay");
-        miniPayModel.setApp(caiBaoMiniProperties.getAppId());
-        miniPayModel.setOperatorId(caiBaoMiniProperties.getOperatorId());
-        miniPayModel.setVersion("2.0");
-        miniPayModel.setSignType("MD5");
-        miniPayModel.setRequestId(UUID.randomUUID().toString());
-        miniPayModel.setRequestTime(LocalDateTime.now().toString("yyyyMMddHHmmss"));
-        miniPayModel.setLocalOrderNo(orderInfo.getOrderSn());
-//        miniPayModel.setAmount(orderInfo.getPayAmount().multiply(BigDecimal.valueOf(100)).longValue());
-        miniPayModel.setAmount(BigDecimal.valueOf(0.01).multiply(BigDecimal.valueOf(100)).longValue());
-        miniPayModel.setRemark(orderInfo.getRemark());
-        miniPayModel.setGoodsList(JSONArray.toJSONString(goodsListModels));
-        miniPayModel.setNotifyUrl(caiBaoMiniProperties.getNotifyUrl());
-        miniPayModel.setPaymentChannel(caiBaoMiniProperties.getPaymentChannel());
-        miniPayModel.setSubAppId(wxMiniProperties.getAppId());
-        miniPayModel.setOpenId(openId);
-        miniPayModel.setSign(caiBaoApi.generateSign(JSONObject.parseObject(JSONObject.toJSONString(miniPayModel), Map.class)));
-        return miniPayModel;
-    }
-
-    private List<CBMiniQueryModel> assembleQueryModel(List<String> cbNos) {
-        List<CBMiniQueryModel> list = Lists.newArrayListWithCapacity(cbNos.size());
-        CBMiniQueryModel queryModel;
-        for (String cbNo : cbNos) {
-            queryModel = new CBMiniQueryModel();
-            queryModel.setCommand("open.api.query");
-            queryModel.setApp(caiBaoMiniProperties.getAppId());
-            queryModel.setOperatorId(caiBaoMiniProperties.getOperatorId());
-            queryModel.setVersion("2.0");
-            queryModel.setSignType("MD5");
-            queryModel.setRequestId(UUID.randomUUID().toString());
-            queryModel.setRequestTime(LocalDateTime.now().toString("yyyyMMddHHmmss"));
-            queryModel.setCbOrderNo(cbNo);
-            list.add(queryModel);
-        }
-        return list;
+        LocalDateTime now = LocalDateTime.now();
+        WxPayUnifiedOrderRequest request = new WxPayUnifiedOrderRequest();
+        request.setBody("艾维商城");
+        request.setOutTradeNo(orderInfo.getOrderSn());
+        request.setTotalFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
+        request.setOpenid(openId);
+        request.setSpbillCreateIp("127.0.0.1");
+        request.setTimeStart(now.toString("yyyyMMddHHmmss"));
+        request.setTimeExpire(now.plusMinutes(30).toString("yyyyMMddHHmmss"));
+        return request;
     }
 
     @SuppressWarnings("unchecked")
