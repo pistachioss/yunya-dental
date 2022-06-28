@@ -55,4 +55,5 @@ public class SelfMentionClinicPcController extends PcBaseController{
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return ResponseUtil.success(selfMentionClinicService.deleteById(id));
     }
+
 }

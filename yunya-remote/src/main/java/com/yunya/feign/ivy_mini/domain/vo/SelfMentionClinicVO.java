@@ -31,8 +31,13 @@ public class SelfMentionClinicVO {
     @ApiModelProperty(value = "门诊名称")
     private String clinicName;
 
-    @ApiModelProperty(value = "门诊名称")
+    @ApiModelProperty(value = "门诊地址")
     private String clinicAddress;
+
+    @ApiModelProperty("门诊图片")
+    private String path;
+    @ApiModelProperty(value = "距离")
+    private Double distance;
     /**
      * 考勤地址经度
      */
