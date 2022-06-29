@@ -70,7 +70,7 @@ public class ClinicLiveCodeVisitController {
      * @return
      */
     @ApiOperation("统计门店店长活码的点击数和访客数")
-    @PostMapping("/count")
+    @GetMapping("/count")
     public ResponseResult<ClinicLiveCodeVisitCountVO> findCount() {
         ClinicLiveCodeVisitCountVO result = clinicLiveCodeVisitBiz.findCount();
         return ResponseUtil.success(result);
