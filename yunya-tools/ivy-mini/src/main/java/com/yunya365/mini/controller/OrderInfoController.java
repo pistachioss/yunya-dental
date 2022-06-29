@@ -61,9 +61,8 @@ public class OrderInfoController extends BaseController {
 
     @PostMapping("/cb/notify")
     @IgnoreUserToken
-    public ResponseResult<Boolean> cbNotify(HttpServletRequest request, HttpServletResponse response) {
-        orderInfoService.cbNotify(request, response);
-        return ResponseUtil.success();
+    public String cbNotify(HttpServletRequest request, HttpServletResponse response) {
+        return orderInfoService.cbNotify(request, response);
     }
 }
 

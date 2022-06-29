@@ -217,7 +217,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             log.info("微信回调结果：{}", xmlResult);
             WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(xmlResult);
             if (!Objects.equals(WxPayConstants.ResultCode.SUCCESS, result.getReturnCode())) {
-                return WxPayNotifyResponse.fail("处理失败!");
+                return WxPayNotifyResponse.fail(result.getReturnMsg());
             }
             // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
             String orderId = result.getOutTradeNo();
@@ -253,9 +253,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 orderInfo.setOutOrderNo(tradeNo);
                 baseMapper.updateByPrimaryKeySelective(orderInfo);
             }
+            return WxPayNotifyResponse.success("处理成功!");
         } catch (Exception e) {
             log.error("支付回调结果异常", e);
-            throw ClientServiceException.wrap(CB_NOTIFY_ERROR, e);
+            return WxPayNotifyResponse.fail(e.getMessage());
         } finally {
             try {
                 // 处理业务完毕
@@ -267,7 +268,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 log.error("支付回调响应异常", e);
             }
         }
-        return WxPayNotifyResponse.success("处理成功!");
     }
 
     @Override
