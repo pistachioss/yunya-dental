@@ -36,7 +36,7 @@ public class WxUserController {
      * @return
      */
     @ApiOperation("根据用户授权code获取微信用户信息")
-    @GetMapping("/wxUser/info/{code}")
+    @GetMapping("/wxUser/info")
     public ResponseResult<WxUserInfoVO> getAuthWxUserInfo(@RequestParam("code") String code) {
         WxUserInfoVO user = wxService.getAuthWxUserInfo(code);
         return ResponseUtil.success(user);
