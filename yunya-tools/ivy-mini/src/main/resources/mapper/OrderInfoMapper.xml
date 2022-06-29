@@ -35,7 +35,6 @@
     <result column="payment_time" property="paymentTime" jdbcType="TIMESTAMP" />
     <result column="delivery_time" property="deliveryTime" jdbcType="TIMESTAMP" />
     <result column="receive_time" property="receiveTime" jdbcType="TIMESTAMP" />
-    <result column="comment_time" property="commentTime" jdbcType="TIMESTAMP" />
     <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
   </resultMap>

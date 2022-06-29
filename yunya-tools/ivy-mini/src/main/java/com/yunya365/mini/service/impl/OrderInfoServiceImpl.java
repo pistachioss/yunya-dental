@@ -158,11 +158,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             OrderInfo orderInfo = assembleOrder(userId, model, itemBoList);
             //生成支付单
             WxPaymentVO wxPaymentVO = wxPay(orderInfo);
-            baseMapper.insert(orderInfo);
+            baseMapper.insertSelective(orderInfo);
             List<OrderItem> itemList = itemBoList.stream().map(t -> {
+                java.time.LocalDateTime now = java.time.LocalDateTime.now();
                 OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
                 orderItem.setOrderId(orderInfo.getId());
                 orderItem.setOrderSn(orderInfo.getOrderSn());
+                orderItem.setCrtTime(now);
+                orderItem.setUpdTime(now);
                 return orderItem;
             }).collect(toList());
             orderItemService.saveBatch(itemList);

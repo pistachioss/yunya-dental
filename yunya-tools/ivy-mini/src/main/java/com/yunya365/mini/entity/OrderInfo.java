@@ -179,12 +179,6 @@ public class OrderInfo {
     private Date receiveTime;
 
     /**
-     * 评价时间
-     */
-    @Column(name = "comment_time")
-    private Date commentTime;
-
-    /**
      * 修改时间
      */
     @Column(name = "modify_time")
