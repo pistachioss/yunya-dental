@@ -160,12 +160,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             WxPaymentVO wxPaymentVO = wxPay(orderInfo);
             baseMapper.insertSelective(orderInfo);
             List<OrderItem> itemList = itemBoList.stream().map(t -> {
-                java.time.LocalDateTime now = java.time.LocalDateTime.now();
                 OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
                 orderItem.setOrderId(orderInfo.getId());
                 orderItem.setOrderSn(orderInfo.getOrderSn());
-                orderItem.setCrtTime(now);
-                orderItem.setUpdTime(now);
                 return orderItem;
             }).collect(toList());
             orderItemService.saveBatch(itemList);
@@ -196,7 +193,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         cartItemService.delete(model.getCartIds());
         //生成支付单
         WxPaymentVO wxPaymentVO = wxPay(orderInfo);
-        baseMapper.insert(orderInfo);
+        baseMapper.insertSelective(orderInfo);
         List<OrderItem> itemList = orderItemBOS.stream().map(t -> {
             OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
             orderItem.setProductQuantity(t.getProductQuantity());
@@ -308,8 +305,15 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         request.setOpenid(openId);
         request.setSpbillCreateIp("127.0.0.1");
         request.setTimeStart(now.toString("yyyyMMddHHmmss"));
-        request.setTimeExpire(now.plusMinutes(30).toString("yyyyMMddHHmmss"));
+//        request.setTimeExpire(now.plusMinutes(30).toString("yyyyMMddHHmmss"));
         return request;
+    }
+
+    public static void main(String[] args) {
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println(now.toString("yyyyMMddHHmmss"));
+        String yyyyMMddHHmmss = now.plusMinutes(30).toString("yyyyMMddHHmmss");
+        System.out.println(yyyyMMddHHmmss);
     }
 
     @SuppressWarnings("unchecked")

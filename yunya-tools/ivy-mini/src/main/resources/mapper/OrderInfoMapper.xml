@@ -35,7 +35,7 @@
     <result column="payment_time" property="paymentTime" jdbcType="TIMESTAMP" />
     <result column="delivery_time" property="deliveryTime" jdbcType="TIMESTAMP" />
     <result column="receive_time" property="receiveTime" jdbcType="TIMESTAMP" />
-    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <resultMap id="DetailResultMap" type="com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO" >

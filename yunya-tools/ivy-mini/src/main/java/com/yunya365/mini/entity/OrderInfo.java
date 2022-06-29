@@ -179,10 +179,10 @@ public class OrderInfo {
     private Date receiveTime;
 
     /**
-     * 修改时间
+     * 更新时间
      */
-    @Column(name = "modify_time")
-    private Date modifyTime;
+    @Column(name = "upd_time")
+    private Date updTime;
 
     /**
      * 创建时间

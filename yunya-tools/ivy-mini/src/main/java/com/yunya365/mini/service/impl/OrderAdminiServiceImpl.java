@@ -2,41 +2,26 @@ package com.yunya365.mini.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.ivy_mini.domain.form.OrderDetailForm;
-import com.yunya.feign.ivy_mini.domain.form.OrderForm;
-import com.yunya.feign.ivy_mini.domain.form.OrderUpdateForm;
+import com.yunya.feign.ivy_mini.domain.form.*;
 import com.yunya.feign.ivy_mini.domain.vo.OrderVO;
 import com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.query.WxFanByNameForm;
-import com.yunya.feign.patient_central.domain.query.WxUserQuery;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
-import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
-
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-
-import com.yunya.models.patient_central.WxFans;
 import com.yunya365.mini.entity.OrderInfo;
-
 import com.yunya365.mini.entity.OrderOperateHistory;
 import com.yunya365.mini.mapper.OrderInfoMapper;
-
 import com.yunya365.mini.mapper.OrderOperateHistoryMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 简介:
@@ -89,7 +74,7 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
 
         BeanUtils.copyProperties(form, order);
 
-        order.setModifyTime(new Date(System.currentTimeMillis()));
+        order.setUpdTime(new Date(System.currentTimeMillis()));
 
         int result = mapper.updateByPrimaryKeySelective(order);
         if (result <= 0) {
