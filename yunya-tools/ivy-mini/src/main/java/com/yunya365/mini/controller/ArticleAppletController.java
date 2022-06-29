@@ -3,11 +3,13 @@ package com.yunya365.mini.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.form.ArticleForm;
 import com.yunya.feign.ivy_mini.domain.vo.ArticleVO;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.impl.ArticleServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -36,6 +38,7 @@ public class ArticleAppletController extends BaseController{
 
     @PostMapping("/article/findlist")
     @ApiOperation("小程序-口腔科普/艾维动态-列表(传type和status即可)")
+    @IgnoreUserToken
     public ResponseResult<PageInfo<ArticleVO>> findList(@RequestBody @Valid ArticleForm form) {
         return ResponseUtil.success(articleService.findList(form));
     }

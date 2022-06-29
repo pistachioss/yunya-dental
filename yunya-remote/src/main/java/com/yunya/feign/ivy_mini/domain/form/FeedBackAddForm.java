@@ -12,7 +12,7 @@ import lombok.Data;
  * @description:
  */
 @Data
-@ApiModel(value = "意见反馈")
+@ApiModel(value = "小程序-意见反馈")
 public class FeedBackAddForm {
     @ApiModelProperty(value = "意见内容")
     private String context;
