@@ -40,7 +40,7 @@ public class ClinicLiveCodeVisitVO implements Serializable {
 
     /** 所在城市 */
     @ApiModelProperty("所在城市")
-    private String provinceCity;
+    private String city;
 
     /** IP地址 */
     @ApiModelProperty("IP地址")

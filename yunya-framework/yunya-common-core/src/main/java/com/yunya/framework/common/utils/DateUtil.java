@@ -1035,4 +1035,39 @@ public class DateUtil {
     SimpleDateFormat sdf = new SimpleDateFormat(pattern);
     return sdf.format(new Date(timestamp)); // 时间戳转换日期
   }
+
+  /**
+   * 秒转化为时分秒字符串
+   *
+   * @param seconds
+   * @return String
+   */
+  public static String formatSeconds(long seconds) {
+    String timeStr = "00:00:" + seconds;
+    if (seconds > 60) {
+      long second = seconds % 60;
+      long min = seconds / 60;
+      timeStr = "00:" + less10Markup(min)  + ":" + less10Markup(second);
+      if (min > 60) {
+        min = (seconds / 60) % 60;
+        long hour = (seconds / 60) / 60;
+        timeStr = less10Markup(hour) + ":" + less10Markup(min) + ":" + less10Markup(second);
+      }
+    }
+    return timeStr;
+  }
+
+  /**
+   * 不足10前缀补0
+   *
+   * @param num
+   * @return
+   */
+  private static String less10Markup(long num) {
+    String result = num + "";
+    if (num < 10) {
+      result = "0" + result;
+    }
+    return result;
+  }
 }

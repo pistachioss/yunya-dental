@@ -45,6 +45,11 @@ public class ClinicLiveCodeVisit {
     private String latitude;
 
     /**
+     * 所在城市
+     */
+    private String city;
+
+    /**
      * ip地址
      */
     private String ip;
@@ -193,6 +198,24 @@ public class ClinicLiveCodeVisit {
      */
     public void setLatitude(String latitude) {
         this.latitude = latitude;
+    }
+
+    /**
+     * 获取所在城市
+     *
+     * @return
+     */
+    public String getCity() {
+        return city;
+    }
+
+    /**
+     * 设置所在城市
+     *
+     * @param city
+     */
+    public void setCity(String city) {
+        this.city = city;
     }
 
     /**

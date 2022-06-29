@@ -8,7 +8,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.TencentLocUtl;
 import com.yunya.framework.common.utils.UUIDUtils;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.system.ClinicLiveCode;
 import com.yunya.models.system.ClinicLiveCodeVisit;
 import com.yunya.modules.system.domain.model.ClinicLiveCodeVisitModel;
 import com.yunya.modules.system.domain.query.ClinicLiveCodeVisitQueryForm;
@@ -20,17 +19,16 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 简介：
+ * 简介：门店活码访问记录业务层
  *
  * @author: chenlin
- * @Description:
+ * @Description: 门店活码访问记录业务层
  * @Date: 2022/6/27 16:16
  * @since: 1.0.0
  */
@@ -39,7 +37,7 @@ public class ClinicLiveCodeVisitBiz extends BaseBiz<ClinicLiveCodeVisitMapper, C
 
     @Autowired
     private RedisUtils redisUtils;
-
+    /** 门店活码页面访问锁 */
     private static final String LIVE_CODE_VISIT_KEY = "lock:liveCode:visit";
 
     /**
@@ -51,8 +49,9 @@ public class ClinicLiveCodeVisitBiz extends BaseBiz<ClinicLiveCodeVisitMapper, C
         ClinicLiveCodeVisit entity = new ClinicLiveCodeVisit();
         BeanUtils.copyProperties(model, entity);
         entity.setCrtTime(DateTime.now().toDate());
-        Boolean isFirstVisit = true;
+        entity.setCity(TencentLocUtl.getCityByLoc(entity.getLongitude(), entity.getLatitude()));
         String openId = entity.getOpenId();
+        Boolean isFirstVisit = true;
         if (StringHelper.isNotEmpty(openId)) {
             try {
                 while (redisUtils.setLock(LIVE_CODE_VISIT_KEY, openId, 10, TimeUnit.SECONDS)) {
@@ -73,7 +72,7 @@ public class ClinicLiveCodeVisitBiz extends BaseBiz<ClinicLiveCodeVisitMapper, C
     }
 
     /**
-     * 条件查询
+     * 条件查询访问列表
      *
      * @param query
      * @return
@@ -98,12 +97,16 @@ public class ClinicLiveCodeVisitBiz extends BaseBiz<ClinicLiveCodeVisitMapper, C
                 vo.setNickName("未知");
             }
             vo.setVisitType(vo.getIsFirstVisit()?"新访客":"老访客");
-            vo.setProvinceCity(TencentLocUtl.getCityByLoc(vo.getLongitude(), vo.getLatitude()));
             Integer duration = Integer.parseInt(vo.getVisitDuration());
-            vo.setVisitDuration(DateUtil.timestamp2DateStr(duration*1000L,"yyyy-MM-dd HH:mm:ss"));
+            vo.setVisitDuration(DateUtil.formatSeconds(duration));
         });
     }
 
+    /**
+     * 统计点击数和访客人数
+     *
+     * @return
+     */
     public ClinicLiveCodeVisitCountVO findCount() {
         ClinicLiveCodeVisitQueryForm query = new ClinicLiveCodeVisitQueryForm();
         String today = DateTime.now().toString("yyyy-MM-dd");

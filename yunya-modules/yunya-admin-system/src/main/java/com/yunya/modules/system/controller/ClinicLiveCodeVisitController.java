@@ -65,11 +65,11 @@ public class ClinicLiveCodeVisitController {
     }
 
     /**
-     * 条件查询门店店长活码访问数量
+     * 统计门店店长活码的点击数和访客数
      *
      * @return
      */
-    @ApiOperation("条件查询门店店长活码访问数量")
+    @ApiOperation("统计门店店长活码的点击数和访客数")
     @PostMapping("/count")
     public ResponseResult<ClinicLiveCodeVisitCountVO> findCount() {
         ClinicLiveCodeVisitCountVO result = clinicLiveCodeVisitBiz.findCount();

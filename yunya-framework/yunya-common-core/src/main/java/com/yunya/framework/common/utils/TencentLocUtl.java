@@ -29,7 +29,7 @@ public class TencentLocUtl {
     private static final String CHINA_CODE = "156";
 
     public static String getCityByLoc(String lng, String lat) {
-        StringBuilder builder = new StringBuilder("");
+        StringBuilder builder = new StringBuilder();
         JSONObject result = getLocation(lng, lat);
         JSONObject adInfo = result.getJSONObject("ad_info");
         if (!ObjectUtils.isEmpty(adInfo)) {
@@ -49,10 +49,6 @@ public class TencentLocUtl {
                     builder.append(level2);
                 }
             } else {
-                String nation = adInfo.getString("nation");
-                if (StringHelper.isNotEmpty(nation)) {
-                    builder.append(nation);
-                }
                 String province = adInfo.getString("province");
                 if (StringHelper.isNotEmpty(province)) {
                     builder.append(province);
@@ -62,6 +58,9 @@ public class TencentLocUtl {
                     builder.append(city);
                 }
             }
+        }
+        if ("Ocean".equals(builder.toString())) {
+            builder = new StringBuilder();
         }
         return builder.toString();
     }
@@ -109,10 +108,10 @@ public class TencentLocUtl {
     public static void main(String[] args) {
 
         // 测试
-//        String lng = "120.203509";//经度
-//        String lat = "40.258371";//维度
-        String lng = null;
-        String lat = null;
+        String lng = "170.203509";//经度
+        String lat = "40.258371";//维度
+//        String lng = null;
+//        String lat = null;
         System.out.println(getCityByLoc(lng, lat));
     }
 }
