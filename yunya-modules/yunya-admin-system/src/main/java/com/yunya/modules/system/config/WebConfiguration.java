@@ -28,7 +28,7 @@ public class WebConfiguration implements WebMvcConfigurer {
    */
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(getUserAuthRestInterceptor()).addPathPatterns("/**").excludePathPatterns("/clinicLiveCodeVisit/click");
+    registry.addInterceptor(getUserAuthRestInterceptor()).addPathPatterns("/**");
     registry.addInterceptor(repeatSubmitInterceptor).addPathPatterns("/**");
   }
 
