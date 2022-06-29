@@ -3,6 +3,7 @@ package com.yunya365.mini.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.form.ExpertIntroductionForm;
 import com.yunya.feign.ivy_mini.domain.vo.ExpertIntroductionVO;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.impl.ExpertIntroductionServiceImpl;
@@ -25,6 +26,7 @@ import javax.validation.Valid;
  */
 @RestController
 @Api(tags = "小程序-专家介绍")
+@IgnoreUserToken
 public class ExpertIntroductionController extends BaseController{
 
     @Resource
