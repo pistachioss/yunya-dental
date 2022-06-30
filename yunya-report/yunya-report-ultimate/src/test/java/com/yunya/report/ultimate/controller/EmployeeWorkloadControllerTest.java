@@ -98,7 +98,7 @@ public class EmployeeWorkloadControllerTest {
 
   @Test
   public void testClinicDimensionStatistics() throws Exception {
-    String param = "{\"employeeIds\":[341],\"orgIds\":[26],\"dateType\":2,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
+    String param = "{\"dateType\":\"1\",\"employeeIds\":[],\"workStatus\":[],\"orgIds\":[26],\"pageNum\":1,\"pageSize\":50,\"startDate\":\"2022-06\",\"endDate\":\"2022-06\",\"whetherPage\":true}";
     ClinicEmployeeWorkloadQuery query = JSONObject.parseObject(param, ClinicEmployeeWorkloadQuery.class);
     long t1 = System.currentTimeMillis();
     ResponseResult<DynamicHeaderPageInfo<JSONObject>> result = dimensionReportController.clinicDimensionStatistics(query);

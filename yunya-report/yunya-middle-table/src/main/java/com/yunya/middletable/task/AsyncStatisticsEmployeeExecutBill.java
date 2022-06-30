@@ -4,6 +4,7 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.middletable.service.*;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,6 +40,7 @@ public class AsyncStatisticsEmployeeExecutBill {
      */
     @Scheduled(cron = "0 0 1 * * ?")
     public void yesterdayStatistics() {
+        log.info("开始统计员工操作（或执行）相关的就诊、账单、收费、免单、优惠、退款");
         String yesterday = DateUtil.format(DateUtil.yesterday());
         PullForm form = new PullForm();
         form.setStartDate(yesterday);
@@ -52,5 +54,6 @@ public class AsyncStatisticsEmployeeExecutBill {
         } catch (InterruptedException e) {
             log.error("AsyncStatisticsEmployeeExecutBill Error:{}", e);
         }
+        log.info("员工统计结束！");
     }
 }
