@@ -25,6 +25,7 @@ import java.util.List;
  */
 @RestController
 @Api(tags = "小程序-文章管理")
+@IgnoreUserToken
 public class ArticleAppletController extends BaseController{
     @Resource
     private ArticleServiceImpl articleService;
@@ -38,7 +39,6 @@ public class ArticleAppletController extends BaseController{
 
     @PostMapping("/article/findlist")
     @ApiOperation("小程序-口腔科普/艾维动态-列表(传type和status即可)")
-    @IgnoreUserToken
     public ResponseResult<PageInfo<ArticleVO>> findList(@RequestBody @Valid ArticleForm form) {
         return ResponseUtil.success(articleService.findList(form));
     }
