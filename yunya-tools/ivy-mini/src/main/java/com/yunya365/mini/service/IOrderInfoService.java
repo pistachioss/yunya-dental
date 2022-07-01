@@ -3,9 +3,11 @@ package com.yunya365.mini.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.model.CreateCartOrderModel;
 import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
+import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya365.mini.entity.OrderInfo;
 
@@ -60,4 +62,10 @@ public interface IOrderInfoService extends IService<OrderInfo> {
     String cbNotify(HttpServletRequest request, HttpServletResponse response);
 
     public List<WxPayOrderQueryResult> queryPayOrder(Collection<Integer> orderIds) throws WxPayException;
+
+    PageInfo<OrderFrontVO> orderList(MyOrderQuery query);
+
+    WxOrderPayVO payQuery(Integer orderId);
+
+    OrderDetailVO orderDetail(Integer orderId);
 }

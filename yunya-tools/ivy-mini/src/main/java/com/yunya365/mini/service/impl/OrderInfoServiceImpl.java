@@ -13,6 +13,7 @@ import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
+import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.domain.form.LockStockForm;
@@ -20,6 +21,7 @@ import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.model.*;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
+import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -132,7 +134,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CreateOrderVO createProductOrder(CreateProductOrderModel model){
+    public CreateOrderVO createProductOrder(CreateProductOrderModel model) {
         boolean locked = false;
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         Integer productId = model.getProductId();
@@ -155,10 +157,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             //进行库存锁定
             lockStock(productId, quantity, null, productType);
             //创建订单
-            OrderInfo orderInfo = assembleOrder(userId, model, itemBoList);
+            OrderInfo orderInfo = assembleOrder(userId, model, itemBoList, model.getFansReceiveAddressId());
             //生成支付单
             WxPaymentVO wxPaymentVO = wxPay(orderInfo);
-            baseMapper.insertSelective(orderInfo);
+            baseMapper.insertDynamic(orderInfo);
             List<OrderItem> itemList = itemBoList.stream().map(t -> {
                 OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
                 orderItem.setOrderId(orderInfo.getId());
@@ -188,7 +190,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //进行库存锁定
         lockStock(null, null, orderItemBOS, model.getProductType());
         //创建订单
-        OrderInfo orderInfo = assembleOrder(userId, model, orderItemBOS);
+        OrderInfo orderInfo = assembleOrder(userId, model, orderItemBOS, model.getFansReceiveAddressId());
         //删除购物车中的下单商品
         cartItemService.delete(model.getCartIds());
         //生成支付单
@@ -268,15 +270,110 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     @Override
-    public List<WxPayOrderQueryResult> queryPayOrder(Collection<Integer> orderIds) throws WxPayException {
+    public List<WxPayOrderQueryResult> queryPayOrder(Collection<Integer> orderIds) {
         List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper)
                 .in(OrderInfo::getId, orderIds).eq(OrderInfo::getStatus, PAY_PENDING.getCode()).list();
         List<WxPayOrderQueryResult> queryVOS = Lists.newArrayListWithCapacity(orderIds.size());
         for (OrderInfo orderInfo : list) {
-            WxPayOrderQueryResult queryResult = wxPayService.queryOrder(null, orderInfo.getOrderSn());
-            queryVOS.add(queryResult);
+            WxPayOrderQueryResult queryResult = null;
+            try {
+                queryResult = wxPayService.queryOrder(null, orderInfo.getOrderSn());
+                queryVOS.add(queryResult);
+            } catch (WxPayException e) {
+                log.error("微信支付查询失败！订单号：{},原因:{}", orderInfo.getOrderSn(), e.getMessage());
+                throw ClientServiceException.wrap(CB_QUERY_ERROR);
+            }
         }
         return queryVOS;
+    }
+
+    @Override
+    public PageInfo<OrderFrontVO> orderList(MyOrderQuery query) {
+        Page<OrderInfo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper)
+                .select(OrderInfo::getId, OrderInfo::getTotalAmount, OrderInfo::getPayAmount, OrderInfo::getStatus, OrderInfo::getCrtTime)
+                .eq(Objects.nonNull(query.getStatus()), OrderInfo::getStatus, query.getStatus())
+                .eq(OrderInfo::getDeleteStatus, FALSE.getCode()).list();
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        Set<Integer> orderIds = list.stream().map(OrderInfo::getId).collect(toSet());
+        List<OrderItem> orderItems = orderItemService.listByOrderIds(orderIds);
+        Map<Integer, List<OrderItem>> orderItemMap = orderItems.stream().collect(groupingBy(OrderItem::getOrderId, toList()));
+        List<OrderFrontVO> result = list.stream().filter(t -> orderItemMap.containsKey(t.getId())).map(t -> {
+            List<OrderItem> itemList = orderItemMap.get(t.getId());
+            //封面图片
+            List<String> picList = itemList.stream().map(OrderItem::getProductPic)
+                    .filter(StringUtils::isNotBlank).limit(3).collect(toList());
+            Integer totalQuantity = itemList.stream().map(OrderItem::getProductQuantity).reduce(0, Integer::sum);
+            OrderFrontVO vo = new OrderFrontVO();
+            vo.setOrderId(t.getId());
+            vo.setOrderStatus(t.getStatus().intValue());
+            vo.setProductPic(picList);
+            vo.setOrderDate(DateUtil.format(t.getCrtTime(), "yyyyMMddHHmm"));
+            vo.setPayAmount(t.getPayAmount());
+            vo.setTotalAmount(t.getTotalAmount());
+            vo.setTotalQuantity(totalQuantity);
+            vo.setProductPieces(itemList.size());
+            vo.setProductPrice(Objects.equals(CollectionUtils.size(itemList), 1) ? itemList.get(0).getProductPrice() : null);
+            return vo;
+        }).collect(toList());
+        PageInfo<OrderFrontVO> pageInfo = new PageInfo<>(result);
+        pageInfo.setPageNum(page.getPageNum());
+        pageInfo.setTotal(page.getTotal());
+        return pageInfo;
+    }
+
+    @Override
+    public WxOrderPayVO payQuery(Integer orderId) {
+        List<WxPayOrderQueryResult> results = queryPayOrder(Collections.singleton(orderId));
+        WxOrderPayVO vo = new WxOrderPayVO();
+        if (CollectionUtils.isNotEmpty(results)) {
+            WxPayOrderQueryResult result = results.get(0);
+            //    SUCCESS--支付成功
+            //    REFUND--转入退款
+            //    NOTPAY--未支付
+            //    CLOSED--已关闭
+            //    REVOKED--已撤销(刷卡支付)
+            //    USERPAYING--用户支付中
+            //    PAYERROR--支付失败(其他原因，如银行返回失败)
+            //    ACCEPT--已接收，等待扣款
+            String tradeState = result.getTradeState();
+            if (Objects.equals("SUCCESS", tradeState)) {
+                vo.setPayStatus(0);
+            }
+            if (Objects.equals("NOTPAY", tradeState) || Objects.equals("USERPAYING", tradeState)
+                    || Objects.equals("ACCEPT", tradeState)) {
+                vo.setPayStatus(1);
+            }
+            if (Objects.equals("CLOSED", tradeState) || Objects.equals("REVOKED", tradeState)
+                    || Objects.equals("PAYERROR", tradeState)) {
+                vo.setPayStatus(2);
+            }
+            if (Objects.equals("REFUND", tradeState)) {
+                vo.setPayStatus(3);
+            }
+        }
+        return vo;
+    }
+
+    @Override
+    public OrderDetailVO orderDetail(Integer orderId) {
+        OrderDetailVO vo = new OrderDetailVO();
+        OrderInfo orderInfo = getById(orderId);
+        PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+        payOrderVO.setOrderId(orderInfo.getId());
+        payOrderVO.setOrderDate(orderInfo.getCrtTime());
+        payOrderVO.setPayDate(orderInfo.getPaymentTime());
+        vo.setOrderVO(payOrderVO);
+        List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
+        if (CollectionUtils.isNotEmpty(orderItems)) {
+            List<PayOrderItemVO> collect = orderItems.stream().map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
+            vo.setItemVO(collect);
+        }
+        PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(orderInfo, PayReceiveAddressVO.class);
+        vo.setAddressVO(addressVO);
+        return vo;
     }
 
     private WxPaymentVO wxPay(OrderInfo orderInfo) {
@@ -295,7 +392,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
 
-    private WxPayUnifiedOrderRequest assemblePayModel(OrderInfo orderInfo){
+    private WxPayUnifiedOrderRequest assemblePayModel(OrderInfo orderInfo) {
         String openId = BaseContextHandler.getOpenId();
         LocalDateTime now = LocalDateTime.now();
         WxPayUnifiedOrderRequest request = new WxPayUnifiedOrderRequest();
@@ -388,6 +485,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
         payOrderVO.setOrderId(orderInfo.getId());
         payOrderVO.setOrderDate(orderInfo.getCrtTime());
+        payOrderVO.setPayDate(orderInfo.getPaymentTime());
         vo.setOrderVO(payOrderVO);
         List<PayOrderItemVO> collect = itemList.stream().map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
         vo.setItemVO(collect);
@@ -423,13 +521,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         DeliveryOrderVO deliveryOrderVO = new DeliveryOrderVO();
         FansAddressBO pickUp = productService.getAddress(userId, null, FALSE.getCode());
         FansAddressBO address = productService.getAddress(userId, null, TRUE.getCode());
-        address.setDetailAddress(address.getProvince() + address.getCity() + address.getRegion() + address.getDetailAddress());
+        address.setDetailAddress(address.getDetailAddress());
         deliveryOrderVO.setPickUp(BeanCopierUtils.generalCopyBean(pickUp, PayReceiveAddressVO.class));
         deliveryOrderVO.setDelivery(BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class));
         return deliveryOrderVO;
     }
 
-    private OrderInfo assembleOrder(Integer userId, CreateOrderBaseModel model, List<OrderItemBO> itemBoList) {
+    private OrderInfo assembleOrder(Integer userId, CreateOrderBaseModel model, List<OrderItemBO> itemBoList, Integer fansReceiveAddressId) {
         OrderInfo orderInfo = new OrderInfo();
         orderInfo.setFansId(userId);
         orderInfo.setPayType(model.getPayType().byteValue());
@@ -448,7 +546,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //商品类产品有自提和配送区分
         if (FALSE.getCode().equals(model.getProductType())) {
             //收货人信息：姓名、电话、邮编、地址
-            address = productService.getAddress(null, model.getFansReceiveAddressId(), model.getDeliveryType());
+            address = productService.getAddress(null, fansReceiveAddressId, model.getDeliveryType());
             orderInfo.setReceiverName(address.getName());
             orderInfo.setReceiverPhone(address.getPhoneNumber());
             orderInfo.setReceiverPostCode(address.getPostCode());
@@ -456,6 +554,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setReceiverCity(address.getCity());
             orderInfo.setReceiverRegion(address.getRegion());
             orderInfo.setReceiverDetailAddress(address.getDetailAddress());
+            if (FALSE.equals(model.getDeliveryType())) {
+                orderInfo.setReceiverDetailAddress(model.getLocationAddress());
+            }
         }
         //0->未确认；1->已确认
         orderInfo.setConfirmStatus((byte) 0);

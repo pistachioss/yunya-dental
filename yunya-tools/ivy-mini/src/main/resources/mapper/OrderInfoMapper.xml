@@ -37,6 +37,7 @@
     <result column="receive_time" property="receiveTime" jdbcType="TIMESTAMP" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
   </resultMap>
   <resultMap id="DetailResultMap" type="com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO" >
 
@@ -61,7 +62,201 @@
     <result column="productName" property="productName" jdbcType="VARCHAR" />
     <result column="productQuantity" property="productQuantity" jdbcType="INTEGER" />
   </resultMap>
-  <select id="findOrderList" resultType="com.yunya.feign.ivy_mini.domain.vo.OrderVO">
+  <insert id="insertDynamic" keyColumn="id" keyProperty="id" parameterType="com.yunya365.mini.entity.OrderInfo" useGeneratedKeys="true">
+    insert into order_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="fansId != null">
+        fans_id,
+      </if>
+      <if test="orderSn != null">
+        order_sn,
+      </if>
+      <if test="outOrderNo != null">
+        out_order_no,
+      </if>
+      <if test="totalAmount != null">
+        total_amount,
+      </if>
+      <if test="payAmount != null">
+        pay_amount,
+      </if>
+      <if test="freightAmount != null">
+        freight_amount,
+      </if>
+      <if test="couponAmount != null">
+        coupon_amount,
+      </if>
+      <if test="payType != null">
+        pay_type,
+      </if>
+      <if test="sourceType != null">
+        source_type,
+      </if>
+      <if test="status != null">
+        `status`,
+      </if>
+      <if test="orderType != null">
+        order_type,
+      </if>
+      <if test="productType != null">
+        product_type,
+      </if>
+      <if test="deliveryType != null">
+        delivery_type,
+      </if>
+      <if test="deliveryCompany != null">
+        delivery_company,
+      </if>
+      <if test="deliverySn != null">
+        delivery_sn,
+      </if>
+      <if test="remark != null">
+        remark,
+      </if>
+      <if test="confirmStatus != null">
+        confirm_status,
+      </if>
+      <if test="deleteStatus != null">
+        delete_status,
+      </if>
+      <if test="receiverName != null">
+        receiver_name,
+      </if>
+      <if test="receiverPhone != null">
+        receiver_phone,
+      </if>
+      <if test="receiverPostCode != null">
+        receiver_post_code,
+      </if>
+      <if test="receiverProvince != null">
+        receiver_province,
+      </if>
+      <if test="receiverCity != null">
+        receiver_city,
+      </if>
+      <if test="receiverRegion != null">
+        receiver_region,
+      </if>
+      <if test="receiverDetailAddress != null">
+        receiver_detail_address,
+      </if>
+      <if test="paymentTime != null">
+        payment_time,
+      </if>
+      <if test="deliveryTime != null">
+        delivery_time,
+      </if>
+      <if test="receiveTime != null">
+        receive_time,
+      </if>
+      <if test="crtTime != null">
+        crt_time,
+      </if>
+      <if test="updTime != null">
+        upd_time,
+      </if>
+      <if test="updId != null">
+        upd_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="fansId != null">
+        #{fansId,jdbcType=INTEGER},
+      </if>
+      <if test="orderSn != null">
+        #{orderSn,jdbcType=VARCHAR},
+      </if>
+      <if test="outOrderNo != null">
+        #{outOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="totalAmount != null">
+        #{totalAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="payAmount != null">
+        #{payAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="freightAmount != null">
+        #{freightAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="couponAmount != null">
+        #{couponAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="payType != null">
+        #{payType,jdbcType=TINYINT},
+      </if>
+      <if test="sourceType != null">
+        #{sourceType,jdbcType=TINYINT},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=TINYINT},
+      </if>
+      <if test="orderType != null">
+        #{orderType,jdbcType=TINYINT},
+      </if>
+      <if test="productType != null">
+        #{productType,jdbcType=TINYINT},
+      </if>
+      <if test="deliveryType != null">
+        #{deliveryType,jdbcType=TINYINT},
+      </if>
+      <if test="deliveryCompany != null">
+        #{deliveryCompany,jdbcType=VARCHAR},
+      </if>
+      <if test="deliverySn != null">
+        #{deliverySn,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null">
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="confirmStatus != null">
+        #{confirmStatus,jdbcType=TINYINT},
+      </if>
+      <if test="deleteStatus != null">
+        #{deleteStatus,jdbcType=TINYINT},
+      </if>
+      <if test="receiverName != null">
+        #{receiverName,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverPhone != null">
+        #{receiverPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverPostCode != null">
+        #{receiverPostCode,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverProvince != null">
+        #{receiverProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverCity != null">
+        #{receiverCity,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverRegion != null">
+        #{receiverRegion,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverDetailAddress != null">
+        #{receiverDetailAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="paymentTime != null">
+        #{paymentTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deliveryTime != null">
+        #{deliveryTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="receiveTime != null">
+        #{receiveTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="crtTime != null">
+        #{crtTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updTime != null">
+        #{updTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updId != null">
+        #{updId,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+
+    <select id="findOrderList" resultType="com.yunya.feign.ivy_mini.domain.vo.OrderVO">
     select
     od.id,
     od.fans_id,

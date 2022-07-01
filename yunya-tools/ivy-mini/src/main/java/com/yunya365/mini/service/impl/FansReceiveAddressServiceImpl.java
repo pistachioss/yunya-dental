@@ -35,6 +35,7 @@ public class FansReceiveAddressServiceImpl extends ServiceImpl<FansReceiveAddres
         Integer fansId = Integer.valueOf(BaseContextHandler.getUserID());
         FansReceiveAddress address = BeanCopierUtils.generalCopyBean(model, FansReceiveAddress.class);
         address.setFansId(fansId);
+        address.setDetailAddress(address.getProvince() + address.getCity() + address.getRegion() + address.getDetailAddress());
         if (model.getDefaultStatus()) {
             updateDefaultStatus(fansId);
         }
@@ -49,6 +50,7 @@ public class FansReceiveAddressServiceImpl extends ServiceImpl<FansReceiveAddres
             throw ClientServiceException.wrap(RECEIVE_NOT_EXIST);
         }
         FansReceiveAddress address = BeanCopierUtils.generalCopyBean(form, FansReceiveAddress.class);
+        address.setDetailAddress(address.getProvince() + address.getCity() + address.getRegion() + address.getDetailAddress());
         if (form.getDefaultStatus()) {
             updateDefaultStatus(fansId);
         }

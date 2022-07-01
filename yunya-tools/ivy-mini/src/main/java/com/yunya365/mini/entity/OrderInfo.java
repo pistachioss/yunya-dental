@@ -10,6 +10,7 @@ import java.util.Date;
 @Data
 public class OrderInfo {
     @Id
+    @GeneratedValue(generator = "JDBC", strategy = GenerationType.IDENTITY)
     private Integer id;
 
     /**
@@ -189,5 +190,8 @@ public class OrderInfo {
      */
     @Column(name = "crt_time")
     private Date crtTime;
+
+    @Column(name = "upd_id")
+    private Integer updId;
 
 }

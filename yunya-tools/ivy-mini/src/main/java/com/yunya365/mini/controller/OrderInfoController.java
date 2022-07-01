@@ -1,17 +1,17 @@
 package com.yunya365.mini.controller;
 
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.model.CreateCartOrderModel;
 import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
-import com.yunya.feign.ivy_mini.domain.vo.ConfirmOrderVO;
-import com.yunya.feign.ivy_mini.domain.vo.CreateOrderVO;
+import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
+import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.IOrderInfoService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -57,6 +57,24 @@ public class OrderInfoController extends BaseController {
     @ApiOperation("【小程序】购物车页下单")
     public ResponseResult<CreateOrderVO> createProductOrder(@RequestBody @Valid CreateCartOrderModel model) {
         return ResponseUtil.success(orderInfoService.createCartOrder(model));
+    }
+
+    @GetMapping("/order/pay/query/{orderId}")
+    @ApiOperation("【小程序】查询订单是否支付成功")
+    public ResponseResult<WxOrderPayVO> payQuery(@PathVariable Integer orderId) {
+        return ResponseUtil.success(orderInfoService.payQuery(orderId));
+    }
+
+    @PostMapping("/order/list")
+    @ApiOperation("【小程序】我的订单")
+    public ResponseResult<PageInfo<OrderFrontVO>> orderList(@RequestBody MyOrderQuery query) {
+        return ResponseUtil.success(orderInfoService.orderList(query));
+    }
+
+    @GetMapping("/order/{orderId}")
+    @ApiOperation("【小程序】订单详情")
+    public ResponseResult<OrderDetailVO> orderDetail(@PathVariable Integer orderId) {
+        return ResponseUtil.success(orderInfoService.orderDetail(orderId));
     }
 
     @PostMapping("/cb/notify")

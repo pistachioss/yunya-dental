@@ -20,5 +20,7 @@ public class CreateProductOrderModel extends CreateOrderBaseModel{
     @ApiModelProperty(value = "数量", required = true)
     @NotNull
     private Integer quantity;
+    @ApiModelProperty(value = "收货地址ID")
+    private Integer fansReceiveAddressId;
 
 }

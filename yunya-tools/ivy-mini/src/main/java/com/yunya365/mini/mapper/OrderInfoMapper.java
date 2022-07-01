@@ -15,4 +15,6 @@ public interface OrderInfoMapper extends Mapper<OrderInfo>, BaseMapper<OrderInfo
     List<OrderVO> findOrderList(OrderForm form);
 
     OrderWechatDetailVO findDetail(Integer id);
+
+    void insertDynamic(OrderInfo orderInfo);
 }

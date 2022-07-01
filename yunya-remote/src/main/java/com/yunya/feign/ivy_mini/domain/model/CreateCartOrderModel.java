@@ -19,4 +19,7 @@ public class CreateCartOrderModel extends CreateOrderBaseModel{
     @ApiModelProperty(value = "购物车id集合", required = true)
     @NotEmpty
     private List<Integer> cartIds;
+    @ApiModelProperty(value = "收货地址ID", required = true)
+    @NotNull
+    private Integer fansReceiveAddressId;
 }
