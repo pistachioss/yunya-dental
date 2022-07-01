@@ -740,7 +740,11 @@ public class WXService extends AbstractWxBaseApi {
      * @return
      */
     public WxUserInfoVO getAuthWxUserInfo(String code) {
-        JSONObject user = super.getAuthOpenId(code);
+        JSONObject object = super.getAuthOpenId(code);
+        if (ObjectUtils.isEmpty(object)) {
+            return null;
+        }
+        JSONObject user = getWxApi(WX_GET_USERINFO_ACCESS_URL, object.getString("access_token"), object.get("openid"));
         if (ObjectUtils.isEmpty(user)) {
             return null;
         }
