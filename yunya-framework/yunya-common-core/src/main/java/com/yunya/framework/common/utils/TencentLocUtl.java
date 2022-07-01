@@ -10,8 +10,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.yunya.framework.common.utils.MD5Util.MD5;
 
@@ -27,6 +26,8 @@ public class TencentLocUtl {
     private static final String SECRET_KEY = "wKZnfekJiYSiMIGLwI4gGYapwpKivFRJ";
     /** 中国国籍代码*/
     private static final String CHINA_CODE = "156";
+    /** 直辖市*/
+    private static List<String> municipality = Arrays.asList("北京市","天津市","上海市","重庆市");
 
     public static String getCityByLoc(String lng, String lat) {
         StringBuilder builder = new StringBuilder();
@@ -54,7 +55,7 @@ public class TencentLocUtl {
                     builder.append(province);
                 }
                 String city = adInfo.getString("city");
-                if (StringHelper.isNotEmpty(city)) {
+                if (StringHelper.isNotEmpty(city) && !municipality.contains(city)) {
                     builder.append(city);
                 }
             }
@@ -108,8 +109,8 @@ public class TencentLocUtl {
     public static void main(String[] args) {
 
         // 测试
-        String lng = "170.203509";//经度
-        String lat = "40.258371";//维度
+        String lng = "107.23";//经度
+        String lat = "29.1";//维度
 //        String lng = null;
 //        String lat = null;
         System.out.println(getCityByLoc(lng, lat));

@@ -1043,7 +1043,7 @@ public class DateUtil {
    * @return String
    */
   public static String formatSeconds(long seconds) {
-    String timeStr = "00:00:" + seconds;
+    String timeStr = "00:00:" + less10Markup(seconds);
     if (seconds > 60) {
       long second = seconds % 60;
       long min = seconds / 60;

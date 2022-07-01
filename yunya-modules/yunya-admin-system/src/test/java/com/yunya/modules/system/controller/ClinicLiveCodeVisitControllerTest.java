@@ -47,7 +47,7 @@ public class ClinicLiveCodeVisitControllerTest {
 
     @Test
     public void testFindList() {
-        String param = "{\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2022-05-01\",\"endDate\":\"2022-06-30\",\"whetherPage\":true}";
+        String param = "{\"pageNum\":1,\"pageSize\":30,\"startDate\":\"2022-05-01\",\"endDate\":\"2022-07-30\",\"whetherPage\":true}";
         ClinicLiveCodeVisitQueryForm query = JSONObject.parseObject(param, ClinicLiveCodeVisitQueryForm.class);
         PageInfo<ClinicLiveCodeVisitVO> data = clinicLiveCodeVisitController.findList(query).getData();
         System.out.println(JSONObject.toJSON(data));
