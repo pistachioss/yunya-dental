@@ -13,7 +13,7 @@ public class PayOrderVO {
     @ApiModelProperty(value = "订单id")
     private Integer orderId;
     @ApiModelProperty(value = "订单号")
-    private Integer orderSn;
+    private String orderSn;
     @ApiModelProperty(value = "支付方式（1->支付宝；2->微信）")
     private Byte payType;
     @ApiModelProperty(value = "下单时间")

@@ -10,9 +10,9 @@ public class PayReceiveAddressVO {
     @ApiModelProperty(value = "id")
     private Integer id;
     @ApiModelProperty(value = "收货人")
-    private String name;
+    private String receiverName;
     @ApiModelProperty(value = "收货人电话")
-    private String phoneNumber;
+    private String receiverPhone;
     @ApiModelProperty(value = "详细地址(街道)")
     private String detailAddress;
 }

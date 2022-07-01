@@ -372,7 +372,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             vo.setItemVO(collect);
         }
         PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(orderInfo, PayReceiveAddressVO.class);
+        addressVO.setDetailAddress(orderInfo.getReceiverDetailAddress());
         vo.setAddressVO(addressVO);
+        vo.setPayAmount(orderInfo.getPayAmount());
         return vo;
     }
 
@@ -490,8 +492,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         List<PayOrderItemVO> collect = itemList.stream().map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
         vo.setItemVO(collect);
         PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(orderInfo, PayReceiveAddressVO.class);
+        addressVO.setDetailAddress(orderInfo.getReceiverDetailAddress());
         vo.setAddressVO(addressVO);
         vo.setPaymentVO(wxPaymentVO);
+        vo.setPayAmount(orderInfo.getPayAmount());
         return vo;
     }
 
