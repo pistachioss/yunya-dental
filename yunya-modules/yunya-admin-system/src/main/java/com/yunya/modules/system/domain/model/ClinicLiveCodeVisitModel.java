@@ -44,9 +44,9 @@ public class ClinicLiveCodeVisitModel implements Serializable {
     @ApiModelProperty("浏览器")
     private String visitDevice;
 
-    @ApiModelProperty("访问时长（秒）")
+    @ApiModelProperty("访问时长（毫秒）")
     @NotNull(message = "访问时长不能为空")
-    private Integer visitDuration;
+    private Long visitDuration;
 
     @ApiModelProperty("意向门诊")
     private Integer intentionOrgId;
