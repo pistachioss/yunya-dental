@@ -35,13 +35,13 @@ public class ClinicLiveCodeVisitControllerTest {
         ClinicLiveCodeVisitModel model = new ClinicLiveCodeVisitModel();
         model.setOpenId("eaurowanomc");
         model.setNickName("niko");
-        model.setIp("192.168.18.234");
-        model.setLongitude("130.203509");
-        model.setLatitude("38.258371");
-        model.setVisitDevice("安卓");
-        model.setVisitDuration(581);
+        model.setIp("192.168.5.234");
+        model.setLongitude("124.203509");
+        model.setLatitude("33.258371");
+        model.setVisitDevice("微信MAC");
+        model.setVisitDuration(1581000L);
         model.setVisitTime(new Date());
-        model.setIntentionOrgId(29);
+        model.setIntentionOrgId(30);
         clinicLiveCodeVisitController.click(model);
     }
 

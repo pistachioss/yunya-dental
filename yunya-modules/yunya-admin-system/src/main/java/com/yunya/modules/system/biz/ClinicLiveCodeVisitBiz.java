@@ -48,6 +48,8 @@ public class ClinicLiveCodeVisitBiz extends BaseBiz<ClinicLiveCodeVisitMapper, C
     public void click(ClinicLiveCodeVisitModel model) {
         ClinicLiveCodeVisit entity = new ClinicLiveCodeVisit();
         BeanUtils.copyProperties(model, entity);
+        Long second = TimeUnit.MILLISECONDS.toSeconds(model.getVisitDuration());
+        entity.setVisitDuration(second.intValue());
         entity.setCrtTime(DateTime.now().toDate());
         entity.setCity(TencentLocUtl.getCityByLoc(entity.getLongitude(), entity.getLatitude()));
         String openId = entity.getOpenId();
