@@ -426,6 +426,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
             BigDecimal actualAmount = vo.getActualAmount();
             BigDecimal receivedAmount = vo.getReceivedAmount();
             BigDecimal workloaded = BigDecimal.ZERO;
+            BigDecimal freePayAmount = vo.getFreePayAmount();
+            BigDecimal freeWorkload = BigDecimal.ZERO;
             if (actualAmount.compareTo(BigDecimal.ZERO) > 0
                 && receivedAmount.compareTo(BigDecimal.ZERO) > 0) {
               workloaded =
@@ -433,6 +435,13 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                       .divide(actualAmount, 8, BigDecimal.ROUND_HALF_UP)
                       .multiply(receivedAmount)
                       .setScale(4, BigDecimal.ROUND_HALF_UP);
+            }
+
+            if (freePayAmount.compareTo(BigDecimal.ZERO) > 0) {
+              if (freePayAmount.compareTo(totalWorkload) > 0) {
+                freePayAmount = totalWorkload;
+              }
+              freeWorkload = freeWorkload.add(freePayAmount);
             }
             Map<Integer, BigDecimal> res = result.get(month);
             if (res == null) {
@@ -442,7 +451,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
             if (workload == null) {
               workload = BigDecimal.ZERO;
             }
-            res.put(orgId, workload.add(workloaded.subtract(vo.getFreePayAmount())));
+            res.put(orgId, workload.add(workloaded.subtract(freeWorkload)));
             result.put(month, res);
           });
     }
@@ -773,11 +782,11 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                               .divide(actualAmount, 8, BigDecimal.ROUND_HALF_UP)
                               .multiply(receivedAmount)
                               .setScale(4, BigDecimal.ROUND_HALF_UP));
-//      if (freePayAmount.compareTo(totalNotWorkload) > 0) {
-//        // 免单非工作量
-//        BigDecimal freePayNotWorkload = freePayAmount.subtract(totalNotWorkload);
-//        receivedNotWorkload = receivedNotWorkload.subtract(freePayNotWorkload);
-//      }
+      if (freePayAmount.compareTo(totalNotWorkload) > 0) {
+        // 免单非工作量
+        BigDecimal freePayNotWorkload = freePayAmount.subtract(totalNotWorkload);
+        receivedNotWorkload = receivedNotWorkload.subtract(freePayNotWorkload);
+      }
     }
     return receivedNotWorkload;
   }
