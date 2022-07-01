@@ -384,16 +384,28 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     return result;
   }
 
-  public Map<String, Map<Integer, BigDecimal>> computeWorkloadGroupOrgIdAndMonth(
-      DataStatisticsQuery query, Boolean existsExecutor) {
-    Map<String, Map<Integer, BigDecimal>> result = new HashMap<>(16);
-    // 月份分组求已收工作量合计
-    List<BillWorkloadVO> workloads = mapper.selectRecievedWorkloadsGroupByMonth(query);//1.6
+  /**
+   * 按月份分组求已收工作量合计
+   *
+   * @return
+   */
+  public List<BillWorkloadVO> findReceivedWorkloadsGroupByMonth(DataStatisticsQuery query) {
+    return mapper.selectRecievedWorkloadsGroupByMonth(query);//1.6
+  }
 
+  /**
+   * 计算工作总量，按门诊和月份分组
+   * @param query
+   * @param workloads
+   * @return
+   */
+  public Map<String, Map<Integer, BigDecimal>> computeWorkloadGroupOrgIdAndMonth(
+          DataStatisticsQuery query, List<BillWorkloadVO> workloads) {
+    Map<String, Map<Integer, BigDecimal>> result = new HashMap<>(16);
     Set<Integer> billIds =
         workloads.stream().map(BillWorkloadVO::getBillId).collect(Collectors.toSet());
     List<BillRecordWorkloadVO> workloadInfos =
-        findBillWorkloadInfoByBillIds(new ArrayList<>(billIds), existsExecutor);//1.7, 2.3
+        findBillWorkloadInfoByBillIds(new ArrayList<>(billIds), true);//1.7, 2.3
     Map<Integer, BigDecimal> totalWorkloadMaps =
         workloadInfos.stream()
             .collect(
@@ -467,6 +479,63 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
             res.put(orgId, workload.subtract(vo.getTotalRefundWorkload()));
             result.put(month, res);
           });
+    }
+    return result;
+  }
+
+  /**
+   * 计算非工作总量，按门诊和月份分组
+   *
+   * @param workloads
+   * @return
+   */
+  public Map<String, Map<Integer, BigDecimal>> computeNotWorkloadGroupOrgIdAndMonth(List<BillWorkloadVO> workloads) {
+    Map<String, Map<Integer, BigDecimal>> result = new HashMap<>(16);
+    Set<Integer> billIds =
+            workloads.stream().map(BillWorkloadVO::getBillId).collect(Collectors.toSet());
+    List<BillRecordWorkloadVO> workloadInfos =
+            findBillWorkloadInfoByBillIds(new ArrayList<>(billIds), false);//1.7, 2.3
+    Map<Integer, BigDecimal> totalWorkloadMaps =
+            workloadInfos.stream()
+                    .collect(
+                            Collectors.toMap(
+                                    BillRecordWorkloadVO::getBillId, BillRecordWorkloadVO::getBillTotalWorkload));
+    if (StringHelper.isNotEmpty(workloads)) {
+      workloads.forEach(
+              vo -> {
+                String month = vo.getMonth();
+                Integer orgId = vo.getBillOrgId();
+                BigDecimal totalWorkload = totalWorkloadMaps.get(vo.getBillId());
+                if (totalWorkload == null || totalWorkload.compareTo(BigDecimal.ZERO) <= 0) {
+                  return;
+                }
+                BigDecimal actualAmount = vo.getActualAmount();
+                BigDecimal receivedAmount = vo.getReceivedAmount();
+                BigDecimal workloaded = BigDecimal.ZERO;
+                // 非工作量=商品总应收/订单总应收*实收
+                if (actualAmount.compareTo(BigDecimal.ZERO) > 0
+                        && receivedAmount.compareTo(BigDecimal.ZERO) > 0) {
+                  workloaded =
+                          totalWorkload
+                                  .divide(actualAmount, 8, BigDecimal.ROUND_HALF_UP)
+                                  .multiply(receivedAmount)
+                                  .setScale(4, BigDecimal.ROUND_HALF_UP);
+                }
+                BigDecimal overageAmount = vo.getFreePayAmount().subtract(totalWorkload);
+                if (overageAmount.compareTo(BigDecimal.ZERO)>0) {
+                  workloaded = workloaded.subtract(overageAmount);
+                }
+                Map<Integer, BigDecimal> res = result.get(month);
+                if (res == null) {
+                  res = new HashMap<>(16);
+                }
+                BigDecimal workload = res.get(orgId);
+                if (workload == null) {
+                  workload = BigDecimal.ZERO;
+                }
+                res.put(orgId, workload.add(workloaded));
+                result.put(month, res);
+              });
     }
     return result;
   }
@@ -704,11 +773,11 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                               .divide(actualAmount, 8, BigDecimal.ROUND_HALF_UP)
                               .multiply(receivedAmount)
                               .setScale(4, BigDecimal.ROUND_HALF_UP));
-      if (freePayAmount.compareTo(totalNotWorkload) > 0) {
-        // 免单非工作量
-        BigDecimal freePayNotWorkload = freePayAmount.subtract(totalNotWorkload);
-        receivedNotWorkload = receivedNotWorkload.subtract(freePayNotWorkload);
-      }
+//      if (freePayAmount.compareTo(totalNotWorkload) > 0) {
+//        // 免单非工作量
+//        BigDecimal freePayNotWorkload = freePayAmount.subtract(totalNotWorkload);
+//        receivedNotWorkload = receivedNotWorkload.subtract(freePayNotWorkload);
+//      }
     }
     return receivedNotWorkload;
   }

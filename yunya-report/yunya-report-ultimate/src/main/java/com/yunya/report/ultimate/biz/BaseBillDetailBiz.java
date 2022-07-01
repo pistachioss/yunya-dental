@@ -1458,10 +1458,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setStartDate(minDate);
     query.setEndDate(yearEDate);
     List<String> yearDateList = DateUtil.sliceUpDateRange(yearSDate, yearEDate);
+    List<BillWorkloadVO> receivedWorkload = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(query);
     Map<String, Map<Integer, BigDecimal>> workloadMap =
-        baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query, true);
+        baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query, receivedWorkload);
     Map<String, Map<Integer, BigDecimal>> nonWorkloadMap =
-            baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query, false);
+            baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(receivedWorkload);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
     List<JSONObject> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(orgs)) {
