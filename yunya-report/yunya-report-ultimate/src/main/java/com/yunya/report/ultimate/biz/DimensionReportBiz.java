@@ -2347,8 +2347,9 @@ public class DimensionReportBiz {
        DataStatisticsQuery queryForm = new DataStatisticsQuery();
        BeanUtils.copyProperties(query, queryForm);
        queryForm.setOrgIds(query.getOrgIds().toArray(new Integer[0]));
+       List<BillWorkloadVO> workloads = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(queryForm);
        Map<String, Map<Integer, BigDecimal>> nonWorkloadDateMap
-                = baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(queryForm, false);
+                = baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(workloads);
        if (StringHelper.isNotEmpty(nonWorkloadDateMap)) {
          nonWorkloadDateMap.forEach((date, workloadMap)->{
            workloadMap.forEach((orgId, workload)->{
