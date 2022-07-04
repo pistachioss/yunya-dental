@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -16,8 +15,6 @@ public class CreateOrderVO {
     private List<PayOrderItemVO> itemVO;
     @ApiModelProperty(value = "收货地址")
     private PayReceiveAddressVO addressVO;
-    @ApiModelProperty(value = "应付金额（实际支付金额）")
-    private BigDecimal payAmount;
     @ApiModelProperty(value = "预付单信息")
     private WxPaymentVO paymentVO;
 }

@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -14,6 +15,8 @@ public class PayOrderVO {
     private Integer orderId;
     @ApiModelProperty(value = "订单号")
     private String orderSn;
+    @ApiModelProperty(value = "订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）")
+    private Byte status;
     @ApiModelProperty(value = "支付方式（1->支付宝；2->微信）")
     private Byte payType;
     @ApiModelProperty(value = "下单时间")
@@ -22,4 +25,8 @@ public class PayOrderVO {
     @ApiModelProperty(value = "支付时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date payDate;
+    @ApiModelProperty(value = "应付金额（实际支付金额）")
+    private BigDecimal payAmount;
+    @ApiModelProperty(value = "配送方式（0->自提 1->配送）")
+    private Byte deliveryType;
 }

@@ -4,8 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.ivy_mini.domain.model.CreateCartOrderModel;
-import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
+import com.yunya.feign.ivy_mini.domain.model.*;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
@@ -61,11 +60,47 @@ public interface IOrderInfoService extends IService<OrderInfo> {
      */
     String cbNotify(HttpServletRequest request, HttpServletResponse response);
 
-    public List<WxPayOrderQueryResult> queryPayOrder(Collection<Integer> orderIds) throws WxPayException;
+    /**
+     * 查询微信支付订单
+     * @param orderIds:
+     * @return List<WxPayOrderQueryResult>
+     */
+    List<WxPayOrderQueryResult> queryPayOrder(Collection<Integer> orderIds) throws WxPayException;
 
+    /**
+     * 订单列表
+     * @param query:
+     * @return PageInfo<OrderFrontVO>
+     */
     PageInfo<OrderFrontVO> orderList(MyOrderQuery query);
 
+    /**
+     * 查询订单微信支付状态
+     * @param orderId:
+     * @return WxOrderPayVO
+     */
     WxOrderPayVO payQuery(Integer orderId);
 
+    /**
+     * 订单详情
+     * @param orderId:
+     * @return OrderDetailVO
+     */
     OrderDetailVO orderDetail(Integer orderId);
+
+    /**
+     * 确认收货
+     * @param orderId:
+     * @return ConfirmDeliveryVO
+     */
+    ConfirmDeliveryVO confirmDelivery(Integer orderId);
+
+    /**
+     * 查询退款详情
+     * @param orderId:
+     * @return OrderFrontVO
+     */
+    OrderRefundDetailVO queryRefund(Integer orderId);
+
+    OrderRefundVO refund(OrderRefundModel model);
 }

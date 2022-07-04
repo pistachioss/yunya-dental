@@ -33,4 +33,6 @@ public class OrderFrontVO {
     private Integer productPieces;
     @ApiModelProperty(value = "产品价格（订单只有一个产品有价格）")
     private BigDecimal productPrice;
+    @ApiModelProperty(value = "产品名称")
+    private String productName;
 }

@@ -2,8 +2,7 @@ package com.yunya365.mini.controller;
 
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.ivy_mini.domain.model.CreateCartOrderModel;
-import com.yunya.feign.ivy_mini.domain.model.CreateProductOrderModel;
+import com.yunya.feign.ivy_mini.domain.model.*;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
@@ -11,7 +10,8 @@ import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.IOrderInfoService;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -75,6 +75,24 @@ public class OrderInfoController extends BaseController {
     @ApiOperation("【小程序】订单详情")
     public ResponseResult<OrderDetailVO> orderDetail(@PathVariable Integer orderId) {
         return ResponseUtil.success(orderInfoService.orderDetail(orderId));
+    }
+
+    @PostMapping("/order/confirm/{orderId}")
+    @ApiOperation("【小程序】确认收货")
+    public ResponseResult<ConfirmDeliveryVO> confirmDelivery(@PathVariable Integer orderId) {
+        return ResponseUtil.success(orderInfoService.confirmDelivery(orderId));
+    }
+
+    @GetMapping("/order/refund/{orderId}")
+    @ApiOperation("【小程序】退款详情")
+    public ResponseResult<OrderRefundDetailVO> queryRefund(@PathVariable Integer orderId) {
+        return ResponseUtil.success(orderInfoService.queryRefund(orderId));
+    }
+
+    @PostMapping("/order/refund")
+    @ApiOperation("【小程序】退款")
+    public ResponseResult<OrderRefundVO> refund(@RequestBody @Valid OrderRefundModel model) {
+        return ResponseUtil.success(orderInfoService.refund(model));
     }
 
     @PostMapping("/cb/notify")

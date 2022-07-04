@@ -86,6 +86,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private WxPayService wxPayService;
     @Resource
+    private IOrderReturnApplyService returnApplyService;
+    @Resource
     private RedisUtils redisUtils;
 
     @Override
@@ -299,25 +301,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         Set<Integer> orderIds = list.stream().map(OrderInfo::getId).collect(toSet());
         List<OrderItem> orderItems = orderItemService.listByOrderIds(orderIds);
-        Map<Integer, List<OrderItem>> orderItemMap = orderItems.stream().collect(groupingBy(OrderItem::getOrderId, toList()));
-        List<OrderFrontVO> result = list.stream().filter(t -> orderItemMap.containsKey(t.getId())).map(t -> {
-            List<OrderItem> itemList = orderItemMap.get(t.getId());
-            //封面图片
-            List<String> picList = itemList.stream().map(OrderItem::getProductPic)
-                    .filter(StringUtils::isNotBlank).limit(3).collect(toList());
-            Integer totalQuantity = itemList.stream().map(OrderItem::getProductQuantity).reduce(0, Integer::sum);
-            OrderFrontVO vo = new OrderFrontVO();
-            vo.setOrderId(t.getId());
-            vo.setOrderStatus(t.getStatus().intValue());
-            vo.setProductPic(picList);
-            vo.setOrderDate(DateUtil.format(t.getCrtTime(), "yyyyMMddHHmm"));
-            vo.setPayAmount(t.getPayAmount());
-            vo.setTotalAmount(t.getTotalAmount());
-            vo.setTotalQuantity(totalQuantity);
-            vo.setProductPieces(itemList.size());
-            vo.setProductPrice(Objects.equals(CollectionUtils.size(itemList), 1) ? itemList.get(0).getProductPrice() : null);
-            return vo;
-        }).collect(toList());
+        List<OrderFrontVO> result = assembleFrontOrder(list, orderItems);
         PageInfo<OrderFrontVO> pageInfo = new PageInfo<>(result);
         pageInfo.setPageNum(page.getPageNum());
         pageInfo.setTotal(page.getTotal());
@@ -374,8 +358,105 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(orderInfo, PayReceiveAddressVO.class);
         addressVO.setDetailAddress(orderInfo.getReceiverDetailAddress());
         vo.setAddressVO(addressVO);
-        vo.setPayAmount(orderInfo.getPayAmount());
         return vo;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ConfirmDeliveryVO confirmDelivery(Integer orderId) {
+        ConfirmDeliveryVO vo = new ConfirmDeliveryVO();
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        OrderInfo orderInfo = baseMapper.selectByPrimaryKey(orderId);
+        if (Objects.isNull(orderInfo)) {
+            throw ClientServiceException.wrap(ORDER_ERROR);
+        }
+        if (!Objects.equals(userId, orderInfo.getFansId())) {
+            throw ClientServiceException.wrap(ORDER_CONFIRM_ERROR);
+        }
+        if (!Objects.equals(HAS_SHIP.getCode(), orderInfo.getStatus().intValue())) {
+            throw ClientServiceException.wrap(ORDER_CONFIRM_STATUS_ERROR);
+        }
+        orderInfo.setStatus(FINISH.getCode().byteValue());
+        orderInfo.setConfirmStatus(TRUE.getCode().byteValue());
+        Date date = new Date();
+        orderInfo.setReceiveTime(date);
+        orderInfo.setUpdTime(date);
+        baseMapper.updateByPrimaryKeySelective(orderInfo);
+        PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+        payOrderVO.setOrderId(orderInfo.getId());
+        payOrderVO.setOrderDate(orderInfo.getCrtTime());
+        payOrderVO.setPayDate(orderInfo.getPaymentTime());
+        vo.setOrderVO(payOrderVO);
+        return vo;
+    }
+
+    @Override
+    public OrderRefundDetailVO queryRefund(Integer orderId) {
+        OrderRefundDetailVO vo = new OrderRefundDetailVO();
+        OrderInfo orderInfo = getById(orderId);
+        if (Objects.isNull(orderInfo)) {
+            throw ClientServiceException.wrap(ORDER_ERROR);
+        }
+        List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
+        List<OrderFrontVO> result = assembleFrontOrder(Collections.singletonList(orderInfo), orderItems);
+        vo.setOrderVO(result.get(0));
+        Byte status = orderInfo.getStatus();
+        if (Objects.equals(status, SHIP_PENDING.getCode().byteValue())) {
+            vo.setOrderStatus(FALSE.getCode().byteValue());
+        }
+        if (Lists.newArrayList(HAS_SHIP.getCode(), FINISH.getCode()).contains(status.intValue())) {
+            vo.setOrderStatus(TRUE.getCode().byteValue());
+        }
+        orderInfo.setStatus(REFUND.getCode().byteValue());
+        Date date = new Date();
+        orderInfo.setReceiveTime(date);
+        orderInfo.setUpdTime(date);
+        baseMapper.updateByPrimaryKeySelective(orderInfo);
+        return vo;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public OrderRefundVO refund(OrderRefundModel model) {
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        OrderInfo orderInfo = getById(model.getOrderId());
+        if (Objects.isNull(orderInfo)) {
+            throw ClientServiceException.wrap(ORDER_ERROR);
+        }
+        if (!Objects.equals(userId, orderInfo.getFansId())) {
+            throw ClientServiceException.wrap(ORDER_REFUND_ERROR);
+        }
+        if (!Lists.newArrayList(SHIP_PENDING.getCode(), HAS_SHIP.getCode(), FINISH.getCode())
+                .contains(orderInfo.getStatus().intValue())) {
+            throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
+        }
+        returnApplyService.refund(orderInfo, model);
+        OrderRefundVO vo = new OrderRefundVO();
+        return null;
+    }
+
+    private List<OrderFrontVO> assembleFrontOrder(List<OrderInfo> list, List<OrderItem> orderItems) {
+        Map<Integer, List<OrderItem>> orderItemMap = orderItems.stream().collect(groupingBy(OrderItem::getOrderId, toList()));
+        return list.stream().filter(t -> orderItemMap.containsKey(t.getId())).map(t -> {
+            List<OrderItem> itemList = orderItemMap.get(t.getId());
+            //封面图片
+            List<String> picList = itemList.stream().map(OrderItem::getProductPic)
+                    .filter(StringUtils::isNotBlank).limit(3).collect(toList());
+            Integer totalQuantity = itemList.stream().map(OrderItem::getProductQuantity).reduce(0, Integer::sum);
+            OrderItem orderItem = Objects.equals(CollectionUtils.size(itemList), 1) ? itemList.get(0) : null;
+            OrderFrontVO vo = new OrderFrontVO();
+            vo.setOrderId(t.getId());
+            vo.setOrderStatus(t.getStatus().intValue());
+            vo.setProductPic(picList);
+            vo.setOrderDate(DateUtil.format(t.getCrtTime(), "yyyyMMddHHmm"));
+            vo.setPayAmount(t.getPayAmount());
+            vo.setTotalAmount(t.getTotalAmount());
+            vo.setTotalQuantity(totalQuantity);
+            vo.setProductPieces(itemList.size());
+            vo.setProductPrice(Objects.isNull(orderItem) ? null : orderItem.getProductPrice());
+            vo.setProductName(Objects.isNull(orderItem) ? null : orderItem.getProductName());
+            return vo;
+        }).collect(toList());
     }
 
     private WxPaymentVO wxPay(OrderInfo orderInfo) {
@@ -495,7 +576,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         addressVO.setDetailAddress(orderInfo.getReceiverDetailAddress());
         vo.setAddressVO(addressVO);
         vo.setPaymentVO(wxPaymentVO);
-        vo.setPayAmount(orderInfo.getPayAmount());
         return vo;
     }
 

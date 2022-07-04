@@ -27,6 +27,10 @@ public enum IvyMiniError implements RestError {
     CB_NOTIFY_ERROR(17, "支付回调异常"),
     ORDER_DATA_ERROR(18, "订单数据异常"),
     CB_QUERY_ERROR(19, "支付查询异常"),
+    ORDER_CONFIRM_STATUS_ERROR(20, "订单未发货"),
+    ORDER_CONFIRM_ERROR(21, "不能确认他人订单"),
+    ORDER_REFUND_STATUS_ERROR(22, "订单异常，退款失败"),
+    ORDER_REFUND_ERROR(23, "不能退款他人订单"),
     ;
     private final Integer code;
     private final String value;
