@@ -111,7 +111,7 @@ public class BaseTreatmentProcessControllerTest {
 
     @Test
     public void testPullRefundDateStatistics() throws InterruptedException {
-        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2022-12-31\"}";
+        String param = "{\"startDate\":\"2022-06-01\",\"endDate\":\"2022-06-31\"}";
         PullForm form = JSONObject.parseObject(param, PullForm.class);
         ResponseResult result = baseRefundController.pullRefundDateStatistics(form);
         System.out.println(result);

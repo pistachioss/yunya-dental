@@ -499,7 +499,8 @@
         </where>
     </select>
 
-    <select id="selectClinicOrderDetailAfterRevoke" resultType="com.yunya.feign.report.domain.vo.BillItemAmountSharedVO">
+    <!--查询撤销前的门诊订单明细-->
+    <select id="selectClinicOrderDetailBeforeRevoke" resultType="com.yunya.feign.report.domain.vo.BillItemAmountSharedVO">
         SELECT
         od.org_id AS orgId,
         od.order_record_id AS billId,

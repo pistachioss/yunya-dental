@@ -1,19 +1,23 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya365.wechat.mapper.WxAutomsgMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.wechat.WxAutomsg" >
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya365.wechat.mapper.WxAutomsgMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.wechat.WxAutomsg">
     <!--
       WARNING - @mbg.generated
     -->
-    <id column="ID" property="id" jdbcType="INTEGER" />
-    <result column="CompID" property="compid" jdbcType="VARCHAR" />
-    <result column="EventKey" property="eventkey" jdbcType="VARCHAR" />
-    <result column="EventName" property="eventname" jdbcType="VARCHAR" />
-    <result column="MsgText" property="msgtext" jdbcType="VARCHAR" />
-    <result column="IsValid" property="isvalid" jdbcType="BIT" />
-    <result column="UpdateTime" property="updatetime" jdbcType="TIMESTAMP" />
-    <result column="UpdateUser" property="updateuser" jdbcType="VARCHAR" />
-    <result column="CreateTime" property="createtime" jdbcType="TIMESTAMP" />
-    <result column="CreateUser" property="createuser" jdbcType="VARCHAR" />
+    <id column="ID" jdbcType="INTEGER" property="id" />
+    <result column="CompID" jdbcType="VARCHAR" property="compid" />
+    <result column="EventKey" jdbcType="VARCHAR" property="eventkey" />
+    <result column="EventName" jdbcType="VARCHAR" property="eventname" />
+    <result column="MsgText" jdbcType="VARCHAR" property="msgtext" />
+    <result column="IsValid" jdbcType="BIT" property="isvalid" />
+    <result column="UpdateTime" jdbcType="TIMESTAMP" property="updatetime" />
+    <result column="UpdateUser" jdbcType="VARCHAR" property="updateuser" />
+    <result column="CreateTime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="CreateUser" jdbcType="VARCHAR" property="createuser" />
+    <result column="MsgTitle" jdbcType="VARCHAR" property="msgtitle" />
+    <result column="MsgUrl" jdbcType="VARCHAR" property="msgurl" />
+    <result column="MsgPicUrl" jdbcType="VARCHAR" property="msgpicurl" />
+    <result column="MsgType" jdbcType="VARCHAR" property="msgtype" />
   </resultMap>
 </mapper>

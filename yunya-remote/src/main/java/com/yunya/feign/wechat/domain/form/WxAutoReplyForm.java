@@ -30,4 +30,22 @@ public class WxAutoReplyForm implements Serializable {
     @ApiModelProperty(value = "回复消息内容", required = true)
     @NotNull(message = "回复消息内容不能为空")
     private String msgtext;
+
+    /**
+     * 消息标题
+     */
+    @ApiModelProperty(value = "回复消息标题")
+    private String msgtitle;
+
+    /**
+     * 消息跳转地址
+     */
+    @ApiModelProperty(value = "回复消息跳转地址")
+    private String msgurl;
+
+    /**
+     * 消息图片地址
+     */
+    @ApiModelProperty(value = "回复消息图片地址")
+    private String msgpicurl;
 }
