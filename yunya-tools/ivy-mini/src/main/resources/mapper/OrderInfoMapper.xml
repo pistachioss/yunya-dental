@@ -265,6 +265,7 @@
     od.confirm_status,
     od.crt_time,
     od.pay_amount,
+      od.delivery_type,
     od.delivery_company,
     GROUP_CONCAT(oi.product_name ) as topGradeList,
     od.receiver_detail_address as address,
