@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.biz;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -1216,27 +1215,29 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         payIds.addAll(billPayRecordMapper.selectAdjustPayList(query));
         // 有效账单的项目应收
         List<BillItemAmountSharedVO> orderDetails = mapper.selectClinicOrderDetailList(query, payIds);
-        List<BillItemAmountSharedVO> revokeDetails = mapper.selectClinicOrderDetailAfterRevoke(payIds);
-        if (StringHelper.isNotEmpty(revokeDetails)) {
-          DiscountCouponQuery queryForm = new DiscountCouponQuery();
-          queryForm.setDateType((byte) 1);
-          queryForm.setStartDate(query.getStartDate());
-          queryForm.setEndDate(query.getEndDate());
-          queryForm.setOrderRecordIds(revokeDetails.stream().map(BillItemAmountSharedVO::getBillId).collect(Collectors.toSet()));
-          List<ClinicTariffDiscountCouponVO> discounts = discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
-          for (BillItemAmountSharedVO vo : revokeDetails) {
-            Integer orderRecordId = vo.getBillId();
-            Byte itemType = vo.getItemType();
-            Integer itemId = vo.getItemId();
-            for (ClinicTariffDiscountCouponVO discount : discounts) {
-              if (orderRecordId.equals(discount.getOrderRecordId())
-                && itemType.equals(discount.getItemType())
-                && itemId.equals(discount.getItemId())) {
-                vo.setItemActualAmount(vo.getItemActualAmount().subtract(discount.getDiscountAmount()));
+        if (StringHelper.isNotEmpty(payIds)) {
+          List<BillItemAmountSharedVO> revokeDetails = mapper.selectClinicOrderDetailBeforeRevoke(payIds);
+          if (StringHelper.isNotEmpty(revokeDetails)) {
+            DiscountCouponQuery queryForm = new DiscountCouponQuery();
+            queryForm.setDateType((byte) 1);
+            queryForm.setStartDate(query.getStartDate());
+            queryForm.setEndDate(query.getEndDate());
+            queryForm.setOrderRecordIds(revokeDetails.stream().map(BillItemAmountSharedVO::getBillId).collect(Collectors.toSet()));
+            List<ClinicTariffDiscountCouponVO> discounts = discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
+            for (BillItemAmountSharedVO vo : revokeDetails) {
+              Integer orderRecordId = vo.getBillId();
+              Byte itemType = vo.getItemType();
+              Integer itemId = vo.getItemId();
+              for (ClinicTariffDiscountCouponVO discount : discounts) {
+                if (orderRecordId.equals(discount.getOrderRecordId())
+                        && itemType.equals(discount.getItemType())
+                        && itemId.equals(discount.getItemId())) {
+                  vo.setItemActualAmount(vo.getItemActualAmount().subtract(discount.getDiscountAmount()));
+                }
               }
             }
+            orderDetails.addAll(revokeDetails);
           }
-          orderDetails.addAll(revokeDetails);
         }
         // 有效账单的免单收费总价
         List<OrderDetailInfoVO> freePaymentTotal =

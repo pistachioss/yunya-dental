@@ -120,5 +120,5 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    * @param payIds 撤销的收费id
    * @return
    */
-  List<BillItemAmountSharedVO> selectClinicOrderDetailAfterRevoke(@Param("payIds") List<Integer> payIds);
+  List<BillItemAmountSharedVO> selectClinicOrderDetailBeforeRevoke(@Param("payIds") List<Integer> payIds);
 }
