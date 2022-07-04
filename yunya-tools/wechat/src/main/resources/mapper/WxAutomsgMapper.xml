@@ -18,5 +18,6 @@
     <result column="MsgTitle" jdbcType="VARCHAR" property="msgtitle" />
     <result column="MsgUrl" jdbcType="VARCHAR" property="msgurl" />
     <result column="MsgPicUrl" jdbcType="VARCHAR" property="msgpicurl" />
+    <result column="MsgType" jdbcType="VARCHAR" property="msgtype" />
   </resultMap>
 </mapper>

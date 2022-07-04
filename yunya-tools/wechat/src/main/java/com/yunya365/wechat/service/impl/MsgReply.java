@@ -29,30 +29,42 @@ public class MsgReply {
             reply = res.get(0);
         }
         if (!"".equals(reply.getMsgtext())) {
-            if(StringUtils.isEmpty(reply.getMsgpicurl())) {
-                WxAutoTextReplyModel msgModel = new WxAutoTextReplyModel();
-                WxAutoReplyText msgText = new WxAutoReplyText();
-                msgText.setContent(reply.getMsgtext());
-                msgModel.setMsgtype("text");//"text"  //msg.getMsgType()
-                msgModel.setText(msgText);
-                msgModel.setTouser(msg.getFromUserName());
-                wxService.pushAutoReplyMsg(msgModel);
-            }
-            else {
-                WxAutoNewsReplyModel msgModel = new WxAutoNewsReplyModel();
-                WxAutoReplyNews msgNews = new WxAutoReplyNews();
-                List<WxAutoReplyNewsArticles> msgArticles = new ArrayList<>();
-                WxAutoReplyNewsArticles articles = new WxAutoReplyNewsArticles();
-                articles.setDescription(reply.getMsgtext());
-                articles.setTitle(reply.getMsgtitle());
-                articles.setUrl(reply.getMsgurl());
-                articles.setPicurl(reply.getMsgpicurl());
-                msgArticles.add(articles);
-                msgNews.setArticles(msgArticles);
-                msgModel.setMsgtype("news");//"text"  //msg.getMsgType()
-                msgModel.setNews(msgNews);
-                msgModel.setTouser(msg.getFromUserName());
-                wxService.pushAutoReplyMsg(msgModel);
+            switch (reply.getMsgtype()){
+                case "":
+                case "text":
+                    WxAutoTextReplyModel msgModel1 = new WxAutoTextReplyModel();
+                    WxAutoReplyText msgText = new WxAutoReplyText();
+                    msgText.setContent(reply.getMsgtext());
+                    msgModel1.setMsgtype("text");//"text"  //msg.getMsgType()
+                    msgModel1.setText(msgText);
+                    msgModel1.setTouser(msg.getFromUserName());
+                    wxService.pushAutoReplyMsg(msgModel1);
+                    break;
+                case "news":
+                    WxAutoNewsReplyModel msgModel2 = new WxAutoNewsReplyModel();
+                    WxAutoReplyNews msgNews = new WxAutoReplyNews();
+                    List<WxAutoReplyNewsArticles> msgArticles = new ArrayList<>();
+                    WxAutoReplyNewsArticles articles = new WxAutoReplyNewsArticles();
+                    articles.setDescription(reply.getMsgtext());
+                    articles.setTitle(reply.getMsgtitle());
+                    articles.setUrl(reply.getMsgurl());
+                    articles.setPicurl(reply.getMsgpicurl());
+                    msgArticles.add(articles);
+                    msgNews.setArticles(msgArticles);
+                    msgModel2.setMsgtype("news");//"text"  //msg.getMsgType()
+                    msgModel2.setNews(msgNews);
+                    msgModel2.setTouser(msg.getFromUserName());
+                    wxService.pushAutoReplyMsg(msgModel2);
+                    break;
+                case "image":
+                    WxAutoImageReplyModel msgModel3 = new WxAutoImageReplyModel();
+                    WxAutoReplyImage msgImage = new WxAutoReplyImage();
+                    msgImage.setMedia_id(reply.getMsgtext());
+                    msgModel3.setMsgtype("image");//"text"  //msg.getMsgType()
+                    msgModel3.setImage(msgImage);
+                    msgModel3.setTouser(msg.getFromUserName());
+                    wxService.pushAutoReplyMsg(msgModel3);
+                    break;
             }
         }
     }

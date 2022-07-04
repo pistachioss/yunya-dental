@@ -77,6 +77,18 @@ public class WxAutomsg {
     @Column(name = "MsgPicUrl")
     private String msgpicurl;
 
+    @Column(name = "MsgType")
+    public String getMsgtype() {
+        return msgtype;
+    }
+
+    public void setMsgtype(String msgtype) {
+        this.msgtype = msgtype;
+    }
+
+    @Column(name = "MsgType")
+    private String msgtype;
+
     /**
      * 获取记录ID
      *
