@@ -2,11 +2,13 @@ package com.yunya365.mini.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.form.*;
+import com.yunya.feign.ivy_mini.domain.vo.ConfirmDeliveryVO;
 import com.yunya.feign.ivy_mini.domain.vo.OrderVO;
 import com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya365.mini.service.IOrderInfoService;
 import com.yunya365.mini.service.impl.OrderAdminiServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,6 +29,9 @@ public class OrderPcController extends PcBaseController{
     @Resource
     private OrderAdminiServiceImpl orderAdminiService;
 
+    @Resource
+    private IOrderInfoService orderInfoService;
+
     @PostMapping("/order/findlist")
     @ApiOperation("后台-订单-列表")
     public ResponseResult<PageInfo<OrderVO>> findList(@RequestBody @Valid OrderForm form) {
@@ -45,5 +50,12 @@ public class OrderPcController extends PcBaseController{
     public ResponseResult<OrderWechatDetailVO> findDetail(@RequestBody @Valid OrderDetailForm form) {
         return ResponseUtil.success(orderAdminiService.findDetail(form));
     }
+
+    @PostMapping("/order/confirm/{orderId}")
+    @ApiOperation("后台-完成取货")
+    public ResponseResult<ConfirmDeliveryVO> confirmDelivery(@PathVariable Integer orderId) {
+        return ResponseUtil.success(orderInfoService.confirmDelivery(orderId));
+    }
+
 
 }
