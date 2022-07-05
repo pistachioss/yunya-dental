@@ -15,4 +15,6 @@ public class PayReceiveAddressVO {
     private String receiverPhone;
     @ApiModelProperty(value = "详细地址(街道)")
     private String detailAddress;
+    @ApiModelProperty(value = "配送方式（0->自提 1->配送）")
+    private Byte deliveryType;
 }

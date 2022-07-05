@@ -23,7 +23,6 @@ import com.yunya.feign.ivy_mini.domain.model.*;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
-import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.BeanCopierUtils;
@@ -142,11 +141,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer quantity = model.getQuantity();
         //商品类型
         Integer productType = model.getProductType();
-        String lockKey = Joiner.on(":").join(RedisConstants.CREATE_ORDER_LOCK, productId);
-        String lockVal = String.valueOf(userId);
         try {
             //加锁
-            locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+            locked = lock(CREATE_ORDER_LOCK, productId, userId);
             //查询原始商品或虚拟服务
             List<OrderItemBO> itemBoList = productService.listProductOrderItem(Collections.singleton(productId), productType);
             itemBoList.forEach(t -> t.setProductQuantity(quantity));
@@ -172,8 +169,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             return createVO(orderInfo, itemList, wxPaymentVO);
         } finally {
             if (locked) {
-                log.info("【解锁成功】");
-                redisUtils.unlock(lockKey, lockVal);
+                log.info("【解锁成功】商品详情创建订单");
+                unlock(CREATE_ORDER_LOCK, productId, userId);
             }
         }
     }
@@ -355,6 +352,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(orderInfo, PayReceiveAddressVO.class);
         addressVO.setDetailAddress(orderInfo.getReceiverDetailAddress());
+        addressVO.setDeliveryType(orderInfo.getDeliveryType());
         vo.setAddressVO(addressVO);
         return vo;
     }
@@ -616,6 +614,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         vo.setItemVO(collect);
         PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(orderInfo, PayReceiveAddressVO.class);
         addressVO.setDetailAddress(orderInfo.getReceiverDetailAddress());
+        addressVO.setDeliveryType(orderInfo.getDeliveryType());
         vo.setAddressVO(addressVO);
         vo.setPaymentVO(wxPaymentVO);
         return vo;
