@@ -1,8 +1,10 @@
 package com.yunya365.wechat.service.impl;
 
 import com.yunya.feign.wechat.domain.form.WxAutoReplyForm;
+import com.yunya.feign.wechat.domain.form.WxSuCaiForm;
 import com.yunya.feign.wechat.domain.model.WxUserMsgModel;
 import com.yunya.feign.wechat.domain.vo.WxKfOnlineVo;
+import com.yunya.feign.wechat.domain.vo.WxMediaVo;
 import com.yunya.feign.wechat.domain.vo.WxSendMsgVo;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -64,6 +66,10 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
 
   public List<WxAutomsg> list() {
     return wxAutomsgMapper.selectAll();
+  }
+
+  public WxMediaVo listMedia(WxSuCaiForm pushModel) {
+    return wxService.getMediaList(pushModel);
   }
 
   public int create(WxAutoReplyForm wxAutoReplyForm) {

@@ -11,7 +11,7 @@ import java.io.Serializable;
 /**
  * @description: 微信关键字自动回复消息配置参数
  * @author: zd.xie
- * @create: 20212-04-27
+ * @create: 2022-04-27
  */
 @ApiModel(description = "微信关键字自动回复消息配置参数")
 @Data
