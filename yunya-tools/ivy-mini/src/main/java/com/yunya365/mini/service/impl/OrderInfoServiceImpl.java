@@ -47,8 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -351,6 +350,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         payOrderVO.setOrderDate(orderInfo.getCrtTime());
         payOrderVO.setPayDate(orderInfo.getPaymentTime());
         payOrderVO.setProductType(orderInfo.getProductType());
+        if (Objects.equals(PAY_PENDING.getCode(),orderInfo.getStatus().intValue())) {
+            long seconds = Duration.between(java.time.LocalDateTime.now(), DateUtil.dateToLocalDateTime(orderInfo.getCrtTime()).plusMinutes(15)).getSeconds();
+            if (seconds > 0) {
+                String positive = String.format("%02d:%02d", (seconds % 3600) / 60, seconds % 60);
+                payOrderVO.setRemainDate(positive);
+            }
+        }
         vo.setOrderVO(payOrderVO);
         List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderItems)) {
@@ -510,7 +516,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     private WxPayUnifiedOrderRequest assemblePayModel(OrderInfo orderInfo) {
         String openId = BaseContextHandler.getOpenId();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.fromDateFields(orderInfo.getCrtTime());
         WxPayUnifiedOrderRequest request = new WxPayUnifiedOrderRequest();
         request.setBody("艾维商城");
         request.setOutTradeNo(orderInfo.getOrderSn());
@@ -617,6 +623,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         payOrderVO.setOrderId(orderInfo.getId());
         payOrderVO.setOrderDate(orderInfo.getCrtTime());
         payOrderVO.setPayDate(orderInfo.getPaymentTime());
+        payOrderVO.setRemainDate("15:00");
         vo.setOrderVO(payOrderVO);
         List<PayOrderItemVO> collect = itemList.stream().map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
         vo.setItemVO(collect);

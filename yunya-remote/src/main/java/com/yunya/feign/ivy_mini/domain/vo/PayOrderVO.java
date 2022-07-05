@@ -31,4 +31,6 @@ public class PayOrderVO {
     private Byte deliveryType;
     @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")
     private Byte productType;
+    @ApiModelProperty(value = "剩余时间")
+    private String remainDate;
 }
