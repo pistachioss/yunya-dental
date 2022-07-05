@@ -146,6 +146,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             locked = lock(CREATE_ORDER_LOCK, productId, userId);
             //查询原始商品或虚拟服务
             List<OrderItemBO> itemBoList = productService.listProductOrderItem(Collections.singleton(productId), productType);
+            if (CollectionUtils.isEmpty(itemBoList)) {
+                throw ClientServiceException.wrap(PRODUCT_LACK);
+            }
             itemBoList.forEach(t -> t.setProductQuantity(quantity));
             //判断购物车中商品是否都有库存
             if (!hasStock(itemBoList, quantity)) {
@@ -180,6 +183,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public CreateOrderVO createCartOrder(CreateCartOrderModel model) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         List<OrderItemBO> orderItemBOS = cartItemService.listProductByIds(model.getCartIds());
+        if (CollectionUtils.isEmpty(orderItemBOS)) {
+            throw ClientServiceException.wrap(CART_DATA_ERROR);
+        }
         //判断购物车中商品是否都有库存
         if (!hasCartStock(orderItemBOS)) {
             throw ClientServiceException.wrap(STOCK_LACK);
@@ -192,7 +198,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         cartItemService.delete(model.getCartIds());
         //生成支付单
         WxPaymentVO wxPaymentVO = wxPay(orderInfo);
-        baseMapper.insertSelective(orderInfo);
+        baseMapper.insertDynamic(orderInfo);
         List<OrderItem> itemList = orderItemBOS.stream().map(t -> {
             OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
             orderItem.setProductQuantity(t.getProductQuantity());
@@ -510,7 +516,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         request.setOpenid(openId);
         request.setSpbillCreateIp("127.0.0.1");
         request.setTimeStart(now.toString("yyyyMMddHHmmss"));
-        request.setTimeExpire(now.plusMinutes(30).toString("yyyyMMddHHmmss"));
+        request.setTimeExpire(now.plusMinutes(15).toString("yyyyMMddHHmmss"));
         return request;
     }
 
@@ -691,6 +697,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderInfo.setDeleteStatus((byte) 0);
         //生成订单号
         orderInfo.setOrderSn(generateOrderSn(orderInfo));
+        orderInfo.setCrtTime(new Date());
         return orderInfo;
     }
 

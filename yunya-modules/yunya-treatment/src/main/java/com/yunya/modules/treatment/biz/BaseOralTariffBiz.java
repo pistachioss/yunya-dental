@@ -1274,6 +1274,9 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   }
 
     public List<ProductBO> listOnSaleOral(Collection<Integer> ids) {
+      if (CollectionUtils.isEmpty(ids)) {
+        return Lists.newArrayList();
+      }
       Example example = new Example(BaseOralTariff.class);
       example.selectProperties("id","itemNumber","name","unit","price","stock","itemPic","sale");
       Example.Criteria criteria = example.createCriteria().andIn("id", ids)
