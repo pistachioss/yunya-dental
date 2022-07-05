@@ -294,7 +294,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public PageInfo<OrderFrontVO> orderList(MyOrderQuery query) {
         Page<OrderInfo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
         List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper)
-                .select(OrderInfo::getId, OrderInfo::getTotalAmount, OrderInfo::getPayAmount, OrderInfo::getStatus, OrderInfo::getCrtTime)
+                .select(OrderInfo::getId, OrderInfo::getTotalAmount, OrderInfo::getPayAmount, OrderInfo::getStatus, OrderInfo::getCrtTime, OrderInfo::getProductType)
                 .eq(Objects.nonNull(query.getStatus()), OrderInfo::getStatus, query.getStatus())
                 .eq(OrderInfo::getDeleteStatus, FALSE.getCode()).list();
         if (CollectionUtils.isEmpty(list)) {
@@ -350,6 +350,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         payOrderVO.setOrderId(orderInfo.getId());
         payOrderVO.setOrderDate(orderInfo.getCrtTime());
         payOrderVO.setPayDate(orderInfo.getPaymentTime());
+        payOrderVO.setProductType(orderInfo.getProductType());
         vo.setOrderVO(payOrderVO);
         List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderItems)) {
@@ -486,6 +487,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             vo.setProductPieces(itemList.size());
             vo.setProductPrice(Objects.isNull(orderItem) ? null : orderItem.getProductPrice());
             vo.setProductName(Objects.isNull(orderItem) ? null : orderItem.getProductName());
+            vo.setProductType(t.getProductType());
             return vo;
         }).collect(toList());
     }

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -35,4 +36,6 @@ public class OrderFrontVO {
     private BigDecimal productPrice;
     @ApiModelProperty(value = "产品名称")
     private String productName;
+    @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")
+    private Byte productType;
 }
