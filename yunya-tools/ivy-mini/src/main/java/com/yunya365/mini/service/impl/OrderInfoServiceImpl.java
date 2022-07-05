@@ -53,6 +53,8 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
@@ -95,10 +97,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         ConfirmOrderVO vo = new ConfirmOrderVO();
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(Collections.singleton(query.getProductId()), query.getProductType());
-        //判断购物车中商品是否都有库存
-        if (hasStock(orderItemBOS, query.getQuantity())) {
-            throw ClientServiceException.wrap(STOCK_LACK);
-        }
         List<PayOrderItemVO> orderItemVOS = orderItemBOS.stream().map(t -> {
             PayOrderItemVO itemVO = BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class);
             itemVO.setProductQuantity(query.getQuantity());
@@ -111,6 +109,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         vo.setProductList(orderItemVOS);
         vo.setCalcAmountVO(calcOrderAmount(orderItemVOS));
         vo.setProductType(query.getProductType());
+        //判断购物车中商品是否都有库存
+        checkStockStatus(orderItemBOS, orderItemVOS, query.getQuantity());
         return vo;
     }
 
@@ -120,10 +120,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         //查询购物车产品信息
         List<OrderItemBO> orderItemBOS = cartItemService.listProductByIds(cartIds);
-        //判断购物车中商品是否都有库存
-        if (hasCartStock(orderItemBOS)) {
-            throw ClientServiceException.wrap(STOCK_LACK);
-        }
         List<PayOrderItemVO> orderItemVOS = orderItemBOS.stream()
                 .map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)
                 ).collect(toList());
@@ -131,6 +127,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         vo.setDeliveryVO(confirmAddress(userId));
         vo.setProductList(orderItemVOS);
         vo.setCalcAmountVO(calcOrderAmount(orderItemVOS));
+        //判断购物车中商品是否都有库存
+        checkCartStockStatus(orderItemBOS, orderItemVOS);
         return vo;
     }
 
@@ -153,7 +151,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             List<OrderItemBO> itemBoList = productService.listProductOrderItem(Collections.singleton(productId), productType);
             itemBoList.forEach(t -> t.setProductQuantity(quantity));
             //判断购物车中商品是否都有库存
-            if (hasStock(itemBoList, quantity)) {
+            if (!hasStock(itemBoList, quantity)) {
                 throw ClientServiceException.wrap(STOCK_LACK);
             }
             //进行库存锁定
@@ -186,7 +184,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         List<OrderItemBO> orderItemBOS = cartItemService.listProductByIds(model.getCartIds());
         //判断购物车中商品是否都有库存
-        if (hasCartStock(orderItemBOS)) {
+        if (!hasCartStock(orderItemBOS)) {
             throw ClientServiceException.wrap(STOCK_LACK);
         }
         //进行库存锁定
@@ -231,11 +229,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             }
             //订单状态
             int status = orderInfo.getStatus().intValue();
-            //0->商品 1->虚拟服务
-            int productType = orderInfo.getProductType().intValue();
-            //0->自提 1->配送
-            int deliveryType = orderInfo.getDeliveryType().intValue();
             if (Objects.equals(PAY_PENDING.getCode(), status)) {
+                //0->商品 1->虚拟服务
+                int productType = orderInfo.getProductType().intValue();
+                //0->自提 1->配送
+                int deliveryType = orderInfo.getDeliveryType().intValue();
                 //商品
                 if (Objects.equals(FALSE.getCode(), productType)) {
                     //自提
@@ -364,30 +362,41 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ConfirmDeliveryVO confirmDelivery(Integer orderId) {
-        ConfirmDeliveryVO vo = new ConfirmDeliveryVO();
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        OrderInfo orderInfo = baseMapper.selectByPrimaryKey(orderId);
-        if (Objects.isNull(orderInfo)) {
-            throw ClientServiceException.wrap(ORDER_ERROR);
+        boolean locked = false;
+        try {
+            //加锁
+            locked = lock(CONFIRM_ORDER_LOCK, orderId, userId);
+            ConfirmDeliveryVO vo = new ConfirmDeliveryVO();
+            OrderInfo orderInfo = baseMapper.selectByPrimaryKey(orderId);
+            if (Objects.isNull(orderInfo)) {
+                throw ClientServiceException.wrap(ORDER_ERROR);
+            }
+            if (!Objects.equals(userId, orderInfo.getFansId())) {
+                throw ClientServiceException.wrap(ORDER_CONFIRM_ERROR);
+            }
+            if (!Objects.equals(HAS_SHIP.getCode(), orderInfo.getStatus().intValue())) {
+                throw ClientServiceException.wrap(ORDER_CONFIRM_STATUS_ERROR);
+            }
+            orderInfo.setStatus(FINISH.getCode().byteValue());
+            orderInfo.setConfirmStatus(TRUE.getCode().byteValue());
+            Date date = new Date();
+            orderInfo.setReceiveTime(date);
+            orderInfo.setUpdTime(date);
+            orderInfo.setUpdId(userId);
+            baseMapper.updateByPrimaryKeySelective(orderInfo);
+            PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+            payOrderVO.setOrderId(orderInfo.getId());
+            payOrderVO.setOrderDate(orderInfo.getCrtTime());
+            payOrderVO.setPayDate(orderInfo.getPaymentTime());
+            vo.setOrderVO(payOrderVO);
+            return vo;
+        } finally {
+            if (locked) {
+                log.info("【解锁成功】确认收货");
+                unlock(CONFIRM_ORDER_LOCK, orderId, userId);
+            }
         }
-        if (!Objects.equals(userId, orderInfo.getFansId())) {
-            throw ClientServiceException.wrap(ORDER_CONFIRM_ERROR);
-        }
-        if (!Objects.equals(HAS_SHIP.getCode(), orderInfo.getStatus().intValue())) {
-            throw ClientServiceException.wrap(ORDER_CONFIRM_STATUS_ERROR);
-        }
-        orderInfo.setStatus(FINISH.getCode().byteValue());
-        orderInfo.setConfirmStatus(TRUE.getCode().byteValue());
-        Date date = new Date();
-        orderInfo.setReceiveTime(date);
-        orderInfo.setUpdTime(date);
-        baseMapper.updateByPrimaryKeySelective(orderInfo);
-        PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
-        payOrderVO.setOrderId(orderInfo.getId());
-        payOrderVO.setOrderDate(orderInfo.getCrtTime());
-        payOrderVO.setPayDate(orderInfo.getPaymentTime());
-        vo.setOrderVO(payOrderVO);
-        return vo;
     }
 
     @Override
@@ -400,18 +409,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
         List<OrderFrontVO> result = assembleFrontOrder(Collections.singletonList(orderInfo), orderItems);
         vo.setOrderVO(result.get(0));
-        Byte status = orderInfo.getStatus();
-        if (Objects.equals(status, SHIP_PENDING.getCode().byteValue())) {
-            vo.setOrderStatus(FALSE.getCode().byteValue());
-        }
-        if (Lists.newArrayList(HAS_SHIP.getCode(), FINISH.getCode()).contains(status.intValue())) {
-            vo.setOrderStatus(TRUE.getCode().byteValue());
-        }
-        orderInfo.setStatus(REFUND.getCode().byteValue());
-        Date date = new Date();
-        orderInfo.setReceiveTime(date);
-        orderInfo.setUpdTime(date);
-        baseMapper.updateByPrimaryKeySelective(orderInfo);
+        OrderReturnApply apply = returnApplyService.queryRefund(orderId);
+        vo.setOrderStatus(apply.getDeliveryStatus().byteValue());
+        vo.setReturnReason(apply.getReason());
         return vo;
     }
 
@@ -419,20 +419,47 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Transactional(rollbackFor = Exception.class)
     public OrderRefundVO refund(OrderRefundModel model) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        OrderInfo orderInfo = getById(model.getOrderId());
-        if (Objects.isNull(orderInfo)) {
-            throw ClientServiceException.wrap(ORDER_ERROR);
+        boolean locked = false;
+        try {
+            //加锁
+            locked = lock(REFUND_ORDER_LOCK, model.getOrderId(), userId);
+            OrderInfo orderInfo = getById(model.getOrderId());
+            if (Objects.isNull(orderInfo)) {
+                throw ClientServiceException.wrap(ORDER_ERROR);
+            }
+            if (!Objects.equals(userId, orderInfo.getFansId())) {
+                throw ClientServiceException.wrap(ORDER_REFUND_ERROR);
+            }
+            if (!Lists.newArrayList(SHIP_PENDING.getCode(), HAS_SHIP.getCode(), FINISH.getCode())
+                    .contains(orderInfo.getStatus().intValue())) {
+                throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
+            }
+            returnApplyService.refund(orderInfo, model);
+            OrderRefundVO vo = new OrderRefundVO();
+            PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+            vo.setOrderVO(payOrderVO);
+            vo.setOrderStatus(model.getStatus());
+            vo.setReturnReason(model.getRefundReason());
+            return vo;
+        } finally {
+            if (locked) {
+                log.info("【解锁成功】退款");
+                unlock(REFUND_ORDER_LOCK, model.getOrderId(), userId);
+            }
         }
-        if (!Objects.equals(userId, orderInfo.getFansId())) {
-            throw ClientServiceException.wrap(ORDER_REFUND_ERROR);
-        }
-        if (!Lists.newArrayList(SHIP_PENDING.getCode(), HAS_SHIP.getCode(), FINISH.getCode())
-                .contains(orderInfo.getStatus().intValue())) {
-            throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
-        }
-        returnApplyService.refund(orderInfo, model);
-        OrderRefundVO vo = new OrderRefundVO();
-        return null;
+    }
+
+    private boolean lock(String keyPrefix, Object key, Object val) {
+        String lockKey = Joiner.on(":").join(keyPrefix, key);
+        String lockVal = String.valueOf(val);
+        //加锁
+        return redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+    }
+
+    private void unlock(String keyPrefix, Object key, Object val) {
+        String lockKey = Joiner.on(":").join(keyPrefix, key);
+        String lockVal = String.valueOf(val);
+        redisUtils.unlock(lockKey, lockVal);
     }
 
     private List<OrderFrontVO> assembleFrontOrder(List<OrderInfo> list, List<OrderItem> orderItems) {
@@ -485,7 +512,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         request.setOpenid(openId);
         request.setSpbillCreateIp("127.0.0.1");
         request.setTimeStart(now.toString("yyyyMMddHHmmss"));
-//        request.setTimeExpire(now.plusMinutes(30).toString("yyyyMMddHHmmss"));
+        request.setTimeExpire(now.plusMinutes(30).toString("yyyyMMddHHmmss"));
         return request;
     }
 
@@ -513,11 +540,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
      */
     private boolean hasStock(List<OrderItemBO> list, Integer quantity) {
         for (OrderItemBO orderItemBO : list) {
-            if (Objects.isNull(orderItemBO) || orderItemBO.getStock() - quantity < 0) {
-                return true;
+            if (orderItemBO.getStock() - quantity < 0) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -525,11 +552,26 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
      */
     private boolean hasCartStock(List<OrderItemBO> list) {
         for (OrderItemBO orderItemBO : list) {
-            if (Objects.isNull(orderItemBO) || orderItemBO.getStock() - orderItemBO.getProductQuantity() < 0) {
-                return true;
+            if (orderItemBO.getStock() - orderItemBO.getProductQuantity() < 0) {
+                return false;
             }
         }
-        return false;
+        return true;
+    }
+
+    private void checkStockStatus(List<OrderItemBO> list, List<PayOrderItemVO> orderItemVOS, Integer quantity) {
+        Map<Integer, Integer> map = list.stream().collect(toMap(OrderItemBO::getProductId, OrderItemBO::getStock));
+        orderItemVOS.stream()
+                .filter(t -> map.containsKey(t.getProductId()) && map.get(t.getProductId()) - quantity >= 0)
+                .forEach(t -> t.setStock(true));
+    }
+
+    private void checkCartStockStatus(List<OrderItemBO> list, List<PayOrderItemVO> orderItemVOS) {
+        Map<Integer, OrderItemBO> map = list.stream().collect(toMap(OrderItemBO::getProductId, Function.identity()));
+        Predicate<OrderItemBO> predicate = (t) -> t.getStock() - t.getProductQuantity() >= 0;
+        orderItemVOS.stream()
+                .filter(t -> map.containsKey(t.getProductId()) && predicate.test(map.get(t.getProductId())))
+                .forEach(t -> t.setStock(true));
     }
 
     /**
@@ -579,11 +621,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return vo;
     }
 
-    //    private boolean lock(Integer productId, Integer quantity) {
-//        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-//        String lockKey = Joiner.on(":").join(RedisConstants.CREATE_ORDER_LOCK, productId);
-//        String lockVal = String.valueOf(userId);
-//    }
     private CalcAmountVO calcOrderAmount(List<PayOrderItemVO> orderItemVOS) {
         CalcAmountVO calcAmountVO = new CalcAmountVO();
         Distribution distribution = distributionService.findList();
@@ -605,9 +642,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         DeliveryOrderVO deliveryOrderVO = new DeliveryOrderVO();
         FansAddressBO pickUp = productService.getAddress(userId, null, FALSE.getCode());
         FansAddressBO address = productService.getAddress(userId, null, TRUE.getCode());
-        address.setDetailAddress(address.getDetailAddress());
-        deliveryOrderVO.setPickUp(BeanCopierUtils.generalCopyBean(pickUp, PayReceiveAddressVO.class));
-        deliveryOrderVO.setDelivery(BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class));
+        //自提
+        PayReceiveAddressVO pickVO = BeanCopierUtils.generalCopyBean(pickUp, PayReceiveAddressVO.class);
+        pickVO.setReceiverName(pickUp.getName());
+        pickVO.setReceiverPhone(pickUp.getPhoneNumber());
+        deliveryOrderVO.setPickUp(pickVO);
+        //配送
+        PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class);
+        addressVO.setReceiverName(address.getName());
+        addressVO.setReceiverPhone(address.getPhoneNumber());
+        deliveryOrderVO.setDelivery(addressVO);
+
         return deliveryOrderVO;
     }
 

@@ -16,4 +16,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface IOrderReturnApplyService extends IService<OrderReturnApply> {
 
     void refund(OrderInfo orderInfo, OrderRefundModel model);
+
+    OrderReturnApply queryRefund(Integer orderId);
 }

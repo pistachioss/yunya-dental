@@ -155,6 +155,10 @@ public class RedisConstants implements Serializable {
   public static final String CREATE_ORDER_LOCK = "create:order:lock";
   /** 生成订单id key */
   public static final String ORDER_ID_GENERATE = "order:id:generate";
+  /** 退款 key */
+  public static final String REFUND_ORDER_LOCK = "refund:order:lock";
+  /** 确认收货 key */
+  public static final String CONFIRM_ORDER_LOCK = "confirm:order:lock";
 
   /**
    * 设置key中的占位符

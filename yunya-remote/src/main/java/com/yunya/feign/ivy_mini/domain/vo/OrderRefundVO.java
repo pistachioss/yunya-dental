@@ -4,8 +4,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * @description:
  * @author: xy
@@ -16,4 +14,8 @@ import java.math.BigDecimal;
 public class OrderRefundVO {
     @ApiModelProperty(value = "订单")
     private PayOrderVO orderVO;
+    @ApiModelProperty(value = "订单状态（0-未收到货，1-已收到货）")
+    private Integer orderStatus;
+    @ApiModelProperty(value = "退款原因")
+    private String returnReason;
 }

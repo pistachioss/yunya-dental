@@ -31,6 +31,8 @@ public enum IvyMiniError implements RestError {
     ORDER_CONFIRM_ERROR(21, "不能确认他人订单"),
     ORDER_REFUND_STATUS_ERROR(22, "订单异常，退款失败"),
     ORDER_REFUND_ERROR(23, "不能退款他人订单"),
+    ORDER_REFUNDING(24, "订单正在退款中，请勿重复操作"),
+    ORDER_REFUND_FINISH(25, "订单已完成退款"),
     ;
     private final Integer code;
     private final String value;
