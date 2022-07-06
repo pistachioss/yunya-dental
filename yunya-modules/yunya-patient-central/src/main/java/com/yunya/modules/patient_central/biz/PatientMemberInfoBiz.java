@@ -96,10 +96,32 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   /** 微信推送 */
   @Autowired private RemoteWechatServiceFeign remoteWechatServiceFeign;
 
+  @Autowired private WxFansBiz wxFansBiz;
   /** 预付款Mapper */
   @Autowired
   private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
+  public MasertMemberInfoVo findMasertMember(String unionId) {
+    Integer id = wxFansBiz.getPatientIdByUonId(unionId);
+    if(id==null){
+        return null;
+    }
+    PatientMemberInfoQueryForm form = new PatientMemberInfoQueryForm();
+    form.setPatientId(id);
+    MasertMemberInfoVo masertMemberInfoVo = patientMemberInfoMapper.selectMasertMemberInfo(form);
+    if (masertMemberInfoVo != null) {
+      // 获取会员卡名称
+      MemberType memberType =
+              this.remoteSystemServiceFeign.findMemberTypeById(
+                      masertMemberInfoVo.getMasterCardTypeId());
+      if (memberType != null) {
+        masertMemberInfoVo.setMasterMemberCardName(memberType.getName());
+        masertMemberInfoVo.setRate(memberType.getRate());
+        masertMemberInfoVo.setPictureCode(memberType.getPictureCode());
+      }
+    }
+    return masertMemberInfoVo;
+  }
 
   /**
    * 根据患者id查询会员基本信息

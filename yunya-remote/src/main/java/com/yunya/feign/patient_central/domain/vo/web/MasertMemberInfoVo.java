@@ -26,6 +26,11 @@ public class MasertMemberInfoVo implements Serializable {
     private Integer id;
 
     /**
+     *  积分
+     */
+    private Integer point;
+
+    /**
      * 主卡人id
      */
     private Integer masterCardId;

@@ -70,7 +70,7 @@ public class WxFanBindController {
      * @param query
      * @return
      */
-    @ApiOperation("根据openId或患者id查询其绑定的患者列表")
+    @ApiOperation("根据unionId或患者id查询其绑定的患者列表")
     @PostMapping("/bindPatientList")
     public ResponseResult<List<PatientBaseInfoVo>> wxFansBindPatientList(@RequestBody WxUserQuery query) {
         return ResponseUtil.success(wxFansBindBiz.wxFansBindPatientList(query));

@@ -384,4 +384,16 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
                 .andEqualTo("patientId", patientId);
         return expInfoMapper.selectOneByExample(example);
     }
+
+    public Integer getPatientIdByUonId(String UnionId) {
+        WxFans wxFans = new WxFans();
+        wxFans.setUnionId(UnionId);
+        List<WxFans>list = mapper.select(wxFans);
+        for(WxFans w:list){
+            if(w.getPatientId()!=null){
+                return w.getPatientId();
+            }
+        }
+        return null;
+    }
 }

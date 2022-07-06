@@ -29,6 +29,6 @@ public class PatientMemberInfoQueryForm implements Serializable {
     /**
      * 会员卡类型
      */
-    @ApiModelProperty(value = "会员卡绑定类型",required = true)
+    @ApiModelProperty(value = "会员卡绑定类型")
     private Integer bindType;
 }
