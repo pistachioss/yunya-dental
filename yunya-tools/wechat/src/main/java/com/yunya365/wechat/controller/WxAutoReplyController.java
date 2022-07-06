@@ -31,9 +31,9 @@ public class WxAutoReplyController {
   }
 
   @ApiOperation(value = "获取微信公众号素材列表")
-  @GetMapping(value = "/wxMedia")
+  @PostMapping(value = "/wxMedia")
   @CurrentUser
-  public ResponseResult listMedia(WxSuCaiForm pushModel) {
+  public ResponseResult listMedia(@Valid @RequestBody WxSuCaiForm pushModel) {
     return ResponseUtil.success(kfReply.listMedia(pushModel));
   }
 
