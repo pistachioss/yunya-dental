@@ -7,10 +7,7 @@ import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
-import com.yunya.report.ultimate.biz.BaseTariffInfoBiz;
-import com.yunya.report.ultimate.biz.BaseUserPostBiz;
-import com.yunya.report.ultimate.biz.ClinicDataStatisticsBiz;
+import com.yunya.report.ultimate.biz.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -45,6 +42,8 @@ public class CompanyReportOfOperationController {
   @Autowired private BaseUserPostBiz userPostBiz;
   /** 门诊数据统计 */
   @Autowired private ClinicDataStatisticsBiz clinicDataStatisticsBiz;
+  /** 卡券*/
+  @Autowired private BaseCardBiz baseCardBiz;
 
   /**
    * 根据条件查询员工工作量列表
@@ -861,4 +860,35 @@ public class CompanyReportOfOperationController {
     billDetailBiz.billItemReceivedStatisticsExport(query, response);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 根据条件查询产品售卖激活数据统计表
+   *
+   * @param query 查询条件
+   * @return PageInfo<CouponSoldActivedStatisticsVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-产品售卖激活数据统计表")
+  @PostMapping(value = "/coupon/soldActived/statistics", name = "产品售卖激活数据统计表")
+  public ResponseResult<PageInfo<CouponSoldActivedStatisticsVO>> couponSoldActivedStatistics(
+          @RequestBody @Validated CouponSoldActivedStatisticsQuery query) {
+    PageInfo<CouponSoldActivedStatisticsVO> pageInfo = baseCardBiz.couponSoldActivedStatistics(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出产品售卖激活数据统计表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-产品售卖激活数据统计表导出")
+  @PostMapping(value = "/billItem/receivable/statistics/export", name = "根据条件导出产品售卖激活数据统计表")
+  public ResponseResult couponSoldActivedStatisticsExport(
+          HttpServletResponse response, @RequestBody @Validated CouponSoldActivedStatisticsQuery query)
+          throws IOException {
+    baseCardBiz.couponSoldActivedStatisticsExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+
 }

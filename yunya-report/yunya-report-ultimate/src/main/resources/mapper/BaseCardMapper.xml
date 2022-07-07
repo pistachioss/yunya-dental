@@ -1046,4 +1046,110 @@
             </if>
         </where>
     </select>
+
+    <select id="selectCardCouponSoldActiveList" resultType="com.yunya.models.report.BaseCard">
+        SELECT * FROM (
+            SELECT
+            'sale' AS cardNumber,
+            bc.card_id,
+            bc.coupon_id AS couponId,
+            bc.active_org_id AS activeOrgId,
+            bc.patient_id AS patientId,
+            bc.sale_channel_id,
+            bc.allocate_org_id AS allocateOrgId,
+            DATE_FORMAT(bc.active_date,'%Y-%m-%d') AS activeDate,
+            bc.active_date
+            FROM base_card bc
+            <where>
+                AND bc.status in (1,2,3,4)
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT(bc.sold_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT(bc.sold_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT(bc.sold_date, '%Y-%m') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT(bc.sold_date, '%Y-%m') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT(bc.sold_date, '%Y') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT(bc.sold_date, '%Y') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.couponIds!=null and query.couponIds.size() > 0">
+                    and bc.coupon_id in
+                    <foreach collection="query.couponIds" item="couponId" open="(" separator="," close=")">
+                        #{couponId}
+                    </foreach>
+                </if>
+                <if test="query.orgIds!=null and query.orgIds.size() > 0">
+                    and bc.allocate_org_id in
+                    <foreach collection="query.orgIds" item="orgId" open="(" separator="," close=")">
+                        #{orgId}
+                    </foreach>
+                </if>
+            </where>
+            UNION ALL
+            SELECT
+            'active' AS cardNumber,
+            bc.card_id,
+            bc.coupon_id AS couponId,
+            bc.active_org_id AS activeOrgId,
+            bc.patient_id AS patientId,
+            bc.sale_channel_id,
+            bc.allocate_org_id AS allocateOrgId,
+            DATE_FORMAT(bc.active_date,'%Y-%m-%d') AS activeDate,
+            bc.active_date
+            FROM base_card bc
+            <where>
+                AND bc.status in (2,3,4)
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT(bc.active_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT(bc.active_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT(bc.active_date, '%Y-%m') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT(bc.active_date, '%Y-%m') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT(bc.active_date, '%Y') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT(bc.active_date, '%Y') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.couponIds!=null and query.couponIds.size() > 0">
+                    and bc.coupon_id in
+                    <foreach collection="query.couponIds" item="couponId" open="(" separator="," close=")">
+                        #{couponId}
+                    </foreach>
+                </if>
+                <if test="query.orgIds!=null and query.orgIds.size() > 0">
+                    and bc.active_org_id in
+                    <foreach collection="query.orgIds" item="orgId" open="(" separator="," close=")">
+                        #{orgId}
+                    </foreach>
+                </if>
+            </where>
+        ) t ORDER BY active_date ASC
+    </select>
 </mapper>

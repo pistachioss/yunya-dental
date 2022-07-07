@@ -2,24 +2,28 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.CardCouponUsedDetailQueryForm;
-import com.yunya.feign.report.domain.query.CardCouponUsedQueryForm;
-import com.yunya.feign.report.domain.query.StatementProductSoldDetailQuery;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.CardCouponUsedDetailVO;
+import com.yunya.feign.report.domain.vo.CouponSoldActivedStatisticsVO;
 import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.feign.report.domain.vo.StatementProductSoldDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseCard;
+import com.yunya.models.report.BaseCoupon;
+import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.BaseCardMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
@@ -35,6 +39,13 @@ import static com.yunya.framework.common.constant.BusinessConstants.*;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
+
+  /** 卡券类型：套餐券*/
+  private static final Integer SPECIAL_PACKAGE = 3;
+  /** 产品 */
+  @Autowired private BaseCouponBiz baseCouponBiz;
+  /** 门诊 */
+  @Autowired private BaseOrganizationBiz baseOrganizationBiz;
 
   /**
    * 根据条件查询门诊产品售出明细列表
@@ -119,5 +130,21 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
 
   public List<BaseCard> findProductSoldList(CardCouponUsedQueryForm query) {
     return mapper.selectProductSoldList(query);
+  }
+
+  public PageInfo<CouponSoldActivedStatisticsVO> couponSoldActivedStatistics(CouponSoldActivedStatisticsQuery query) {
+    // 产品列表
+    BaseCouponQueryForm couponQuery = new BaseCouponQueryForm();
+    couponQuery.setCouponTypes(Collections.singleton(SPECIAL_PACKAGE));
+    couponQuery.setProductTypeIds(Collections.singleton(query.getProductTypeId()));
+    couponQuery.setCouponName(query.getCouponName());
+    List<BaseCoupon> couponList = baseCouponBiz.findBaseCouponList(couponQuery);
+//    mapper.
+
+    return null;
+  }
+
+  public void couponSoldActivedStatisticsExport(CouponSoldActivedStatisticsQuery query, HttpServletResponse response) {
+
   }
 }

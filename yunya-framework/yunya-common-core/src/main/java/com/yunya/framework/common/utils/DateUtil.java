@@ -3,6 +3,7 @@ package com.yunya.framework.common.utils;
 import cn.hutool.core.date.DateTime;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
@@ -24,6 +25,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TR
  * @author Gaoluding
  * @create 2019-08-11 10:26
  */
+@Slf4j
 public class DateUtil {
   /** 最大秒 */
   public static final int MAX_SECOND = 59;
@@ -579,6 +581,19 @@ public class DateUtil {
   }
 
   /**
+   * 按yyyy-MM-dd格式转换
+   *
+   * @param date
+   * @return
+   */
+  public static String format(LocalDateTime date) {
+    if (ObjectUtils.isEmpty(date)) {
+      return null;
+    }
+    return SDF.format(local2Date(date, "yyyy-MM-dd HH:mm:ss"));
+  }
+
+  /**
    * 格式化日期 - yyyy-MM-dd HH:mm:ss
    *
    * @param date 日期
@@ -587,6 +602,29 @@ public class DateUtil {
    */
   public static String format(Date date, String pattern) {
     return new SimpleDateFormat(pattern).format(date);
+  }
+
+  public static Date local2Date(LocalDateTime localDate, String pattern) {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+    //字符串格式转为LocalDate格式
+    LocalDateTime parse = LocalDateTime.parse(localDate.format(formatter), formatter);
+    //获取时间地区ID
+    ZoneId zoneId = ZoneId.systemDefault();
+    //转换为当地时间
+    ZonedDateTime zonedDateTime = parse.atZone(zoneId);
+    //转为Date类型
+    return Date.from(zonedDateTime.toInstant());
+  }
+
+  /**
+   * 格式化日期 - yyyy-MM-dd HH:mm:ss
+   *
+   * @param date 日期
+   * @param pattern 日期格式
+   * @return 日期字符串
+   */
+  public static String format(LocalDateTime date, String pattern) {
+    return new SimpleDateFormat(pattern).format(local2Date(date, "yyyy-MM-dd HH:mm:ss"));
   }
 
   /**
@@ -598,6 +636,17 @@ public class DateUtil {
    */
   public static String format(Date date, SimpleDateFormat sdf) {
     return sdf.format(date);
+  }
+
+  /**
+   * 格式化日期 - yyyy-MM-dd HH:mm:ss
+   *
+   * @param date 日期
+   * @param sdf 日期解析器
+   * @return 日期字符串
+   */
+  public static String format(LocalDateTime date, SimpleDateFormat sdf) {
+    return sdf.format(local2Date(date, "yyyy-MM-dd HH:mm:ss"));
   }
 
   /**
@@ -658,6 +707,23 @@ public class DateUtil {
   public static Date parse(String date, String pattern) throws ParseException {
     return new SimpleDateFormat(pattern).parse(date);
   }
+
+  /**
+   * 格式化日期 - yyyy-MM-dd HH:mm:ss
+   *
+   * @param date 日期字符串
+   * @return 日期
+   * @throws ParseException 解析异常
+   */
+  public static Date parse(String date) {
+    try {
+      return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date);
+    } catch (ParseException e) {
+      log.error("parse date error: {}", e);
+    }
+    return null;
+  }
+
 
   /**
    * 格式化日期 - yyyy-MM-dd HH:mm:ss

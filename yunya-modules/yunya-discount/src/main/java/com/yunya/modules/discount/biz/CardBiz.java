@@ -26,7 +26,6 @@ import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
-import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -45,9 +44,7 @@ import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.model.RestError;
-import com.yunya.framework.common.utils.BeanCopierUtils;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -148,6 +145,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     @Resource
     private CardCancelLogMapper cardCancelLogMapper;
     @Resource
+    private CardActivedSmsBiz cardActivedSmsBiz;
+    @Resource
     private RedisUtils redisUtils;
     @Resource(name = "customizeThreadPool")
     private ExecutorService cardThreadPool;
@@ -157,8 +156,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private CardBenefitMapper cardBenefitMapper;
     @Resource
     private RemoteRabbitMqServiceFeign mqServiceFeign;
-    @Autowired
-    private RemoteSmsServiceFeign remoteSmsServiceFeign;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Value("${cardSold.selfChannel}")
@@ -786,12 +783,34 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             this.updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId());
             mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
             log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
+            cardActivedSendSms(card);
             return ResponseUtil.success();
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
                 redisUtils.unlock(lockKey, lockVal);
             }
+        }
+    }
+
+    /** 365卡系列*/
+    private static final Byte PROD_TYPE_365 = 14;
+    /** 艾芽卡系列*/
+    private static final Byte PROD_TYPE_IVY = 17;
+    /**
+     * 艾芽卡、365卡创建定时任务，每三个月发一次短信通知客户
+     *
+     * @param card
+     */
+    private void cardActivedSendSms(Card card) {
+        Integer couponId = card.getCouponId();
+        Example example = new Example(CouponCommonInfo.class);
+        Example.Criteria c = example.createCriteria();
+        c.andIn("couponId", Collections.singleton(couponId));
+        c.andIn("productTypeId", Arrays.asList(PROD_TYPE_365, PROD_TYPE_IVY));
+        List<CouponCommonInfo> coupons = couponMapper.selectByExample(example);
+        if (StringHelper.isNotEmpty(coupons)) {
+            cardActivedSmsBiz.sendAndrecordSms(card, coupons.get(0));
         }
     }
 
@@ -839,6 +858,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             Card activeCard = insertOtherActiveCard(patientId, form, loginUserId);
             mqServiceFeign.sendMessage(activeCard.getId(), ADD, BaseCardSingle);
             log.info("【第三方激活发送消息成功】：卡券id[{}]", activeCard.getId());
+            cardActivedSendSms(activeCard);
             return ResponseUtil.success();
         } finally {
             if (locked) {
@@ -3268,5 +3288,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      */
     public BigDecimal findCardSaleCashReceipt(CashReceiptOrRefundQuery query) {
         return mapper.selectCardSaleCashReceipt(query);
+    }
+
+    public List<CardIyOr365VO> findIyOr365CardActivedList() {
+        return mapper.selectIyOr365CardActivedList();
     }
 }
