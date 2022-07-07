@@ -1,6 +1,6 @@
 package com.yunya365.mini.mapper;
 
-import com.yunya365.mini.domain.entity.WxPayInfo;
+import com.yunya365.mini.entity.WxPayInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 

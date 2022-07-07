@@ -2,7 +2,7 @@ package com.yunya365.mini.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yunya.feign.ivy_mini.domain.vo.WxPaymentVO;
-import com.yunya365.mini.domain.entity.WxPayInfo;
+import com.yunya365.mini.entity.WxPayInfo;
 
 /**
  * <p>

@@ -1,4 +1,4 @@
-package com.yunya365.mini.domain.entity;
+package com.yunya365.mini.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Getter;
@@ -25,7 +25,7 @@ public class WxPayInfo implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @TableId(value = "order_id")
+    @TableField(value = "order_id")
     private Integer orderId;
 
     @TableField("app_id")

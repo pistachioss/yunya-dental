@@ -25,7 +25,7 @@ public class FastAutoGenerate {
                         .fileOverride().disableOpenDir())
                 // 包配置
                 .packageConfig((builder) -> builder.parent("com.yunya365.mini")
-                        .entity("domain.entity").service("service").controller("controller").mapper("mapper")
+                        .entity("entity").service("service").controller("controller").mapper("mapper")
                         .pathInfo(Collections.singletonMap(OutputFile.mapperXml, resPath)))
                 // 策略配置
                 .strategyConfig((scanner, builder) ->

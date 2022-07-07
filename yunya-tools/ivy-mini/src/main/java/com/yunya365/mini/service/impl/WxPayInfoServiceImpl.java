@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.yunya.feign.ivy_mini.domain.vo.WxPaymentVO;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.BeanCopierUtils;
-import com.yunya365.mini.domain.entity.WxPayInfo;
+import com.yunya365.mini.entity.WxPayInfo;
 import com.yunya365.mini.mapper.WxPayInfoMapper;
 import com.yunya365.mini.service.IWxPayInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

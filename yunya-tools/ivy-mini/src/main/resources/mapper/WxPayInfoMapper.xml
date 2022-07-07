@@ -3,7 +3,7 @@
 <mapper namespace="com.yunya365.mini.mapper.WxPayInfoMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.yunya365.mini.domain.entity.WxPayInfo">
+    <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.WxPayInfo">
         <id column="id" property="id" />
         <id column="order_id" property="orderId" />
         <result column="app_id" property="appId" />
