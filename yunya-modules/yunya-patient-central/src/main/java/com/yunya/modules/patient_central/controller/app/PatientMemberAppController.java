@@ -29,7 +29,7 @@ import java.util.List;
  * @date: 2022/6/30
  * @description:
  */
-@Api(value = "小程序端-会员信息")
+@Api(value = "小程序端-就诊人信息",description = "小程序端-就诊人信息")
 @RestController
 @RequestMapping("/wx")
 public class PatientMemberAppController {
