@@ -88,6 +88,9 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     wxAutomsg.setIsvalid(true);
     wxAutomsg.setEventdisp(wxAutoReplyForm.getEventdisp());
     wxAutomsg.setMsgtype(wxAutoReplyForm.getMsgtype());
+    wxAutomsg.setMsgtitle(wxAutoReplyForm.getMsgtitle());
+    wxAutomsg.setMsgurl(wxAutoReplyForm.getMsgurl());
+    wxAutomsg.setMsgpicurl(wxAutoReplyForm.getMsgpicurl());
 
     Date now = new Date(System.currentTimeMillis());
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
@@ -122,6 +125,9 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     wxAutomsg.setIsvalid(true);
     wxAutomsg.setEventdisp(wxAutoReplyForm.getEventdisp());
     wxAutomsg.setMsgtype(wxAutoReplyForm.getMsgtype());
+    wxAutomsg.setMsgtitle(wxAutoReplyForm.getMsgtitle());
+    wxAutomsg.setMsgurl(wxAutoReplyForm.getMsgurl());
+    wxAutomsg.setMsgpicurl(wxAutoReplyForm.getMsgpicurl());
 
     Date now = new Date(System.currentTimeMillis());
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
