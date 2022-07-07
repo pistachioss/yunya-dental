@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.biz;
 import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
@@ -1295,6 +1296,15 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       BaseOralTariff baseOralTariff = mapper.selectByPrimaryKey(lockStockForm.getProductId());
       baseOralTariff.setSale((Objects.isNull(baseOralTariff.getSale()) ? 0 : baseOralTariff.getSale()) + lockStockForm.getQuantity());
       baseOralTariff.setStock((Objects.isNull(baseOralTariff.getStock()) ? 0 : baseOralTariff.getStock()) - lockStockForm.getQuantity());
+      mapper.updateByPrimaryKeySelective(baseOralTariff);
+    }
+  }
+
+  public void freeGoodsStock(List<FreeStockForm> form) {
+    for (FreeStockForm freeStockForm : form) {
+      BaseOralTariff baseOralTariff = mapper.selectByPrimaryKey(freeStockForm.getProductId());
+      baseOralTariff.setSale((Objects.isNull(baseOralTariff.getSale()) ? 0 : baseOralTariff.getSale()) - freeStockForm.getQuantity());
+      baseOralTariff.setStock((Objects.isNull(baseOralTariff.getStock()) ? 0 : baseOralTariff.getStock()) + freeStockForm.getQuantity());
       mapper.updateByPrimaryKeySelective(baseOralTariff);
     }
   }

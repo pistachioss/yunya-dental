@@ -14,7 +14,7 @@ import lombok.Data;
 public class OrderRefundDetailVO {
     @ApiModelProperty(value = "订单详情")
     private OrderFrontVO orderVO;
-    @ApiModelProperty(value = "订单状态（0-未收到货，1-已收到货）")
+    @ApiModelProperty(value = "货物状态（0-未收到货，1-已收到货）")
     private Byte orderStatus;
     @ApiModelProperty(value = "退款原因")
     private String returnReason;

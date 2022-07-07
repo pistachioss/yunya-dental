@@ -11,6 +11,7 @@
         <result column="return_name" property="returnName" />
         <result column="return_phone" property="returnPhone" />
         <result column="status" property="status" />
+        <result column="pre_status" property="preStatus" />
         <result column="delivery_status" property="deliveryStatus" />
         <result column="handle_time" property="handleTime" />
         <result column="reason" property="reason" />

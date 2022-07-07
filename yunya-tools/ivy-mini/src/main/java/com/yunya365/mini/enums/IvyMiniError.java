@@ -34,6 +34,14 @@ public enum IvyMiniError implements RestError {
     ORDER_REFUNDING(24, "订单正在退款中，请勿重复操作"),
     ORDER_REFUND_FINISH(25, "订单已完成退款"),
     CART_DATA_ERROR(26, "购物车异常"),
+    ORDER_CANCEL_ERROR(27, "不能退款他人订单"),
+    ORDER_CANCEL_STATUS_ERROR(28, "订单异常，取消失败"),
+    ORDER_DELETE_ERROR(29, "不能删除他人订单"),
+    ORDER_DELETE_STATUS_ERROR(30, "订单异常，删除失败"),
+    ORDER_CANCEL_REFUND_ERROR(31, "不能取消退款他人订单"),
+    ORDER_CANCEL_REFUND_STATUS_ERROR(32, "订单异常，取消退款失败"),
+    ORDER_PAY_ERROR(31, "不能支付他人订单"),
+    ORDER_PAY_STATUS_ERROR(33, "订单异常，支付失败"),
     ;
     private final Integer code;
     private final String value;

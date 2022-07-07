@@ -98,4 +98,7 @@ public interface RemoteDiscountFeign {
 
     @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.POST)
     void lockVirtualStock(@Valid @RequestBody List<LockStockForm> form);
+
+    @RequestMapping(value = "/coupon/free/stock", method = RequestMethod.POST)
+    void freeVirtualStock(@Valid @RequestBody List<FreeStockForm> form);
 }

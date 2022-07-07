@@ -93,14 +93,15 @@ public interface IOrderInfoService extends IService<OrderInfo> {
      * @param orderId:
      * @return ConfirmDeliveryVO
      */
-    ConfirmDeliveryVO confirmDelivery(Integer orderId);
+    PayOrderVO confirmDelivery(Integer orderId);
 
-    /**
-     * 查询退款详情
-     * @param orderId:
-     * @return OrderFrontVO
-     */
-    OrderRefundDetailVO queryRefund(Integer orderId);
+    PayOrderVO applyRefund(OrderRefundModel model);
 
-    OrderRefundVO refund(OrderRefundModel model);
+    void cancel(Integer orderId);
+
+    void delete(Integer orderId);
+
+    void cancelRefund(Integer orderId);
+
+    WxPaymentVO continuePay(Integer orderId);
 }

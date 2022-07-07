@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
@@ -206,6 +207,16 @@ public class ProductServiceImpl implements IProductService {
             }
         }
         return addressBO;
+    }
+
+    @Override
+    public void freeStock(List<FreeStockForm> form, Integer type) {
+        if (FALSE.equals(type)) {
+            treatmentServiceFeign.freeGoodsStock(form);
+        }
+        if (TRUE.equals(type)) {
+            discountFeign.freeVirtualStock(form);
+        }
     }
 
 

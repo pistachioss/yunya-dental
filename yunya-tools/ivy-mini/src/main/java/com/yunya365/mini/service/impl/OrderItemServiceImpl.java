@@ -25,4 +25,9 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemMapper, OrderItem
     public List<OrderItem> listByOrderIds(Collection<Integer> ids) {
         return ChainWrappers.lambdaQueryChain(baseMapper).in(OrderItem::getOrderId, ids).list();
     }
+
+    @Override
+    public void delete(Integer orderId) {
+        ChainWrappers.lambdaUpdateChain(baseMapper).eq(OrderItem::getOrderId, orderId).remove();
+    }
 }

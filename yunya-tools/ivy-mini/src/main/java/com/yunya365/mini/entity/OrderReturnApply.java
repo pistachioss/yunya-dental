@@ -3,7 +3,6 @@ package com.yunya365.mini.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -19,7 +18,6 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
-@Accessors(chain = true)
 @TableName("order_return_apply")
 public class OrderReturnApply implements Serializable {
 
@@ -63,6 +61,12 @@ public class OrderReturnApply implements Serializable {
      */
     @TableField("status")
     private Integer status;
+
+    /**
+     * 订单前状态(1->待发货；2->已发货；3->已完成)
+     */
+    @TableField("pre_status")
+    private Integer preStatus;
 
     /**
      * 用户收货状态(0-未收到货 1-收到货)

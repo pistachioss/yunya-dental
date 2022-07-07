@@ -17,4 +17,6 @@ import java.util.List;
 public interface IOrderItemService extends IService<OrderItem> {
 
     List<OrderItem> listByOrderIds(Collection<Integer> ids);
+
+    void delete(Integer orderId);
 }

@@ -1,8 +1,7 @@
 package com.yunya.modules.discount.rpc;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.discount.domain.form.LockStockForm;
-import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
+import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
@@ -138,5 +137,10 @@ public class BenefitApiController {
     @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.POST)
     void lockVirtualStock(@Valid @RequestBody List<LockStockForm> form){
         couponBiz.lockVirtualStock(form);
+    }
+
+    @RequestMapping(value = "/coupon/free/stock", method = RequestMethod.POST)
+    void freeVirtualStock(@Valid @RequestBody List<FreeStockForm> form) {
+        couponBiz.freeVirtualStock(form);
     }
 }

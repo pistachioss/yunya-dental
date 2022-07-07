@@ -105,4 +105,9 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     public void lockVirtualStock(List<LockStockForm> form) {
 
     }
+
+    @Override
+    public void freeVirtualStock(List<FreeStockForm> form) {
+
+    }
 }

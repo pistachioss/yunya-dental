@@ -79,20 +79,41 @@ public class OrderInfoController extends BaseController {
 
     @PostMapping("/order/confirm/{orderId}")
     @ApiOperation("【小程序】确认收货")
-    public ResponseResult<ConfirmDeliveryVO> confirmDelivery(@PathVariable Integer orderId) {
+    public ResponseResult<PayOrderVO> confirmDelivery(@PathVariable Integer orderId) {
         return ResponseUtil.success(orderInfoService.confirmDelivery(orderId));
     }
 
-    @GetMapping("/order/refund/{orderId}")
-    @ApiOperation("【小程序】退款详情")
-    public ResponseResult<OrderRefundDetailVO> queryRefund(@PathVariable Integer orderId) {
-        return ResponseUtil.success(orderInfoService.queryRefund(orderId));
+    @PostMapping("/order/refund")
+    @ApiOperation("【小程序】申请退款")
+    public ResponseResult<PayOrderVO> applyRefund(@RequestBody @Valid OrderRefundModel model) {
+        return ResponseUtil.success(orderInfoService.applyRefund(model));
     }
 
-    @PostMapping("/order/refund")
-    @ApiOperation("【小程序】退款")
-    public ResponseResult<OrderRefundVO> refund(@RequestBody @Valid OrderRefundModel model) {
-        return ResponseUtil.success(orderInfoService.refund(model));
+    @PostMapping("/order/refund/cancel/{orderId}")
+    @ApiOperation("【小程序】取消退款")
+    public ResponseResult<Boolean> cancelRefund(@PathVariable Integer orderId) {
+        orderInfoService.cancelRefund(orderId);
+        return ResponseUtil.success();
+    }
+
+    @PostMapping("/order/cancel/{orderId}")
+    @ApiOperation("【小程序】取消订单")
+    public ResponseResult<Boolean> cancel(@PathVariable Integer orderId) {
+        orderInfoService.cancel(orderId);
+        return ResponseUtil.success();
+    }
+
+    @PostMapping("/order/pay/continue/{orderId}")
+    @ApiOperation("【小程序】继续支付订单")
+    public ResponseResult<WxPaymentVO> continuePay(@PathVariable Integer orderId) {
+        return ResponseUtil.success(orderInfoService.continuePay(orderId));
+    }
+
+    @PostMapping("/order/delete/{orderId}")
+    @ApiOperation("【小程序】删除订单")
+    public ResponseResult<Boolean> delete(@PathVariable Integer orderId) {
+        orderInfoService.delete(orderId);
+        return ResponseUtil.success();
     }
 
     @PostMapping("/cb/notify")

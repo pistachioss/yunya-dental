@@ -1,6 +1,7 @@
 package com.yunya365.mini.service;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
@@ -82,4 +83,6 @@ public interface IProductService {
      * @return FansAddressBO
      */
     FansAddressBO getAddress(Integer fansId, Integer addressId, Integer deliveryType);
+
+    void freeStock(List<FreeStockForm> form, Integer type);
 }

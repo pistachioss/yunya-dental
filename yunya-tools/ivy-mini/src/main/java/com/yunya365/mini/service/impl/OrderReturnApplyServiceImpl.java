@@ -50,6 +50,7 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
         apply.setStatus(HANDLE_PENDING.getCode());
         apply.setDeliveryStatus(model.getStatus());
         apply.setReason(model.getRefundReason());
+        apply.setPreStatus(orderInfo.getStatus().intValue());
         baseMapper.insert(apply);
     }
 

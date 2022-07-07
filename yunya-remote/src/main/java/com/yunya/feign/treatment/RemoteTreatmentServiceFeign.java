@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
@@ -469,4 +470,7 @@ public interface RemoteTreatmentServiceFeign {
 
   @RequestMapping(value = "/rpc/goods/lock/stock", method = RequestMethod.POST)
   void lockGoodsStock(@Valid @RequestBody List<LockStockForm> form);
+
+  @RequestMapping(value = "/rpc/goods/free/stock", method = RequestMethod.POST)
+  void freeGoodsStock(@Valid @RequestBody List<FreeStockForm> form);
 }

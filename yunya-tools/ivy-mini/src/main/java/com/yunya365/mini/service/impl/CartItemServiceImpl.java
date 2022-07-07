@@ -16,6 +16,7 @@ import com.yunya365.mini.service.ICartItemService;
 import com.yunya365.mini.service.IProductService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -56,6 +57,7 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
     }
 
     @Override
+    @Transactional
     public void add(AddCartModel model) {
         Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
         String userName = BaseContextHandler.getName();

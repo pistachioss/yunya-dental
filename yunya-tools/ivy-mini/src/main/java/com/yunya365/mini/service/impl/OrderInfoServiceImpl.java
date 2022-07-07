@@ -1,6 +1,5 @@
 package com.yunya365.mini.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
@@ -8,7 +7,6 @@ import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
-import com.github.binarywang.wxpay.bean.result.BaseWxPayResult;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
@@ -16,6 +14,7 @@ import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
@@ -29,6 +28,7 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya365.mini.entity.*;
+import com.yunya365.mini.enums.IvyMiniError;
 import com.yunya365.mini.mapper.OrderInfoMapper;
 import com.yunya365.mini.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +38,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -58,6 +56,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
 import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
+import static com.yunya365.mini.enums.OrderRefundEnum.*;
 import static com.yunya365.mini.enums.OrderStatusEnum.*;
 import static java.util.stream.Collectors.*;
 
@@ -87,6 +86,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private WxPayService wxPayService;
     @Resource
     private IOrderReturnApplyService returnApplyService;
+    @Resource
+    private IWxPayInfoService wxPayInfoService;
     @Resource
     private RedisUtils redisUtils;
 
@@ -167,6 +168,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 return orderItem;
             }).collect(toList());
             orderItemService.saveBatch(itemList);
+            //保存预付单信息
+            wxPayInfoService.save(wxPaymentVO);
             //todo 发送延迟消息取消订单
             return createVO(orderInfo, itemList, wxPaymentVO);
         } finally {
@@ -206,6 +209,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             return orderItem;
         }).collect(toList());
         orderItemService.saveBatch(itemList);
+        //保存预付单信息
+        wxPayInfoService.save(wxPaymentVO);
         //todo 发送延迟消息取消订单
         return createVO(orderInfo, itemList, wxPaymentVO);
     }
@@ -223,7 +228,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             // 加入自己处理订单的业务逻辑，需要判断订单是否已经支付过，否则可能会重复调用
             String orderId = result.getOutTradeNo();
             String tradeNo = result.getTransactionId();
-            String totalFee = BaseWxPayResult.fenToYuan(result.getTotalFee());
             //本次支付的订单
             OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, orderId).one();
             if (Objects.isNull(orderInfo)) {
@@ -277,7 +281,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .in(OrderInfo::getId, orderIds).eq(OrderInfo::getStatus, PAY_PENDING.getCode()).list();
         List<WxPayOrderQueryResult> queryVOS = Lists.newArrayListWithCapacity(orderIds.size());
         for (OrderInfo orderInfo : list) {
-            WxPayOrderQueryResult queryResult = null;
+            WxPayOrderQueryResult queryResult;
             try {
                 queryResult = wxPayService.queryOrder(null, orderInfo.getOrderSn());
                 queryVOS.add(queryResult);
@@ -357,6 +361,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 payOrderVO.setRemainDate(positive);
             }
         }
+        if (Objects.equals(REFUND.getCode(),orderInfo.getStatus().intValue())) {
+            OrderReturnApply apply = returnApplyService.queryRefund(orderId);
+            payOrderVO.setOrderStatus(apply.getDeliveryStatus());
+            payOrderVO.setReturnReason(apply.getReason());
+            if (Objects.equals(REFUND_REFUSE.getCode(), apply.getStatus())) {
+                payOrderVO.setMchReply(apply.getHandleNote());
+            }
+        }
+        if (Objects.equals(CLOSE.getCode(),orderInfo.getStatus().intValue())) {
+            payOrderVO.setCloseDate(orderInfo.getUpdTime());
+        }
         vo.setOrderVO(payOrderVO);
         List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderItems)) {
@@ -372,18 +387,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ConfirmDeliveryVO confirmDelivery(Integer orderId) {
+    public PayOrderVO confirmDelivery(Integer orderId) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         boolean locked = false;
         try {
             //加锁
             locked = lock(CONFIRM_ORDER_LOCK, orderId, userId);
-            ConfirmDeliveryVO vo = new ConfirmDeliveryVO();
             OrderInfo orderInfo = baseMapper.selectByPrimaryKey(orderId);
             if (Objects.isNull(orderInfo)) {
                 throw ClientServiceException.wrap(ORDER_ERROR);
             }
-            if (!Objects.equals(userId, orderInfo.getFansId())) {
+            if (!Objects.equals(userId, orderInfo.getFansId()) && BaseContextHandler.getAuthorization().startsWith("mini")) {
                 throw ClientServiceException.wrap(ORDER_CONFIRM_ERROR);
             }
             if (!Objects.equals(HAS_SHIP.getCode(), orderInfo.getStatus().intValue())) {
@@ -400,8 +414,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             payOrderVO.setOrderId(orderInfo.getId());
             payOrderVO.setOrderDate(orderInfo.getCrtTime());
             payOrderVO.setPayDate(orderInfo.getPaymentTime());
-            vo.setOrderVO(payOrderVO);
-            return vo;
+            return payOrderVO;
         } finally {
             if (locked) {
                 log.info("【解锁成功】确认收货");
@@ -411,24 +424,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     @Override
-    public OrderRefundDetailVO queryRefund(Integer orderId) {
-        OrderRefundDetailVO vo = new OrderRefundDetailVO();
-        OrderInfo orderInfo = getById(orderId);
-        if (Objects.isNull(orderInfo)) {
-            throw ClientServiceException.wrap(ORDER_ERROR);
-        }
-        List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
-        List<OrderFrontVO> result = assembleFrontOrder(Collections.singletonList(orderInfo), orderItems);
-        vo.setOrderVO(result.get(0));
-        OrderReturnApply apply = returnApplyService.queryRefund(orderId);
-        vo.setOrderStatus(apply.getDeliveryStatus().byteValue());
-        vo.setReturnReason(apply.getReason());
-        return vo;
-    }
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
-    public OrderRefundVO refund(OrderRefundModel model) {
+    public PayOrderVO applyRefund(OrderRefundModel model) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         boolean locked = false;
         try {
@@ -446,17 +443,90 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
             }
             returnApplyService.refund(orderInfo, model);
-            OrderRefundVO vo = new OrderRefundVO();
+            orderInfo.setStatus(REFUND.getCode().byteValue());
+            Date date = new Date();
+            orderInfo.setUpdTime(date);
+            orderInfo.setUpdId(userId);
+            baseMapper.updateByPrimaryKeySelective(orderInfo);
             PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
-            vo.setOrderVO(payOrderVO);
-            vo.setOrderStatus(model.getStatus());
-            vo.setReturnReason(model.getRefundReason());
-            return vo;
+            payOrderVO.setOrderId(orderInfo.getId());
+            payOrderVO.setOrderDate(orderInfo.getCrtTime());
+            payOrderVO.setPayDate(orderInfo.getPaymentTime());
+            payOrderVO.setOrderStatus(model.getStatus());
+            payOrderVO.setReturnReason(model.getRefundReason());
+            return payOrderVO;
         } finally {
             if (locked) {
                 log.info("【解锁成功】退款");
                 unlock(REFUND_ORDER_LOCK, model.getOrderId(), userId);
             }
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancel(Integer orderId) {
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        OrderInfo orderInfo = getById(orderId);
+        checkOrder(userId, orderInfo, ORDER_CANCEL_ERROR, ORDER_CANCEL_STATUS_ERROR, PAY_PENDING.getCode());
+        orderInfo.setStatus(CLOSE.getCode().byteValue());
+        Date date = new Date();
+        orderInfo.setUpdTime(date);
+        orderInfo.setUpdId(userId);
+        baseMapper.updateByPrimaryKeySelective(orderInfo);
+        List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
+        //商店放回购物车或下订单页面
+        addCart(orderInfo, orderItems);
+        //释放库存
+        freeStock(orderInfo, orderItems);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(Integer orderId) {
+        OrderInfo orderInfo = getById(orderId);
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        checkOrder(userId, orderInfo, ORDER_DELETE_ERROR, ORDER_DELETE_STATUS_ERROR, CLOSE.getCode());
+        removeById(orderId);
+        orderItemService.delete(orderId);
+    }
+
+    @Override
+    public void cancelRefund(Integer orderId) {
+        OrderInfo orderInfo = getById(orderId);
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        checkOrder(userId, orderInfo, ORDER_CANCEL_REFUND_ERROR, ORDER_CANCEL_REFUND_STATUS_ERROR, REFUND.getCode());
+        OrderReturnApply apply = returnApplyService.queryRefund(orderId);
+        if (!Objects.equals(HANDLE_PENDING.getCode(), apply.getStatus())) {
+            throw ClientServiceException.wrap(ORDER_REFUND_FINISH);
+        }
+        orderInfo.setStatus(apply.getPreStatus().byteValue());
+        Date date = new Date();
+        orderInfo.setUpdTime(date);
+        orderInfo.setUpdId(userId);
+        baseMapper.updateByPrimaryKeySelective(orderInfo);
+        //删除订单退款申请
+        returnApplyService.removeById(apply.getId());
+    }
+
+    @Override
+    public WxPaymentVO continuePay(Integer orderId) {
+        OrderInfo orderInfo = getById(orderId);
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        checkOrder(userId, orderInfo, ORDER_PAY_ERROR, ORDER_PAY_STATUS_ERROR, PAY_PENDING.getCode());
+        return wxPayInfoService.getWxPay(orderId);
+    }
+
+    private void checkOrder(Integer userId, OrderInfo orderInfo, IvyMiniError orderCancelError, IvyMiniError orderCancelStatusError,
+                            Integer code) {
+        if (Objects.isNull(orderInfo)) {
+            throw ClientServiceException.wrap(ORDER_ERROR);
+        }
+        if (!Objects.equals(userId, orderInfo.getFansId())) {
+            throw ClientServiceException.wrap(orderCancelError);
+        }
+        if (!Objects.equals(code, orderInfo.getStatus().intValue())) {
+            throw ClientServiceException.wrap(orderCancelStatusError);
         }
     }
 
@@ -471,6 +541,31 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         String lockKey = Joiner.on(":").join(keyPrefix, key);
         String lockVal = String.valueOf(val);
         redisUtils.unlock(lockKey, lockVal);
+    }
+
+    private void addCart(OrderInfo orderInfo, List<OrderItem> orderItems) {
+        if (FALSE.equals(orderInfo.getProductType().intValue())) {
+            orderItems.forEach(t -> {
+                AddCartModel addCartModel = new AddCartModel();
+                addCartModel.setProductId(t.getProductId());
+                addCartModel.setProductName(t.getProductName());
+                addCartModel.setQuantity(t.getProductQuantity());
+                addCartModel.setProductPic(t.getProductPic());
+                addCartModel.setProductPrice(t.getProductPrice());
+                addCartModel.setProductCategoryId(t.getProductCategoryId());
+                cartItemService.add(addCartModel);
+            });
+        }
+    }
+
+    private void freeStock(OrderInfo orderInfo, List<OrderItem> orderItems) {
+        List<FreeStockForm> forms = orderItems.stream().map(t -> {
+            FreeStockForm form = new FreeStockForm();
+            form.setProductId(t.getProductId());
+            form.setQuantity(t.getProductQuantity());
+            return form;
+        }).collect(toList());
+        productService.freeStock(forms, orderInfo.getProductType().intValue());
     }
 
     private List<OrderFrontVO> assembleFrontOrder(List<OrderInfo> list, List<OrderItem> orderItems) {
@@ -533,18 +628,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         System.out.println(now.toString("yyyyMMddHHmmss"));
         String yyyyMMddHHmmss = now.plusMinutes(30).toString("yyyyMMddHHmmss");
         System.out.println(yyyyMMddHHmmss);
-    }
-
-    @SuppressWarnings("unchecked")
-    private MultiValueMap<String, String> convertFromMap(CBPublicModel miniPayModel) {
-        MultiValueMap<String, String> param = new LinkedMultiValueMap<>();
-        Map<String, Object> beanMap = JSONObject.parseObject(JSONObject.toJSONString(miniPayModel), Map.class);
-        for (Map.Entry<String, Object> entry : beanMap.entrySet()) {
-            if (StringUtils.isNotBlank(entry.getKey()) && Objects.nonNull(entry.getValue())) {
-                param.add(entry.getKey(), entry.getValue().toString());
-            }
-        }
-        return param;
     }
 
     /**
@@ -685,7 +768,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //配送方式：0->自提 1->配送
         orderInfo.setDeliveryType(model.getDeliveryType().byteValue());
         orderInfo.setRemark(model.getRemark());
-        FansAddressBO address = null;
+        FansAddressBO address;
         //商品类产品有自提和配送区分
         if (FALSE.getCode().equals(model.getProductType())) {
             //收货人信息：姓名、电话、邮编、地址
@@ -720,7 +803,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         if (CollectionUtils.isNotEmpty(orderItemBOS)) {
             List<LockStockForm> lockStockForms = orderItemBOS.stream().map(t -> {
-                LockStockForm form = new LockStockForm();
+                LockStockForm form;
                 form = new LockStockForm();
                 form.setProductId(t.getProductId());
                 form.setQuantity(t.getProductQuantity());

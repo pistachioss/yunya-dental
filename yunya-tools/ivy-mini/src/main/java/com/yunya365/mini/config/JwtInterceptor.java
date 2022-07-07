@@ -147,6 +147,7 @@ public class JwtInterceptor implements HandlerInterceptor {
         if (null == userInfo) {
             throw new UserAuthException("您还没有登录，请先登录！");
         }
+        BaseContextHandler.setAuthorization(token);
         BaseContextHandler.setUsername(userInfo.getUsername());
         BaseContextHandler.setName(userInfo.getName());
         BaseContextHandler.setUserID(userInfo.getId());

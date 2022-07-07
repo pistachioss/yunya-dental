@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Data
 @ApiModel(description = "订单")
-public class PayOrderVO {
+public class PayOrderVO{
     @ApiModelProperty(value = "订单id")
     private Integer orderId;
     @ApiModelProperty(value = "订单号")
@@ -33,4 +33,13 @@ public class PayOrderVO {
     private Byte productType;
     @ApiModelProperty(value = "剩余时间")
     private String remainDate;
+    @ApiModelProperty(value = "货物状态（0-未收到货，1-已收到货）")
+    private Integer orderStatus;
+    @ApiModelProperty(value = "退款原因")
+    private String returnReason;
+    @ApiModelProperty(value = "关闭时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private Date closeDate;
+    @ApiModelProperty(value = "商家回复")
+    private String mchReply;
 }
