@@ -3,11 +3,9 @@ package com.yunya.feign.treatment_other;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
-import com.yunya.feign.treatment_other.domain.vo.FindAllRemindRecordVO;
-import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
-import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
+import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.feign.treatment_other.factory.RemoteTreatmentOtherFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.treatment_other.VisitingRecord;
@@ -28,6 +26,14 @@ import java.util.List;
     value = YunyaServiceNameConstants.YUNYA_TREATMENT_OTHER,
     fallbackFactory = RemoteTreatmentOtherFactory.class)
 public interface RemoteTreatmentOtherFeign {
+
+  /**
+   * 查询图片影像列表
+   *
+   */
+  @RequestMapping(value = "api/treatment/other/photo/findCycleList", method = RequestMethod.POST)
+          List<XRayFilmVO>findPhotoListInfo(@RequestBody XRayFilmQuery query);
+
   /**
    * 插入随访记录
    *

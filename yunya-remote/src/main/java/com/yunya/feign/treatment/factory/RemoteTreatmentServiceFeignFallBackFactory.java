@@ -35,6 +35,11 @@ import java.util.*;
 @Component
 public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatmentServiceFeign {
   @Override
+  public BillDetailGroupVO findOrderDetailAndBillDetailByOrderRecordId(Integer orderRecordId) {
+    return null;
+  }
+
+  @Override
   public BaseOralTariffCategory findBaseOralTariffCategoryById(Integer id) {
     return null;
   }

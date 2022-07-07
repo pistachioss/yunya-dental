@@ -4,11 +4,9 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
-import com.yunya.feign.treatment_other.domain.vo.FindAllRemindRecordVO;
-import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
-import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
+import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.XRayFilm;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +23,11 @@ import java.util.List;
 @Component
 @Slf4j
 public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
+
+    @Override
+    public List<XRayFilmVO> findPhotoListInfo(XRayFilmQuery query) {
+        return null;
+    }
 
     @Override
     public void insertVisitingRecord(List<VisitingRecord> visitingRecords) {

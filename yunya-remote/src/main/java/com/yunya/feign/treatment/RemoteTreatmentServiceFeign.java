@@ -38,6 +38,16 @@ import java.util.*;
     name = YunyaServiceNameConstants.YUNYA_TREATMENT_SERVICE,
     fallbackFactory = RemoteTreatmentServiceFeignFallBackFactory.class)
 public interface RemoteTreatmentServiceFeign {
+
+  /**
+   * 根据开单ID查询开单详情与账单详情信息
+   *
+   * @return List<BaseOralTariffCategory>
+   */
+  @RequestMapping(value = "/rpc/bill/detail/{orderRecordId}", method = RequestMethod.GET)
+  BillDetailGroupVO findOrderDetailAndBillDetailByOrderRecordId(
+          @PathVariable(value = "orderRecordId") Integer orderRecordId);
+
   /**
    * 根据商品分类ID查询商品分类信息
    *

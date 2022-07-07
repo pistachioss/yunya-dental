@@ -73,6 +73,17 @@ public class TreatmentServiceRest {
   @Autowired private BillRefundRecordBiz refundRecordBiz;
 
   /**
+   * 根据开单ID查询开单详情与账单详情信息
+   *
+   * @return BigDecimal
+   */
+  @RequestMapping(value = "bill/detail/{orderRecordId}", method = RequestMethod.GET)
+  public BillDetailGroupVO findOrderDetailAndBillDetailByOrderRecordId(
+          @PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    return billRecordBiz.findOrderDetailAndBillDetail(orderRecordId);
+  }
+
+  /**
    * 根据商品分类ID查询商品分类信息
    *
    * @param id 商品分类ID
