@@ -65,7 +65,7 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
   }
 
   public List<WxAutomsg> list() {
-    return wxAutomsgMapper.selectAll();
+    return wxAutomsgMapper.selectAllOrderBy();
   }
 
   public WxMediaVo listMedia(WxSuCaiForm pushModel) {
@@ -86,6 +86,7 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     wxAutomsg.setEventkey("");
     wxAutomsg.setMsgtext(wxAutoReplyForm.getMsgtext());
     wxAutomsg.setIsvalid(true);
+    wxAutomsg.setEventdisp(wxAutoReplyForm.getEventdisp());
 
     Date now = new Date(System.currentTimeMillis());
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
@@ -118,6 +119,7 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     wxAutomsg.setEventname(wxAutoReplyForm.getEventname());
     wxAutomsg.setMsgtext(wxAutoReplyForm.getMsgtext());
     wxAutomsg.setIsvalid(true);
+    wxAutomsg.setEventdisp(wxAutoReplyForm.getEventdisp());
 
     Date now = new Date(System.currentTimeMillis());
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());

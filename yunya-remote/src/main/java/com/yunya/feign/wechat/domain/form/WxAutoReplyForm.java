@@ -48,4 +48,10 @@ public class WxAutoReplyForm implements Serializable {
      */
     @ApiModelProperty(value = "回复消息图片地址")
     private String msgpicurl;
+
+    /**
+     * 回复消息排序数
+     */
+    @ApiModelProperty(value = "回复消息排序数")
+    private Integer eventdisp;
 }
