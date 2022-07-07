@@ -23,6 +23,6 @@
   </resultMap>
 
   <select id="selectAllOrderBy">
-    select * from WxAutomsg order by EventName, EventDisp
+    select * from wx_automsg order by EventName, EventDisp
   </select>
 </mapper>
