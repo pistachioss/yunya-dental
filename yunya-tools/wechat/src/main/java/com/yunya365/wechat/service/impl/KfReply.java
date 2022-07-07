@@ -73,12 +73,12 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
   }
 
   public int create(WxAutoReplyForm wxAutoReplyForm) {
-    Example example = new Example(WxAutomsg.class);
-    example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
-    if (wxAutomsgMapper.selectByExample(example).size() > 0) {
-      throw new ClientServiceException(
-          WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
-    }
+//    Example example = new Example(WxAutomsg.class);
+//    example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
+//    if (wxAutomsgMapper.selectByExample(example).size() > 0) {
+//      throw new ClientServiceException(
+//          WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
+//    }
 
     WxAutomsg wxAutomsg = new WxAutomsg();
     wxAutomsg.setEventname(wxAutoReplyForm.getEventname());
@@ -103,14 +103,14 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     }
 
     Example example = new Example(WxAutomsg.class);
-    example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
-    if (wxAutomsgMapper.selectByExample(example).size() > 0) {
-      if (wxAutomsgMapper.selectByExample(example).size() == 1
-          && wxAutomsgMapper.selectByExample(example).get(0).getId() != id) {
-        throw new ClientServiceException(
-            WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
-      }
-    }
+//    example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
+//    if (wxAutomsgMapper.selectByExample(example).size() > 0) {
+//      if (wxAutomsgMapper.selectByExample(example).size() == 1
+//          && wxAutomsgMapper.selectByExample(example).get(0).getId() != id) {
+//        throw new ClientServiceException(
+//            WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
+//      }
+//    }
 
     WxAutomsg wxAutomsg = new WxAutomsg();
     wxAutomsg.setId(id);
