@@ -22,7 +22,7 @@
     <result column="EventDisp" jdbcType="INTEGER" property="eventdisp" />
   </resultMap>
 
-  <select id="selectAllOrderBy">
+  <select id="selectAllOrderBy" resultType="com.yunya.models.wechat.WxAutomsg">
     select * from wx_automsg order by EventName, EventDisp
   </select>
 </mapper>
