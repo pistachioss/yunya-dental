@@ -54,4 +54,10 @@ public class WxAutoReplyForm implements Serializable {
      */
     @ApiModelProperty(value = "回复消息排序数")
     private Integer eventdisp;
+
+    /**
+     * 回复消息类型
+     */
+    @ApiModelProperty(value = "回复消息类型")
+    private String msgtype;
 }
