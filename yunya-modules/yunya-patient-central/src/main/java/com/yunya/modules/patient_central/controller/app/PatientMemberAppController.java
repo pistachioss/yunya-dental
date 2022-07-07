@@ -75,11 +75,11 @@ public class PatientMemberAppController {
      */
     @ApiOperation("小程序-我的-就诊记录")
     @GetMapping("patient/list/{patientId}")
-    public ResponseResult<PageInfo<PatientTreatmentRecordVO>> findPatientListInfo(@PathVariable("patientId") Integer patientId) {
+    public ResponseResult<List<PatientTreatmentRecordVO>> findPatientListInfo(@PathVariable("patientId") Integer patientId) {
         PatientTreatmentRecordQueryForm form = new PatientTreatmentRecordQueryForm();
         form.setWhetherPage(false);
         form.setPatientId(patientId);
-        return ResponseUtil.success(remoteTreatmentServiceFeign.patientTreatmentRecordList(form));
+        return ResponseUtil.success(remoteTreatmentServiceFeign.patientTreatmentRecordList(form).getList());
     }
 
     /**
