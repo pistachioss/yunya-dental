@@ -2,6 +2,7 @@ package com.yunya365.mini.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
+import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
 import com.yunya.feign.ivy_mini.domain.model.OrderRefundModel;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya365.mini.entity.OrderInfo;
@@ -29,15 +30,15 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void refund(OrderInfo orderInfo, OrderRefundModel model) {
+    public void refundApply(OrderInfo orderInfo, OrderRefundModel model) {
         OrderReturnApply returnApply = ChainWrappers.lambdaQueryChain(baseMapper)
                 .eq(OrderReturnApply::getOrderId, orderInfo.getId()).orderByDesc(OrderReturnApply::getCrtTime)
                 .last("limit 1").one();
         if (Objects.nonNull(returnApply)) {
-            if (Objects.equals(REFUND_FINISH.getCode(), returnApply.getStatus())) {
+            if (Objects.equals(REFUND_FINISH.getCode(), returnApply.getHandleStatus())) {
                 throw ClientServiceException.wrap(ORDER_REFUND_FINISH);
             }
-            if (!Objects.equals(REFUND_REFUSE.getCode(), returnApply.getStatus())) {
+            if (!Objects.equals(REFUND_REFUSE.getCode(), returnApply.getHandleStatus())) {
                 throw ClientServiceException.wrap(ORDER_REFUNDING);
             }
         }
@@ -47,7 +48,7 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
         apply.setReturnAmount(orderInfo.getPayAmount());
         apply.setReturnName(orderInfo.getReceiverName());
         apply.setReturnPhone(orderInfo.getReceiverPhone());
-        apply.setStatus(HANDLE_PENDING.getCode());
+        apply.setHandleStatus(HANDLE_PENDING.getCode());
         apply.setDeliveryStatus(model.getStatus());
         apply.setReason(model.getRefundReason());
         apply.setPreStatus(orderInfo.getStatus().intValue());
@@ -59,5 +60,13 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
         return ChainWrappers.lambdaQueryChain(baseMapper)
                 .eq(OrderReturnApply::getOrderId, orderId).orderByDesc(OrderReturnApply::getCrtTime)
                 .last("limit 1").one();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void refund(OrderInfo orderInfo, WxPayRefundResult refund, OrderReturnApply apply) {
+        apply.setHandleStatus(REFUNDING.getCode());
+        apply.setOutOrderNo(refund.getRefundId());
+        baseMapper.updateById(apply);
     }
 }

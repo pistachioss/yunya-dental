@@ -15,7 +15,7 @@ public class PayOrderVO{
     private Integer orderId;
     @ApiModelProperty(value = "订单号")
     private String orderSn;
-    @ApiModelProperty(value = "订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）")
+    @ApiModelProperty(value = "订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款；6-退款成功；7-退款失败）")
     private Byte status;
     @ApiModelProperty(value = "支付方式（1->支付宝；2->微信）")
     private Byte payType;

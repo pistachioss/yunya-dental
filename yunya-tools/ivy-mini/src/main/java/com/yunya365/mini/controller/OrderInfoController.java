@@ -116,10 +116,16 @@ public class OrderInfoController extends BaseController {
         return ResponseUtil.success();
     }
 
-    @PostMapping("/cb/notify")
+    @PostMapping("/wx/notify")
     @IgnoreUserToken
-    public String cbNotify(HttpServletRequest request, HttpServletResponse response) {
-        return orderInfoService.cbNotify(request, response);
+    public String wxNotify(HttpServletRequest request, HttpServletResponse response) {
+        return orderInfoService.wxNotify(request, response);
+    }
+
+    @PostMapping("/wx/refund/notify")
+    @IgnoreUserToken
+    public String wxRefundNotify(HttpServletRequest request, HttpServletResponse response) {
+        return orderInfoService.wxRefundNotify(request, response);
     }
 }
 

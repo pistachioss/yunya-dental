@@ -2,12 +2,11 @@ package com.yunya365.mini.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
-import com.github.binarywang.wxpay.bean.notify.WxPayNotifyResponse;
-import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
+import com.github.binarywang.wxpay.bean.notify.*;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
-import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
-import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
+import com.github.binarywang.wxpay.bean.request.*;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
+import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
@@ -27,6 +26,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya365.mini.config.WxMiniPayProperties;
 import com.yunya365.mini.entity.*;
 import com.yunya365.mini.enums.IvyMiniError;
 import com.yunya365.mini.mapper.OrderInfoMapper;
@@ -90,6 +90,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private IWxPayInfoService wxPayInfoService;
     @Resource
     private RedisUtils redisUtils;
+    @Resource
+    private WxMiniPayProperties properties;
 
     @Override
     public ConfirmOrderVO confirmProductOrder(ConfirmProductQuery query) {
@@ -217,7 +219,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String cbNotify(HttpServletRequest request, HttpServletResponse response) {
+    public String wxNotify(HttpServletRequest request, HttpServletResponse response) {
         try {
             String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
             log.info("微信回调结果：{}", xmlResult);
@@ -361,12 +363,20 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 payOrderVO.setRemainDate(positive);
             }
         }
-        if (Objects.equals(REFUND.getCode(),orderInfo.getStatus().intValue())) {
+        if (Objects.equals(APPLY_REFUND.getCode(),orderInfo.getStatus().intValue())) {
             OrderReturnApply apply = returnApplyService.queryRefund(orderId);
             payOrderVO.setOrderStatus(apply.getDeliveryStatus());
             payOrderVO.setReturnReason(apply.getReason());
-            if (Objects.equals(REFUND_REFUSE.getCode(), apply.getStatus())) {
+            if (Objects.equals(REFUND_REFUSE.getCode(), apply.getHandleStatus())) {
                 payOrderVO.setMchReply(apply.getHandleNote());
+                payOrderVO.setStatus((byte) 7);
+            }
+            if (Objects.equals(REFUNDING.getCode(), apply.getHandleStatus())) {
+                if (Objects.equals(FALSE.getCode(), apply.getRefundStatus())) {
+                    payOrderVO.setStatus((byte) 6);
+                } else {
+                    payOrderVO.setStatus((byte) 7);
+                }
             }
         }
         if (Objects.equals(CLOSE.getCode(),orderInfo.getStatus().intValue())) {
@@ -442,8 +452,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                     .contains(orderInfo.getStatus().intValue())) {
                 throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
             }
-            returnApplyService.refund(orderInfo, model);
-            orderInfo.setStatus(REFUND.getCode().byteValue());
+            returnApplyService.refundApply(orderInfo, model);
+            orderInfo.setStatus(APPLY_REFUND.getCode().byteValue());
             Date date = new Date();
             orderInfo.setUpdTime(date);
             orderInfo.setUpdId(userId);
@@ -492,12 +502,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void cancelRefund(Integer orderId) {
         OrderInfo orderInfo = getById(orderId);
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        checkOrder(userId, orderInfo, ORDER_CANCEL_REFUND_ERROR, ORDER_CANCEL_REFUND_STATUS_ERROR, REFUND.getCode());
+        checkOrder(userId, orderInfo, ORDER_CANCEL_REFUND_ERROR, ORDER_CANCEL_REFUND_STATUS_ERROR, APPLY_REFUND.getCode());
         OrderReturnApply apply = returnApplyService.queryRefund(orderId);
-        if (!Objects.equals(HANDLE_PENDING.getCode(), apply.getStatus())) {
+        if (!Objects.equals(HANDLE_PENDING.getCode(), apply.getHandleStatus())) {
             throw ClientServiceException.wrap(ORDER_REFUND_FINISH);
         }
         orderInfo.setStatus(apply.getPreStatus().byteValue());
@@ -515,6 +526,84 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         checkOrder(userId, orderInfo, ORDER_PAY_ERROR, ORDER_PAY_STATUS_ERROR, PAY_PENDING.getCode());
         return wxPayInfoService.getWxPay(orderId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void refund(Integer orderId) {
+        OrderInfo orderInfo = null;
+        try {
+            orderInfo = getById(orderId);
+            if (Objects.isNull(orderInfo)) {
+                throw ClientServiceException.wrap(ORDER_ERROR);
+            }
+            if (!Objects.equals(APPLY_REFUND.getCode(), orderInfo.getStatus().intValue())) {
+                throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
+            }
+            OrderReturnApply apply = returnApplyService.queryRefund(orderId);
+            if (Objects.isNull(apply)) {
+                throw ClientServiceException.wrap(ORDER_ERROR);
+            }
+            if (!Objects.equals(HANDLE_PENDING.getCode(), apply.getHandleStatus())) {
+                throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
+            }
+            WxPayRefundRequest refundRequest = assembleRefundModel(orderInfo, apply);
+            WxPayRefundResult refund = wxPayService.refund(refundRequest);
+            returnApplyService.refund(orderInfo, refund, apply);
+        } catch (WxPayException e) {
+            log.error("微信退款失败！订单号：{},原因:{}", orderInfo.getOrderSn(), e.getMessage());
+            throw ClientServiceException.wrap(CB_PAY_ERROR);
+        }
+
+    }
+
+    @Override
+    public String wxRefundNotify(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
+            log.info("微信退款回调结果：{}", xmlResult);
+            WxPayRefundNotifyResult result = wxPayService.parseRefundNotifyResult(xmlResult);
+            if (!Objects.equals(WxPayConstants.ResultCode.SUCCESS, result.getReturnCode())) {
+                return WxPayNotifyResponse.fail(result.getReturnMsg());
+            }
+            WxPayRefundNotifyResult.ReqInfo reqInfo = result.getReqInfo();
+            // 微信订单号
+            String tradeNo = reqInfo.getTransactionId();
+            // 订单号
+            String orderSn = reqInfo.getOutTradeNo();
+            //退款状态 SUCCESS-退款成功  CHANGE-退款异常  REFUNDCLOSE—退款关闭
+            String refundStatus = reqInfo.getRefundStatus();
+            //退款成功时间
+            String successTime = reqInfo.getSuccessTime();
+            //本次支付的订单
+            OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, orderSn).one();
+            if (Objects.isNull(orderInfo)) {
+                throw ClientServiceException.wrap(ORDER_DATA_ERROR);
+            }
+            OrderReturnApply apply = returnApplyService.queryRefund(orderInfo.getId());
+            if (Objects.equals(refundStatus, "SUCCESS")) {
+                java.time.LocalDateTime refundTime = java.time.LocalDateTime.parse(successTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                apply.setUpdTime(refundTime);
+                apply.setRefundStatus(FALSE.getCode());
+            } else {
+                apply.setRefundStatus(FALSE.getCode());
+            }
+            returnApplyService.updateById(apply);
+            return WxPayNotifyResponse.success("处理成功!");
+        } catch (Exception e) {
+            log.error("退款回调结果异常", e);
+            return WxPayNotifyResponse.fail(e.getMessage());
+        } finally {
+            try {
+                // 处理业务完毕
+                ServletOutputStream outputStream = response.getOutputStream();
+                outputStream.print("success");
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException e) {
+                log.error("退款回调响应异常", e);
+            }
+        }
     }
 
     private void checkOrder(Integer userId, OrderInfo orderInfo, IvyMiniError orderCancelError, IvyMiniError orderCancelStatusError,
@@ -621,6 +710,20 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         request.setTimeStart(now.toString("yyyyMMddHHmmss"));
         request.setTimeExpire(now.plusMinutes(15).toString("yyyyMMddHHmmss"));
         return request;
+    }
+
+    private WxPayRefundRequest assembleRefundModel(OrderInfo orderInfo, OrderReturnApply apply) {
+        String openId = BaseContextHandler.getOpenId();
+        LocalDateTime now = LocalDateTime.fromDateFields(orderInfo.getCrtTime());
+        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+        refundRequest.setTransactionId(orderInfo.getOutOrderNo());
+//        refundRequest.setOutTradeNo(orderInfo.getOrderSn());
+        refundRequest.setOutRefundNo(orderInfo.getOrderSn());
+        refundRequest.setTotalFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
+        refundRequest.setRefundFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
+        refundRequest.setRefundDesc(apply.getReason());
+        refundRequest.setNotifyUrl(properties.getNotifyUrl());
+        return refundRequest;
     }
 
     public static void main(String[] args) {

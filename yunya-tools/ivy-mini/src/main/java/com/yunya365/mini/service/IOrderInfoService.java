@@ -54,11 +54,11 @@ public interface IOrderInfoService extends IService<OrderInfo> {
     CreateOrderVO createCartOrder(CreateCartOrderModel model);
 
     /**
-     * 采宝支付回调
+     * 微信支付回调
      * @param request:
 	 * @param response:
      */
-    String cbNotify(HttpServletRequest request, HttpServletResponse response);
+    String wxNotify(HttpServletRequest request, HttpServletResponse response);
 
     /**
      * 查询微信支付订单
@@ -95,13 +95,44 @@ public interface IOrderInfoService extends IService<OrderInfo> {
      */
     PayOrderVO confirmDelivery(Integer orderId);
 
+    /**
+     * 申请退款
+     * @param model:
+     * @return PayOrderVO
+     */
     PayOrderVO applyRefund(OrderRefundModel model);
 
+    /**
+     * 取消订单
+     * @param orderId:
+     */
     void cancel(Integer orderId);
 
+    /**
+     * 删除订单
+     * @param orderId:
+     */
     void delete(Integer orderId);
 
+    /**
+     * 取消退款
+     * @param orderId:
+     */
     void cancelRefund(Integer orderId);
 
+    /**
+     * 继续支付
+     * @param orderId:
+     * @return WxPaymentVO
+     */
     WxPaymentVO continuePay(Integer orderId);
+
+    void refund(Integer orderId);
+
+    /**
+     * 微信退款支付回调
+     * @param request:
+     * @param response:
+     */
+    String wxRefundNotify(HttpServletRequest request, HttpServletResponse response);
 }

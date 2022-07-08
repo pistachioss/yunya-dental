@@ -15,16 +15,11 @@ public enum OrderRefundEnum {
     /**
      * 退货中
      */
-    REFUNDING(1, "退货中"),
-    /**
-     * 已完成
-     */
-    REFUND_FINISH(2, "已完成"),
+    REFUNDING(1, "退货"),
     /**
      * 已拒绝
      */
-    REFUND_REFUSE(3, "已拒绝"),
-
+    REFUND_REFUSE(2, "已拒绝"),
     ;
 
     private final Integer code;

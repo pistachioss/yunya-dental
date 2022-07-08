@@ -38,6 +38,9 @@ public class OrderReturnApply implements Serializable {
     @TableField("order_sn")
     private String orderSn;
 
+    @TableField("out_order_no")
+    private String outOrderNo;
+
     /**
      * 退款金额
      */
@@ -57,10 +60,16 @@ public class OrderReturnApply implements Serializable {
     private String returnPhone;
 
     /**
-     * 申请状态：0->待处理；1->退货中；2->已完成；3->已拒绝
+     * 申请状态：0->待处理；1->退款；2->拒绝
      */
-    @TableField("status")
-    private Integer status;
+    @TableField("handle_status")
+    private Integer handleStatus;
+
+    /**
+     * 微信退款状态：0-退款成功 1-退款失败
+     */
+    @TableField("refund_status")
+    private Integer refundStatus;
 
     /**
      * 订单前状态(1->待发货；2->已发货；3->已完成)

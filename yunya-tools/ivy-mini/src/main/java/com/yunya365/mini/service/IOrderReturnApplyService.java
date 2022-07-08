@@ -1,5 +1,6 @@
 package com.yunya365.mini.service;
 
+import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
 import com.yunya.feign.ivy_mini.domain.model.OrderRefundModel;
 import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderReturnApply;
@@ -15,7 +16,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IOrderReturnApplyService extends IService<OrderReturnApply> {
 
-    void refund(OrderInfo orderInfo, OrderRefundModel model);
+    void refundApply(OrderInfo orderInfo, OrderRefundModel model);
 
     OrderReturnApply queryRefund(Integer orderId);
+
+    void refund(OrderInfo orderInfo, WxPayRefundResult refund, OrderReturnApply apply);
+
 }
