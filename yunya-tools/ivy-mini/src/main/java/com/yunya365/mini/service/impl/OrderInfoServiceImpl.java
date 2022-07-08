@@ -722,7 +722,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         refundRequest.setTotalFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
         refundRequest.setRefundFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
         refundRequest.setRefundDesc(apply.getReason());
-        refundRequest.setNotifyUrl(properties.getNotifyUrl());
+        refundRequest.setNotifyUrl(properties.getRefundNotifyUrl());
         return refundRequest;
     }
 

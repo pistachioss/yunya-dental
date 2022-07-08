@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
+import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
 import static com.yunya365.mini.enums.OrderRefundEnum.*;
 
@@ -35,11 +36,13 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
                 .eq(OrderReturnApply::getOrderId, orderInfo.getId()).orderByDesc(OrderReturnApply::getCrtTime)
                 .last("limit 1").one();
         if (Objects.nonNull(returnApply)) {
-            if (Objects.equals(REFUND_FINISH.getCode(), returnApply.getHandleStatus())) {
-                throw ClientServiceException.wrap(ORDER_REFUND_FINISH);
-            }
-            if (!Objects.equals(REFUND_REFUSE.getCode(), returnApply.getHandleStatus())) {
-                throw ClientServiceException.wrap(ORDER_REFUNDING);
+            if (Objects.equals(REFUNDING.getCode(), returnApply.getHandleStatus())) {
+                if (Objects.isNull(returnApply.getRefundStatus())) {
+                    throw ClientServiceException.wrap(ORDER_REFUNDING);
+                }
+                if (Objects.equals(FALSE.getCode(), returnApply.getRefundStatus())) {
+                    throw ClientServiceException.wrap(ORDER_REFUND_FINISH);
+                }
             }
         }
         OrderReturnApply apply = new OrderReturnApply();
