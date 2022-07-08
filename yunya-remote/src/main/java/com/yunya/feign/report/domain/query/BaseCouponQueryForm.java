@@ -32,7 +32,7 @@ public class BaseCouponQueryForm extends PageQuery implements Serializable {
 
     /** 产品类型id列表 */
     @ApiModelProperty("产品类型id列表")
-    private Collection<Integer> productTypeIds;
+    private Collection<Byte> productTypeIds;
 
     /** 产品名称 */
     @ApiModelProperty("产品名称")

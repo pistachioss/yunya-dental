@@ -10,19 +10,20 @@ import lombok.ToString;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
- * 简介：产品售卖激活数据统计查询模型
+ * 简介：365产品售卖激活数据统计查询模型
  *
  * @author: chenlin
- * @Description: 产品售卖激活数据统计查询模型
+ * @Description: 365产品售卖激活数据统计查询模型
  * @Date: 2022/7/6 10:05
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("产品售卖激活数据统计查询模型")
-public class CouponSoldActivedStatisticsQuery extends PageQuery implements Serializable {
+@ApiModel("365产品售卖激活数据统计查询模型")
+public class Coupon365SoldActivedStatisticsQuery extends PageQuery implements Serializable {
 
     /** 时间类型 */
     @ApiModelProperty(value = "时间类型:0-日；1-月；2-年", required = true)
@@ -39,15 +40,11 @@ public class CouponSoldActivedStatisticsQuery extends PageQuery implements Seria
     @NotEmpty(message = "结束日期不能为空")
     private String endDate;
 
-    /** 产品名称 */
-    @ApiModelProperty("产品名称")
-    private String couponName;
+    /** 门诊id列表 */
+    @ApiModelProperty("门诊id列表")
+    private Collection<Integer> orgIds;
 
-    /** 产品类型id */
-    @ApiModelProperty("产品类型id")
-    private Integer productTypeId;
-
-    /** 销售渠道id */
-    @ApiModelProperty("销售渠道id")
-    private Integer soldChannelId;
+    /** 卡券id列表 */
+    @ApiModelProperty("卡券id列表")
+    private Collection<Integer> couponIds;
 }
