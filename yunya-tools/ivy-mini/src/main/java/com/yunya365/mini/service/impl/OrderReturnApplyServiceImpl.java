@@ -2,16 +2,24 @@ package com.yunya365.mini.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
+import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
+import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
+import com.github.binarywang.wxpay.exception.WxPayException;
+import com.github.binarywang.wxpay.service.WxPayService;
+import com.yunya.feign.ivy_mini.domain.model.OrderRefundApplyModel;
 import com.yunya.feign.ivy_mini.domain.model.OrderRefundModel;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya365.mini.config.WxMiniPayProperties;
 import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderReturnApply;
 import com.yunya365.mini.mapper.OrderReturnApplyMapper;
 import com.yunya365.mini.service.IOrderReturnApplyService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 
 import static com.yunya.framework.common.enums.TrueFalseEnum.*;
@@ -26,12 +34,18 @@ import static com.yunya365.mini.enums.OrderRefundEnum.*;
  * @author xiangyang
  * @since 2022-07-04
  */
+@Slf4j
 @Service
 public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMapper, OrderReturnApply> implements IOrderReturnApplyService {
 
+    @Resource
+    private WxPayService wxPayService;
+    @Resource
+    private WxMiniPayProperties properties;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void refundApply(OrderInfo orderInfo, OrderRefundModel model) {
+    public void refundApply(OrderInfo orderInfo, OrderRefundApplyModel model) {
         OrderReturnApply returnApply = ChainWrappers.lambdaQueryChain(baseMapper)
                 .eq(OrderReturnApply::getOrderId, orderInfo.getId()).orderByDesc(OrderReturnApply::getCrtTime)
                 .last("limit 1").one();
@@ -67,9 +81,37 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void refund(OrderInfo orderInfo, WxPayRefundResult refund, OrderReturnApply apply) {
-        apply.setHandleStatus(REFUNDING.getCode());
-        apply.setOutOrderNo(refund.getRefundId());
-        baseMapper.updateById(apply);
+    public void refund(OrderInfo orderInfo, OrderRefundModel model) {
+        try {
+            OrderReturnApply apply = queryRefund(orderInfo.getId());
+            if (Objects.isNull(apply)) {
+                throw ClientServiceException.wrap(ORDER_ERROR);
+            }
+            if (!Objects.equals(HANDLE_PENDING.getCode(), apply.getHandleStatus())) {
+                throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
+            }
+            if (Objects.equals(REFUNDING.getCode(), model.getStatus())) {
+                WxPayRefundRequest refundRequest = assembleRefundModel(orderInfo, apply);
+                WxPayRefundResult refund = wxPayService.refund(refundRequest);
+                apply.setOutOrderNo(refund.getRefundId());
+            }
+            apply.setHandleStatus(model.getStatus());
+            baseMapper.updateById(apply);
+        } catch (WxPayException e) {
+            log.error("微信退款失败！订单号：{},原因:{}", orderInfo.getOrderSn(), e.getMessage());
+            throw ClientServiceException.wrap(CB_PAY_ERROR);
+        }
+    }
+
+    private WxPayRefundRequest assembleRefundModel(OrderInfo orderInfo, OrderReturnApply apply) {
+        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
+        refundRequest.setTransactionId(orderInfo.getOutOrderNo());
+//        refundRequest.setOutTradeNo(orderInfo.getOrderSn());
+        refundRequest.setOutRefundNo(orderInfo.getOrderSn());
+        refundRequest.setTotalFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
+        refundRequest.setRefundFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
+        refundRequest.setRefundDesc(apply.getReason());
+        refundRequest.setNotifyUrl(properties.getRefundNotifyUrl());
+        return refundRequest;
     }
 }

@@ -100,7 +100,7 @@ public interface IOrderInfoService extends IService<OrderInfo> {
      * @param model:
      * @return PayOrderVO
      */
-    PayOrderVO applyRefund(OrderRefundModel model);
+    PayOrderVO applyRefund(OrderRefundApplyModel model);
 
     /**
      * 取消订单
@@ -127,7 +127,7 @@ public interface IOrderInfoService extends IService<OrderInfo> {
      */
     WxPaymentVO continuePay(Integer orderId);
 
-    void refund(Integer orderId);
+    void refund(OrderRefundModel model);
 
     /**
      * 微信退款支付回调

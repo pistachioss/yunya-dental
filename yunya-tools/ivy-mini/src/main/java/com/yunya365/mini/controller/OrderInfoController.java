@@ -85,7 +85,7 @@ public class OrderInfoController extends BaseController {
 
     @PostMapping("/order/refund")
     @ApiOperation("【小程序】申请退款")
-    public ResponseResult<PayOrderVO> applyRefund(@RequestBody @Valid OrderRefundModel model) {
+    public ResponseResult<PayOrderVO> applyRefund(@RequestBody @Valid OrderRefundApplyModel model) {
         return ResponseUtil.success(orderInfoService.applyRefund(model));
     }
 

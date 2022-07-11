@@ -40,9 +40,9 @@ public enum IvyMiniError implements RestError {
     ORDER_DELETE_STATUS_ERROR(30, "订单异常，删除失败"),
     ORDER_CANCEL_REFUND_ERROR(31, "不能取消退款他人订单"),
     ORDER_CANCEL_REFUND_STATUS_ERROR(32, "订单异常，取消退款失败"),
-    ORDER_PAY_ERROR(31, "不能支付他人订单"),
-    ORDER_PAY_STATUS_ERROR(33, "订单异常，支付失败"),
-    WX_REFUND_ERROR(34, "微信退款异常"),;
+    ORDER_PAY_ERROR(33, "不能支付他人订单"),
+    ORDER_PAY_STATUS_ERROR(34, "订单异常，支付失败"),
+    WX_REFUND_ERROR(35, "微信退款异常"),;
     private final Integer code;
     private final String value;
 

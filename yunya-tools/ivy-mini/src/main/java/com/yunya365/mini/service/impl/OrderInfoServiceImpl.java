@@ -6,7 +6,6 @@ import com.github.binarywang.wxpay.bean.notify.*;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
 import com.github.binarywang.wxpay.bean.request.*;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
-import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
@@ -435,7 +434,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PayOrderVO applyRefund(OrderRefundModel model) {
+    public PayOrderVO applyRefund(OrderRefundApplyModel model) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         boolean locked = false;
         try {
@@ -530,31 +529,16 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void refund(Integer orderId) {
-        OrderInfo orderInfo = null;
-        try {
-            orderInfo = getById(orderId);
-            if (Objects.isNull(orderInfo)) {
-                throw ClientServiceException.wrap(ORDER_ERROR);
-            }
-            if (!Objects.equals(APPLY_REFUND.getCode(), orderInfo.getStatus().intValue())) {
-                throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
-            }
-            OrderReturnApply apply = returnApplyService.queryRefund(orderId);
-            if (Objects.isNull(apply)) {
-                throw ClientServiceException.wrap(ORDER_ERROR);
-            }
-            if (!Objects.equals(HANDLE_PENDING.getCode(), apply.getHandleStatus())) {
-                throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
-            }
-            WxPayRefundRequest refundRequest = assembleRefundModel(orderInfo, apply);
-            WxPayRefundResult refund = wxPayService.refund(refundRequest);
-            returnApplyService.refund(orderInfo, refund, apply);
-        } catch (WxPayException e) {
-            log.error("微信退款失败！订单号：{},原因:{}", orderInfo.getOrderSn(), e.getMessage());
-            throw ClientServiceException.wrap(CB_PAY_ERROR);
+    public void refund(OrderRefundModel model) {
+        OrderInfo orderInfo;
+        orderInfo = getById(model.getOrderId());
+        if (Objects.isNull(orderInfo)) {
+            throw ClientServiceException.wrap(ORDER_ERROR);
         }
-
+        if (!Objects.equals(APPLY_REFUND.getCode(), orderInfo.getStatus().intValue())) {
+            throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
+        }
+        returnApplyService.refund(orderInfo, model);
     }
 
     @Override
