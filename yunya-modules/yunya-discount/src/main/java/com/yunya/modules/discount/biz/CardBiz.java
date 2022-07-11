@@ -3293,7 +3293,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return mapper.selectCardSaleCashReceipt(query);
     }
 
-    public List<CardIyOr365VO> findIyOr365CardActivedList() {
-        return mapper.selectIyOr365CardActivedList();
+    public List<CardIyOr365VO> findIyOr365CardActivedList(CardIyOr365ActivedQuery query) {
+        return mapper.selectIyOr365CardActivedList(query);
     }
 }

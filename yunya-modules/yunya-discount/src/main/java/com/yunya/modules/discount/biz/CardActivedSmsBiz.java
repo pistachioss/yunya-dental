@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.biz;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yunya.feign.discount.domain.query.CardIyOr365ActivedQuery;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;

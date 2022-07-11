@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.task;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yunya.feign.discount.domain.query.CardIyOr365ActivedQuery;
 import com.yunya.feign.discount.domain.vo.CardIyOr365VO;
 import com.yunya.framework.common.utils.CronUtil;
 import com.yunya.framework.common.utils.DateUtil;
@@ -10,6 +11,7 @@ import com.yunya.models.discount.Card;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.modules.discount.biz.CardActivedSmsBiz;
 import com.yunya.modules.discount.biz.CardBiz;
+import com.yunya.modules.discount.enums.CouponTypeEnum;
 import com.yunya.modules.discount.task.quartz.ScheduledQuartz;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
@@ -25,8 +27,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.yunya.modules.discount.enums.CouponTypeEnum.SPECIAL_PACKAGE;
+
 /**
  * 简介：每天23点执行，扫描出明天将发送短信的卡券，为其创建定时任务
+ *  如果该定时任务在某天因为某些原因没有执行，可手动调用接口: "/card/trigger/iyOr365/task" 来执行
  *
  * @author: chenlin
  * @Description: 每天23点执行，扫描出明天将发送短信的卡券，为其创建定时任务
@@ -36,7 +41,7 @@ import java.util.*;
 @Slf4j
 @Component
 @EnableScheduling
-public class CardActivedSmsNoticeTask implements InitializingBean {
+public class CardActivedSmsNoticeTask {
     @Autowired
     private CardActivedSmsBiz cardActivedSmsBiz;
     @Autowired
@@ -44,13 +49,13 @@ public class CardActivedSmsNoticeTask implements InitializingBean {
     @Autowired
     private ScheduledQuartz scheduledQuartz;
 
-//    @Scheduled(cron = "0 0 23 * * ?")
-    @Scheduled(cron = "0 17 10 * * ?")
-    public void executeTask() {
-        log.info(">>>>>>>>>>>>>>>>>>>CardActivedSmsNoticeTask start");
-        LocalDateTime tomorrow = LocalDateTime.now().plusDays(1);
+    @Scheduled(cron = "0 0 23 * * ?")
+    public void executeTask(CardIyOr365ActivedQuery query) {
+        LocalDateTime execDate = query.getExecDate();
+        log.info(">>>>>>>>>>>>>>>>>>>CardActivedSmsNoticeTask start at: {}", execDate);
+        query.setCouponType(SPECIAL_PACKAGE.getCode());
         // 1、查询艾芽卡、365卡等已激活且未全部使用的卡券列表
-        List<CardIyOr365VO> cards = cardBiz.findIyOr365CardActivedList();
+        List<CardIyOr365VO> cards = cardBiz.findIyOr365CardActivedList(query);
         List<CardIyOr365VO> list = new ArrayList<>();
         Set<String> dates = new HashSet<>();
         if (StringHelper.isNotEmpty(cards)) {
@@ -60,13 +65,13 @@ public class CardActivedSmsNoticeTask implements InitializingBean {
                 LocalDateTime activationDeadline = getActivationDeadline(vo);
                 LocalDateTime activeDate = vo.getActiveDate();
                 // 截止时间晚于明天，且明天距上次发送短信日期为3个月
-                if (isTomorrowTask(vo.getLastSendDate(), activationDeadline, tomorrow)) {
-                    if (activationDeadline.equals(tomorrow)) {
+                if (isTomorrowTask(vo.getLastSendDate(), activationDeadline, execDate)) {
+                    if (activationDeadline.equals(execDate)) {
                         // 当明天为截止时间时，短信发送时间（激活时间）提前1小时
                         activeDate = activeDate.minusHours(1);
                     }
                     String date = String.join(" ",
-                            DateUtil.format(tomorrow, "yyyy-MM-dd"),
+                            DateUtil.format(execDate, "yyyy-MM-dd"),
                             DateUtil.format(activeDate, "HH:mm:ss"));
                     String cronExp = CronUtil.nextExecCron(date);
                     vo.setCron(cronExp);
@@ -146,10 +151,5 @@ public class CardActivedSmsNoticeTask implements InitializingBean {
                 log.error("CardActivedSmsNoticeTask add a cron task error: {}", e);
             }
         }
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        executeTask();
     }
 }
