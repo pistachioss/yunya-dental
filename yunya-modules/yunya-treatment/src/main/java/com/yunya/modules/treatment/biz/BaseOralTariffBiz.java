@@ -1279,7 +1279,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
         return Lists.newArrayList();
       }
       Example example = new Example(BaseOralTariff.class);
-      example.selectProperties("id","itemNumber","name","unit","price","stock","itemPic","sale");
+      example.selectProperties("id","itemNumber","name","unit","price","stock","itemPic","sale","oralTariffCategoryId");
       Example.Criteria criteria = example.createCriteria().andIn("id", ids)
               .andEqualTo("isOnlineSale", true)
               .andEqualTo("inservice", true);

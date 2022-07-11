@@ -111,10 +111,10 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
 
     public List<ProductBO> listOnSaleOral(Collection<Integer> ids) {
         Example example = new Example(CouponCommonInfo.class);
-        example.selectProperties("id","type","name","couponCode","soldAmount");
+        example.selectProperties("id","type","name","couponCode","soldAmount","productTypeId");
         example.createCriteria().andIn("id", ids)
                 .andEqualTo("isOnlineSale", true)
-                .andEqualTo("inservice", true);
+                .andEqualTo("isInservice", true);
         List<CouponCommonInfo> couponCommonInfos = mapper.selectByExample(example);
         //产品图片
         List<CouponFileInfo> couponFileInfos = fileInfoBiz.listByCouponIds(ids, 0);
@@ -139,6 +139,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
             bo.setProductPrice(t.getSoldAmount());
             bo.setProductType(TRUE.getCode());
             bo.setProductCategoryId(t.getProductTypeId());
+            bo.setCouponType(t.getType().intValue());
             return bo;
         }).collect(Collectors.toList());
         Map<Integer, ProductTypeVO> categoryMap = cateGoryList.stream().collect(toMap(ProductTypeVO::getId, Function.identity()));

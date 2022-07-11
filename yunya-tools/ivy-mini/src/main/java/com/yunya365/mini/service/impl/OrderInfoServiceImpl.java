@@ -12,8 +12,10 @@ import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.yunya.feign.discount.domain.form.FreeStockForm;
-import com.yunya.feign.discount.domain.form.LockStockForm;
+import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.form.*;
+import com.yunya.feign.discount.domain.query.CardSaleQuery;
+import com.yunya.feign.discount.domain.vo.CardSalePageVo;
 import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.model.*;
@@ -87,6 +89,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private IOrderReturnApplyService returnApplyService;
     @Resource
     private IWxPayInfoService wxPayInfoService;
+    @Resource
+    private RemoteDiscountFeign discountFeign;
     @Resource
     private RedisUtils redisUtils;
     @Resource
@@ -171,6 +175,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderItemService.saveBatch(itemList);
             //保存预付单信息
             wxPayInfoService.save(wxPaymentVO);
+            //虚拟服务售卖卡券
+            soldCard(model, itemBoList);
             //todo 发送延迟消息取消订单
             return createVO(orderInfo, itemList, wxPaymentVO);
         } finally {
@@ -899,5 +905,35 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             list.addAll(lockStockForms);
         }
         productService.lockProductStock(list, productType);
+    }
+
+    void soldCard(CreateProductOrderModel model, List<OrderItemBO> itemBoList){
+        String username = BaseContextHandler.getName();
+        String openId = BaseContextHandler.getOpenId();
+        CardSaleQuery query = new CardSaleQuery();
+        query.setCouponId(model.getProductId());
+        query.setOrgId(21);
+        query.setCardStatsList(Collections.singletonList(0));
+        query.setPageNum(1);
+        query.setPageSize(model.getQuantity());
+        PageInfo<CardSalePageVo> data = discountFeign.getCardSalePageVo(query).getData();
+        if (!Objects.equals(data.getSize(), model.getQuantity())) {
+            throw ClientServiceException.wrap(CARD_SOLD_LACK);
+        }
+        List<Integer> cardIds = data.getList().stream().map(CardSalePageVo::getId).collect(toList());
+        OrderItemBO orderItemBO = itemBoList.get(0);
+        CardSoldForm form = new CardSoldForm();
+        form.setCardIds(cardIds);
+        form.setSoldTarget(username);
+        form.setSoldPhoneNumber(openId);
+        form.setSoldType(0);
+        form.setSendText(0);
+        form.setSoldAndPay(1);
+        form.setPayId(1);
+        form.setRemark("小程序虚拟服务售卖");
+        form.setSoldWay(0);
+        form.setCouponType(orderItemBO.getCouponType());
+        form.setCouponName(orderItemBO.getProductName());
+        discountFeign.soldCard(form);
     }
 }

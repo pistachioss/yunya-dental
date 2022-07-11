@@ -4,8 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
-import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
-import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
@@ -101,4 +100,11 @@ public interface RemoteDiscountFeign {
 
     @RequestMapping(value = "/coupon/free/stock", method = RequestMethod.POST)
     void freeVirtualStock(@Valid @RequestBody List<FreeStockForm> form);
+
+    @PostMapping("/coupon/sale/card/page")
+    ResponseResult<PageInfo<CardSalePageVo>> getCardSalePageVo(@Valid @RequestBody CardSaleQuery query);
+
+    @ApiOperation(value = "产品售卖--查看配给-卡券售出")
+    @PutMapping("/coupon/card/sale")
+    ResponseResult soldCard(@Valid @RequestBody CardSoldForm form);
 }

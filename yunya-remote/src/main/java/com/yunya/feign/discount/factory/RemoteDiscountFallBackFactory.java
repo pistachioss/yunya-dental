@@ -5,8 +5,7 @@ import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
-import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
-import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
@@ -109,5 +108,15 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     @Override
     public void freeVirtualStock(List<FreeStockForm> form) {
 
+    }
+
+    @Override
+    public ResponseResult<PageInfo<CardSalePageVo>> getCardSalePageVo(CardSaleQuery query) {
+        return null;
+    }
+
+    @Override
+    public ResponseResult soldCard(CardSoldForm form) {
+        return null;
     }
 }

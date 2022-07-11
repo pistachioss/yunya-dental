@@ -21,5 +21,6 @@ public class ProductBO {
     private Integer soldQuantity;
     private Integer productCategoryId;
     private String productCategoryName;
+    private Integer couponType;
 
 }
