@@ -160,4 +160,28 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
     List<CardCouponUsedDetailVO> selectCardCouponUsedDetail(@Param("query") CardCouponUsedDetailQueryForm query);
 
     List<BaseCard> selectProductSoldList(@Param("query") MultiClinicDateRangeQueryForm query);
+
+    /**
+     * 365卡产品售出激活统计表
+     *
+     * @param query
+     * @return
+     */
+    List<Coupon365SoldActivedStatisticsVO> selectCoupon365SoldActivedStatstics(@Param("query") Coupon365SoldActivedStatisticsQuery query);
+
+    /**
+     * 根据条件查询365卡产品售出明细表
+     *
+     * @param query
+     * @return
+     */
+    List<Coupon365SoldDetailVO> selectCoupon365SoldDetail(@Param("query") Coupon365SoldDetailQuery query);
+
+    /**
+     * 根据条件查询365卡产品激活明细表
+     *
+     * @param query
+     * @return
+     */
+    List<Coupon365ActivedDetailVO> selectCoupon365ActivedDetail(@Param("query") Coupon365ActivedDetailQuery query);
 }

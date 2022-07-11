@@ -2,25 +2,26 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.CardCouponUsedDetailQueryForm;
-import com.yunya.feign.report.domain.query.CardCouponUsedQueryForm;
-import com.yunya.feign.report.domain.query.StatementProductSoldDetailQuery;
-import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
-import com.yunya.feign.report.domain.vo.CardCouponUsedDetailVO;
-import com.yunya.feign.report.domain.vo.StatementPaymentVO;
-import com.yunya.feign.report.domain.vo.StatementProductSoldDetailVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseCard;
+import com.yunya.models.report.BaseCoupon;
 import com.yunya.report.ultimate.mapper.BaseCardMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 
@@ -35,6 +36,13 @@ import static com.yunya.framework.common.constant.BusinessConstants.*;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
+
+  /** 365卡系列*/
+  private static final Byte PROD_TYPE_365 = 14;
+  /** 产品 */
+  @Autowired private BaseCouponBiz baseCouponBiz;
+  /** 门诊 */
+  @Autowired private BaseOrganizationBiz baseOrganizationBiz;
 
   /**
    * 根据条件查询门诊产品售出明细列表
@@ -119,5 +127,133 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
 
   public List<BaseCard> findProductSoldList(CardCouponUsedQueryForm query) {
     return mapper.selectProductSoldList(query);
+  }
+
+  /**
+   * 365卡产品售出激活统计表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<Coupon365SoldActivedStatisticsVO> coupon365SoldActivedStatistics(Coupon365SoldActivedStatisticsQuery query) {
+    query.setCouponIds(findCard365CouponIds(PROD_TYPE_365));
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<Coupon365SoldActivedStatisticsVO> result = mapper.selectCoupon365SoldActivedStatstics(query);
+    return new PageInfo<>(result);
+  }
+
+  private List<Integer> findCard365CouponIds(Byte prodType365) {
+    BaseCouponQueryForm queryFrom = new BaseCouponQueryForm();
+    queryFrom.setProductTypeIds(Collections.singleton(prodType365));
+    List<BaseCoupon> coupons = baseCouponBiz.findBaseCouponList(queryFrom);
+    return coupons.stream().map(BaseCoupon::getCouponId).collect(Collectors.toList());
+  }
+
+  /**
+   * 导出365卡产品售出激活统计表
+   *
+   * @param query
+   * @param response
+   */
+  public void coupon365SoldActivedStatisticsExport(Coupon365SoldActivedStatisticsQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<Coupon365SoldActivedStatisticsVO> list = coupon365SoldActivedStatistics(query).getList();
+    ExcelUtil<Coupon365SoldActivedStatisticsVO> excelUtil =
+            new ExcelUtil<>(Coupon365SoldActivedStatisticsVO.class);
+    excelUtil.exportExcel(response, list, "365卡产品售出激活统计表");
+  }
+
+  /**
+   * 根据条件查询365卡产品售出明细表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<Coupon365SoldDetailVO> findCoupon365SoldDetail(Coupon365SoldDetailQuery query) {
+    query.setCouponIds(findCard365CouponIds(PROD_TYPE_365));
+    List<Coupon365SoldDetailVO> result = mapper.selectCoupon365SoldDetail(query);
+    accumulativeNum(result);
+    return PageUtl.doPage(query, result);
+  }
+
+  /**
+   * 累计数量
+   *
+   * @param result
+   */
+  private void accumulativeNum(List<? extends Coupon365DetailVO> result) {
+    Map<String, Integer> patientCountMap = new HashMap<>();
+    // 统计患者+产品下的所有卡券列表
+    result.forEach(vo-> accumulate(vo, patientCountMap, 1));
+    // 递减式更新返回数据中的累计数
+    result.forEach(vo->{
+      Integer count = accumulate(vo, patientCountMap, -1);
+      vo.setAccumulativeNum(count);
+    });
+  }
+
+  private Integer accumulate(Coupon365DetailVO vo, Map<String, Integer> patientCountMap, Integer num) {
+    String key = StringHelper.joinWith(",", vo.getPatientId(), vo.getCouponId());
+    Integer count = patientCountMap.get(key);
+    if (count == null) {
+      count = 0;
+    }
+    patientCountMap.put(key, count + num);
+    return count;
+  }
+
+  /**
+   * 根据条件导出365卡产品售出明细表
+   *
+   * @param query
+   * @param response
+   * @throws IOException
+   */
+  public void findCoupon365SoldDetailExport(Coupon365SoldDetailQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<Coupon365SoldDetailVO> list = findCoupon365SoldDetail(query).getList();
+    ExcelUtil<Coupon365SoldDetailVO> excelUtil =
+            new ExcelUtil<>(Coupon365SoldDetailVO.class);
+    String name = "365卡产品售出明细表";
+    excelUtil.exportExcel(response, list, name, name);
+  }
+
+  /**
+   * 根据条件查询365卡产品激活明细表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<Coupon365ActivedDetailVO> findCoupon365ActivedDetail(Coupon365ActivedDetailQuery query) {
+    List<Integer> couponId365 = findCard365CouponIds(PROD_TYPE_365);
+    if (StringHelper.isEmpty(couponId365)) {
+      query.setCouponIds(couponId365);
+    } else {
+      Collection<Integer> couponIds = query.getCouponIds();
+      if (!couponId365.containsAll(couponIds)) {
+        throw new ClientServiceException("请选择365产品！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      }
+    }
+    List<Coupon365ActivedDetailVO> result = mapper.selectCoupon365ActivedDetail(query);
+    accumulativeNum(result);
+    return PageUtl.doPage(query, result);
+  }
+
+  /**
+   * 根据条件导出365卡产品激活明细表
+   *
+   * @param query
+   * @param response
+   * @throws IOException
+   */
+  public void findCoupon365ActivedDetailExport(Coupon365ActivedDetailQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<Coupon365ActivedDetailVO> list = findCoupon365ActivedDetail(query).getList();
+    ExcelUtil<Coupon365ActivedDetailVO> excelUtil =
+            new ExcelUtil<>(Coupon365ActivedDetailVO.class);
+    String name = "365卡产品激活明细表";
+    excelUtil.exportExcel(response, list, name, name);
   }
 }

@@ -62,8 +62,7 @@
             `bc`.`coupon_type`,
             `bc`.`sold_amount`,
             `be`.`employee_name`                as `crtUser`,
-            ifnull(sum(`b`.`status` in (1, 2, 3, 4)
-                and b.allocate_org_id != 0),0)  as `ownPlatformSoldQuantity`,
+            ifnull(sum(`b`.`status` in (1, 2, 3, 4) and b.allocate_org_id != 0),0)  as `ownPlatformSoldQuantity`,
             case
                 when bc.coupon_type = 4 then null
                 else ifnull(sum(`b`.`status` in (2, 3, 4)
@@ -262,15 +261,32 @@
         ORDER BY bd.coupon_id
     </select>
 
-    <select id="selectBaseCouponListByCouponId" resultType="com.yunya.models.report.BaseCoupon">
+    <select id="selectBaseCouponList" resultType="com.yunya.models.report.BaseCoupon">
         SELECT
             bc.coupon_id AS couponId,
-            bc.coupon_name AS couponName
+            bc.coupon_name AS couponName,
+            bc.product_type_id AS productTypeId,
+            bc.product_type_name AS productTypeName
         FROM base_coupon bc
         <where>
-            <if test="couponIds!=null and couponIds.size()>0">
+            <if test="query.couponName!=null and query.couponName!=''">
+                bc.coupon_name = #{query.couponName}
+            </if>
+            <if test="query.couponIds!=null and query.couponIds.size()>0">
                 and bc.coupon_id IN
-                <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                <foreach collection="query.couponIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.productTypeIds!=null and query.productTypeIds.size()>0">
+                and bc.product_type_id IN
+                <foreach collection="query.productTypeIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.couponTypes!=null and query.couponTypes.size()>0">
+                and bc.coupon_type IN
+                <foreach collection="query.couponTypes" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>

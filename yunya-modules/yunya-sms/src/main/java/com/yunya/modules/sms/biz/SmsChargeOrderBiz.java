@@ -117,7 +117,7 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
                 TimeUnit.SECONDS.sleep(5);
                 log.info("SMS_ORDER_RETRY: orderId: {}, retry {} times to sync Wiki order", smsOrderId, retryTimes);
                 RetryUtl.retry(
-                        (a)->{
+                        (obj)->{
                             SmsChargeOrderVO smsOrder = findSmsChargeOrderById(smsOrderId);
                             return !ObjectUtils.isEmpty(smsOrder) && SmsOrderStatusEnum.WAIT_PAY.equals(smsOrder.getOrderStatus());
                         }, // 重试条件

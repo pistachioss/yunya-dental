@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.BaseCouponQueryForm;
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseCoupon;
@@ -38,5 +39,5 @@ public interface BaseCouponMapper extends Mapper<BaseCoupon> {
 
 	List<CouponActiveVo> couponActivedGroupByOrgId(@Param("query") ClinicPerformanceBusinessQuery query);
 
-	List<BaseCoupon> selectBaseCouponListByCouponId(@Param("couponIds") Collection<Integer> couponIds);
+	List<BaseCoupon> selectBaseCouponList(@Param("query") BaseCouponQueryForm query);
 }
