@@ -10,6 +10,7 @@ import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.vo.XRayFilmVO;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
@@ -32,6 +33,7 @@ import java.util.List;
 @Api(value = "小程序端-就诊人信息",description = "小程序端-就诊人信息")
 @RestController
 @RequestMapping("/wx")
+@IgnoreUserToken
 public class PatientMemberAppController {
 
     /** 注入对象 */
