@@ -221,11 +221,4 @@ public class CardController {
         List<PatientCardSharerVo> configuredSharer = cardBiz.getConfiguredSharer(patientId, couponId);
         return ResponseUtil.success(configuredSharer);
     }
-
-    @ApiOperation(value = "手动触发任务执行：一般情况不要使用")
-    @PostMapping("/card/trigger/iyOr365/task")
-    public ResponseResult triggerCardIyOr365ActivedSmsTask(CardIyOr365ActivedQuery query) {
-        cardActivedSmsNoticeTask.executeTask(query);
-        return ResponseUtil.success();
-    }
 }

@@ -28,11 +28,11 @@ public class CardIyOr365ActivedQuery implements Serializable {
     @ApiModelProperty("产品类型名称")
     private Collection<String> productTypeNames = Arrays.asList("365系列礼包","套餐有效期至12.31");
 
-    /** 卡券类型*/
-    @ApiModelProperty("卡券类型")
-    private Integer couponType;
+    /** 卡券类型：0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券*/
+    @ApiModelProperty("卡券类型：0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券")
+    private Integer couponType = 3;
 
     /** 执行日期，默认是明天 */
     @ApiModelProperty("执行日期，默认是明天")
-    private LocalDateTime execDate = LocalDateTime.now().plusDays(1);
+    private String execDate;
 }

@@ -873,27 +873,27 @@
             c.coupon_id AS couponId,
             c.org_id AS orgId,
             c.active_date AS activeDate,
-            cpi.name,
-            cpi.type,
+            cci.name,
+            cci.type,
             spc.activation_deadline AS activationDeadline,
             spc.effective_days AS effectiveDays,
             DATE_FORMAT(IFNULL(cas.crt_time, active_date), '%Y-%m-%d') AS lastSendDate
         FROM card c
-        LEFT JOIN coupon_common_info cpi ON c.coupon_id=cpi.id
-        LEFT JOIN special_package_coupon spc ON spc.coupon_id=cpi.id
-        LEFT JOIN product_type pt ON cpi.product_type_id = pt.id
+        LEFT JOIN coupon_common_info cci ON c.coupon_id=cci.id
+        LEFT JOIN special_package_coupon spc ON spc.coupon_id=cci.id
+        LEFT JOIN product_type pt ON cci.product_type_id = pt.id
         LEFT JOIN (
             SELECT MAX(id) AS id, card_id, crt_time FROM card_actived_sms GROUP BY card_id ORDER BY id DESC
         ) cas ON cas.card_id=c.id
         <where>
-            <if test="query.productTyeNames!=null and query.productTypeNames.size()>0">
+            <if test="query.productTypeNames!=null and query.productTypeNames.size()>0">
                 and pt.name in
-                <foreach collection="query.productTyeNames" item="item" open="(" separator="," close=")">
+                <foreach collection="query.productTypeNames" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
-            <if test="query.type">
-                and cpi.type = #{query.couponType}
+            <if test="query.couponType != null">
+                and cci.type = #{query.couponType}
             </if>
             and c.status in(2,3)
         </where>
