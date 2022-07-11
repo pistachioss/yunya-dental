@@ -793,6 +793,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         }
     }
 
+    /** 套餐券 */
+    private static final Byte PACKAGE_VOUCHER = 3;
     /** 365卡系列*/
     private static final Byte PROD_TYPE_365 = 14;
     /** 艾芽卡系列*/
@@ -806,7 +808,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         Integer couponId = card.getCouponId();
         Example example = new Example(CouponCommonInfo.class);
         Example.Criteria c = example.createCriteria();
-        c.andIn("couponId", Collections.singleton(couponId));
+        c.andIn("id", Collections.singleton(couponId));
+        c.andEqualTo("type", SPECIAL_PACKAGE.getCode());
         c.andIn("productTypeId", Arrays.asList(PROD_TYPE_365, PROD_TYPE_IVY));
         List<CouponCommonInfo> coupons = couponMapper.selectByExample(example);
         if (StringHelper.isNotEmpty(coupons)) {

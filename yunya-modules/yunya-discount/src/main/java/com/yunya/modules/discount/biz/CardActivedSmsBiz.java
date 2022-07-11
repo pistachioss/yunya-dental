@@ -79,7 +79,7 @@ public class CardActivedSmsBiz extends BaseBiz<CardActivedSmsMapper, CardActived
         model.setMobile(card.getSoldPhoneNumber());
         model.setSendObject(card.getSoldTarget());
         model.setTemplateParam(tmpParam);
-        Integer orgId = card.getOrgId();
+        Integer orgId = card.getActiveOrgId();
         Integer crtId = card.getCrtId();
         String name = "";
         SysEmployee employee = systemServiceFeign.findSysEmployeeById(crtId);

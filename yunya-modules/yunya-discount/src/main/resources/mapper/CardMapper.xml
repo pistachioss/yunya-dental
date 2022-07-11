@@ -877,7 +877,7 @@
             cpi.type,
             spc.activation_deadline AS activationDeadline,
             spc.effective_days AS effectiveDays,
-            cas.crt_time AS lastSendDate
+            DATE_FORMAT(IFNULL(cas.crt_time, active_date), '%Y-%m-%d') AS lastSendDate
         FROM card c
         LEFT JOIN coupon_common_info cpi ON c.coupon_id=cpi.id
         LEFT JOIN special_package_coupon spc ON spc.coupon_id=cpi.id
@@ -885,6 +885,7 @@
             SELECT MAX(id) AS id, card_id, crt_time FROM card_actived_sms GROUP BY card_id ORDER BY id DESC
         ) cas ON cas.card_id=c.id
         where cpi.product_type_id in (14,17)
+        and cpi.type = 3
         and c.status in(2,3)
     </select>
 </mapper>

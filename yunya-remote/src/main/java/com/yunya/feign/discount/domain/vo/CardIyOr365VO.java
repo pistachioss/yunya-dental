@@ -32,9 +32,9 @@ public class CardIyOr365VO implements Serializable {
     @ApiModelProperty("门诊id")
     private Integer orgId;
 
-    /** 上次发送短信的时间 */
-    @ApiModelProperty("上次发送短信的时间")
-    private LocalDateTime lastSendDate;
+    /** 上次发送短信的时间，为空则以激活时间填充 */
+    @ApiModelProperty("上次发送短信的时间，为空则以激活时间填充")
+    private String lastSendDate;
 
     /** 激活时间 */
     @ApiModelProperty("激活时间")
@@ -67,5 +67,7 @@ public class CardIyOr365VO implements Serializable {
     /** 售出对象 */
     @ApiModelProperty("卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）")
     private String name;
+
+    private String cron;
 
 }

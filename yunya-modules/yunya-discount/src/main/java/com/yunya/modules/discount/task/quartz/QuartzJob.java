@@ -13,7 +13,7 @@ public class QuartzJob implements Job {
     private Runnable runnable;
 
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public void execute(JobExecutionContext context) {
         runnable.run();
     }
 }

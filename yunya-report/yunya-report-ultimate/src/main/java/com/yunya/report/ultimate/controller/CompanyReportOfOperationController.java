@@ -868,7 +868,7 @@ public class CompanyReportOfOperationController {
    * @return PageInfo<Coupon365SoldActivedStatisticsVO>
    */
   @ApiOperation("公司端报表-报表统计-运营报表-365卡产品售出激活统计表")
-  @PostMapping(value = "/coupon/soldActived/statistics", name = "365卡产品售出激活统计表")
+  @PostMapping(value = "/coupon365/soldActived/statistics", name = "365卡产品售出激活统计表")
   public ResponseResult<PageInfo<Coupon365SoldActivedStatisticsVO>> coupon365SoldActivedStatistics(
           @RequestBody @Validated Coupon365SoldActivedStatisticsQuery query) {
     PageInfo<Coupon365SoldActivedStatisticsVO> pageInfo = baseCardBiz.coupon365SoldActivedStatistics(query);
@@ -882,7 +882,7 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-365卡产品售出激活统计表导出")
-  @PostMapping(value = "/coupon/soldActived/statistics/export", name = "根据条件导出365卡产品售出激活统计表")
+  @PostMapping(value = "/coupon365/soldActived/statistics/export", name = "根据条件导出365卡产品售出激活统计表")
   public ResponseResult coupon365SoldActivedStatisticsExport(
           HttpServletResponse response, @RequestBody @Validated Coupon365SoldActivedStatisticsQuery query)
           throws IOException {
@@ -897,7 +897,7 @@ public class CompanyReportOfOperationController {
    * @return PageInfo<Coupon365SoldDetailVO>
    */
   @ApiOperation("公司端报表-报表统计-运营报表-365卡产品售出明细表")
-  @PostMapping(value = "/coupon/sold/detail", name = "365卡产品售出明细表")
+  @PostMapping(value = "/coupon365/sold/detail", name = "365卡产品售出明细表")
   public ResponseResult<PageInfo<Coupon365SoldDetailVO>> findCoupon365SoldDetail(
           @RequestBody @Validated Coupon365SoldDetailQuery query) {
     PageInfo<Coupon365SoldDetailVO> pageInfo = baseCardBiz.findCoupon365SoldDetail(query);
@@ -911,7 +911,7 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-365卡产品售出明细表导出")
-  @PostMapping(value = "/coupon/sold/detail/export", name = "根据条件导出365卡产品售出明细表")
+  @PostMapping(value = "/coupon365/sold/detail/export", name = "根据条件导出365卡产品售出明细表")
   public ResponseResult findCoupon365SoldDetailExport(
           HttpServletResponse response, @RequestBody @Validated Coupon365SoldDetailQuery query)
           throws IOException {
@@ -927,7 +927,7 @@ public class CompanyReportOfOperationController {
    * @return PageInfo<Coupon365SoldDetailVO>
    */
   @ApiOperation("公司端报表-报表统计-运营报表-365卡产品激活明细表")
-  @PostMapping(value = "/coupon/actived/detail", name = "365卡产品激活明细表")
+  @PostMapping(value = "/coupon365/actived/detail", name = "365卡产品激活明细表")
   public ResponseResult<PageInfo<Coupon365ActivedDetailVO>> findCoupon365ActivedDetail(
           @RequestBody @Validated Coupon365ActivedDetailQuery query) {
     PageInfo<Coupon365ActivedDetailVO> pageInfo = baseCardBiz.findCoupon365ActivedDetail(query);
@@ -941,7 +941,7 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-365卡产品激活明细表导出")
-  @PostMapping(value = "/coupon/actived/detail/export", name = "根据条件导出365卡产品激活明细表")
+  @PostMapping(value = "/coupon365/actived/detail/export", name = "根据条件导出365卡产品激活明细表")
   public ResponseResult findCoupon365ActivedDetailExport(
           HttpServletResponse response, @RequestBody @Validated Coupon365ActivedDetailQuery query)
           throws IOException {

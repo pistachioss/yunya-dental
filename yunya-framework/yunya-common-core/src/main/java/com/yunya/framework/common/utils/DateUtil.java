@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -1135,5 +1136,24 @@ public class DateUtil {
       result = "0" + result;
     }
     return result;
+  }
+
+
+  /**
+   * 计算两个日期之间相差的月数 （按30天/月换算）
+   *
+   * 比如：2011-02-02 到  2017-03-02 相差 6年，1个月，0天
+   * @param fromDate
+   * @param toDate
+   * @return
+   */
+  public static Double dateDiff2Month(Temporal fromDate, Temporal toDate){
+    //天数
+    long diffDays = Math.abs(ChronoUnit.DAYS.between(fromDate, toDate));
+    long monthPart = diffDays / 30;
+    long dayPart = diffDays % 30;
+    String tmp = StringHelper.joinWith(".", monthPart, dayPart);
+    log.info(" from {} to {} difference days: {} = {}", fromDate, toDate, diffDays, tmp);
+    return Double.parseDouble(tmp);
   }
 }
