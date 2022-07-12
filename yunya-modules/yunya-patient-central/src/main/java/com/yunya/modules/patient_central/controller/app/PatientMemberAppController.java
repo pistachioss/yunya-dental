@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.controller.app;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
@@ -130,7 +131,11 @@ public class PatientMemberAppController {
      */
     @ApiOperation("小程序-我的-就诊记录-根据姓名/病例编号/手机号/姓名拼音模糊查询患者")
     @PostMapping("patient/likePatient")
-    public ResponseResult<List<PatientBaseInfoVo>> findPatientLikePatientInfo(@RequestBody @Validated PatientLikeFinleQueryForm query) {
+    public ResponseResult<PageInfo<PatientBaseInfoVo>> findPatientLikePatientInfo(@RequestBody @Validated PatientLikeFinleQueryForm query) {
+
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
         List<PatientBaseInfoVo> appPatientBaseInfoVos = patientBaseInfoBiz.findPatientByNameAndMobile(query);
         DictionaryItemModel model = new DictionaryItemModel();
         model.setDictionaryTypeId(11);
@@ -143,6 +148,6 @@ public class PatientMemberAppController {
             }
                 }
         );
-        return ResponseUtil.success(appPatientBaseInfoVos);
+        return ResponseUtil.success(new PageInfo<>(appPatientBaseInfoVos));
     }
 }
