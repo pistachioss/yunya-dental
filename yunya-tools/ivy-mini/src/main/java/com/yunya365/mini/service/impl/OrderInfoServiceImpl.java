@@ -317,7 +317,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper)
                 .select(OrderInfo::getId, OrderInfo::getTotalAmount, OrderInfo::getPayAmount, OrderInfo::getStatus, OrderInfo::getCrtTime, OrderInfo::getProductType)
                 .eq(Objects.nonNull(query.getStatus()), OrderInfo::getStatus, query.getStatus())
-                .eq(OrderInfo::getDeleteStatus, FALSE.getCode()).list();
+                .eq(OrderInfo::getDeleteStatus, FALSE.getCode()).orderByDesc(OrderInfo::getCrtTime).list();
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
@@ -617,9 +617,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer status = orderInfo.getStatus().intValue();
         if (Objects.equals(PAY_PENDING.getCode(), status)) {
             orderInfo.setStatus(CLOSE.getCode().byteValue());
+            orderInfo.setUpdTime(new Date());
+            baseMapper.updateByPrimaryKeySelective(orderInfo);
         }
-        orderInfo.setUpdTime(new Date());
-        baseMapper.updateByPrimaryKeySelective(orderInfo);
     }
 
     private void checkOrder(Integer userId, OrderInfo orderInfo, IvyMiniError orderCancelError, IvyMiniError orderCancelStatusError,
