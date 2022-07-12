@@ -12,6 +12,7 @@ import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.query.CardSaleQuery;
@@ -22,6 +23,8 @@ import com.yunya.feign.ivy_mini.domain.model.*;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.domain.model.MessageOrderModel;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.BeanCopierUtils;
@@ -91,6 +94,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private IWxPayInfoService wxPayInfoService;
     @Resource
     private RemoteDiscountFeign discountFeign;
+    @Resource
+    private RemoteRabbitMqServiceFeign mqServiceFeign;
     @Resource
     private RedisUtils redisUtils;
     @Resource
@@ -175,10 +180,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderItemService.saveBatch(itemList);
             //保存预付单信息
             wxPayInfoService.save(wxPaymentVO);
-            //虚拟服务售卖卡券
-            soldCard(model, itemBoList);
-            //todo 发送延迟消息取消订单
-            return createVO(orderInfo, itemList, wxPaymentVO);
+            if (Objects.equals(TRUE.getCode(), productType)) {
+                //虚拟服务售卖卡券
+                soldCard(model, itemBoList);
+            }
+            CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
+            //发送延迟消息取消订单
+            sendOrderMessage(orderInfo.getId());
+            return vo;
         } finally {
             if (locked) {
                 log.info("【解锁成功】商品详情创建订单");
@@ -218,8 +227,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderItemService.saveBatch(itemList);
         //保存预付单信息
         wxPayInfoService.save(wxPaymentVO);
-        //todo 发送延迟消息取消订单
-        return createVO(orderInfo, itemList, wxPaymentVO);
+        CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
+        //发送延迟消息取消订单
+        sendOrderMessage(orderInfo.getId());
+        return vo;
     }
 
     @Override
@@ -596,6 +607,21 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
     }
 
+    @Override
+    public void handleDelayPay(Integer orderId) {
+        OrderInfo orderInfo = getById(orderId);
+        if (Objects.isNull(orderInfo)) {
+            throw ClientServiceException.wrap(ORDER_ERROR);
+        }
+        // 订单状态 0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款
+        Integer status = orderInfo.getStatus().intValue();
+        if (Objects.equals(PAY_PENDING.getCode(), status)) {
+            orderInfo.setStatus(CLOSE.getCode().byteValue());
+        }
+        orderInfo.setUpdTime(new Date());
+        baseMapper.updateByPrimaryKeySelective(orderInfo);
+    }
+
     private void checkOrder(Integer userId, OrderInfo orderInfo, IvyMiniError orderCancelError, IvyMiniError orderCancelStatusError,
                             Integer code) {
         if (Objects.isNull(orderInfo)) {
@@ -935,5 +961,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         form.setCouponType(orderItemBO.getCouponType());
         form.setCouponName(orderItemBO.getProductName());
         discountFeign.soldCard(form);
+    }
+
+    private void sendOrderMessage(Integer orderId) {
+        MessageOrderModel messageModel = new MessageOrderModel();
+        Map<String, Object> map = Maps.newHashMap();
+        map.put("order_id", orderId);
+        messageModel.setParamMap(map);
+        mqServiceFeign.sendOrderDirectMessage(messageModel);
     }
 }
