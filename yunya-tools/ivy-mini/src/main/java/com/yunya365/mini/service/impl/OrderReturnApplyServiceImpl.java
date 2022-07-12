@@ -14,12 +14,14 @@ import com.yunya365.mini.config.WxMiniPayProperties;
 import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderReturnApply;
 import com.yunya365.mini.mapper.OrderReturnApplyMapper;
+import com.yunya365.mini.service.IOrderInfoService;
 import com.yunya365.mini.service.IOrderReturnApplyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.Objects;
 
 import static com.yunya.framework.common.enums.TrueFalseEnum.*;
@@ -40,6 +42,8 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
 
     @Resource
     private WxPayService wxPayService;
+    @Resource
+    private IOrderInfoService orderInfoService;
     @Resource
     private WxMiniPayProperties properties;
 
@@ -94,6 +98,10 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
                 WxPayRefundRequest refundRequest = assembleRefundModel(orderInfo, apply);
                 WxPayRefundResult refund = wxPayService.refund(refundRequest);
                 apply.setOutOrderNo(refund.getRefundId());
+            } else {
+                orderInfo.setStatus(apply.getPreStatus().byteValue());
+                orderInfo.setUpdTime(new Date());
+                orderInfoService.updateById(orderInfo);
             }
             apply.setHandleStatus(model.getStatus());
             baseMapper.updateById(apply);
