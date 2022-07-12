@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.vo.web.WxWechatbindAppListVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
@@ -91,9 +92,9 @@ public class PatientMemberAppController {
      * @return ResponseResult<MemberBaseInfoVo>
      */
     @ApiOperation("小程序-我的-就诊记录-账单信息")
-    @GetMapping("patient/list/detail/{orderRecordId}")
-    public ResponseResult<BillDetailGroupVO> findPatientDetailInfo(@PathVariable("orderRecordId") Integer orderRecordId) {
-        return ResponseUtil.success(remoteTreatmentServiceFeign.findOrderDetailAndBillDetailByOrderRecordId(orderRecordId));
+    @GetMapping("patient/list/detail/{treatmentRecordId}")
+    public ResponseResult<OrderDetailInfoVO> findPatientDetailInfo(@PathVariable(value = "treatmentRecordId") Integer treatmentRecordId) {
+        return ResponseUtil.success(remoteTreatmentServiceFeign.findOrderInfoByTreatmentId(treatmentRecordId));
     }
 
     /**
