@@ -78,7 +78,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         wxFansBind.setBind(true);
         wxFansBind.setBindTime(date);
         wxFansBind.setDictionaryId(wxFansBindForm.getDictionaryId());
-        wxFansBind.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+//        wxFansBind.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         wxFansBind.setCrtTime(date);
 
         WxFans wxFansVip = new WxFans();
