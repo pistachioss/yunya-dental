@@ -919,7 +919,6 @@ public class CompanyReportOfOperationController {
     return ResponseUtil.success(null);
   }
 
-
   /**
    * 根据条件查询365卡产品激活明细表
    *

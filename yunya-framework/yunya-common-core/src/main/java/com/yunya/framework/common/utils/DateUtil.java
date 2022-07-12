@@ -1140,20 +1140,30 @@ public class DateUtil {
 
 
   /**
-   * 计算两个日期之间相差的月数 （按30天/月换算）
+   * 计算两个日期之间相差的间隔天数，并换算成相应形式
    *
    * 比如：2011-02-02 到  2017-03-02 相差 6年，1个月，0天
    * @param fromDate
    * @param toDate
    * @return
    */
-  public static Double dateDiff2Month(Temporal fromDate, Temporal toDate){
-    //天数
+  public static Double dateDiff2Double(Temporal fromDate, Temporal toDate, int type){
+    //间隔天数
     long diffDays = Math.abs(ChronoUnit.DAYS.between(fromDate, toDate));
-    long monthPart = diffDays / 30;
-    long dayPart = diffDays % 30;
-    String tmp = StringHelper.joinWith(".", monthPart, dayPart);
-    log.info(" from {} to {} difference days: {} = {}", fromDate, toDate, diffDays, tmp);
-    return Double.parseDouble(tmp);
+    if (type == 1) {// 返回月份形式, 按30天/月换算
+      long monthPart = diffDays / 30;
+      long dayPart = diffDays % 30;
+      String tmp = StringHelper.joinWith(".", monthPart, dayPart);
+      log.info(" from {} to {} difference days: {} = {}", fromDate, toDate, diffDays, tmp);
+      return Double.valueOf(tmp);
+    } else if (type == 2) {// 返回年份形式，按365天/年换算
+      long monthPart = diffDays / 365;
+      long dayPart = diffDays % 365;
+      String tmp = StringHelper.joinWith(".", monthPart, dayPart);
+      log.info(" from {} to {} difference days: {} = {}", fromDate, toDate, diffDays, tmp);
+      return Double.valueOf(tmp);
+    } else { // 返回日形式
+      return Double.valueOf(diffDays);
+    }
   }
 }

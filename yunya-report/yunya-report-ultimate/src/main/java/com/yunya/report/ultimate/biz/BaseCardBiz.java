@@ -228,10 +228,10 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
    */
   public PageInfo<Coupon365ActivedDetailVO> findCoupon365ActivedDetail(Coupon365ActivedDetailQuery query) {
     List<Integer> couponId365 = findCard365CouponIds(PROD_TYPE_365);
-    if (StringHelper.isEmpty(couponId365)) {
+    Collection<Integer> couponIds = query.getCouponIds();
+    if (StringHelper.isEmpty(couponIds)) {
       query.setCouponIds(couponId365);
     } else {
-      Collection<Integer> couponIds = query.getCouponIds();
       if (!couponId365.containsAll(couponIds)) {
         throw new ClientServiceException("请选择365产品！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
       }

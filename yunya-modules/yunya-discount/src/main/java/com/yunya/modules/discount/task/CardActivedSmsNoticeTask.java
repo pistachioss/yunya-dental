@@ -5,7 +5,6 @@ import com.yunya.feign.discount.domain.query.CardIyOr365ActivedQuery;
 import com.yunya.feign.discount.domain.vo.CardIyOr365VO;
 import com.yunya.framework.common.utils.CronUtil;
 import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.SortUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.discount.Card;
 import com.yunya.models.discount.CouponCommonInfo;
@@ -25,8 +24,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.yunya.modules.discount.enums.CouponTypeEnum.SPECIAL_PACKAGE;
-
 /**
  * 简介：每天23点执行，扫描出明天将发送短信的卡券，为其创建定时任务
  *
@@ -45,13 +42,15 @@ public class CardActivedSmsNoticeTask {
     private CardBiz cardBiz;
     @Autowired
     private ScheduledQuartz scheduledQuartz;
+    /** 间隔月份 */
+    private static final Integer INTERVAL = 1;
 
-    @Scheduled(cron = "0 52 15 * * ?")
+    @Scheduled(cron = "0 0 * ? * *")
     public void executeTask() {
         CardIyOr365ActivedQuery query = new CardIyOr365ActivedQuery();
         // 明天
         LocalDateTime execDate = LocalDateTime.now().plusDays(1);
-        log.info(">>>>>>>>>>>>>>>>>>>CardActivedSmsNoticeTask start at: {}", execDate);
+        log.info(">>>>>>>>>>>>>>>>>>>CardActivedSmsNoticeTask start");
         // 1、查询艾芽卡、365卡等已激活且未全部使用的卡券列表
         List<CardIyOr365VO> cards = cardBiz.findIyOr365CardActivedList(query);
         List<CardIyOr365VO> list = new ArrayList<>();
@@ -116,9 +115,10 @@ public class CardActivedSmsNoticeTask {
      */
     private static boolean isTomorrowTask(String lastSendDate, LocalDateTime activationDeadline, LocalDateTime tomorrow) {
         Boolean result = false;
-        //天数
-        Double diffMonth = DateUtil.dateDiff2Month(LocalDate.parse(lastSendDate), tomorrow);
-        if (!activationDeadline.isBefore(tomorrow) && diffMonth>0 && diffMonth%3==0) {
+        Double diff = DateUtil.dateDiff2Double(LocalDate.parse(lastSendDate), tomorrow, 0);
+        if (!activationDeadline.isBefore(tomorrow)
+                && diff > 0
+                && diff%INTERVAL==0) {
             result = true;
         }
         return result;

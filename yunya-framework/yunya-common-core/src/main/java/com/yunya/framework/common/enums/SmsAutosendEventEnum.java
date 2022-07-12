@@ -73,7 +73,7 @@ public enum SmsAutosendEventEnum {
         return code;
     }
 
-    public static String getValue(Integer code) {
+    public String getValueByCode(Integer code) {
         if (code != null) {
             for (SmsAutosendEventEnum item : values()) {
                 if (Objects.equals(item.getType(), code)) {
