@@ -45,7 +45,7 @@ public class CardActivedSmsNoticeTask {
     /** 间隔月份 */
     private static final Integer INTERVAL = 1;
 
-    @Scheduled(cron = "0 0 * ? * *")
+    @Scheduled(cron = "0 0 * * * ?")
     public void executeTask() {
         CardIyOr365ActivedQuery query = new CardIyOr365ActivedQuery();
         // 明天
@@ -134,7 +134,7 @@ public class CardActivedSmsNoticeTask {
         if (StringHelper.isNotEmpty(cronExp)) {
             Card card = new Card();
             BeanUtils.copyProperties(vo, card);
-            card.setCrtId(1);
+            card.setCrtId(-999);
             CouponCommonInfo coupon = new CouponCommonInfo();
             BeanUtils.copyProperties(vo, coupon);
             try {

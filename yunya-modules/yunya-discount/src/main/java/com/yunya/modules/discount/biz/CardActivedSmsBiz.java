@@ -92,7 +92,9 @@ public class CardActivedSmsBiz extends BaseBiz<CardActivedSmsMapper, CardActived
         smsModel.setUserId(crtId);
         smsModel.setOrgId(orgId);
         smsModel.setName(name);
-        redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgId, smsModel);
+        if (crtId != -999) {
+            redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgId, smsModel);
+        }
         recordSendSms(card.getId(), card.getCouponId(), crtId);
     }
 }
