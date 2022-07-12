@@ -95,6 +95,7 @@
         pbi.`name`,
         pbi.face_url AS faceUrl,
         pbi.mobile AS mobile,
+        pbi.mobile_owner AS mobileOwner,
         pbi.medical_number AS medicalNumber,
         pbi.gender,
         TIMESTAMPDIFF(

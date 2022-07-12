@@ -74,7 +74,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             PageHelper.startPage(wxFansQueryForm.getPageNum(), wxFansQueryForm.getPageSize());
         }
         DictionaryItemModel model = new DictionaryItemModel();
-        model.setDictionaryTypeId(19);
+        model.setDictionaryTypeId(11);
         List<DictionaryItem> dLsit = remoteSystemServiceFeign.findDictionaryItemList(model);
         Map<String, DictionaryItem> dicMap = new HashMap(16);
         dLsit.forEach(z -> dicMap.put(z.getId() + "", z));
