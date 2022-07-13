@@ -780,7 +780,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 return ResponseUtil.error(errorBo.getError());
             }
             //4. 卡券激活
-            this.updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId());
+            card = updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId());
             mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
             log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
             cardActivedSendSms(card);
@@ -2093,7 +2093,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param form        form
      * @param loginUserId loginUserId
      */
-    private void updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId, Integer couponId) {
+    private Card updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId, Integer couponId) {
         Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
         CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
         LocalDateTime now = LocalDateTime.now();
@@ -2115,6 +2115,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         ownActiveCard.setUpdId(loginUserId);
         ownActiveCard.setActiveDate(now);
         mapper.updateByPrimaryKeySelective(ownActiveCard);
+        return ownActiveCard;
     }
 
     /**
