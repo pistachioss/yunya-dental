@@ -586,10 +586,18 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 java.time.LocalDateTime refundTime = java.time.LocalDateTime.parse(successTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 apply.setUpdTime(refundTime);
                 apply.setRefundStatus(FALSE.getCode());
+                orderInfo.setStatus(REFUND_SUCCESS.getCode().byteValue());
+                orderInfo.setUpdTime(DateUtil.localDateTimeToDate(refundTime));
             } else {
-                apply.setRefundStatus(FALSE.getCode());
+                java.time.LocalDateTime now = java.time.LocalDateTime.now();
+                apply.setRefundStatus(TRUE.getCode());
+                apply.setUpdTime(now);
+                apply.setHandleNote("微信退款失败");
+                orderInfo.setStatus(apply.getPreStatus().byteValue());
+                orderInfo.setUpdTime(DateUtil.localDateTimeToDate(now));
             }
             returnApplyService.updateById(apply);
+            baseMapper.updateByPrimaryKeySelective(orderInfo);
             return WxPayNotifyResponse.success("处理成功!");
         } catch (Exception e) {
             log.error("退款回调结果异常", e);

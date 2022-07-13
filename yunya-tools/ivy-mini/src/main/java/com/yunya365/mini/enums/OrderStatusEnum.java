@@ -32,6 +32,10 @@ public enum OrderStatusEnum {
      * 申请退款
      */
     APPLY_REFUND(5, "申请退款"),
+    /**
+     * 退款成功
+     */
+    REFUND_SUCCESS(6, "退款成功"),
     ;
 
     private final Integer code;

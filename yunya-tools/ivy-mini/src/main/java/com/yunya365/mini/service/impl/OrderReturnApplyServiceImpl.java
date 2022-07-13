@@ -10,6 +10,7 @@ import com.github.binarywang.wxpay.service.WxPayService;
 import com.yunya.feign.ivy_mini.domain.model.OrderRefundApplyModel;
 import com.yunya.feign.ivy_mini.domain.model.OrderRefundModel;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya365.mini.config.WxMiniPayProperties;
 import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderReturnApply;
@@ -21,7 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static com.yunya.framework.common.enums.TrueFalseEnum.*;
@@ -94,15 +95,18 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
             if (!Objects.equals(HANDLE_PENDING.getCode(), apply.getHandleStatus())) {
                 throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
             }
+            LocalDateTime now = LocalDateTime.now();
             if (Objects.equals(REFUNDING.getCode(), model.getStatus())) {
                 WxPayRefundRequest refundRequest = assembleRefundModel(orderInfo, apply);
                 WxPayRefundResult refund = wxPayService.refund(refundRequest);
                 apply.setOutOrderNo(refund.getRefundId());
             } else {
+                apply.setHandleNote(model.getRejectReason());
                 orderInfo.setStatus(apply.getPreStatus().byteValue());
-                orderInfo.setUpdTime(new Date());
+                orderInfo.setUpdTime(DateUtil.localDateTimeToDate(now));
                 orderInfoService.updateById(orderInfo);
             }
+            apply.setUpdTime(now);
             apply.setHandleStatus(model.getStatus());
             baseMapper.updateById(apply);
         } catch (WxPayException e) {
