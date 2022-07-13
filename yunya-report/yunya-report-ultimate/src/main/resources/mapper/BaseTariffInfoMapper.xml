@@ -79,6 +79,20 @@
         </where>
     </select>
 
+    <!--根据名字查询商品列表-->
+    <select id="selectOralItemListByName" resultType="com.yunya.models.report.BaseTariffInfo">
+        SELECT
+            item_id AS itemId,
+            item_type AS itemType,
+            item_name AS itemName,
+            item_num AS itemNum,
+            category_id AS categoryId,
+            category_name AS category_Name
+        FROM base_tariff_info
+        WHERE item_name = #{name}
+        AND item_type = 1
+    </select>
+
     <!-- 根据联合主键删除 -->
     <delete id="deleteByUnionPrimaryKey">
         delete from base_tariff_info where item_id = #{itemId} and item_type = #{itemType}

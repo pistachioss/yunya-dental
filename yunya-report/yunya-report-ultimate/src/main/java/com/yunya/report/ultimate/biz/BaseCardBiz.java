@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -12,6 +13,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseCard;
 import com.yunya.models.report.BaseCoupon;
+import com.yunya.models.report.BaseTariffInfo;
 import com.yunya.report.ultimate.mapper.BaseCardMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
@@ -39,10 +42,14 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
 
   /** 365卡系列*/
   private static final Byte PROD_TYPE_365 = 14;
+  /** 商品：IVY365年卡*/
+  private static final String IVY_365CARD = "IVY365年卡";
   /** 产品 */
   @Autowired private BaseCouponBiz baseCouponBiz;
   /** 门诊 */
   @Autowired private BaseOrganizationBiz baseOrganizationBiz;
+  /** 价目or商品表 */
+  @Autowired private BaseTariffInfoBiz baseTariffInfoBiz;
 
   /**
    * 根据条件查询门诊产品售出明细列表
@@ -136,12 +143,20 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
    * @return
    */
   public PageInfo<Coupon365SoldActivedStatisticsVO> coupon365SoldActivedStatistics(Coupon365SoldActivedStatisticsQuery query) {
+    // 售卖量：开单时商品为IVY365年卡的售卖量 + 卡券售出产品分类id=14的卡售卖量
+    // 激活量：第三方或自有平台激活后的数量
+    query.setOralIds(findCard365OralIds(IVY_365CARD));
     query.setCouponIds(findCard365CouponIds(PROD_TYPE_365));
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<Coupon365SoldActivedStatisticsVO> result = mapper.selectCoupon365SoldActivedStatstics(query);
     return new PageInfo<>(result);
+  }
+
+  private List<Integer> findCard365OralIds(String ivy365card) {
+    List<BaseTariffInfo> orals = baseTariffInfoBiz.findOralItemListByName(ivy365card);
+    return orals.stream().map(BaseTariffInfo::getItemId).collect(Collectors.toList());
   }
 
   private List<Integer> findCard365CouponIds(Byte prodType365) {
@@ -162,8 +177,7 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
     List<Coupon365SoldActivedStatisticsVO> list = coupon365SoldActivedStatistics(query).getList();
     ExcelUtil<Coupon365SoldActivedStatisticsVO> excelUtil =
             new ExcelUtil<>(Coupon365SoldActivedStatisticsVO.class);
-    String fileName = "365卡产品售出激活统计表";
-    excelUtil.exportExcel(response, list, fileName, fileName);
+    excelUtil.exportExcel(response, list, "365卡产品售出激活统计表");
   }
 
   /**
@@ -173,6 +187,8 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
    * @return
    */
   public PageInfo<Coupon365SoldDetailVO> findCoupon365SoldDetail(Coupon365SoldDetailQuery query) {
+//    开单时商品为IVY365年卡 + 卡券售出产品分类id=14的卡
+    query.setOralIds(findCard365OralIds(IVY_365CARD));
     query.setCouponIds(findCard365CouponIds(PROD_TYPE_365));
     List<Coupon365SoldDetailVO> result = mapper.selectCoupon365SoldDetail(query);
     accumulativeNum(result);
@@ -196,7 +212,7 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
   }
 
   private Integer accumulate(Coupon365DetailVO vo, Map<String, Integer> patientCountMap, Integer num) {
-    String key = StringHelper.joinWith(",", vo.getPatientId(), vo.getCouponId());
+    String key = StringHelper.joinWith(",", vo.getSaleType(), vo.getPatientId(), vo.getCouponId());
     Integer count = patientCountMap.get(key);
     if (count == null) {
       count = 0;
