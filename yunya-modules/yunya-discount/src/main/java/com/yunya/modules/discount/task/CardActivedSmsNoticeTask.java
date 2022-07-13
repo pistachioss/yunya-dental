@@ -153,6 +153,6 @@ public class CardActivedSmsNoticeTask implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        executeTask();
+        //executeTask();
     }
 }
