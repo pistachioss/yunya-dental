@@ -94,39 +94,39 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         wxFans.setId(wxFansBindForm.getWxId());
         wxFans.setBind(true);
         wxFans.setBindTime(date);
-        if (BEN_REN.equals(wxFansBindForm.getDictionaryName())) {
-            wxFansBind.setIsOwner(true);
-            //如果是本人 则添加卡主ID
-            WxFans op = new WxFans();
-            op.setOpenId(wxFansBindForm.getOpenId());
-            op = wxFansBiz.selectOne(op);
-            if (op.getPatientId() != null) {
-                throw new ClientServiceException("该微信号已经绑定卡主", DATA_EXIST);
-            }
-            wxFans.setPatientId(wxFansBindForm.getPatientId());
-        } else {
+//        if (BEN_REN.equals(wxFansBindForm.getDictionaryName())) {
+//            wxFansBind.setIsOwner(true);
+//            //如果是本人 则添加卡主ID
+//            WxFans op = new WxFans();
+//            op.setOpenId(wxFansBindForm.getOpenId());
+//            op = wxFansBiz.selectOne(op);
+//            if (op.getPatientId() != null) {
+//                throw new ClientServiceException("该微信号已经绑定卡主", DATA_EXIST);
+//            }
+//            wxFans.setPatientId(wxFansBindForm.getPatientId());
+//        } else {
             wxFansBind.setIsOwner(false);
-        }
+//        }
         wxFansBiz.updateSelectiveById(wxFans);
         int re = mapper.insert(wxFansBind);
 
         //发送微信推送消息
-        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
-        wxTemplateMsgModel.setPatientId(wxFansBindForm.getPatientId());
-        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.BIND_SUCCESS);
-
-        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(wxFansBindForm.getPatientId());
-
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("first", "有一位新的患者绑定成功，绑定信息如下:");
-        if (patientBaseInfoVo != null) {
-            paramMap.put("keyword1", patientBaseInfoVo.getName());
-            paramMap.put("keyword2", patientBaseInfoVo.getMobile());
-        } else {
-            throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
-        }
-        wxTemplateMsgModel.setParamMap(paramMap);
-        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
+//        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+//        wxTemplateMsgModel.setPatientId(wxFansBindForm.getPatientId());
+//        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.BIND_SUCCESS);
+//
+//        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(wxFansBindForm.getPatientId());
+//
+//        Map<String, Object> paramMap = new HashMap<>();
+//        paramMap.put("first", "有一位新的患者绑定成功，绑定信息如下:");
+//        if (patientBaseInfoVo != null) {
+//            paramMap.put("keyword1", patientBaseInfoVo.getName());
+//            paramMap.put("keyword2", patientBaseInfoVo.getMobile());
+//        } else {
+//            throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+//        }
+//        wxTemplateMsgModel.setParamMap(paramMap);
+//        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
 
         return re;
     }
