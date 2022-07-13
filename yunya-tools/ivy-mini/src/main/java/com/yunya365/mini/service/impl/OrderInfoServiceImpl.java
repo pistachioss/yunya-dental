@@ -320,11 +320,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     public PageInfo<OrderFrontVO> orderList(MyOrderQuery query) {
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         Page<OrderInfo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
         List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper)
                 .select(OrderInfo::getId, OrderInfo::getTotalAmount, OrderInfo::getPayAmount, OrderInfo::getStatus, OrderInfo::getCrtTime, OrderInfo::getProductType)
                 .eq(Objects.nonNull(query.getStatus()), OrderInfo::getStatus, query.getStatus())
-                .eq(OrderInfo::getDeleteStatus, FALSE.getCode()).orderByDesc(OrderInfo::getCrtTime).list();
+                .eq(OrderInfo::getDeleteStatus, FALSE.getCode()).orderByDesc(OrderInfo::getCrtTime)
+                .eq(OrderInfo::getFansId, userId)
+                .list();
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
