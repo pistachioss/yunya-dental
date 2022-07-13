@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya365.mini.mapper.OrderVirtualMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.OrderVirtual">
+        <id column="id" property="id" />
+        <result column="order_id" property="orderId" />
+        <result column="fans_id" property="fansId" />
+        <result column="card_id" property="cardId" />
+        <result column="patient_id" property="patientId" />
+        <result column="sold_mobile" property="soldMobile" />
+        <result column="sold_date" property="soldDate" />
+        <result column="active_date" property="activeDate" />
+        <result column="crt_id" property="crtId" />
+        <result column="crt_time" property="crtTime" />
+        <result column="upd_time" property="updTime" />
+        <result column="upd_id" property="updId" />
+    </resultMap>
+
+</mapper>

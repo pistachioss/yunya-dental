@@ -46,8 +46,15 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
         List<CartItem> list = ChainWrappers.lambdaQueryChain(baseMapper).eq(CartItem::getFansId, userID).list();
         CartVO cartVO = new CartVO();
         if (CollectionUtils.isNotEmpty(list)) {
+            Set<Integer> productIds = list.stream().map(CartItem::getProductId).collect(toSet());
+            //商品库存信息
+            List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(productIds, FALSE.getCode());
+            Map<Integer, Integer> map = orderItemBOS.stream().collect(toMap(OrderItemBO::getProductId, OrderItemBO::getStock, (o, n) -> n));
             List<CartItemVO> itemVOS = list.stream()
                     .map(t -> BeanCopierUtils.generalCopyBean(t, CartItemVO.class)).collect(toList());
+            itemVOS.stream()
+                    .filter(t -> map.containsKey(t.getProductId()) && map.get(t.getProductId()) - t.getQuantity() >= 0)
+                    .forEach(t -> t.setStock(true));
             BigDecimal totalPrice = list.stream().map(t -> t.getProductPrice().multiply(BigDecimal.valueOf(t.getQuantity())))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             cartVO.setItemList(itemVOS);

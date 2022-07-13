@@ -139,4 +139,6 @@ public interface IOrderInfoService extends IService<OrderInfo> {
     void handleDelayPay(Integer orderId);
 
     PayOrderVO refundDetail(Integer orderId);
+
+    OrderVirtualDetailVO virtualOrderDetail(Integer orderId);
 }

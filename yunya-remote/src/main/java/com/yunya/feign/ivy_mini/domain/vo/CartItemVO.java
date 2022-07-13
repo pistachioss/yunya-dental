@@ -26,4 +26,6 @@ public class CartItemVO {
     private BigDecimal productPrice;
     @ApiModelProperty(value = "数量")
     private Integer quantity;
+    @ApiModelProperty(value = "库存是否足够")
+    private boolean isStock;
 }

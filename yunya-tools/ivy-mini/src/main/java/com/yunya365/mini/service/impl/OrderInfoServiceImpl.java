@@ -93,6 +93,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private IWxPayInfoService wxPayInfoService;
     @Resource
+    private IOrderVirtualService virtualService;
+    @Resource
     private RemoteDiscountFeign discountFeign;
     @Resource
     private RemoteRabbitMqServiceFeign mqServiceFeign;
@@ -103,23 +105,26 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     public ConfirmOrderVO confirmProductOrder(ConfirmProductQuery query) {
+        Integer productType = query.getProductType();
         ConfirmOrderVO vo = new ConfirmOrderVO();
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(Collections.singleton(query.getProductId()), query.getProductType());
+        List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(Collections.singleton(query.getProductId()), productType);
         List<PayOrderItemVO> orderItemVOS = orderItemBOS.stream().map(t -> {
             PayOrderItemVO itemVO = BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class);
             itemVO.setProductQuantity(query.getQuantity());
             return itemVO;
         }).collect(toList());
         //商品类产品有自提和配送区分
-        if (FALSE.getCode().equals(query.getProductType())) {
+        if (FALSE.getCode().equals(productType)) {
             vo.setDeliveryVO(confirmAddress(userId));
         }
         vo.setProductList(orderItemVOS);
         vo.setCalcAmountVO(calcOrderAmount(orderItemVOS));
-        vo.setProductType(query.getProductType());
-        //判断购物车中商品是否都有库存
-        checkStockStatus(orderItemBOS, orderItemVOS, query.getQuantity());
+        vo.setProductType(productType);
+        if (FALSE.getCode().equals(productType)) {
+            //判断购物车中商品是否都有库存
+            checkStockStatus(orderItemBOS, orderItemVOS, query.getQuantity());
+        }
         return vo;
     }
 
@@ -160,9 +165,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 throw ClientServiceException.wrap(PRODUCT_LACK);
             }
             itemBoList.forEach(t -> t.setProductQuantity(quantity));
-            //判断购物车中商品是否都有库存
-            if (!hasStock(itemBoList, quantity)) {
-                throw ClientServiceException.wrap(STOCK_LACK);
+            if (Objects.equals(FALSE.getCode(), productType)) {
+                //判断购物车中商品是否都有库存
+                if (!hasStock(itemBoList, quantity)) {
+                    throw ClientServiceException.wrap(STOCK_LACK);
+                }
             }
             //进行库存锁定
             lockStock(productId, quantity, null, productType);
@@ -182,7 +189,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             wxPayInfoService.save(wxPaymentVO);
             if (Objects.equals(TRUE.getCode(), productType)) {
                 //虚拟服务售卖卡券
-                soldCard(model, itemBoList);
+                soldCard(model, itemBoList, orderInfo);
             }
             CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
             //发送延迟消息取消订单
@@ -367,31 +374,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public OrderDetailVO orderDetail(Integer orderId) {
         OrderDetailVO vo = new OrderDetailVO();
         OrderInfo orderInfo = getById(orderId);
-        PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
-        payOrderVO.setOrderId(orderInfo.getId());
-        payOrderVO.setOrderDate(orderInfo.getCrtTime());
-        payOrderVO.setPayDate(orderInfo.getPaymentTime());
-        payOrderVO.setProductType(orderInfo.getProductType());
-        if (Objects.equals(PAY_PENDING.getCode(),orderInfo.getStatus().intValue())) {
-            long seconds = Duration.between(java.time.LocalDateTime.now(), DateUtil.dateToLocalDateTime(orderInfo.getCrtTime()).plusMinutes(15)).getSeconds();
-            if (seconds > 0) {
-                String positive = String.format("%02d:%02d", (seconds % 3600) / 60, seconds % 60);
-                payOrderVO.setRemainDate(positive);
-            }
-        }
-        OrderReturnApply apply = returnApplyService.queryRefund(orderId);
-        if (Objects.nonNull(apply)) {
-            payOrderVO.setOrderStatus(apply.getDeliveryStatus());
-            payOrderVO.setReturnReason(apply.getReason());
-            if (Objects.equals(REFUND_REFUSE.getCode(), apply.getHandleStatus())
-                    || Objects.equals(TRUE.getCode(), apply.getRefundStatus())) {
-                payOrderVO.setMchReply(apply.getHandleNote());
-            }
-        }
-        if (Objects.equals(CLOSE.getCode(),orderInfo.getStatus().intValue())) {
-            payOrderVO.setCloseDate(orderInfo.getUpdTime());
-        }
-        vo.setOrderVO(payOrderVO);
+        vo.setOrderVO(assembleOrderDetail(orderInfo));
         List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderItems)) {
             List<PayOrderItemVO> collect = orderItems.stream().map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
@@ -640,6 +623,49 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             }
         }
         return vo;
+    }
+
+    @Override
+    public OrderVirtualDetailVO virtualOrderDetail(Integer orderId) {
+        OrderVirtualDetailVO vo = new OrderVirtualDetailVO();
+        OrderInfo orderInfo = getById(orderId);
+        vo.setOrderVO(assembleOrderDetail(orderInfo));
+
+        List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
+        if (CollectionUtils.isNotEmpty(orderItems)) {
+            List<PayOrderItemVO> collect = orderItems.stream().map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
+            vo.setItemVO(collect);
+        }
+//        vo.setAddressVO(addressVO);
+        return vo;
+    }
+
+    private PayOrderVO assembleOrderDetail(OrderInfo orderInfo) {
+        PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+        payOrderVO.setOrderId(orderInfo.getId());
+        payOrderVO.setOrderDate(orderInfo.getCrtTime());
+        payOrderVO.setPayDate(orderInfo.getPaymentTime());
+        payOrderVO.setProductType(orderInfo.getProductType());
+        if (Objects.equals(PAY_PENDING.getCode(),orderInfo.getStatus().intValue())) {
+            long seconds = Duration.between(java.time.LocalDateTime.now(), DateUtil.dateToLocalDateTime(orderInfo.getCrtTime()).plusMinutes(15)).getSeconds();
+            if (seconds > 0) {
+                String positive = String.format("%02d:%02d", (seconds % 3600) / 60, seconds % 60);
+                payOrderVO.setRemainDate(positive);
+            }
+        }
+        OrderReturnApply apply = returnApplyService.queryRefund(orderInfo.getId());
+        if (Objects.nonNull(apply)) {
+            payOrderVO.setOrderStatus(apply.getDeliveryStatus());
+            payOrderVO.setReturnReason(apply.getReason());
+            if (Objects.equals(REFUND_REFUSE.getCode(), apply.getHandleStatus())
+                    || Objects.equals(TRUE.getCode(), apply.getRefundStatus())) {
+                payOrderVO.setMchReply(apply.getHandleNote());
+            }
+        }
+        if (Objects.equals(CLOSE.getCode(),orderInfo.getStatus().intValue())) {
+            payOrderVO.setCloseDate(orderInfo.getUpdTime());
+        }
+        return payOrderVO;
     }
 
     private void checkOrder(Integer userId, OrderInfo orderInfo, IvyMiniError orderCancelError, IvyMiniError orderCancelStatusError,
@@ -953,9 +979,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         productService.lockProductStock(list, productType);
     }
 
-    void soldCard(CreateProductOrderModel model, List<OrderItemBO> itemBoList){
+    void soldCard(CreateProductOrderModel model, List<OrderItemBO> itemBoList, OrderInfo orderInfo){
         String username = BaseContextHandler.getName();
         String openId = BaseContextHandler.getOpenId();
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         CardSaleQuery query = new CardSaleQuery();
         query.setCouponId(model.getProductId());
         query.setOrgId(21);
@@ -981,6 +1008,15 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         form.setCouponType(orderItemBO.getCouponType());
         form.setCouponName(orderItemBO.getProductName());
         discountFeign.soldCard(form);
+        OrderVirtual virtual = new OrderVirtual();
+        virtual.setOrderId(orderInfo.getId());
+        virtual.setFansId(orderInfo.getFansId());
+        virtual.setCardId(Joiner.on(",").join(cardIds));
+        virtual.setSoldMobile(openId);
+        virtual.setSoldDate(java.time.LocalDateTime.now());
+        virtual.setCrtId(userId);
+        virtual.setUpdId(userId);
+        virtualService.save(virtual);
     }
 
     private void sendOrderMessage(Integer orderId) {
