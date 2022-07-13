@@ -212,7 +212,7 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
   }
 
   private Integer accumulate(Coupon365DetailVO vo, Map<String, Integer> patientCountMap, Integer num) {
-    String key = StringHelper.joinWith(",", vo.getSaleType(), vo.getPatientId(), vo.getCouponId());
+    String key = StringHelper.joinWith(",", vo.getSaleType(), vo.getPatientIdentifies(), vo.getCouponId());
     Integer count = patientCountMap.get(key);
     if (count == null) {
       count = 0;

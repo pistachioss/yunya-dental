@@ -1317,7 +1317,7 @@
             IF(t.saleType=1, '门诊开单', '卡券售出') AS soldType,
             t.couponName,
             t.soldDate,
-            t.patientId,
+            CONCAT(IFNULL(t.soldTarget, bp.name), IFNULL(t.mobile, bp.mobile)) AS patientIdentifies,
             IFNULL(t.soldTarget, bp.name) AS soldTarget,
             IFNULL(t.mobile, bp.mobile) AS mobile,
             bo.abbreviation,
@@ -1461,7 +1461,7 @@
         SELECT
             bc.card_id AS cardId,
             bc.coupon_id AS couponId,
-            bc.patient_id AS patientId,
+            CONCAT(bp.name, bp.mobile) AS patientIdentifies,
             bc.sale_channel_name AS saleChannelName,
             bo.abbreviation,
             bcp.coupon_name AS couponName,
