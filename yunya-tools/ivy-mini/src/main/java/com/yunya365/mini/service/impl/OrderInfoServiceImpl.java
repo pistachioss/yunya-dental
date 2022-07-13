@@ -627,8 +627,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public PayOrderVO refundDetail(Integer orderId) {
         OrderInfo orderInfo = getById(orderId);
         PayOrderVO vo = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+        vo.setOrderId(orderInfo.getId());
+        vo.setOrderDate(orderInfo.getCrtTime());
+        vo.setPayDate(orderInfo.getPaymentTime());
         OrderReturnApply apply = returnApplyService.queryRefund(orderId);
         if (Objects.nonNull(apply)) {
+            vo.setOrderStatus(apply.getDeliveryStatus());
             vo.setReturnReason(apply.getReason());
             if (Objects.equals(REFUND_REFUSE.getCode(), apply.getHandleStatus())
                     || Objects.equals(TRUE.getCode(), apply.getRefundStatus())) {
