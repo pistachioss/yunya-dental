@@ -177,7 +177,8 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
     List<Coupon365SoldActivedStatisticsVO> list = coupon365SoldActivedStatistics(query).getList();
     ExcelUtil<Coupon365SoldActivedStatisticsVO> excelUtil =
             new ExcelUtil<>(Coupon365SoldActivedStatisticsVO.class);
-    excelUtil.exportExcel(response, list, "365卡产品售出激活统计表");
+    String name = "365卡产品售出激活统计表";
+    excelUtil.exportExcel(response, list, name, name);
   }
 
   /**
