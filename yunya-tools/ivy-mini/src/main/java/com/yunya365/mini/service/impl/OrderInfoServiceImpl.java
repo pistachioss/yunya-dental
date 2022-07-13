@@ -933,12 +933,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderInfo.setOrderType((byte) 0);
         //商品类型 0-商品 1-虚拟服务
         orderInfo.setProductType(model.getProductType().byteValue());
-        //配送方式：0->自提 1->配送
-        orderInfo.setDeliveryType(model.getDeliveryType().byteValue());
         orderInfo.setRemark(model.getRemark());
         FansAddressBO address;
         //商品类产品有自提和配送区分
         if (FALSE.getCode().equals(model.getProductType())) {
+            //配送方式：0->自提 1->配送
+            orderInfo.setDeliveryType(model.getDeliveryType().byteValue());
             //收货人信息：姓名、电话、邮编、地址
             address = productService.getAddress(null, fansReceiveAddressId, model.getDeliveryType());
             orderInfo.setReceiverName(address.getName());
@@ -1028,5 +1028,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         map.put("order_id", orderId);
         messageModel.setParamMap(map);
         mqServiceFeign.sendOrderDirectMessage(messageModel);
+        log.info("订单待支付消息发送成功, orderId:{}", orderId);
     }
 }
