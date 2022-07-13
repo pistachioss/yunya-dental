@@ -24,6 +24,10 @@ public class Coupon365DetailVO implements Serializable {
     @ApiModelProperty("卡id")
     private Integer cardId;
 
+    /** 售出类型：1、门诊开单，2-卡券售卖 */
+    @ApiModelProperty("售出类型：1、门诊开单，2-卡券售卖")
+    private Integer saleType = 2;
+
     /** 患者id */
     @ApiModelProperty("患者id")
     private Integer patientId;

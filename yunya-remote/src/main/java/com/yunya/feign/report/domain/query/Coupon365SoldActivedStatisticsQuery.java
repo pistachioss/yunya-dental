@@ -47,4 +47,8 @@ public class Coupon365SoldActivedStatisticsQuery extends PageQuery implements Se
     /** 卡券id列表 */
     @ApiModelProperty("卡券id列表")
     private Collection<Integer> couponIds;
+
+    /** 商品id列表 */
+    @ApiModelProperty("商品id列表")
+    private Collection<Integer> oralIds;
 }

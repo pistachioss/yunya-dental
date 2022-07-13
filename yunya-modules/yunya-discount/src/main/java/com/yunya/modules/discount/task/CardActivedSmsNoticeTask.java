@@ -14,7 +14,9 @@ import com.yunya.modules.discount.task.quartz.ScheduledQuartz;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -35,7 +37,7 @@ import java.util.*;
 @Slf4j
 @Component
 @EnableScheduling
-public class CardActivedSmsNoticeTask {
+public class CardActivedSmsNoticeTask implements InitializingBean {
     @Autowired
     private CardActivedSmsBiz cardActivedSmsBiz;
     @Autowired
@@ -49,13 +51,13 @@ public class CardActivedSmsNoticeTask {
     public void executeTask() {
         CardIyOr365ActivedQuery query = new CardIyOr365ActivedQuery();
         // 明天
-        LocalDateTime execDate = LocalDateTime.now().plusDays(1);
+//        LocalDateTime execDate = LocalDateTime.now().plusDays(1);
+        LocalDateTime execDate = LocalDateTime.now();
         log.info(">>>>>>>>>>>>>>>>>>>CardActivedSmsNoticeTask start");
         // 1、查询艾芽卡、365卡等已激活且未全部使用的卡券列表
         List<CardIyOr365VO> cards = cardBiz.findIyOr365CardActivedList(query);
         List<CardIyOr365VO> list = new ArrayList<>();
         if (StringHelper.isNotEmpty(cards)) {
-            List<CardIyOr365VO> cardTask = new ArrayList<>();
             // 2、过滤掉失效的卡券（卡券的有效期）
             cards.forEach(card->{
                 LocalDateTime activationDeadline = getActivationDeadline(card);
@@ -78,7 +80,7 @@ public class CardActivedSmsNoticeTask {
                 }
             });
             System.out.println("Eligible tasks are as follows: ");
-            System.out.println(JSONObject.toJSON(list));
+            System.out.println("task size: " + list.size() + " data: " + JSONObject.toJSON(list));
         }
         log.info("<<<<<<<<<<<<<<<<<<<CardActivedSmsNoticeTask end");
     }
@@ -147,5 +149,10 @@ public class CardActivedSmsNoticeTask {
                 log.error("CardActivedSmsNoticeTask add a cron task error: {}", e);
             }
         }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        executeTask();
     }
 }

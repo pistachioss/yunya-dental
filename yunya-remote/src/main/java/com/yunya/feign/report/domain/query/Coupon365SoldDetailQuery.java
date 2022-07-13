@@ -53,6 +53,10 @@ public class Coupon365SoldDetailQuery extends PageQuery implements Serializable 
     @ApiModelProperty(value = "卡券id列表")
     private Collection<Integer> couponIds;
 
+    /** 商品id列表 */
+    @ApiModelProperty("商品id列表")
+    private Collection<Integer> oralIds;
+
     /** 售卖类型：1-门诊开单，2-卡券售出 */
     @ApiModelProperty("售卖类型：1-门诊开单，2-卡券售出 ")
     private Byte soldType;
