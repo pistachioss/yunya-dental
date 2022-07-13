@@ -116,6 +116,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           billRecordMapper.findOrderAndBill4App(orderRecord.getTreatmentRecordId());
       if (null != orderAndBill4App) {
         resultData.setPrivilegeAmount(orderAndBill4App.getPrivilegeAmount());
+        resultData.setReceivableAmount(orderAndBill4App.getReceivableAmount());
+        resultData.setActualReceivableAmount(orderAndBill4App.getActualReceivableAmount());
+        resultData.setReceivedAmount(orderAndBill4App.getReceivedAmount());
+        resultData.setDebtAmount(orderAndBill4App.getDebtAmount());
       }
       orderDetails = orderDetailBiz.findOrderDetailVOList(orderRecordId, (byte) 0);
     }
