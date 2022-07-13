@@ -150,34 +150,34 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         wxFansBind.setPatientId(wxFansBindForm.getPatientId());
         wxFansBind.setDictionaryId(wxFansBindForm.getDictionaryId());
         int de = mapper.delete(wxFansBind);
-        if (de > 0) {
-            //如果解绑的是本人 则把卡主ID设置为空
-            if (BEN_REN.equals(wxFansBindForm.getDictionaryName())) {
-                wxFans.setPatientId(null);
-            }
-        }
+//        if (de > 0) {
+//            //如果解绑的是本人 则把卡主ID设置为空
+//            if (BEN_REN.equals(wxFansBindForm.getDictionaryName())) {
+//                wxFans.setPatientId(null);
+//            }
+//        }
         //处理粉丝表中绑定状态，绑定时间以及卡主ID
         wxFansBiz.updateById(wxFans);
 
-        //发送微信推送消息
-        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
-        wxTemplateMsgModel.setPatientId(wxFansBindForm.getPatientId());
-        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.UNBIND_SUCCESS);
-
-        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(wxFansBindForm.getPatientId());
-
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("first", "您好，您的账号已经解绑，解绑账号信息如下:");
-        if (patientBaseInfoVo != null) {
-            paramMap.put("keyword1", patientBaseInfoVo.getName());
-            paramMap.put("keyword2", patientBaseInfoVo.getMobile());
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
-            paramMap.put("keyword3", sdf.format(new Date()));
-        } else {
-            throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
-        }
-        wxTemplateMsgModel.setParamMap(paramMap);
-        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
+//        //发送微信推送消息
+//        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+//        wxTemplateMsgModel.setPatientId(wxFansBindForm.getPatientId());
+//        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.UNBIND_SUCCESS);
+//
+//        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(wxFansBindForm.getPatientId());
+//
+//        Map<String, Object> paramMap = new HashMap<>();
+//        paramMap.put("first", "您好，您的账号已经解绑，解绑账号信息如下:");
+//        if (patientBaseInfoVo != null) {
+//            paramMap.put("keyword1", patientBaseInfoVo.getName());
+//            paramMap.put("keyword2", patientBaseInfoVo.getMobile());
+//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+//            paramMap.put("keyword3", sdf.format(new Date()));
+//        } else {
+//            throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+//        }
+//        wxTemplateMsgModel.setParamMap(paramMap);
+//        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
         return de;
     }
 
