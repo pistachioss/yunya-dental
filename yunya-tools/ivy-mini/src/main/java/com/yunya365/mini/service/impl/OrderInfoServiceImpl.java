@@ -379,20 +379,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 payOrderVO.setRemainDate(positive);
             }
         }
-        if (Objects.equals(APPLY_REFUND.getCode(),orderInfo.getStatus().intValue())) {
-            OrderReturnApply apply = returnApplyService.queryRefund(orderId);
+        OrderReturnApply apply = returnApplyService.queryRefund(orderId);
+        if (Objects.nonNull(apply)) {
             payOrderVO.setOrderStatus(apply.getDeliveryStatus());
             payOrderVO.setReturnReason(apply.getReason());
-            if (Objects.equals(REFUND_REFUSE.getCode(), apply.getHandleStatus())) {
+            if (Objects.equals(REFUND_REFUSE.getCode(), apply.getHandleStatus())
+                    || Objects.equals(TRUE.getCode(), apply.getRefundStatus())) {
                 payOrderVO.setMchReply(apply.getHandleNote());
-                payOrderVO.setStatus((byte) 7);
-            }
-            if (Objects.equals(REFUNDING.getCode(), apply.getHandleStatus())) {
-                if (Objects.equals(FALSE.getCode(), apply.getRefundStatus())) {
-                    payOrderVO.setStatus((byte) 6);
-                } else {
-                    payOrderVO.setStatus((byte) 7);
-                }
             }
         }
         if (Objects.equals(CLOSE.getCode(),orderInfo.getStatus().intValue())) {
@@ -628,6 +621,21 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setUpdTime(new Date());
             baseMapper.updateByPrimaryKeySelective(orderInfo);
         }
+    }
+
+    @Override
+    public PayOrderVO refundDetail(Integer orderId) {
+        OrderInfo orderInfo = getById(orderId);
+        PayOrderVO vo = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+        OrderReturnApply apply = returnApplyService.queryRefund(orderId);
+        if (Objects.nonNull(apply)) {
+            vo.setReturnReason(apply.getReason());
+            if (Objects.equals(REFUND_REFUSE.getCode(), apply.getHandleStatus())
+                    || Objects.equals(TRUE.getCode(), apply.getRefundStatus())) {
+                vo.setMchReply(apply.getHandleNote());
+            }
+        }
+        return vo;
     }
 
     private void checkOrder(Integer userId, OrderInfo orderInfo, IvyMiniError orderCancelError, IvyMiniError orderCancelStatusError,

@@ -137,4 +137,6 @@ public interface IOrderInfoService extends IService<OrderInfo> {
     String wxRefundNotify(HttpServletRequest request, HttpServletResponse response);
 
     void handleDelayPay(Integer orderId);
+
+    PayOrderVO refundDetail(Integer orderId);
 }

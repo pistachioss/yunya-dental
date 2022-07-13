@@ -89,6 +89,12 @@ public class OrderInfoController extends BaseController {
         return ResponseUtil.success(orderInfoService.applyRefund(model));
     }
 
+    @GetMapping("/order/refund/{orderId}")
+    @ApiOperation("【小程序】申请退款详情")
+    public ResponseResult<PayOrderVO> refundDetail(@PathVariable Integer orderId) {
+        return ResponseUtil.success(orderInfoService.refundDetail(orderId));
+    }
+
     @PostMapping("/order/refund/cancel/{orderId}")
     @ApiOperation("【小程序】取消退款")
     public ResponseResult<Boolean> cancelRefund(@PathVariable Integer orderId) {
