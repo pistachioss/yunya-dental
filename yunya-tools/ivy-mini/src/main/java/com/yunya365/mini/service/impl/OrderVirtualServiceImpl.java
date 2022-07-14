@@ -25,7 +25,9 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
 
     @Override
     public List<OrderVirtual> listByOrderIds(Collection<Integer> ids) {
-        return ChainWrappers.lambdaQueryChain(baseMapper).in(OrderVirtual::getOrderId, ids).list();
+        return ChainWrappers.lambdaQueryChain(baseMapper).in(OrderVirtual::getOrderId, ids)
+                .eq(OrderVirtual::getDeleteStatus, FALSE.getCode())
+                .list();
     }
 
     @Override

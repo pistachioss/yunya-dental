@@ -648,6 +648,63 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return vo;
     }
 
+    public List<CardQrCodeVo> batchCardQrCode(List<Integer> cardIds) {
+        List<CardQrCodeVo> list = Lists.newArrayListWithCapacity(cardIds.size());
+        Example example = new Example(Card.class);
+        example.createCriteria().andIn("id", cardIds);
+        List<Card> cards = mapper.selectByExample(example);
+        Map<Integer, Card> cardMap = cards.stream().collect(toMap(Card::getId, Function.identity(), (o,n) -> n));
+        //优惠券信息
+        Set<Integer> couponIds = cards.stream().map(Card::getCouponId).collect(toSet());
+        Example example1 = new Example(CouponCommonInfo.class);
+        example1.createCriteria().andIn("id", couponIds);
+        List<CouponCommonInfo> coupons = couponMapper.selectByExample(example1);
+        Map<Integer, CouponCommonInfo> couponMap = coupons.stream()
+                .collect(toMap(CouponCommonInfo::getId, Function.identity(), (o,n) -> n));
+        for (Integer cardId : cardIds) {
+            Card card = cardMap.get(cardId);
+            CardQrCodeVo vo = new CardQrCodeVo();
+            vo.setCardQrCodeType(QR_CODE_NORMAL.getCode());
+            if (card == null) {
+                vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
+                vo.setErrorMsg("卡券不存在");
+                list.add(vo);
+                break;
+            }
+            //已失效
+            if (SALE_PENDING.equals(card.getStatus())) {
+                vo.setCardQrCodeType(QR_CODE_INVALID.getCode());
+                list.add(vo);
+                break;
+            }
+            //已核销
+            if (ACTIVATED.equals(card.getStatus()) || PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
+                vo.setCardQrCodeType(QR_CODE_DESTROY.getCode());
+                list.add(vo);
+                break;
+            }
+            CouponCommonInfo coupon = couponMap.get(card.getCouponId());
+            if (coupon == null) {
+                log.warn("【批量】优惠券不存在或已停用");
+                vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
+                vo.setErrorMsg("【批量】优惠券不存在或已停用");
+                list.add(vo);
+                break;
+            }
+            int couponType = coupon.getType().intValue();
+            //查询优惠券过期信息
+            vo = checkCouponDeadline(card.getCouponId(), couponType);
+            if (QR_CODE_NORMAL.equals(vo.getCardQrCodeType())) {
+                vo.setCouponName(coupon.getName());
+                vo.setQrCode(Base64.getEncoder().encodeToString(Joiner.on(":").join(new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
+                                .encode(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword())), card.getId())
+                        .getBytes()));
+            }
+            list.add(vo);
+        }
+        return list;
+    }
+
     /**
      * 卡券取消售出
      *

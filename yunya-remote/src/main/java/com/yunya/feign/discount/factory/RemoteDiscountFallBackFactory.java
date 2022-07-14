@@ -129,4 +129,9 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     public boolean whetherUseCard(List<Integer> cardIds) {
         return false;
     }
+
+    @Override
+    public List<CardQrCodeVo> batchCardQrCode(List<Integer> cardIds) {
+        return null;
+    }
 }

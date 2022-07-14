@@ -7,10 +7,10 @@ import lombok.Data;
 @Data
 @ApiModel(description = "虚拟服务激活")
 public class VirtualActiveVO {
-    @ApiModelProperty(value = "id")
+    @ApiModelProperty(value = "激活患者")
     private Integer patientName;
-    @ApiModelProperty(value = "收货人")
+    @ApiModelProperty(value = "手机号")
     private String mobile;
-    @ApiModelProperty(value = "收货人电话")
+    @ApiModelProperty(value = "激活时间")
     private String activeDate;
 }

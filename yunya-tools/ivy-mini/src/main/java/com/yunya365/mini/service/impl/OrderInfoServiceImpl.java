@@ -17,6 +17,7 @@ import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.query.CardSaleQuery;
+import com.yunya.feign.discount.domain.vo.CardQrCodeVo;
 import com.yunya.feign.discount.domain.vo.CardSalePageVo;
 import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
@@ -260,10 +261,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if (Objects.equals(PAY_PENDING.getCode(), status)) {
                 //0->商品 1->虚拟服务
                 int productType = orderInfo.getProductType().intValue();
-                //0->自提 1->配送
-                int deliveryType = orderInfo.getDeliveryType().intValue();
                 //商品
                 if (Objects.equals(FALSE.getCode(), productType)) {
+                    //0->自提 1->配送
+                    int deliveryType = orderInfo.getDeliveryType().intValue();
                     //自提
                     if (Objects.equals(FALSE.getCode(), deliveryType)) {
                         orderInfo.setStatus(HAS_SHIP.getCode().byteValue());
@@ -641,13 +642,18 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         OrderVirtualDetailVO vo = new OrderVirtualDetailVO();
         OrderInfo orderInfo = getById(orderId);
         vo.setOrderVO(assembleOrderDetail(orderInfo));
-
+        List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId));
+        if (CollectionUtils.isNotEmpty(orderVirtual)) {
+            List<Integer> carIds = Lists.newArrayList(Splitter.on(",").split(orderVirtual.get(0).getCardId()))
+                    .stream().map(Integer::valueOf).collect(toList());
+            List<CardQrCodeVo> qrList = discountFeign.batchCardQrCode(carIds);
+            vo.setQrList(BeanCopierUtils.listGeneralCopyBean(qrList, QrCodeVO.class));
+        }
         List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderItems)) {
             List<PayOrderItemVO> collect = orderItems.stream().map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
             vo.setItemVO(collect);
         }
-//        vo.setAddressVO(addressVO);
         return vo;
     }
 
@@ -657,7 +663,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         payOrderVO.setOrderDate(orderInfo.getCrtTime());
         payOrderVO.setPayDate(orderInfo.getPaymentTime());
         payOrderVO.setProductType(orderInfo.getProductType());
-        if (Objects.equals(PAY_PENDING.getCode(),orderInfo.getStatus().intValue())) {
+        if (Objects.equals(PAY_PENDING.getCode(), orderInfo.getStatus().intValue())) {
             long seconds = Duration.between(java.time.LocalDateTime.now(), DateUtil.dateToLocalDateTime(orderInfo.getCrtTime()).plusMinutes(15)).getSeconds();
             if (seconds > 0) {
                 String positive = String.format("%02d:%02d", (seconds % 3600) / 60, seconds % 60);
@@ -673,7 +679,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 payOrderVO.setMchReply(apply.getHandleNote());
             }
         }
-        if (Objects.equals(CLOSE.getCode(),orderInfo.getStatus().intValue())) {
+        if (Objects.equals(CLOSE.getCode(), orderInfo.getStatus().intValue())) {
             payOrderVO.setCloseDate(orderInfo.getUpdTime());
         }
         return payOrderVO;
@@ -990,7 +996,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         productService.lockProductStock(list, productType);
     }
 
-    void soldCard(OrderInfo orderInfo){
+    void soldCard(OrderInfo orderInfo) {
         String username = BaseContextHandler.getName();
         String openId = BaseContextHandler.getOpenId();
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
