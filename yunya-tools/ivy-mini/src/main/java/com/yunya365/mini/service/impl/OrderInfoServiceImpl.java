@@ -329,6 +329,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .eq(Objects.nonNull(query.getStatus()), OrderInfo::getStatus, query.getStatus())
                 .eq(OrderInfo::getDeleteStatus, FALSE.getCode()).orderByDesc(OrderInfo::getCrtTime)
                 .eq(OrderInfo::getFansId, userId)
+                .eq(OrderInfo::getProductType, query.getProductType())
                 .list();
         if (CollectionUtils.isEmpty(list)) {
             return null;

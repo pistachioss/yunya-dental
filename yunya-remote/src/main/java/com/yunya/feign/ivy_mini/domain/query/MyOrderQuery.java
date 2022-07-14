@@ -17,4 +17,6 @@ import lombok.EqualsAndHashCode;
 public class MyOrderQuery extends PageQuery {
     @ApiModelProperty(value = "订单状态（0->待付款；1->待发货；2->待收货；3->已完成；4->已关闭；5->退款中）")
     private Integer status;
+    @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")
+    private Integer productType;
 }
