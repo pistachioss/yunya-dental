@@ -3,10 +3,9 @@ package com.yunya.modules.patient_central.controller.app;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.WxWechatbindAppListVO;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
@@ -34,6 +33,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 简介:
@@ -71,6 +71,37 @@ public class PatientMemberAppController {
     @GetMapping("patientMember/{unionId}")
     public ResponseResult<MasertMemberInfoVo> findMemberBaseInfo(@PathVariable("unionId") String unionId) {
         return ResponseUtil.success(patientMemberInfoBiz.findMasertMember(unionId));
+    }
+
+    @ApiOperation("小程序-我的-会员信息-详情")
+    @GetMapping("patientMember/detail/{patientId}/{unionId}")
+    public ResponseResult<MasertMemberDetailVo> findMemberDetailInfo(@PathVariable("patientId") Integer patientId,
+                                                                     @PathVariable("unionId") String unionId) {
+        MasertMemberDetailVo masertMemberDetailVo = new MasertMemberDetailVo();
+        //已绑定主卡信息
+        List<PatientCardOwnerInfoVo> patientCardOwnerInfoVos = patientMemberInfoBiz.findPatientCardOwnerInfo(patientId);
+        //患者会员卡关联关系
+        PatientMemberRelationQueryForm form = new PatientMemberRelationQueryForm();
+        form.setPatientId(patientId);
+        MemberRelationVo memberRelationVo = patientMemberInfoBiz.findMemberBindingRelation(form);
+
+        PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(patientId);
+
+        masertMemberDetailVo.setMemberRelationVo(memberRelationVo);
+        masertMemberDetailVo.setPatientCardOwnerInfoVos(patientCardOwnerInfoVos);
+        masertMemberDetailVo.setPatientPublicInfoVo(patientPublicInfoVo);
+
+        MasertMemberInfoVo masertMemberInfoVo = patientMemberInfoBiz.findMasertMember(unionId);
+        if(masertMemberInfoVo!=null){
+            masertMemberDetailVo.setPoint(masertMemberInfoVo.getPoint());
+        }
+        List<WxWechatbindAppListVO>list = wxFansBindBiz.findPatientBaseInfo(unionId);
+        WxWechatbindAppListVO wxWechatbindAppListVO =
+                list.stream().filter(s -> Objects.equals(s.getPatientId(), patientId)).findFirst().orElse(null);
+        if(wxWechatbindAppListVO!=null){
+            masertMemberDetailVo.setDictionaryName(wxWechatbindAppListVO.getDictionaryName());
+        }
+        return ResponseUtil.success(masertMemberDetailVo);
     }
 
     /**

@@ -46,7 +46,8 @@
     <!-- 查询会员卡关联关系 -->
     <select id="findMemberBindingRelation"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo">
-      select pmr.id bindId,(select name from patient_base_info  where id = pmr.secondary_card_id )name,pmr.master_card_id masterCardId,pmr.secondary_card_id secondaryCardId,pmr.bind_type bindType
+      select pmr.id bindId,(select name from patient_base_info  where id = pmr.secondary_card_id )name,pmr.master_card_id masterCardId,
+      pmr.secondary_card_id secondaryCardId,pmr.bind_type bindType,pbi.face_url as faceUrl
       from patient_member_relation pmr join patient_base_info pbi on pmr.master_card_id = pbi.id
       where pmr.master_card_id = #{form.patientId} and bind_type = #{form.bindType}
     </select>
@@ -95,7 +96,7 @@
     <!-- 查询主卡人信息 -->
     <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo">
         select id,patient_id masterCardId, member_type_id masterCardTypeId,
-        (select name from patient_base_info where id = patient_id) masterName,card_number masterCardNumber,point
+        (select name from patient_base_info where id = patient_id) masterName,card_number masterCardNumber,point,crt_time crtTime
         from patient_member_info where patient_id = #{form.patientId}
     </select>
 

@@ -21,6 +21,8 @@ public class PatientCardOwnerInfoVo implements Serializable {
     /** 卡主id */
     @ApiModelProperty("卡主id")
     private String masterCardId;
+    @ApiModelProperty("头像")
+    private String faceUrl;
 
     /** 卡主会员号 */
     @ApiModelProperty("卡主会员号")

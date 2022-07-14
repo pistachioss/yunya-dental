@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -22,32 +23,40 @@ public class PatientMemberRelationVo implements Serializable {
     /**
      * 绑定关系id
      */
-
+    @ApiModelProperty(value = "绑定关系id")
     private Integer bindId;
 
     /**
      * 诊所Id
      */
+    @ApiModelProperty(value = "诊所Id")
     private Integer orgId;
 
     /**
      * 关联人名称
      */
+    @ApiModelProperty(value = "关联人名称")
     private String name;
 
     /**
      * 主卡会员人ID
      */
+    @ApiModelProperty(value = "主卡会员人ID")
     private Integer masterCardId;
 
     /**
      * 副卡会员人ID
      */
+    @ApiModelProperty(value = "副卡会员人ID")
     private Integer secondaryCardId;
 
     /**
      * 关联类型
      */
+    @ApiModelProperty(value = "关联类型")
     private Integer bindType;
+
+    @ApiModelProperty("头像")
+    private String faceUrl;
 
 }
