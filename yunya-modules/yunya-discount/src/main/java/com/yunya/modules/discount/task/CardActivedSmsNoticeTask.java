@@ -37,7 +37,7 @@ import java.util.*;
 @Slf4j
 @Component
 @EnableScheduling
-public class CardActivedSmsNoticeTask implements InitializingBean {
+public class CardActivedSmsNoticeTask {
     @Autowired
     private CardActivedSmsBiz cardActivedSmsBiz;
     @Autowired
@@ -47,13 +47,13 @@ public class CardActivedSmsNoticeTask implements InitializingBean {
     /** 间隔月份 */
     private static final Integer INTERVAL = 1;
 
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 0 23 * * ?")
     public void executeTask() {
         CardIyOr365ActivedQuery query = new CardIyOr365ActivedQuery();
         // 明天
-//        LocalDateTime execDate = LocalDateTime.now().plusDays(1);
-        LocalDateTime execDate = LocalDateTime.now();
-        log.info(">>>>>>>>>>>>>>>>>>>CardActivedSmsNoticeTask start");
+        LocalDateTime execDate = LocalDateTime.now().plusDays(1);
+//        log.info(">>>>>>>>>>>>>>>>>>>CardActivedSmsNoticeTask start");
+        System.out.println(">>>>>>>>>>>>>>>>>>>CardActivedSmsNoticeTask start");
         // 1、查询艾芽卡、365卡等已激活且未全部使用的卡券列表
         List<CardIyOr365VO> cards = cardBiz.findIyOr365CardActivedList(query);
         List<CardIyOr365VO> list = new ArrayList<>();
@@ -82,7 +82,8 @@ public class CardActivedSmsNoticeTask implements InitializingBean {
             System.out.println("Eligible tasks are as follows: ");
             System.out.println("task size: " + list.size() + " data: " + JSONObject.toJSON(list));
         }
-        log.info("<<<<<<<<<<<<<<<<<<<CardActivedSmsNoticeTask end");
+//        log.info("<<<<<<<<<<<<<<<<<<<CardActivedSmsNoticeTask end");
+        System.out.println("<<<<<<<<<<<<<<<<<<<CardActivedSmsNoticeTask end");
     }
 
     /**
@@ -149,10 +150,5 @@ public class CardActivedSmsNoticeTask implements InitializingBean {
                 log.error("CardActivedSmsNoticeTask add a cron task error: {}", e);
             }
         }
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        executeTask();
     }
 }
