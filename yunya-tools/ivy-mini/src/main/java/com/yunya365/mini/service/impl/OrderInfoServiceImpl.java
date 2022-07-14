@@ -998,9 +998,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     void soldCard(OrderInfo orderInfo) {
-        String username = BaseContextHandler.getName();
-        String openId = BaseContextHandler.getOpenId();
-        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        Integer userId = orderInfo.getFansId();
         List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderInfo.getId()));
         if (CollectionUtils.isEmpty(orderItems)) {
             return;
@@ -1022,8 +1020,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer couponType = cardPage.stream().findFirst().map(CardSalePageVo::getCouponType).orElse(null);
         CardSoldForm form = new CardSoldForm();
         form.setCardIds(cardIds);
-        form.setSoldTarget(username);
-        form.setSoldPhoneNumber(openId);
+        form.setSoldTarget(userId.toString());
+        form.setSoldPhoneNumber(orderInfo.getOrderSn());
         form.setSoldType(0);
         form.setSendText(0);
         form.setSoldAndPay(1);
@@ -1037,7 +1035,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         virtual.setOrderId(orderInfo.getId());
         virtual.setFansId(orderInfo.getFansId());
         virtual.setCardId(Joiner.on(",").join(cardIds));
-        virtual.setSoldMobile(openId);
+        virtual.setSoldMobile(orderInfo.getOrderSn());
         virtual.setSoldDate(java.time.LocalDateTime.now());
         virtual.setCrtId(userId);
         virtual.setUpdId(userId);
