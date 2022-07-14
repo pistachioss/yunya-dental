@@ -435,6 +435,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             if (cardSalePageVo.getPayId() != null) {
                 cardSalePageVo.setSoldType(AccMap.get(cardSalePageVo.getPayId() + "").getName());
             }
+            cardSalePageVo.setCouponType(couponCommonInfo.getType().intValue());
         }
         PageInfo<CardSalePageVo> pageInfo = new PageInfo<>(list);
         pageInfo.setTotal(page.getTotal());
@@ -3268,5 +3269,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      */
     public BigDecimal findCardSaleCashReceipt(CashReceiptOrRefundQuery query) {
         return mapper.selectCardSaleCashReceipt(query);
+    }
+
+    public boolean whetherUseCard(List<Integer> cardIds) {
+        Example example = new Example(CardBenefit.class);
+        example.createCriteria().andIn("cardId", cardIds)
+                .andEqualTo("benefitType", 1)
+                .andEqualTo("deleted", 0);
+        int useCount = cardBenefitMapper.selectCountByExample(example);
+        return useCount > 0;
     }
 }

@@ -11,6 +11,7 @@ import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
@@ -186,11 +187,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             }).collect(toList());
             orderItemService.saveBatch(itemList);
             //保存预付单信息
-            wxPayInfoService.save(wxPaymentVO);
-            if (Objects.equals(TRUE.getCode(), productType)) {
-                //虚拟服务售卖卡券
-                soldCard(model, itemBoList, orderInfo);
-            }
+            wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
             CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
             //发送延迟消息取消订单
             sendOrderMessage(orderInfo.getId());
@@ -233,7 +230,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }).collect(toList());
         orderItemService.saveBatch(itemList);
         //保存预付单信息
-        wxPayInfoService.save(wxPaymentVO);
+        wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
         CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
         //发送延迟消息取消订单
         sendOrderMessage(orderInfo.getId());
@@ -282,6 +279,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 orderInfo.setPaymentTime(payTime);
                 orderInfo.setOutOrderNo(tradeNo);
                 baseMapper.updateByPrimaryKeySelective(orderInfo);
+                if (Objects.equals(TRUE.getCode(), productType)) {
+                    //虚拟服务售卖卡券
+                    soldCard(orderInfo);
+                }
             }
             return WxPayNotifyResponse.success("处理成功!");
         } catch (Exception e) {
@@ -431,12 +432,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PayOrderVO applyRefund(OrderRefundApplyModel model) {
+        Integer orderId = model.getOrderId();
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         boolean locked = false;
         try {
             //加锁
-            locked = lock(REFUND_ORDER_LOCK, model.getOrderId(), userId);
-            OrderInfo orderInfo = getById(model.getOrderId());
+            locked = lock(REFUND_ORDER_LOCK, orderId, userId);
+            OrderInfo orderInfo = getById(orderId);
             if (Objects.isNull(orderInfo)) {
                 throw ClientServiceException.wrap(ORDER_ERROR);
             }
@@ -446,6 +448,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if (!Lists.newArrayList(SHIP_PENDING.getCode(), HAS_SHIP.getCode(), FINISH.getCode())
                     .contains(orderInfo.getStatus().intValue())) {
                 throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
+            }
+            //检查卡券是否已经开单收费
+            if (Objects.equals(orderInfo.getProductType().intValue(), TRUE.getCode())) {
+                virtualService.deleteOrderCard(orderId);
+                if (virtualRefund(orderId)) {
+                    throw ClientServiceException.wrap(ORDER_CARD_USED);
+                }
             }
             returnApplyService.refundApply(orderInfo, model);
             orderInfo.setStatus(APPLY_REFUND.getCode().byteValue());
@@ -463,7 +472,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         } finally {
             if (locked) {
                 log.info("【解锁成功】退款");
-                unlock(REFUND_ORDER_LOCK, model.getOrderId(), userId);
+                unlock(REFUND_ORDER_LOCK, orderId, userId);
             }
         }
     }
@@ -547,8 +556,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 return WxPayNotifyResponse.fail(result.getReturnMsg());
             }
             WxPayRefundNotifyResult.ReqInfo reqInfo = result.getReqInfo();
-            // 微信订单号
-            String tradeNo = reqInfo.getTransactionId();
             // 订单号
             String orderSn = reqInfo.getOutTradeNo();
             //退款状态 SUCCESS-退款成功  CHANGE-退款异常  REFUNDCLOSE—退款关闭
@@ -574,6 +581,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 apply.setHandleNote("微信退款失败");
                 orderInfo.setStatus(apply.getPreStatus().byteValue());
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(now));
+                //如果是虚拟卡券，取消售出
             }
             returnApplyService.updateById(apply);
             baseMapper.updateByPrimaryKeySelective(orderInfo);
@@ -982,22 +990,29 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         productService.lockProductStock(list, productType);
     }
 
-    void soldCard(CreateProductOrderModel model, List<OrderItemBO> itemBoList, OrderInfo orderInfo){
+    void soldCard(OrderInfo orderInfo){
         String username = BaseContextHandler.getName();
         String openId = BaseContextHandler.getOpenId();
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderInfo.getId()));
+        if (CollectionUtils.isEmpty(orderItems)) {
+            return;
+        }
+        OrderItem orderItem = orderItems.get(0);
         CardSaleQuery query = new CardSaleQuery();
-        query.setCouponId(model.getProductId());
+        query.setCouponId(orderItem.getProductId());
         query.setOrgId(21);
         query.setCardStatsList(Collections.singletonList(0));
         query.setPageNum(1);
-        query.setPageSize(model.getQuantity());
+        query.setPageSize(orderItem.getProductQuantity());
         PageInfo<CardSalePageVo> data = discountFeign.getCardSalePageVo(query).getData();
-        if (!Objects.equals(data.getSize(), model.getQuantity())) {
+        if (!Objects.equals(data.getSize(), orderItem.getProductQuantity())) {
             throw ClientServiceException.wrap(CARD_SOLD_LACK);
         }
-        List<Integer> cardIds = data.getList().stream().map(CardSalePageVo::getId).collect(toList());
-        OrderItemBO orderItemBO = itemBoList.get(0);
+        List<CardSalePageVo> cardPage = data.getList();
+        List<Integer> cardIds = cardPage.stream().map(CardSalePageVo::getId).collect(toList());
+        //卡券类型
+        Integer couponType = cardPage.stream().findFirst().map(CardSalePageVo::getCouponType).orElse(null);
         CardSoldForm form = new CardSoldForm();
         form.setCardIds(cardIds);
         form.setSoldTarget(username);
@@ -1008,8 +1023,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         form.setPayId(1);
         form.setRemark("小程序虚拟服务售卖");
         form.setSoldWay(0);
-        form.setCouponType(orderItemBO.getCouponType());
-        form.setCouponName(orderItemBO.getProductName());
+        form.setCouponType(couponType);
+        form.setCouponName(orderItem.getProductName());
         discountFeign.soldCard(form);
         OrderVirtual virtual = new OrderVirtual();
         virtual.setOrderId(orderInfo.getId());
@@ -1029,5 +1044,15 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         messageModel.setParamMap(map);
         mqServiceFeign.sendOrderDirectMessage(messageModel);
         log.info("订单待支付消息发送成功, orderId:{}", orderId);
+    }
+
+    private boolean virtualRefund(Integer orderId) {
+        List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId));
+        if (CollectionUtils.isEmpty(orderVirtual)) {
+            return false;
+        }
+        List<Integer> carIds = Lists.newArrayList(Splitter.on(",").split(orderVirtual.get(0).getCardId()))
+                .stream().map(Integer::valueOf).collect(toList());
+        return discountFeign.whetherUseCard(carIds);
     }
 }

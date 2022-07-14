@@ -67,6 +67,9 @@ public class OrderVirtual implements Serializable {
     @TableField("active_date")
     private LocalDateTime activeDate;
 
+    @TableField("delete_status")
+    private Integer deleteStatus;
+
     /**
      * 创建人
      */

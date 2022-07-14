@@ -12,6 +12,7 @@
         <result column="sold_mobile" property="soldMobile" />
         <result column="sold_date" property="soldDate" />
         <result column="active_date" property="activeDate" />
+        <result column="delete_status" property="deleteStatus" />
         <result column="crt_id" property="crtId" />
         <result column="crt_time" property="crtTime" />
         <result column="upd_time" property="updTime" />

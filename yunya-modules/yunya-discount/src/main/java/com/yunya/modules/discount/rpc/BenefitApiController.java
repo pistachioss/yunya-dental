@@ -143,4 +143,9 @@ public class BenefitApiController {
     void freeVirtualStock(@Valid @RequestBody List<FreeStockForm> form) {
         couponBiz.freeVirtualStock(form);
     }
+
+    @RequestMapping(value = "/card/use", method = RequestMethod.POST)
+    boolean whetherUseCard(@NotEmpty @RequestBody List<Integer> cardIds) {
+        return cardBiz.whetherUseCard(cardIds);
+    }
 }

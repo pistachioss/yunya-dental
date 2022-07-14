@@ -119,4 +119,14 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     public ResponseResult soldCard(CardSoldForm form) {
         return null;
     }
+
+    @Override
+    public ResponseResult cancelCardSold(Integer cardId) {
+        return null;
+    }
+
+    @Override
+    public boolean whetherUseCard(List<Integer> cardIds) {
+        return false;
+    }
 }

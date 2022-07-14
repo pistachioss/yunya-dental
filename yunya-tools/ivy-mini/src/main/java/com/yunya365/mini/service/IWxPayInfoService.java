@@ -14,7 +14,7 @@ import com.yunya365.mini.entity.WxPayInfo;
  */
 public interface IWxPayInfoService extends IService<WxPayInfo> {
 
-    void save(WxPaymentVO wxPaymentVO);
+    void save(WxPaymentVO wxPaymentVO, Integer orderId);
 
     WxPaymentVO getWxPay(Integer orderId);
 }

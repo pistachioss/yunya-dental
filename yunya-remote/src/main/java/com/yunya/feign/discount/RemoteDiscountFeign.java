@@ -107,4 +107,11 @@ public interface RemoteDiscountFeign {
     @ApiOperation(value = "产品售卖--查看配给-卡券售出")
     @PutMapping("/coupon/card/sale")
     ResponseResult soldCard(@Valid @RequestBody CardSoldForm form);
+
+    @ApiOperation(value = "取消售出")
+    @PutMapping("/coupon/card/cancel/{id}")
+    ResponseResult cancelCardSold(@PathVariable(value = "id") Integer cardId);
+
+    @RequestMapping(value = "/card/use", method = RequestMethod.POST)
+    boolean whetherUseCard(@NotEmpty @RequestBody List<Integer> cardIds);
 }

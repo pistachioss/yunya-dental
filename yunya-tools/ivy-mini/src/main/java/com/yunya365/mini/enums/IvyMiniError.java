@@ -44,6 +44,8 @@ public enum IvyMiniError implements RestError {
     ORDER_PAY_STATUS_ERROR(34, "订单异常，支付失败"),
     WX_REFUND_ERROR(35, "微信退款异常"),
     CARD_SOLD_LACK(36, "该虚拟服务数量不足，请联系客服人员"),
+    ORDER_CARD_USED(37, "虚拟卡券已使用，无法退款，请联系客服人员"),
+    WX_SIGN_PAY_ERROR(38, "微信支付信息异常，请重新下单"),
     ;
     private final Integer code;
     private final String value;

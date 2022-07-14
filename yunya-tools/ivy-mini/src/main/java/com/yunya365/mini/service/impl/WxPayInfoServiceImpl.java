@@ -3,12 +3,17 @@ package com.yunya365.mini.service.impl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.yunya.feign.ivy_mini.domain.vo.WxPaymentVO;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya365.mini.entity.WxPayInfo;
 import com.yunya365.mini.mapper.WxPayInfoMapper;
 import com.yunya365.mini.service.IWxPayInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
+
+import static com.yunya365.mini.enums.IvyMiniError.*;
 
 /**
  * <p>
@@ -22,16 +27,20 @@ import org.springframework.stereotype.Service;
 public class WxPayInfoServiceImpl extends ServiceImpl<WxPayInfoMapper, WxPayInfo> implements IWxPayInfoService {
 
     @Override
-    public void save(WxPaymentVO wxPaymentVO) {
+    public void save(WxPaymentVO wxPaymentVO, Integer orderId) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         WxPayInfo wxPayInfo = BeanCopierUtils.generalCopyBean(wxPaymentVO, WxPayInfo.class);
         wxPayInfo.setCrtId(userId);
+        wxPayInfo.setOrderId(orderId);
         save(wxPayInfo);
     }
 
     @Override
     public WxPaymentVO getWxPay(Integer orderId) {
         WxPayInfo wxPayInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(WxPayInfo::getOrderId, orderId).one();
+        if (Objects.isNull(wxPayInfo)) {
+           throw ClientServiceException.wrap(WX_SIGN_PAY_ERROR);
+        }
         return BeanCopierUtils.generalCopyBean(wxPayInfo, WxPaymentVO.class);
     }
 }
