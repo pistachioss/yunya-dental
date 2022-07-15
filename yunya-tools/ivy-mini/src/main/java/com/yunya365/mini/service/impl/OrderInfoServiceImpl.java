@@ -380,6 +380,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public OrderDetailVO orderDetail(Integer orderId) {
         OrderDetailVO vo = new OrderDetailVO();
         OrderInfo orderInfo = getById(orderId);
+        if (Objects.isNull(orderInfo)) {
+            throw ClientServiceException.wrap(ORDER_ERROR);
+        }
         vo.setOrderVO(assembleOrderDetail(orderInfo));
         List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderItems)) {
@@ -642,6 +645,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public OrderVirtualDetailVO virtualOrderDetail(Integer orderId) {
         OrderVirtualDetailVO vo = new OrderVirtualDetailVO();
         OrderInfo orderInfo = getById(orderId);
+        if (Objects.isNull(orderInfo)) {
+            throw ClientServiceException.wrap(ORDER_ERROR);
+        }
         vo.setOrderVO(assembleOrderDetail(orderInfo));
         List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderVirtual)) {

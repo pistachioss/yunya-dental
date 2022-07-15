@@ -79,7 +79,7 @@ public class OrderInfoController extends BaseController {
 
     @GetMapping("/order/virtual/{orderId}")
     @ApiOperation("【小程序】虚拟服务订单详情")
-    public ResponseResult<OrderVirtualDetailVO> virtualOrderDetail(@PathVariable Integer orderId) {
+    public ResponseResult<OrderVirtualDetailVO> virtualOrderDetail (@PathVariable Integer orderId) {
         return ResponseUtil.success(orderInfoService.virtualOrderDetail(orderId));
     }
 
