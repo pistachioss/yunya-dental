@@ -11,7 +11,6 @@ import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
@@ -668,8 +667,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         vo.setOrderVO(assembleOrderDetail(orderInfo));
         List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderVirtual)) {
-            List<Integer> carIds = Lists.newArrayList(Splitter.on(",").split(orderVirtual.get(0).getCardId()))
-                    .stream().map(Integer::valueOf).collect(toList());
+            List<Integer> carIds = orderVirtual.stream().map(OrderVirtual::getCardId).collect(toList());
             List<CardQrCodeVo> qrList = discountFeign.batchCardQrCode(carIds);
             vo.setQrList(BeanCopierUtils.listGeneralCopyBean(qrList, QrCodeVO.class));
         }
@@ -1056,21 +1054,27 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         form.setCouponName(orderItem.getProductName());
         soldForm.setForm(form);
         soldForm.setOrgId(21);
-        soldForm.setLoginUserId(1);
+        soldForm.setLoginUserId(userId);
         ResponseResult soldResult = discountFeign.miniSoldCard(soldForm);
         if (!Objects.equals(soldResult.getStatus(), 0)) {
             throw ClientServiceException.wrap(soldResult.getStatus(), soldResult.getMsg());
         }
-        OrderVirtual virtual = new OrderVirtual();
-        virtual.setOrderId(orderInfo.getId());
-        virtual.setFansId(orderInfo.getFansId());
-        virtual.setCardId(Joiner.on(",").join(cardIds));
-        virtual.setSoldMobile(orderInfo.getOrderSn());
-        virtual.setSoldDate(java.time.LocalDateTime.now());
-        virtual.setCrtId(userId);
-        virtual.setUpdId(userId);
-        virtual.setDeleteStatus(true);
-        virtualService.save(virtual);
+        List<OrderVirtual> list = Lists.newArrayListWithCapacity(cardIds.size());
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        for (Integer cardId : cardIds) {
+            OrderVirtual virtual = new OrderVirtual();
+            virtual.setOrderId(orderInfo.getId());
+            virtual.setOrderSn(orderInfo.getOrderSn());
+            virtual.setFansId(orderInfo.getFansId());
+            virtual.setCardId(cardId);
+            virtual.setSoldDate(now);
+            virtual.setCrtId(userId);
+            virtual.setUpdId(userId);
+            virtual.setDeleteStatus(true);
+            list.add(virtual);
+        }
+
+        virtualService.saveBatch(list);
     }
 
     private void sendOrderMessage(Integer orderId) {
@@ -1087,16 +1091,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         if (CollectionUtils.isEmpty(orderVirtual)) {
             return false;
         }
-        List<Integer> carIds = Lists.newArrayList(Splitter.on(",").split(orderVirtual.get(0).getCardId()))
-                .stream().map(Integer::valueOf).collect(toList());
+        List<Integer> carIds = orderVirtual.stream().map(OrderVirtual::getCardId).collect(toList());
         return discountFeign.whetherUseCard(carIds);
     }
 
     private void cancelSoldCard(Integer orderId) {
         List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderVirtual)) {
-            List<Integer> carIds = Lists.newArrayList(Splitter.on(",").split(orderVirtual.get(0).getCardId()))
-                    .stream().map(Integer::valueOf).collect(toList());
+            List<Integer> carIds = orderVirtual.stream().map(OrderVirtual::getCardId).collect(toList());
             //取消售出
             BatchCancelCardForm form = new BatchCancelCardForm();
             form.setCardIds(carIds);

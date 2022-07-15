@@ -1,6 +1,7 @@
 package com.yunya365.mini.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
 import com.yunya365.mini.entity.OrderVirtual;
 
 import java.util.Collection;
@@ -22,4 +23,5 @@ public interface IOrderVirtualService extends IService<OrderVirtual> {
 
     void soldActiveOrInvalid(Integer orderId, boolean status);
 
+    void activeCard(VirtualActiveForm form);
 }

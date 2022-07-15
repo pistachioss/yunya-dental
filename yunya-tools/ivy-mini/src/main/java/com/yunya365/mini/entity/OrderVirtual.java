@@ -34,16 +34,22 @@ public class OrderVirtual implements Serializable {
     private Integer orderId;
 
     /**
+     * 订单号
+     */
+    @TableField("order_sn")
+    private String orderSn;
+
+    /**
      * 用户id
      */
     @TableField("fans_id")
     private Integer fansId;
 
     /**
-     * 卡券id(多张逗号分隔)
+     * 卡券id
      */
     @TableField("card_id")
-    private String cardId;
+    private Integer cardId;
 
     /**
      * 激活患者
@@ -52,10 +58,10 @@ public class OrderVirtual implements Serializable {
     private Integer patientId;
 
     /**
-     * 售卖手机
+     * 激活手机
      */
-    @TableField("sold_mobile")
-    private String soldMobile;
+    @TableField("active_mobile")
+    private String activeMobile;
 
     /**
      * 售卖时间

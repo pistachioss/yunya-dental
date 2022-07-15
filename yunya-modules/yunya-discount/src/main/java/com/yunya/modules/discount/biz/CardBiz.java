@@ -1,14 +1,10 @@
 package com.yunya.modules.discount.biz;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.yunya.feign.discount.domain.bo.*;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.ClinicAllocateModel;
@@ -16,13 +12,12 @@ import com.yunya.feign.discount.domain.model.GenerateAllocateModel;
 import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
+import com.yunya.feign.ivy_mini.RemoteIvyMiniServiceFeign;
+import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
@@ -31,31 +26,22 @@ import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
-import com.yunya.feign.system.vo.OrganizationInfo;
-import com.yunya.feign.system.vo.OrganizationInfoDetail;
-import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.system.vo.*;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.constant.RedisConstants;
-import com.yunya.framework.common.constant.UserConstant;
+import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.model.RestError;
-import com.yunya.framework.common.utils.BeanCopierUtils;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.AccountItem;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseTariff;
-import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
-import com.yunya.models.tariff.ClinicTariffMemberPrice;
+import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.discount.enums.*;
@@ -78,10 +64,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -161,6 +144,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private RemoteSmsServiceFeign remoteSmsServiceFeign;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Resource
+    private RemoteIvyMiniServiceFeign ivyMiniServiceFeign;
     @Value("${cardSold.selfChannel}")
     private String selfChannel;
     /**
@@ -885,7 +870,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 return ResponseUtil.error(errorBo.getError());
             }
             //4. 卡券激活
-            this.updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId());
+            this.updateOwnActiveCard(patientId, form, loginUserId, card);
             mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
             log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
             return ResponseUtil.success();
@@ -2172,9 +2157,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param form        form
      * @param loginUserId loginUserId
      */
-    private void updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId, Integer couponId) {
+    private void updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId, Card card) {
         Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
-        CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
+        CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(card.getCouponId());
         LocalDateTime now = LocalDateTime.now();
         Card ownActiveCard = new Card();
         ownActiveCard.setId(form.getCardId());
@@ -2194,6 +2179,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         ownActiveCard.setUpdId(loginUserId);
         ownActiveCard.setActiveDate(now);
         mapper.updateByPrimaryKeySelective(ownActiveCard);
+        //小程序激活
+        miniActive(patientId, card, now, loginUserId);
     }
 
     /**
@@ -3379,5 +3366,17 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 .andEqualTo("deleted", 0);
         int useCount = cardBenefitMapper.selectCountByExample(example);
         return useCount > 0;
+    }
+
+    private void miniActive(Integer patientId, Card card, LocalDateTime now, Integer loginUserId) {
+        PatientBaseInfo patientBaseInfo = patientFeign.findPatientInfoById(patientId);
+        VirtualActiveForm form = new VirtualActiveForm();
+        form.setCardId(card.getId());
+        form.setActiveDate(now);
+        form.setActiveUserId(loginUserId);
+        form.setOrderSn(card.getSoldPhoneNumber());
+        form.setPatientId(patientId);
+        form.setPatientMobile(patientBaseInfo.getMobile());
+        ivyMiniServiceFeign.activeCard(form);
     }
 }

@@ -1,9 +1,12 @@
 package com.yunya365.mini.controller;
 
 
-import org.springframework.web.bind.annotation.RequestMapping;
+import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
+import com.yunya365.mini.service.IOrderVirtualService;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.RestController;
+import javax.annotation.Resource;
+import javax.validation.Valid;
 
 /**
  * <p>
@@ -14,8 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2022-07-13
  */
 @RestController
-@RequestMapping("/orderVirtual")
 public class OrderVirtualController {
 
+    @Resource
+    private IOrderVirtualService virtualService;
+
+    @PostMapping("/orderVirtual/active/save")
+    public void activeCard(@RequestBody @Valid VirtualActiveForm form) {
+       virtualService.activeCard(form);
+    }
 }
 

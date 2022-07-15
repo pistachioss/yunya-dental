@@ -2,6 +2,8 @@ package com.yunya365.mini.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
+import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya365.mini.entity.OrderVirtual;
 import com.yunya365.mini.mapper.OrderVirtualMapper;
 import com.yunya365.mini.service.IOrderVirtualService;
@@ -42,5 +44,28 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
                 .eq(OrderVirtual::getOrderId, orderId)
                 .eq(OrderVirtual::getDeleteStatus, !status)
                 .set(OrderVirtual::getDeleteStatus, status).update();
+    }
+
+    @Override
+    public void activeCard(VirtualActiveForm form) {
+        String orderSn = form.getOrderSn();
+        Integer cardId = form.getCardId();
+        Long count = ChainWrappers.lambdaQueryChain(baseMapper)
+                .eq(OrderVirtual::getOrderSn, orderSn)
+                .eq(OrderVirtual::getCardId, cardId)
+                .eq(OrderVirtual::getDeleteStatus, false)
+                .count();
+        if (count > 0) {
+            ChainWrappers.lambdaUpdateChain(baseMapper)
+                    .eq(OrderVirtual::getOrderSn, form.getOrderSn())
+                    .eq(OrderVirtual::getCardId, form.getCardId())
+                    .set(OrderVirtual::getActiveMobile, form.getPatientMobile())
+                    .set(OrderVirtual::getPatientId, form.getPatientId())
+                    .set(OrderVirtual::getPatientId, form.getPatientId())
+                    .set(OrderVirtual::getActiveDate, form.getActiveDate())
+                    .set(OrderVirtual::getUpdId, form.getActiveUserId())
+                    .update();
+        }
+
     }
 }
