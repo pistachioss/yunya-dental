@@ -29,6 +29,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageOrderModel;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -192,6 +193,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
             //发送延迟消息取消订单
             sendOrderMessage(orderInfo.getId());
+            if (Objects.equals(TRUE.getCode(), productType)) {
+                //虚拟服务售卖卡券
+                soldCard(orderInfo);
+            }
             return vo;
         } finally {
             if (locked) {
@@ -282,7 +287,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 baseMapper.updateByPrimaryKeySelective(orderInfo);
                 if (Objects.equals(TRUE.getCode(), productType)) {
                     //虚拟服务售卖卡券
-                    soldCard(orderInfo);
+                    virtualService.soldActiveOrInvalid(orderInfo.getId(), false);
                 }
             }
             return WxPayNotifyResponse.success("处理成功!");
@@ -456,9 +461,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             }
             //检查卡券是否已经开单收费
             if (Objects.equals(orderInfo.getProductType().intValue(), TRUE.getCode())) {
-                virtualService.deleteOrderCard(orderId);
-                if (virtualRefund(orderId)) {
+                if (virtualUsed(orderId)) {
                     throw ClientServiceException.wrap(ORDER_CARD_USED);
+                } else {
+                    virtualService.soldActiveOrInvalid(orderId, true);
                 }
             }
             returnApplyService.refundApply(orderInfo, model);
@@ -572,13 +578,18 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if (Objects.isNull(orderInfo)) {
                 throw ClientServiceException.wrap(ORDER_DATA_ERROR);
             }
-            OrderReturnApply apply = returnApplyService.queryRefund(orderInfo.getId());
+            Integer orderId = orderInfo.getId();
+            OrderReturnApply apply = returnApplyService.queryRefund(orderId);
             if (Objects.equals(refundStatus, "SUCCESS")) {
                 java.time.LocalDateTime refundTime = java.time.LocalDateTime.parse(successTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 apply.setUpdTime(refundTime);
                 apply.setRefundStatus(FALSE.getCode());
                 orderInfo.setStatus(REFUND_SUCCESS.getCode().byteValue());
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(refundTime));
+                //如果是虚拟卡券，取消售出
+                cancelSoldCard(orderId);
+                //退款成功 虚拟卡券删除
+                virtualService.deleteOrderCard(orderId);
             } else {
                 java.time.LocalDateTime now = java.time.LocalDateTime.now();
                 apply.setRefundStatus(TRUE.getCode());
@@ -586,7 +597,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 apply.setHandleNote("微信退款失败");
                 orderInfo.setStatus(apply.getPreStatus().byteValue());
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(now));
-                //如果是虚拟卡券，取消售出
+                //退款失败，卡券解除限制
+                virtualService.soldActiveOrInvalid(orderId, false);
             }
             returnApplyService.updateById(apply);
             baseMapper.updateByPrimaryKeySelective(orderInfo);
@@ -619,6 +631,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setStatus(CLOSE.getCode().byteValue());
             orderInfo.setUpdTime(new Date());
             baseMapper.updateByPrimaryKeySelective(orderInfo);
+        }
+        if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
+            //取消售出卡券
+            cancelSoldCard(orderId);
+            virtualService.deleteOrderCard(orderId);
         }
     }
 
@@ -1024,6 +1041,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         List<Integer> cardIds = cardPage.stream().map(CardSalePageVo::getId).collect(toList());
         //卡券类型
         Integer couponType = cardPage.stream().findFirst().map(CardSalePageVo::getCouponType).orElse(null);
+        MiniCardSoldForm soldForm = new MiniCardSoldForm();
         CardSoldForm form = new CardSoldForm();
         form.setCardIds(cardIds);
         form.setSoldTarget(userId.toString());
@@ -1036,7 +1054,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         form.setSoldWay(0);
         form.setCouponType(couponType);
         form.setCouponName(orderItem.getProductName());
-        discountFeign.soldCard(form);
+        soldForm.setForm(form);
+        soldForm.setOrgId(21);
+        soldForm.setLoginUserId(1);
+        ResponseResult soldResult = discountFeign.miniSoldCard(soldForm);
+        if (!Objects.equals(soldResult.getStatus(), 0)) {
+            throw ClientServiceException.wrap(soldResult.getStatus(), soldResult.getMsg());
+        }
         OrderVirtual virtual = new OrderVirtual();
         virtual.setOrderId(orderInfo.getId());
         virtual.setFansId(orderInfo.getFansId());
@@ -1045,6 +1069,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         virtual.setSoldDate(java.time.LocalDateTime.now());
         virtual.setCrtId(userId);
         virtual.setUpdId(userId);
+        virtual.setDeleteStatus(true);
         virtualService.save(virtual);
     }
 
@@ -1057,7 +1082,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         log.info("订单待支付消息发送成功, orderId:{}", orderId);
     }
 
-    private boolean virtualRefund(Integer orderId) {
+    private boolean virtualUsed(Integer orderId) {
         List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isEmpty(orderVirtual)) {
             return false;
@@ -1065,5 +1090,18 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         List<Integer> carIds = Lists.newArrayList(Splitter.on(",").split(orderVirtual.get(0).getCardId()))
                 .stream().map(Integer::valueOf).collect(toList());
         return discountFeign.whetherUseCard(carIds);
+    }
+
+    private void cancelSoldCard(Integer orderId) {
+        List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId));
+        if (CollectionUtils.isNotEmpty(orderVirtual)) {
+            List<Integer> carIds = Lists.newArrayList(Splitter.on(",").split(orderVirtual.get(0).getCardId()))
+                    .stream().map(Integer::valueOf).collect(toList());
+            //取消售出
+            BatchCancelCardForm form = new BatchCancelCardForm();
+            form.setCardIds(carIds);
+            form.setOrgId(21);
+            discountFeign.batchCancelCard(form);
+        }
     }
 }

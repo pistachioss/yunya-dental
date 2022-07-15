@@ -20,4 +20,6 @@ public interface IOrderVirtualService extends IService<OrderVirtual> {
 
     void deleteOrderCard(Integer orderId);
 
+    void soldActiveOrInvalid(Integer orderId, boolean status);
+
 }

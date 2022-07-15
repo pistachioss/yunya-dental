@@ -33,6 +33,14 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
     @Override
     public void deleteOrderCard(Integer orderId) {
         ChainWrappers.lambdaUpdateChain(baseMapper)
-                .eq(OrderVirtual::getOrderId, orderId).set(OrderVirtual::getDeleteStatus, TRUE.getCode()).update();
+                .eq(OrderVirtual::getOrderId, orderId).remove();
+    }
+
+    @Override
+    public void soldActiveOrInvalid(Integer orderId, boolean status) {
+        ChainWrappers.lambdaUpdateChain(baseMapper)
+                .eq(OrderVirtual::getOrderId, orderId)
+                .eq(OrderVirtual::getDeleteStatus, !status)
+                .set(OrderVirtual::getDeleteStatus, status).update();
     }
 }

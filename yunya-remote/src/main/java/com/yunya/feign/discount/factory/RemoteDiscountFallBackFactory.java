@@ -116,22 +116,22 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     }
 
     @Override
-    public ResponseResult soldCard(CardSoldForm form) {
-        return null;
-    }
-
-    @Override
-    public ResponseResult cancelCardSold(Integer cardId) {
-        return null;
-    }
-
-    @Override
     public boolean whetherUseCard(List<Integer> cardIds) {
         return false;
     }
 
     @Override
     public List<CardQrCodeVo> batchCardQrCode(List<Integer> cardIds) {
+        return null;
+    }
+
+    @Override
+    public void batchCancelCard(BatchCancelCardForm form) {
+
+    }
+
+    @Override
+    public ResponseResult miniSoldCard(MiniCardSoldForm form) {
         return null;
     }
 }

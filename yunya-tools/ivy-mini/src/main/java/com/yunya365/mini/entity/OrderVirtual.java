@@ -3,6 +3,7 @@ package com.yunya365.mini.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -13,10 +14,11 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author xiangyang
- * @since 2022-07-13
+ * @since 2022-07-15
  */
 @Getter
 @Setter
+@Accessors(chain = true)
 @TableName("order_virtual")
 public class OrderVirtual implements Serializable {
 
@@ -67,8 +69,11 @@ public class OrderVirtual implements Serializable {
     @TableField("active_date")
     private LocalDateTime activeDate;
 
+    /**
+     * 删除状态：0->未删除；1->已删除
+     */
     @TableField("delete_status")
-    private Integer deleteStatus;
+    private Boolean deleteStatus;
 
     /**
      * 创建人

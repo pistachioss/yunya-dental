@@ -449,14 +449,23 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param form form
      * @return res
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ResponseResult soldCard(CardSoldForm form) throws ExecutionException, InterruptedException {
-        List<Integer> cardIds = form.getCardIds();
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        return soldCard(orgId, form, loginUserId);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public ResponseResult miniSoldCard(MiniCardSoldForm form){
+        return soldCard(form.getOrgId(), form.getForm(), form.getLoginUserId());
+    }
+
+    private ResponseResult soldCard(Integer orgId, CardSoldForm form, Integer loginUserId) {
+        List<Integer> cardIds = form.getCardIds();
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        RestErrorBo errorBo;
         long start = System.currentTimeMillis();
+        RestErrorBo errorBo;
         try {
             SalesChannel salesChannel = new SalesChannel();
             salesChannel.setName(selfChannel);
@@ -512,7 +521,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                             throw (CompletionException)ex;
                         }
                         return res;
-            });
+                    });
             return ResponseUtil.success();
         } finally {
             CompletableFuture.runAsync(() -> {
@@ -735,6 +744,41 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
         log.info("【取消售出卡券发送消息成功】：卡券id[{}]", couponId);
         return ResponseUtil.success();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void batchCancelCardSold(BatchCancelCardForm form) {
+        int orgId = form.getOrgId();
+        List<Integer> cardIds = form.getCardIds();
+        RestErrorBo errorBo;
+        Example example = new Example(Card.class);
+        example.createCriteria().andIn("id", cardIds);
+        List<Card> cards = mapper.selectByExample(example);
+        Map<Integer, Card> cardMap = cards.stream().collect(toMap(Card::getId, Function.identity(), (o,n) -> n));
+        //优惠券信息
+        Set<Integer> couponIds = cards.stream().map(Card::getCouponId).collect(toSet());
+        Example example1 = new Example(CouponCommonInfo.class);
+        example1.createCriteria().andIn("id", couponIds);
+        List<CouponCommonInfo> coupons = couponMapper.selectByExample(example1);
+        Map<Integer, CouponCommonInfo> couponMap = coupons.stream()
+                .collect(toMap(CouponCommonInfo::getId, Function.identity(), (o,n) -> n));
+        for (Integer cardId : cardIds) {
+            //1. 检查卡券
+            Card card = cardMap.get(cardId);
+            errorBo = checkCardForCancelSale(cardId, card, orgId);
+            Integer couponId = card.getCouponId();
+            //2. 检查优惠券
+            CouponCommonInfo couponInfo = couponMap.get(card.getCouponId());
+            if (couponInfo == null || !couponInfo.getIsInservice()) {
+                log.warn("【批量售卖失败】优惠券[{}]不存在", couponId);
+            }
+            //更新取消卡券售出
+            updateCardForCancel(card);
+            //取消售出增加日志记录
+            this.saveCancelCardLog(cardId);
+            mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
+            log.info("【批量取消售出卡券发送消息成功】：卡券id[{}]", couponId);
+        }
     }
 
     /**

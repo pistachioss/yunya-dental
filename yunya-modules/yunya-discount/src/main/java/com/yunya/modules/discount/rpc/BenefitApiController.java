@@ -148,4 +148,14 @@ public class BenefitApiController {
     boolean whetherUseCard(@NotEmpty @RequestBody List<Integer> cardIds) {
         return cardBiz.whetherUseCard(cardIds);
     }
+
+    @PostMapping("/coupon/card/cancel/batch")
+    public void batchCancelCard(@RequestBody BatchCancelCardForm form) {
+        cardBiz.batchCancelCardSold(form);
+    }
+
+    @PutMapping("/mini/coupon/card/sale")
+    public ResponseResult miniSoldCard(@Valid @RequestBody MiniCardSoldForm form) {
+        return cardBiz.miniSoldCard(form);
+    }
 }

@@ -104,18 +104,15 @@ public interface RemoteDiscountFeign {
     @PostMapping("/coupon/sale/card/page")
     ResponseResult<PageInfo<CardSalePageVo>> getCardSalePageVo(@Valid @RequestBody CardSaleQuery query);
 
-    @ApiOperation(value = "产品售卖--查看配给-卡券售出")
-    @PutMapping("/coupon/card/sale")
-    ResponseResult soldCard(@Valid @RequestBody CardSoldForm form);
-
-    @ApiOperation(value = "取消售出")
-    @PutMapping("/coupon/card/cancel/{id}")
-    ResponseResult cancelCardSold(@PathVariable(value = "id") Integer cardId);
-
     @RequestMapping(value = "/card/use", method = RequestMethod.POST)
     boolean whetherUseCard(@NotEmpty @RequestBody List<Integer> cardIds);
 
-    @ApiOperation(value = "卡券二维码页面打开(批量)")
     @GetMapping("/coupon/card/QRCode/batch/init")
     List<CardQrCodeVo> batchCardQrCode(@NotEmpty @RequestBody List<Integer> cardIds);
+
+    @PostMapping("/coupon/card/cancel/batch")
+    void batchCancelCard(@RequestBody BatchCancelCardForm form);
+
+    @PutMapping("/mini/coupon/card/sale")
+    ResponseResult miniSoldCard(@Valid @RequestBody MiniCardSoldForm form);
 }
