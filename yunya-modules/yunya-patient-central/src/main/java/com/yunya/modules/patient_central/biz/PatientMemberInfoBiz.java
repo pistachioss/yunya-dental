@@ -106,7 +106,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       return mapper.findMemberRechargeRecordInfo(form);
   }
 
-
+  public List<MasertMemberRechargeRecordDetailVo> findMemberPrepaidRecordInfo(MemberExpendRecordQueryForm form) {
+    return mapper.findMemberPrepaidRecordInfo(form);
+  }
 
   public MasertMemberInfoVo findMasertMember(String unionId) {
     Integer id = wxFansBiz.getPatientIdByUonId(unionId);

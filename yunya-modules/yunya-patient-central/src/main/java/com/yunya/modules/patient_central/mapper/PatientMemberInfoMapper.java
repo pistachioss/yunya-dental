@@ -24,6 +24,7 @@ import java.util.List;
 public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
 
     List<MasertMemberRechargeRecordDetailVo> findMemberRechargeRecordInfo(MemberExpendRecordQueryForm form);
+    List<MasertMemberRechargeRecordDetailVo> findMemberPrepaidRecordInfo(MemberExpendRecordQueryForm form);
 
     /**
      * 根据患者id查询会员基本信息(会员卡界面基本信息（非全部信息）)

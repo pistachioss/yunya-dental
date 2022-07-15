@@ -11,6 +11,7 @@ import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.query.AppMemberRechargePrepaidFrom;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
@@ -106,37 +107,22 @@ public class PatientMemberAppController {
     }
 
     @ApiOperation("小程序-我的-会员卡记录")
-    @GetMapping("patientMember/rechargeRecord/{patientId}/{cardNumber}")
-    public ResponseResult<MasertMemberRechargeRecordVo> findMemberRechargeRecordInfo(@PathVariable("patientId") Integer patientId,
-                                                                                     @PathVariable("cardNumber") String cardNumber) {
+    @PostMapping("patientMember/rechargePrepaid")
+    public ResponseResult<MasertMemberRechargeRecordVo> findMemberRechargeRecordInfo(@RequestBody @Validated AppMemberRechargePrepaidFrom from) {
         MasertMemberRechargeRecordVo masertMemberRechargeRecordVo = new MasertMemberRechargeRecordVo();
 
         //会员信息
-        PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(patientId);
-//        //充值记录
-//        RechargeRecordQueryForm query = new RechargeRecordQueryForm();
-//        query.setCardNumber(cardNumber);
-//       List<RechargeRecordVo>rechargeRecordVos = patientMemberInfoBiz.rechargeRecord(query).getList();
-//        //退费记录
-//        MemberReturnRecordQueryForm queryForm = new MemberReturnRecordQueryForm();
-//        queryForm.setMemberId(cardNumber);
-//        queryForm.setPatientId(patientId+"");
-//        List<MemberReturnRecordVo>memberReturnRecordVos = patientMemberInfoBiz.refundList(queryForm).getList();
-//        //消费记录
-//        MemberExpendRecordQueryForm recordQueryForm = new MemberExpendRecordQueryForm();
-//        recordQueryForm.setMemberId(cardNumber);
-//        recordQueryForm.setPatientId(patientId);
-//        List<MemberExpendRecordVo>memberExpendRecordVos = patientMemberInfoBiz.expendList(recordQueryForm).getList();
+        PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(from.getPatientId());
         //会员卡记录
         MemberExpendRecordQueryForm recordQueryForm = new MemberExpendRecordQueryForm();
-        recordQueryForm.setMemberId(cardNumber);
-        recordQueryForm.setPatientId(patientId);
+        recordQueryForm.setMemberId(from.getCardNumber());
+        recordQueryForm.setPatientId(from.getPatientId());
         List<MasertMemberRechargeRecordDetailVo>list = patientMemberInfoBiz.findMemberRechargeRecordInfo(recordQueryForm);
         //预付款记录
+        recordQueryForm.setMemberId(from.getPrepaymentNumber());
+        List<MasertMemberRechargeRecordDetailVo>prelist = patientMemberInfoBiz.findMemberPrepaidRecordInfo(recordQueryForm);
 
-
-
-
+        masertMemberRechargeRecordVo.setPrelist(prelist);
         masertMemberRechargeRecordVo.setList(list);
         masertMemberRechargeRecordVo.setMemberCardMoneySum(patientPublicInfoVo.getMemberCardMoneySum());
         masertMemberRechargeRecordVo.setPrepaymentsMoneySum(patientPublicInfoVo.getPrepaymentsMoneySum());

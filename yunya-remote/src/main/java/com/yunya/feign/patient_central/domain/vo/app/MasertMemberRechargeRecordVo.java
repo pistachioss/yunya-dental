@@ -20,8 +20,10 @@ import java.util.List;
 @ApiModel("小程序返回消费信息参数模型")
 public class MasertMemberRechargeRecordVo {
 
-    @ApiModelProperty(value = "消费记录列表")
+    @ApiModelProperty(value = "会员消费记录列表")
     private List<MasertMemberRechargeRecordDetailVo> list;
+    @ApiModelProperty(value = "预付款消费记录列表")
+    private List<MasertMemberRechargeRecordDetailVo> prelist;
 
     /**
      * 会员本卡总余额（本金+赠金）
