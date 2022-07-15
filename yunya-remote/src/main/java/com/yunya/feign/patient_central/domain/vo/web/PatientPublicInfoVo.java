@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.io.*;
 import java.math.*;
+import java.util.Date;
 
 /**
  * 简单介绍:</br> 返回患者公告信息模型
@@ -125,5 +126,7 @@ public class PatientPublicInfoVo implements Serializable {
 
     @ApiModelProperty(value = "会员卡图片获取码")
     private String pictureCode;
+    @ApiModelProperty(value = "开卡时间")
+    private Date crtTime;
 
 }
