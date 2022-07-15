@@ -2,9 +2,10 @@ package com.yunya.modules.patient_central.controller.app;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
+import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo;
+import com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -68,9 +69,9 @@ public class PatientMemberAppController {
      * @return ResponseResult<MemberBaseInfoVo>
      */
     @ApiOperation("小程序-我的-会员信息")
-    @GetMapping("patientMember/{unionId}")
-    public ResponseResult<MasertMemberInfoVo> findMemberBaseInfo(@PathVariable("unionId") String unionId) {
-        return ResponseUtil.success(patientMemberInfoBiz.findMasertMember(unionId));
+    @GetMapping("patientMember/{patientId}")
+    public ResponseResult<PatientPublicInfoVo> findMemberBaseInfo(@PathVariable("patientId") Integer patientId) {
+        return ResponseUtil.success( patientBaseInfoBiz.findPatientPublicInfoById(patientId));
     }
 
     @ApiOperation("小程序-我的-会员信息-详情")
@@ -102,6 +103,45 @@ public class PatientMemberAppController {
             masertMemberDetailVo.setDictionaryName(wxWechatbindAppListVO.getDictionaryName());
         }
         return ResponseUtil.success(masertMemberDetailVo);
+    }
+
+    @ApiOperation("小程序-我的-会员卡记录")
+    @GetMapping("patientMember/rechargeRecord/{patientId}/{cardNumber}")
+    public ResponseResult<MasertMemberRechargeRecordVo> findMemberRechargeRecordInfo(@PathVariable("patientId") Integer patientId,
+                                                                                     @PathVariable("cardNumber") String cardNumber) {
+        MasertMemberRechargeRecordVo masertMemberRechargeRecordVo = new MasertMemberRechargeRecordVo();
+
+        //会员信息
+        PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(patientId);
+//        //充值记录
+//        RechargeRecordQueryForm query = new RechargeRecordQueryForm();
+//        query.setCardNumber(cardNumber);
+//       List<RechargeRecordVo>rechargeRecordVos = patientMemberInfoBiz.rechargeRecord(query).getList();
+//        //退费记录
+//        MemberReturnRecordQueryForm queryForm = new MemberReturnRecordQueryForm();
+//        queryForm.setMemberId(cardNumber);
+//        queryForm.setPatientId(patientId+"");
+//        List<MemberReturnRecordVo>memberReturnRecordVos = patientMemberInfoBiz.refundList(queryForm).getList();
+//        //消费记录
+//        MemberExpendRecordQueryForm recordQueryForm = new MemberExpendRecordQueryForm();
+//        recordQueryForm.setMemberId(cardNumber);
+//        recordQueryForm.setPatientId(patientId);
+//        List<MemberExpendRecordVo>memberExpendRecordVos = patientMemberInfoBiz.expendList(recordQueryForm).getList();
+        //会员卡记录
+        MemberExpendRecordQueryForm recordQueryForm = new MemberExpendRecordQueryForm();
+        recordQueryForm.setMemberId(cardNumber);
+        recordQueryForm.setPatientId(patientId);
+        List<MasertMemberRechargeRecordDetailVo>list = patientMemberInfoBiz.findMemberRechargeRecordInfo(recordQueryForm);
+        //预付款记录
+
+
+
+
+        masertMemberRechargeRecordVo.setList(list);
+        masertMemberRechargeRecordVo.setMemberCardMoneySum(patientPublicInfoVo.getMemberCardMoneySum());
+        masertMemberRechargeRecordVo.setPrepaymentsMoneySum(patientPublicInfoVo.getPrepaymentsMoneySum());
+
+        return ResponseUtil.success(masertMemberRechargeRecordVo);
     }
 
     /**
@@ -155,7 +195,7 @@ public class PatientMemberAppController {
         return ResponseUtil.success(remoteTreatmentOtherFeign.findPhotoListInfo(query));
     }
     /**
-     * 我的-就诊人管理-就诊记录-照片影像
+     * 小程序-我的-就诊记录-根据姓名/病例编号/手机号/姓名拼音模糊查询患者
      *
      * @param
      * @return ResponseResult<MemberBaseInfoVo>

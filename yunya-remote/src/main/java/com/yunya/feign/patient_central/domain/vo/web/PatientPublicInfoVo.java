@@ -114,4 +114,16 @@ public class PatientPublicInfoVo implements Serializable {
     @ApiModelProperty(value = "预付款卡号")
     private String prepaymentNumber;
 
+    @ApiModelProperty(value = "积分")
+    private Integer point;
+
+    /**
+     * 图标
+     */
+    @ApiModelProperty(value = "图标")
+    private String icon;
+
+    @ApiModelProperty(value = "会员卡图片获取码")
+    private String pictureCode;
+
 }
