@@ -3377,6 +3377,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         form.setOrderSn(card.getSoldPhoneNumber());
         form.setPatientId(patientId);
         form.setPatientMobile(patientBaseInfo.getMobile());
+        form.setPatientName(patientBaseInfo.getName());
         ivyMiniServiceFeign.activeCard(form);
     }
 }

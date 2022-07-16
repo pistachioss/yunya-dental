@@ -3,7 +3,6 @@ package com.yunya365.mini.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
-import com.yunya.framework.common.utils.DateUtil;
 import com.yunya365.mini.entity.OrderVirtual;
 import com.yunya365.mini.mapper.OrderVirtualMapper;
 import com.yunya365.mini.service.IOrderVirtualService;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
 
-import static com.yunya.framework.common.enums.TrueFalseEnum.*;
+import static com.yunya.framework.common.enums.TrueFalseEnum.FALSE;
 
 /**
  * <p>
@@ -61,7 +60,7 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
                     .eq(OrderVirtual::getCardId, form.getCardId())
                     .set(OrderVirtual::getActiveMobile, form.getPatientMobile())
                     .set(OrderVirtual::getPatientId, form.getPatientId())
-                    .set(OrderVirtual::getPatientId, form.getPatientId())
+                    .set(OrderVirtual::getPatientName, form.getPatientName())
                     .set(OrderVirtual::getActiveDate, form.getActiveDate())
                     .set(OrderVirtual::getUpdId, form.getActiveUserId())
                     .update();

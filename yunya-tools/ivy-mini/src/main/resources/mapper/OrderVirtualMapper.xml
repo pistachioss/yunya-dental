@@ -10,6 +10,7 @@
         <result column="fans_id" property="fansId" />
         <result column="card_id" property="cardId" />
         <result column="patient_id" property="patientId" />
+        <result column="patient_name" property="patientName" />
         <result column="active_mobile" property="activeMobile" />
         <result column="sold_date" property="soldDate" />
         <result column="active_date" property="activeDate" />

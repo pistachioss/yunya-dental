@@ -17,6 +17,7 @@ public class VirtualActiveForm {
     private Integer patientId;
     private String orderSn;
     private String patientMobile;
+    private String patientName;
     private LocalDateTime activeDate;
     private Integer activeUserId;
 }

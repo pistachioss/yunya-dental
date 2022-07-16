@@ -4,13 +4,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @ApiModel(description = "虚拟服务激活")
 public class VirtualActiveVO {
     @ApiModelProperty(value = "激活患者")
-    private Integer patientName;
+    private String patientName;
     @ApiModelProperty(value = "手机号")
     private String mobile;
     @ApiModelProperty(value = "激活时间")
-    private String activeDate;
+    private LocalDateTime activeDate;
 }

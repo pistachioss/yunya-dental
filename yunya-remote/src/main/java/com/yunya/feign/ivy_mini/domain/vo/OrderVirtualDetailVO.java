@@ -19,7 +19,7 @@ public class OrderVirtualDetailVO {
     @ApiModelProperty(value = "订单项目明细")
     private List<PayOrderItemVO> itemVO;
     @ApiModelProperty(value = "虚拟服务激活")
-    private VirtualActiveVO activeVO;
+    private List<VirtualActiveVO> activeVO;
     @ApiModelProperty(value = "二维码数据")
     private List<QrCodeVO> qrList;
 

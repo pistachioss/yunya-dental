@@ -58,6 +58,12 @@ public class OrderVirtual implements Serializable {
     private Integer patientId;
 
     /**
+     * 患者姓名
+     */
+    @TableField("patient_name")
+    private String patientName;
+
+    /**
      * 激活手机
      */
     @TableField("active_mobile")

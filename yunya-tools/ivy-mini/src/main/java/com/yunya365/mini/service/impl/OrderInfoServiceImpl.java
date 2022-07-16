@@ -670,6 +670,15 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             List<Integer> carIds = orderVirtual.stream().map(OrderVirtual::getCardId).collect(toList());
             List<CardQrCodeVo> qrList = discountFeign.batchCardQrCode(carIds);
             vo.setQrList(BeanCopierUtils.listGeneralCopyBean(qrList, QrCodeVO.class));
+            List<OrderVirtual> activeList = orderVirtual.stream().filter(t -> Objects.nonNull(t.getPatientId())).collect(toList());
+            List<VirtualActiveVO> activeVOS = activeList.stream().map(t -> {
+                VirtualActiveVO activeVO = new VirtualActiveVO();
+                activeVO.setPatientName(t.getPatientName());
+                activeVO.setMobile(t.getActiveMobile());
+                activeVO.setActiveDate(t.getActiveDate());
+                return activeVO;
+            }).collect(toList());
+            vo.setActiveVO(activeVOS);
         }
         List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderItems)) {
@@ -825,13 +834,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         refundRequest.setRefundDesc(apply.getReason());
         refundRequest.setNotifyUrl(properties.getRefundNotifyUrl());
         return refundRequest;
-    }
-
-    public static void main(String[] args) {
-        LocalDateTime now = LocalDateTime.now();
-        System.out.println(now.toString("yyyyMMddHHmmss"));
-        String yyyyMMddHHmmss = now.plusMinutes(30).toString("yyyyMMddHHmmss");
-        System.out.println(yyyyMMddHHmmss);
     }
 
     /**
