@@ -107,7 +107,7 @@ public interface RemoteDiscountFeign {
     @RequestMapping(value = "/card/use", method = RequestMethod.POST)
     boolean whetherUseCard(@NotEmpty @RequestBody List<Integer> cardIds);
 
-    @GetMapping("/coupon/card/QRCode/batch/init")
+    @PostMapping("/coupon/card/QRCode/batch/init")
     List<CardQrCodeVo> batchCardQrCode(@NotEmpty @RequestBody List<Integer> cardIds);
 
     @PostMapping("/coupon/card/cancel/batch")

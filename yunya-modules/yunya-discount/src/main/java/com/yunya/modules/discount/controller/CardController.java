@@ -126,7 +126,7 @@ public class CardController {
     }
 
     @ApiOperation(value = "卡券二维码页面打开(批量)")
-    @GetMapping("/coupon/card/QRCode/batch/init")
+    @PostMapping("/coupon/card/QRCode/batch/init")
     public List<CardQrCodeVo> batchCardQrCode(@NotEmpty @RequestBody List<Integer> cardIds) {
         return cardBiz.batchCardQrCode(cardIds);
     }
