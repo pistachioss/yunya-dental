@@ -3370,6 +3370,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
     private void miniActive(Integer patientId, Card card, LocalDateTime now, Integer loginUserId) {
         if (Objects.equals("小程序虚拟服务售卖", card.getRemark())) {
+            log.info("小程序卡券激活：cardId：{}", card.getId());
             PatientBaseInfo patientBaseInfo = patientFeign.findPatientInfoById(patientId);
             VirtualActiveForm form = new VirtualActiveForm();
             form.setCardId(card.getId());
