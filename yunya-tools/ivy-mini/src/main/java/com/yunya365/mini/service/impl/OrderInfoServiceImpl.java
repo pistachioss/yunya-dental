@@ -1100,6 +1100,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private void cancelSoldCard(Integer orderId) {
         List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderVirtual)) {
+            log.info("取消卡券售出，orderId：{}", orderId);
             List<Integer> carIds = orderVirtual.stream().map(OrderVirtual::getCardId).collect(toList());
             //取消售出
             BatchCancelCardForm form = new BatchCancelCardForm();
