@@ -3369,15 +3369,17 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
 
     private void miniActive(Integer patientId, Card card, LocalDateTime now, Integer loginUserId) {
-        PatientBaseInfo patientBaseInfo = patientFeign.findPatientInfoById(patientId);
-        VirtualActiveForm form = new VirtualActiveForm();
-        form.setCardId(card.getId());
-        form.setActiveDate(now);
-        form.setActiveUserId(loginUserId);
-        form.setOrderSn(card.getSoldPhoneNumber());
-        form.setPatientId(patientId);
-        form.setPatientMobile(patientBaseInfo.getMobile());
-        form.setPatientName(patientBaseInfo.getName());
-        ivyMiniServiceFeign.activeCard(form);
+        if (Objects.equals("小程序虚拟服务售卖", card.getRemark())) {
+            PatientBaseInfo patientBaseInfo = patientFeign.findPatientInfoById(patientId);
+            VirtualActiveForm form = new VirtualActiveForm();
+            form.setCardId(card.getId());
+            form.setActiveDate(now);
+            form.setActiveUserId(loginUserId);
+            form.setOrderSn(card.getSoldPhoneNumber());
+            form.setPatientId(patientId);
+            form.setPatientMobile(patientBaseInfo.getMobile());
+            form.setPatientName(patientBaseInfo.getName());
+            ivyMiniServiceFeign.activeCard(form);
+        }
     }
 }
