@@ -2,6 +2,7 @@ package com.yunya365.mini.controller;
 
 
 import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya365.mini.service.IOrderVirtualService;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ public class OrderVirtualController {
     private IOrderVirtualService virtualService;
 
     @PostMapping("/orderVirtual/active/save")
+    @IgnoreUserToken
     public void activeCard(@RequestBody @Valid VirtualActiveForm form) {
        virtualService.activeCard(form);
     }
