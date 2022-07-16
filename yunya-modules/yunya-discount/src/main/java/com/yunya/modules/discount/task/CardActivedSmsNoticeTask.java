@@ -14,9 +14,7 @@ import com.yunya.modules.discount.task.quartz.ScheduledQuartz;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -45,7 +43,7 @@ public class CardActivedSmsNoticeTask {
     @Autowired
     private ScheduledQuartz scheduledQuartz;
     /** 间隔月份 */
-    private static final Integer INTERVAL = 1;
+    private static final Integer INTERVAL = 3;
 
     @Scheduled(cron = "0 0 23 * * ?")
     public void executeTask() {
@@ -64,7 +62,7 @@ public class CardActivedSmsNoticeTask {
                 LocalDateTime activeDate = card.getActiveDate();
                 // 截止时间晚于明天，且明天距上次发送短信日期为3个月
                 if (isTomorrowTask(card.getLastSendDate(), activationDeadline, execDate)) {
-                    if (activationDeadline.equals(execDate)) {
+                    if (activationDeadline.toLocalDate().equals(execDate.toLocalDate())) {
                         // 当明天为截止时间时，短信发送时间（激活时间）提前1小时
                         activeDate = activeDate.minusHours(1);
                     }
@@ -80,7 +78,7 @@ public class CardActivedSmsNoticeTask {
                 }
             });
             System.out.println("Eligible tasks are as follows: ");
-            System.out.println("task size: " + list.size() + " data: " + JSONObject.toJSON(list));
+            System.out.println("task size: " + list.size() + ", data: " + JSONObject.toJSON(list));
         }
 //        log.info("<<<<<<<<<<<<<<<<<<<CardActivedSmsNoticeTask end");
         System.out.println("<<<<<<<<<<<<<<<<<<<CardActivedSmsNoticeTask end");
@@ -116,15 +114,13 @@ public class CardActivedSmsNoticeTask {
      * @param tomorrow
      * @return
      */
-    private static boolean isTomorrowTask(String lastSendDate, LocalDateTime activationDeadline, LocalDateTime tomorrow) {
-        Boolean result = false;
-        Double diff = DateUtil.dateDiff2Double(LocalDate.parse(lastSendDate), tomorrow, 0);
-        if (!activationDeadline.isBefore(tomorrow)
-                && diff > 0
-                && diff%INTERVAL==0) {
-            result = true;
+    private boolean isTomorrowTask(String lastSendDate, LocalDateTime activationDeadline, LocalDateTime tomorrow) {
+        Double diff = DateUtil.dateDiff2Double(LocalDate.parse(lastSendDate), tomorrow, 1);
+        if (!activationDeadline.toLocalDate().isBefore(tomorrow.toLocalDate())
+                && diff % INTERVAL == 0) {
+            return true;
         }
-        return result;
+        return false;
     }
 
     /**
