@@ -17,7 +17,7 @@ import java.util.List;
  */
 public interface IOrderVirtualService extends IService<OrderVirtual> {
 
-    List<OrderVirtual> listByOrderIds(Collection<Integer> ids);
+    List<OrderVirtual> listByOrderIds(Collection<Integer> ids, Boolean deleteStatus);
 
     void deleteOrderCard(Integer orderId);
 

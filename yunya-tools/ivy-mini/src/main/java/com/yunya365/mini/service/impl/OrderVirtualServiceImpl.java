@@ -10,8 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
-
-import static com.yunya.framework.common.enums.TrueFalseEnum.FALSE;
+import java.util.Objects;
 
 /**
  * <p>
@@ -25,9 +24,9 @@ import static com.yunya.framework.common.enums.TrueFalseEnum.FALSE;
 public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, OrderVirtual> implements IOrderVirtualService {
 
     @Override
-    public List<OrderVirtual> listByOrderIds(Collection<Integer> ids) {
+    public List<OrderVirtual> listByOrderIds(Collection<Integer> ids, Boolean deleteStatus) {
         return ChainWrappers.lambdaQueryChain(baseMapper).in(OrderVirtual::getOrderId, ids)
-                .eq(OrderVirtual::getDeleteStatus, FALSE.getCode())
+                .eq(Objects.nonNull(deleteStatus), OrderVirtual::getDeleteStatus, deleteStatus)
                 .list();
     }
 
