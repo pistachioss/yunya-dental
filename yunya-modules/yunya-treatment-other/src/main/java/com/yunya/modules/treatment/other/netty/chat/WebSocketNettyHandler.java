@@ -200,7 +200,8 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
         if (!ObjectUtils.isEmpty(sendId)) {
             List<ChannelHandlerContext> ctxs = userHandles.get(sendId);
             if (ctxs == null) {
-                ctxs = Arrays.asList(ctx);
+                ctxs = new ArrayList<>();
+                ctxs.add(ctx);
                 userHandles.put(sendId, ctxs);
             } else {
                 ctxs.add(ctx);
