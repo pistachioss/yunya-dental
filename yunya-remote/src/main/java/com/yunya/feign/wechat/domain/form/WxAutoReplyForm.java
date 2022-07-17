@@ -11,7 +11,7 @@ import java.io.Serializable;
 /**
  * @description: 微信关键字自动回复消息配置参数
  * @author: zd.xie
- * @create: 20212-04-27
+ * @create: 2022-04-27
  */
 @ApiModel(description = "微信关键字自动回复消息配置参数")
 @Data
@@ -48,4 +48,16 @@ public class WxAutoReplyForm implements Serializable {
      */
     @ApiModelProperty(value = "回复消息图片地址")
     private String msgpicurl;
+
+    /**
+     * 回复消息排序数
+     */
+    @ApiModelProperty(value = "回复消息排序数")
+    private Integer eventdisp;
+
+    /**
+     * 回复消息类型
+     */
+    @ApiModelProperty(value = "回复消息类型")
+    private String msgtype;
 }

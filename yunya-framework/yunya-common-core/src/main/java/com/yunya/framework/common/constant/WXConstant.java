@@ -76,6 +76,12 @@ public interface WXConstant {
     String WX_SET_AUTO_REPLY_URL = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=%s";
 
     /**
+    /**
+     * 获取素材列表
+     */
+    String WX_GET_MEDIA_URL = "https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=%s";
+
+    /**
      * 微信公众号菜单获取
      */
     String WX_GET_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/get?access_token=%s";

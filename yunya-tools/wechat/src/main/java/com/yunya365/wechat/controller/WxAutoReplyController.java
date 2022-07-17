@@ -1,6 +1,7 @@
 package com.yunya365.wechat.controller;
 
 import com.yunya.feign.wechat.domain.form.WxAutoReplyForm;
+import com.yunya.feign.wechat.domain.form.WxSuCaiForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -27,6 +28,13 @@ public class WxAutoReplyController {
   @CurrentUser
   public ResponseResult list() {
     return ResponseUtil.success(kfReply.list());
+  }
+
+  @ApiOperation(value = "获取微信公众号素材列表")
+  @PostMapping(value = "/wxMedia")
+  @CurrentUser
+  public ResponseResult listMedia(@Valid @RequestBody WxSuCaiForm pushModel) {
+    return ResponseUtil.success(kfReply.listMedia(pushModel));
   }
 
   @ApiOperation(value = "新建微信关键字")

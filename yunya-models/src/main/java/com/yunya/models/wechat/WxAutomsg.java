@@ -78,6 +78,20 @@ public class WxAutomsg {
     private String msgpicurl;
 
     @Column(name = "MsgType")
+    private String msgtype;
+
+    @Column(name = "EventDisp")
+    private Integer eventdisp;
+
+    public Integer getEventdisp() {
+        return eventdisp;
+    }
+
+    public void setEventdisp(Integer eventdisp) {
+        this.eventdisp = eventdisp;
+    }
+
+    @Column(name = "MsgType")
     public String getMsgtype() {
         return msgtype;
     }
@@ -85,9 +99,6 @@ public class WxAutomsg {
     public void setMsgtype(String msgtype) {
         this.msgtype = msgtype;
     }
-
-    @Column(name = "MsgType")
-    private String msgtype;
 
     /**
      * 获取记录ID

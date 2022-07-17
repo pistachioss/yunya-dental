@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -109,11 +110,10 @@ public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAuto
      * 初始化短信自动发送事件
      *
      * @param orgId
-     * @param isClinic true-门诊端，false-公司端
+     * @param events 自动发送事件枚举列表
      * @return
      */
-    public ResponseResult<T> initAutoSendEvent(Integer orgId, boolean isClinic) {
-        List<SmsAutosendEventEnum> events = SmsAutosendEventEnum.values(isClinic);
+    public ResponseResult<T> initAutoSendEvent(Integer orgId, Collection<SmsAutosendEventEnum> events) {
         String userId = BaseContextHandler.getUserID();
         if (StringHelper.isNotEmpty(userId)) {// 创建门诊时
             events.forEach(event -> {

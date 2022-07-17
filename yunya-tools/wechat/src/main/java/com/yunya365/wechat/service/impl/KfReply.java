@@ -1,8 +1,10 @@
 package com.yunya365.wechat.service.impl;
 
 import com.yunya.feign.wechat.domain.form.WxAutoReplyForm;
+import com.yunya.feign.wechat.domain.form.WxSuCaiForm;
 import com.yunya.feign.wechat.domain.model.WxUserMsgModel;
 import com.yunya.feign.wechat.domain.vo.WxKfOnlineVo;
+import com.yunya.feign.wechat.domain.vo.WxMediaVo;
 import com.yunya.feign.wechat.domain.vo.WxSendMsgVo;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -63,16 +65,20 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
   }
 
   public List<WxAutomsg> list() {
-    return wxAutomsgMapper.selectAll();
+    return wxAutomsgMapper.selectAllOrderBy();
+  }
+
+  public WxMediaVo listMedia(WxSuCaiForm pushModel) {
+    return wxService.getMediaList(pushModel);
   }
 
   public int create(WxAutoReplyForm wxAutoReplyForm) {
-    Example example = new Example(WxAutomsg.class);
-    example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
-    if (wxAutomsgMapper.selectByExample(example).size() > 0) {
-      throw new ClientServiceException(
-          WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
-    }
+//    Example example = new Example(WxAutomsg.class);
+//    example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
+//    if (wxAutomsgMapper.selectByExample(example).size() > 0) {
+//      throw new ClientServiceException(
+//          WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
+//    }
 
     WxAutomsg wxAutomsg = new WxAutomsg();
     wxAutomsg.setEventname(wxAutoReplyForm.getEventname());
@@ -80,6 +86,11 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     wxAutomsg.setEventkey("");
     wxAutomsg.setMsgtext(wxAutoReplyForm.getMsgtext());
     wxAutomsg.setIsvalid(true);
+    wxAutomsg.setEventdisp(wxAutoReplyForm.getEventdisp());
+    wxAutomsg.setMsgtype(wxAutoReplyForm.getMsgtype());
+    wxAutomsg.setMsgtitle(wxAutoReplyForm.getMsgtitle());
+    wxAutomsg.setMsgurl(wxAutoReplyForm.getMsgurl());
+    wxAutomsg.setMsgpicurl(wxAutoReplyForm.getMsgpicurl());
 
     Date now = new Date(System.currentTimeMillis());
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
@@ -96,14 +107,14 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     }
 
     Example example = new Example(WxAutomsg.class);
-    example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
-    if (wxAutomsgMapper.selectByExample(example).size() > 0) {
-      if (wxAutomsgMapper.selectByExample(example).size() == 1
-          && wxAutomsgMapper.selectByExample(example).get(0).getId() != id) {
-        throw new ClientServiceException(
-            WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
-      }
-    }
+//    example.createCriteria().andEqualTo("eventname", wxAutoReplyForm.getEventname());
+//    if (wxAutomsgMapper.selectByExample(example).size() > 0) {
+//      if (wxAutomsgMapper.selectByExample(example).size() == 1
+//          && wxAutomsgMapper.selectByExample(example).get(0).getId() != id) {
+//        throw new ClientServiceException(
+//            WeChatError.WX_AUTO_REPLY_EXIST.setErrorMsg(wxAutoReplyForm.getEventname()));
+//      }
+//    }
 
     WxAutomsg wxAutomsg = new WxAutomsg();
     wxAutomsg.setId(id);
@@ -112,6 +123,11 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     wxAutomsg.setEventname(wxAutoReplyForm.getEventname());
     wxAutomsg.setMsgtext(wxAutoReplyForm.getMsgtext());
     wxAutomsg.setIsvalid(true);
+    wxAutomsg.setEventdisp(wxAutoReplyForm.getEventdisp());
+    wxAutomsg.setMsgtype(wxAutoReplyForm.getMsgtype());
+    wxAutomsg.setMsgtitle(wxAutoReplyForm.getMsgtitle());
+    wxAutomsg.setMsgurl(wxAutoReplyForm.getMsgurl());
+    wxAutomsg.setMsgpicurl(wxAutoReplyForm.getMsgpicurl());
 
     Date now = new Date(System.currentTimeMillis());
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());

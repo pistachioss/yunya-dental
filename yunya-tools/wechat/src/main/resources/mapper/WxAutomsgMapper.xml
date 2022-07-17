@@ -19,5 +19,10 @@
     <result column="MsgUrl" jdbcType="VARCHAR" property="msgurl" />
     <result column="MsgPicUrl" jdbcType="VARCHAR" property="msgpicurl" />
     <result column="MsgType" jdbcType="VARCHAR" property="msgtype" />
+    <result column="EventDisp" jdbcType="INTEGER" property="eventdisp" />
   </resultMap>
+
+  <select id="selectAllOrderBy" resultType="com.yunya.models.wechat.WxAutomsg">
+    select * from wx_automsg order by EventName, EventDisp
+  </select>
 </mapper>
