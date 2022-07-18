@@ -115,4 +115,7 @@ public interface RemoteDiscountFeign {
 
     @PutMapping("/mini/coupon/card/sale")
     ResponseResult miniSoldCard(@Valid @RequestBody MiniCardSoldForm form);
+
+    @DeleteMapping("/mini/card/delete/batch")
+    void deleteCard(@RequestBody List<Integer> cardIds);
 }

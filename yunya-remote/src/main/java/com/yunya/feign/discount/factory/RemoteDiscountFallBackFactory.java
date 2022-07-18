@@ -134,4 +134,11 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     public ResponseResult miniSoldCard(MiniCardSoldForm form) {
         return null;
     }
+
+    @Override
+    public void deleteCard(List<Integer> cardIds) {
+
+    }
+
+
 }

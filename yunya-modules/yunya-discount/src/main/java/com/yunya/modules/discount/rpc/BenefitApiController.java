@@ -158,4 +158,9 @@ public class BenefitApiController {
     public ResponseResult miniSoldCard(@Valid @RequestBody MiniCardSoldForm form) {
         return cardBiz.miniSoldCard(form);
     }
+
+    @DeleteMapping("/mini/card/delete/batch")
+    void deleteCard(@RequestBody List<Integer> cardIds){
+        cardBiz.removeCardList(cardIds);
+    }
 }

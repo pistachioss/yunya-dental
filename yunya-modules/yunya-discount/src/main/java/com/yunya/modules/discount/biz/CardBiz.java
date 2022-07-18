@@ -1090,6 +1090,16 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return errorBo;
     }
 
+    public void removeCardList(List<Integer> cardIds) {
+        Example example = new Example(Card.class);
+        example.createCriteria().andIn("id", cardIds);
+        mapper.deleteByExample(example);
+        for (Integer cardId : cardIds) {
+            mqServiceFeign.sendMessage(cardId, DELETE, BaseCardSingle);
+            log.info("【批量卡券删除发送消息成功】：卡券id[{}]", cardId);
+        }
+    }
+
     /**
      * 选择优惠
      *

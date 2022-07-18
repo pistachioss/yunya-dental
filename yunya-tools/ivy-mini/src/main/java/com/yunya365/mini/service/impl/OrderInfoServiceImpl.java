@@ -585,7 +585,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 apply.setRefundStatus(FALSE.getCode());
                 orderInfo.setStatus(REFUND_SUCCESS.getCode().byteValue());
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(refundTime));
-                //如果是虚拟卡券，取消售出
+                //如果是虚拟卡券(已激活：删除 未激活：取消售出)
                 cancelSoldCard(orderId);
                 //退款成功 虚拟卡券删除
                 virtualService.deleteOrderCard(orderId);
@@ -1101,12 +1101,22 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId), true);
         if (CollectionUtils.isNotEmpty(orderVirtual)) {
             log.info("取消卡券售出，orderId：{}", orderId);
-            List<Integer> carIds = orderVirtual.stream().map(OrderVirtual::getCardId).collect(toList());
-            //取消售出
-            BatchCancelCardForm form = new BatchCancelCardForm();
-            form.setCardIds(carIds);
-            form.setOrgId(21);
-            discountFeign.batchCancelCard(form);
+            //已激活卡券
+            List<Integer> soldCards = orderVirtual.stream()
+                    .filter(t -> Objects.isNull(t.getPatientId())).map(OrderVirtual::getCardId).collect(toList());
+           if (CollectionUtils.isNotEmpty(soldCards)) {
+               //取消售出
+               BatchCancelCardForm form = new BatchCancelCardForm();
+               form.setCardIds(soldCards);
+               form.setOrgId(21);
+               discountFeign.batchCancelCard(form);
+           }
+            //已激活卡券
+            List<Integer> activeCards = orderVirtual.stream()
+                    .filter(t -> Objects.nonNull(t.getPatientId())).map(OrderVirtual::getCardId).collect(toList());
+           if (CollectionUtils.isNotEmpty(activeCards)) {
+               discountFeign.deleteCard(activeCards);
+           }
         }
     }
 }
