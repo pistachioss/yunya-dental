@@ -20,6 +20,9 @@ import java.io.Serializable;
 @ToString
 @ApiModel("卡券公用信息查询模型")
 public class CouponCommonInfoQuery extends PageQuery implements Serializable {
+    /** 是否启用 */
+    @ApiModelProperty("是否启用")
+    private Boolean inservice;
 
     /** 产品分类id */
     @ApiModelProperty("产品分类id")

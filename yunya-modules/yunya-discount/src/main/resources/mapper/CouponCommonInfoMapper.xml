@@ -62,7 +62,9 @@
             cci.available_sale_end_date AS availableSaleEndDate
         FROM coupon_common_info cci
         <where>
-            AND is_inservice = true
+            <if test="query.inservice != null">
+                AND is_inservice = #{query.inservice}
+            </if>
             <if test="query.productTypeId != null">
                 AND cci.product_type_id = #{query.productTypeId}
             </if>
