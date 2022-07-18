@@ -56,7 +56,7 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
     return tariffInfoMapper.selectItemListByCategoryId(itemType, categoryId);
   }
 
-  public List<BaseTariffInfo> findOralItemListByName(String name) {
-    return tariffInfoMapper.selectOralItemListByName(name);
+  public List<BaseTariffInfo> findOralItemListInName(List<String> name) {
+    return tariffInfoMapper.selectOralItemListInName(name);
   }
 }

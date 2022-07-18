@@ -80,7 +80,7 @@
     </select>
 
     <!--根据名字查询商品列表-->
-    <select id="selectOralItemListByName" resultType="com.yunya.models.report.BaseTariffInfo">
+    <select id="selectOralItemListInName" resultType="com.yunya.models.report.BaseTariffInfo">
         SELECT
             item_id AS itemId,
             item_type AS itemType,
@@ -89,8 +89,15 @@
             category_id AS categoryId,
             category_name AS category_Name
         FROM base_tariff_info
-        WHERE item_name = #{name}
-        AND item_type = 1
+        <where>
+            AND item_type = 1
+            <if test="names!=null and names.size()>0">
+                AND item_name in
+                <foreach collection="names" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <!-- 根据联合主键删除 -->
