@@ -45,6 +45,31 @@
             </foreach>
     </select>
 
+    <select id="findCardWxList" resultType="com.yunya.feign.discount.domain.vo.CardWxVO">
+SELECT
+	cd.coupon_id as couponId,
+	cci.name as couponName,
+	cci.type as couponType,
+	CASE
+WHEN cci.type = 0 THEN vc.activation_deadline
+WHEN cci.type = 1 THEN pc.activation_deadline
+WHEN cci.type = 2 THEN spc.activation_deadline
+WHEN cci.type = 3 THEN dc.activation_deadline
+END as activationDeadline,
+cfi.file_name as fileName,
+cfi.path
+FROM
+	card cd
+LEFT JOIN coupon_common_info cci on cd.coupon_id = cci.id
+LEFT JOIN package_coupon pc on pc.coupon_id = cci.id
+LEFT JOIN special_package_coupon spc on spc.coupon_id = cci.id
+LEFT JOIN vouche_coupon vc on vc.coupon_id = cci.id
+LEFT JOIN discount_coupon dc on dc.coupon_id = cci.id
+LEFT JOIN coupon_file_info cfi on cfi.coupon_id = cci.id
+WHERE
+	cd.patient_id = #{patientId} and cci.type in(0,1,2,3) and cci.is_inservice = 1
+    </select>
+
     <select id="getSumNumByCouponId" resultType="int">
         select
             count(`coupon_id`)

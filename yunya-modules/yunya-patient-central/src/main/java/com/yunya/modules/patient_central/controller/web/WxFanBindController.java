@@ -50,7 +50,18 @@ public class WxFanBindController {
             @RequestBody @Validated WxFansBindForm wxFansBindForm) {
         return ResponseUtil.success(wxFansBindBiz.bind(wxFansBindForm));
     }
-
+    /**
+     * 客服中心-用户管理-绑定患者
+     *
+     * @param
+     * @return
+     */
+    @ApiOperation("客服中心-用户管理-绑定患者")
+    @PostMapping("/isBind")
+    public ResponseResult<Integer> isBind(
+            @RequestBody @Validated WxFansBindForm wxFansBindForm) {
+        return ResponseUtil.success(wxFansBindBiz.isBind(wxFansBindForm));
+    }
 
     /**
      * 客服中心-用户管理-绑定患者

@@ -167,6 +167,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return Base64.getEncoder().encodeToString(builder.toString().getBytes());
     }
 
+    public List<CardWxVO> findCardWxList(Integer patientId) {
+        return mapper.findCardWxList(patientId);
+    }
+
     /**
      * 产品生成分配分页查询
      *

@@ -62,6 +62,18 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         return mapper.batchInsert(list);
     }
 
+    public Integer isBind(WxFansBindForm wxFansBindForm) {
+        WxFansBind wxFansBind = new WxFansBind();
+        wxFansBind.setPatientId(wxFansBindForm.getPatientId());
+        wxFansBind.setUnionId(wxFansBindForm.getUnionId());
+        //判断是否已经被绑定 每名患者只能绑定一个微信号
+        int a = mapper.selectCount(wxFansBind);
+        if (a > 0) {
+            throw new ClientServiceException("该患者已经绑定微信", DATA_EXIST);
+        }
+        return a;
+    }
+
     public Integer bind(WxFansBindForm wxFansBindForm) {
 
         WxFansBind wxFansBind = new WxFansBind();
