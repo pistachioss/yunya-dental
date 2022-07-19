@@ -159,6 +159,8 @@ public class RedisConstants implements Serializable {
   public static final String REFUND_ORDER_LOCK = "refund:order:lock";
   /** 确认收货 key */
   public static final String CONFIRM_ORDER_LOCK = "confirm:order:lock";
+  /** 小程序验证码 */
+  public static final String MINI_CAPTCHA =  "mini:captcha";
 
   /**
    * 设置key中的占位符

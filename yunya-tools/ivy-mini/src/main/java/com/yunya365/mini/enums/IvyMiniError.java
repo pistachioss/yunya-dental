@@ -46,6 +46,10 @@ public enum IvyMiniError implements RestError {
     CARD_SOLD_LACK(36, "该虚拟服务数量不足，请联系客服人员"),
     ORDER_CARD_USED(37, "虚拟卡券已使用，无法退款，请联系客服人员"),
     WX_SIGN_PAY_ERROR(38, "微信支付信息异常，请重新下单"),
+    GAP_CAPTCHA_RETRY(39, "请%d秒后重试"),
+    THIRD_PARTY_ERROR(40, "短信服务异常"),
+    SMS_EXPIRED(41, "手机验证码已过期，请重新获取"),
+    CAPTCHA_NOT_MATCH(42, "验证码输入不正确"),
     ;
     private final Integer code;
     private final String value;
