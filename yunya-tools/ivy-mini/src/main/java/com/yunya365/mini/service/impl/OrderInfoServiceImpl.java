@@ -576,10 +576,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 apply.setRefundStatus(FALSE.getCode());
                 orderInfo.setStatus(REFUND_SUCCESS.getCode().byteValue());
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(refundTime));
-                //如果是虚拟卡券(已激活：删除 未激活：取消售出)
-                cancelSoldCard(orderId);
-                //退款成功 虚拟卡券删除
-                virtualService.deleteOrderCard(orderId);
+                if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
+                    //如果是虚拟卡券(已激活：删除 未激活：取消售出)
+                    cancelSoldCard(orderId);
+                    //退款成功 虚拟卡券删除
+                    virtualService.deleteOrderCard(orderId);
+                }
                 //热销产品
                 hotSaleCal(orderInfo.getId(), false);
             } else {
@@ -589,8 +591,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 apply.setHandleNote("微信退款失败");
                 orderInfo.setStatus(apply.getPreStatus().byteValue());
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(now));
-                //退款失败，卡券解除限制
-                virtualService.soldActiveOrInvalid(orderId, false);
+                if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
+                    //退款失败，卡券解除限制
+                    virtualService.soldActiveOrInvalid(orderId, false);
+                }
             }
             returnApplyService.updateById(apply);
             baseMapper.updateByPrimaryKeySelective(orderInfo);
