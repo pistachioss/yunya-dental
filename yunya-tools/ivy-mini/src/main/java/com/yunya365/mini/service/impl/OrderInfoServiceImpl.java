@@ -592,7 +592,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 //退款成功 虚拟卡券删除
                 virtualService.deleteOrderCard(orderId);
                 //热销产品
-                hotSaleCal(orderInfo.getId(), true);
+                hotSaleCal(orderInfo.getId(), false);
             } else {
                 java.time.LocalDateTime now = java.time.LocalDateTime.now();
                 apply.setRefundStatus(TRUE.getCode());
