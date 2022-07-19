@@ -46,10 +46,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -295,16 +293,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         } catch (Exception e) {
             log.error("支付回调结果异常", e);
             return WxPayNotifyResponse.fail(e.getMessage());
-        } finally {
-            try {
-                // 处理业务完毕
-                ServletOutputStream outputStream = response.getOutputStream();
-                outputStream.print("success");
-                outputStream.flush();
-                outputStream.close();
-            } catch (IOException e) {
-                log.error("支付回调响应异常", e);
-            }
         }
     }
 
@@ -568,6 +556,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 return WxPayNotifyResponse.fail(result.getReturnMsg());
             }
             WxPayRefundNotifyResult.ReqInfo reqInfo = result.getReqInfo();
+            log.info("微信退款解密数据：{}", reqInfo);
             // 订单号
             String orderSn = reqInfo.getOutTradeNo();
             //退款状态 SUCCESS-退款成功  CHANGE-退款异常  REFUNDCLOSE—退款关闭
@@ -609,16 +598,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         } catch (Exception e) {
             log.error("退款回调结果异常", e);
             return WxPayNotifyResponse.fail(e.getMessage());
-        } finally {
-            try {
-                // 处理业务完毕
-                ServletOutputStream outputStream = response.getOutputStream();
-                outputStream.print("success");
-                outputStream.flush();
-                outputStream.close();
-            } catch (IOException e) {
-                log.error("退款回调响应异常", e);
-            }
         }
     }
 
