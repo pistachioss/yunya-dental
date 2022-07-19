@@ -288,6 +288,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                     //虚拟服务售卖卡券
                     virtualService.soldActiveOrInvalid(orderInfo.getId(), false);
                 }
+                //热销产品
+                hotSaleCal(orderInfo.getId(), true);
             }
             return WxPayNotifyResponse.success("处理成功!");
         } catch (Exception e) {
@@ -589,6 +591,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 cancelSoldCard(orderId);
                 //退款成功 虚拟卡券删除
                 virtualService.deleteOrderCard(orderId);
+                //热销产品
+                hotSaleCal(orderInfo.getId(), true);
             } else {
                 java.time.LocalDateTime now = java.time.LocalDateTime.now();
                 apply.setRefundStatus(TRUE.getCode());
@@ -1119,4 +1123,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
            }
         }
     }
+
+    private void hotSaleCal(Integer orderId, boolean increase) {
+        List<OrderItem> items = orderItemService.listByOrderIds(Collections.singleton(orderId));
+        for (OrderItem item : items) {
+            Integer productQuantity = item.getProductQuantity();
+            redisUtils.zIncrBy(HOT_SALE_PRODUCT, item.getProductId().toString(), increase ? productQuantity : -productQuantity);
+        }
+    }
+
 }
