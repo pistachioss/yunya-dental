@@ -56,7 +56,7 @@ public class WxFanBindController {
      * @param
      * @return
      */
-    @ApiOperation("客服中心-用户管理-绑定患者")
+    @ApiOperation("客服中心-用户管理-绑定患者-该患者是否已经绑定")
     @PostMapping("/isBind")
     public ResponseResult<Integer> isBind(
             @RequestBody @Validated WxFansBindForm wxFansBindForm) {
