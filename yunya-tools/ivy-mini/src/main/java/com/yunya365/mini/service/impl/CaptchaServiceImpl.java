@@ -120,12 +120,13 @@ public class CaptchaServiceImpl implements ICaptchaService {
         String captcha;
         // 开发环境
         if (!StringPool.PROD.equals(env)) {
-            captcha = "123456";
+            captcha = "1234";
         }
         // 生产环境
         else {
-            captcha = String.valueOf(new Random().nextInt(900000) + 100000);
+            captcha = String.valueOf(new Random().nextInt(9000) + 1000);
         }
         return captcha;
     }
+
 }
