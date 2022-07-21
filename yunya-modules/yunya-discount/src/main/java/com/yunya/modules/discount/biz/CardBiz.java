@@ -171,6 +171,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return mapper.findCardWxList(patientId);
     }
 
+    public List<CardWxDetailVO> findCardWxDetail(Integer couponId) {
+        return mapper.findCardWxDetail(couponId);
+    }
+
     /**
      * 产品生成分配分页查询
      *

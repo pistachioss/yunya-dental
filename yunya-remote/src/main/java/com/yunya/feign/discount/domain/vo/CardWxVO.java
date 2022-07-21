@@ -17,10 +17,12 @@ import java.util.Date;
 @ApiModel(value = "小程序端待使用产品模型")
 public class CardWxVO {
     @ApiModelProperty(value = "优惠券id")
+    private Integer cardId;
+    @ApiModelProperty(value = "产品id")
     private Integer couponId;
     @ApiModelProperty(value = "优惠券名称")
     private String couponName;
-    @ApiModelProperty(value = "产品类型")
+    @ApiModelProperty(value = "产品类型 （0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）")
     private Integer couponType;
     @ApiModelProperty(value = "产品有效期 为空代表永久有效")
     private Date activationDeadline;
