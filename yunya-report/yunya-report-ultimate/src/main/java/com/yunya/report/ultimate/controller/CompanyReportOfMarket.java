@@ -1,8 +1,10 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.CardConsumeQuery;
 import com.yunya.feign.report.domain.query.CardStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
+import com.yunya.feign.report.domain.vo.CardConsumeRecordVO;
 import com.yunya.feign.report.domain.vo.CardStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.framework.common.model.ResponseResult;
@@ -10,7 +12,12 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.DiscountBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -42,5 +49,13 @@ public class CompanyReportOfMarket {
       @PathVariable(value = "couponId") Integer couponId,
       @Valid @RequestBody CardStatisticsQuery query) {
     return ResponseUtil.success(discountBiz.getCardStatisticsPage(couponId, query));
+  }
+
+  @ApiOperation("获取卡券使用记录列表（销售渠道消费报表）")
+  @PostMapping(value = "/card-consume/list", name = "卡券使用记录列表")
+  public ResponseResult<PageInfo<CardConsumeRecordVO>> getCardConsumeRecordList(
+      @RequestBody @Validated CardConsumeQuery query) {
+    PageInfo<CardConsumeRecordVO> pageInfo = discountBiz.getCardConsumeRecordList(query);
+    return ResponseUtil.success(pageInfo);
   }
 }
