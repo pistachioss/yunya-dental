@@ -770,4 +770,22 @@ public class DiscountBiz {
     }
     return new PageInfo<>(cardConsumeRecords);
   }
+
+  /**
+   * 导出卡券使用记录列表
+   *
+   * @param response
+   * @param query
+   */
+  public void exportCardConsumeRecord(HttpServletResponse response, CardConsumeQuery query)
+      throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<CardConsumeRecordVO> list = getCardConsumeRecordList(query);
+    ExcelUtil<CardConsumeRecordVO> excelUtil = new ExcelUtil<>(CardConsumeRecordVO.class);
+    String fileName =
+        String.format(
+            "%s%s%s%s",
+            "销售渠道消费报表统计", query.getActivationStartDate(), "-", query.getActivationEndDate());
+    excelUtil.exportExcel(response, list.getList(), "卡券消费统计列表", fileName);
+  }
 }
