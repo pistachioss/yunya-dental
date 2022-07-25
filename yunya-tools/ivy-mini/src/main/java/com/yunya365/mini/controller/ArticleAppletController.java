@@ -5,7 +5,9 @@ import com.yunya.feign.ivy_mini.domain.form.ArticleForm;
 import com.yunya.feign.ivy_mini.domain.vo.ArticleVO;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya365.mini.entity.Article;
 import com.yunya365.mini.service.impl.ArticleServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -41,6 +43,15 @@ public class ArticleAppletController extends BaseController{
     @ApiOperation("小程序-口腔科普/艾维动态-列表(传type和status即可)")
     public ResponseResult<PageInfo<ArticleVO>> findList(@RequestBody @Valid ArticleForm form) {
         return ResponseUtil.success(articleService.findList(form));
+    }
+
+    @GetMapping("/article/findone/{id}")
+    @ApiOperation("小程序-口腔科普/艾维动态-通过banner查看文章详情")
+    public ResponseResult<ArticleVO> findone(@PathVariable(value = "id") Integer id) {
+        Article article =  articleService.selectById(id);
+        ArticleVO articleVO = new ArticleVO();
+        BeanUtil.copy(article,articleVO);
+        return ResponseUtil.success(articleVO);
     }
 
 }
