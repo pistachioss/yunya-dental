@@ -35,5 +35,5 @@ public class CardConsumeQuery extends PageQuery {
   private Integer[] saleChannelIds;
 
   @ApiModelProperty("产品ID")
-  private Integer[] couponId;
+  private Integer[] couponIds;
 }
