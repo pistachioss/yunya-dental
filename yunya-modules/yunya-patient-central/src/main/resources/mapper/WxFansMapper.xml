@@ -125,7 +125,7 @@
 
     <select id="findListByName" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
         select wf.id,wf.register_name as name,wf.head_imgurl as headImgurl,wf.open_id as openId,wf.register_mobile as
-        mobile,
+        mobile,wf.nick_name as nickName,
         wf.remark,wf.crt_time as crtTime,wf.bind as isBind,
         case when wf.sex = 1 then '男'
         when wf.sex = 2 then '女'
