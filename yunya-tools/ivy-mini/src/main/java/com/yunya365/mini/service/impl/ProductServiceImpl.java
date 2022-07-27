@@ -1,6 +1,5 @@
 package com.yunya365.mini.service.impl;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -34,7 +33,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
@@ -93,21 +91,7 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public PageInfo<GoodsVO> pageGoods(GoodsQuery query) {
-        Page<BaseOralTariff> page = treatmentServiceFeign.pageGoods(query);
-        List<GoodsVO> collect = page.getResult().stream().map(t -> {
-            String itemPic = t.getItemPic();
-            GoodsVO goodsVO = new GoodsVO();
-            goodsVO.setProductId(t.getId());
-            goodsVO.setProductName(t.getName());
-            goodsVO.setProductPic(StringHelper.splitFirst(itemPic));
-            goodsVO.setProductPrice(t.getPrice());
-            goodsVO.setProductType(FALSE.getCode());
-            return goodsVO;
-        }).collect(Collectors.toList());
-        PageInfo<GoodsVO> pageInfo = new PageInfo<>(collect);
-        pageInfo.setTotal(page.getTotal());
-        pageInfo.setPageNum(page.getPageNum());
-        return pageInfo;
+        return treatmentServiceFeign.pageGoods(query);
     }
 
     @Override

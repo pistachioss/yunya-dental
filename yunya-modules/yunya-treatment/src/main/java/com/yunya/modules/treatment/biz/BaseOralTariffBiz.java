@@ -7,6 +7,7 @@ import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
+import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
@@ -1253,7 +1254,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
    * @param query: query
    * @return PageInfo<GoodsVO>
    */
-  public Page<BaseOralTariff> pageGoods(GoodsQuery query) {
+  public PageInfo<GoodsVO> pageGoods(GoodsQuery query) {
     Page<BaseOralTariff> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
     Example example = new Example(BaseOralTariff.class);
     Example.Criteria criteria = example.createCriteria()
@@ -1271,7 +1272,21 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     example.and(criteria1);
     example.and(criteria2);
     List<BaseOralTariff> baseOralTariffs = mapper.selectByExample(example);
-    return page;
+
+    List<GoodsVO> collect = page.getResult().stream().map(t -> {
+      String itemPic = t.getItemPic();
+      GoodsVO goodsVO = new GoodsVO();
+      goodsVO.setProductId(t.getId());
+      goodsVO.setProductName(t.getName());
+      goodsVO.setProductPic(StringHelper.splitFirst(itemPic));
+      goodsVO.setProductPrice(t.getPrice());
+      goodsVO.setProductType(FALSE.getCode());
+      return goodsVO;
+    }).collect(Collectors.toList());
+    PageInfo<GoodsVO> pageInfo = new PageInfo<>(collect);
+    pageInfo.setTotal(page.getTotal());
+    pageInfo.setPageNum(page.getPageNum());
+    return pageInfo;
   }
 
     public List<ProductBO> listOnSaleOral(Collection<Integer> ids) {
