@@ -42,7 +42,7 @@ public class PatientCardOwnerInfoVo implements Serializable {
 
     /** 是否可使用权益 */
     @ApiModelProperty("是否可使用权益")
-    private Boolean isDiscount;
+    private Boolean isDiscount = false;
 
     /** 是否可使用余额 */
     @ApiModelProperty("是否可使用余额")
