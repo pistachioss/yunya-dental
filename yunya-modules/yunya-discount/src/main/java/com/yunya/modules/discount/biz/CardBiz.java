@@ -671,19 +671,19 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
                 vo.setErrorMsg("卡券不存在");
                 list.add(vo);
-                break;
+                continue;
             }
             //已失效
             if (SALE_PENDING.equals(card.getStatus())) {
                 vo.setCardQrCodeType(QR_CODE_INVALID.getCode());
                 list.add(vo);
-                break;
+                continue;
             }
             //已核销
             if (ACTIVATED.equals(card.getStatus()) || PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
                 vo.setCardQrCodeType(QR_CODE_DESTROY.getCode());
                 list.add(vo);
-                break;
+                continue;
             }
             CouponCommonInfo coupon = couponMap.get(card.getCouponId());
             if (coupon == null) {
@@ -691,7 +691,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
                 vo.setErrorMsg("【批量】优惠券不存在或已停用");
                 list.add(vo);
-                break;
+                continue;
             }
             int couponType = coupon.getType().intValue();
             //查询优惠券过期信息
