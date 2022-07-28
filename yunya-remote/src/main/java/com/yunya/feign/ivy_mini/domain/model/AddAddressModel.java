@@ -37,8 +37,7 @@ public class AddAddressModel {
     @ApiModelProperty(value = "详细地址(街道)", required = true)
     @NotBlank
     private String detailAddress;
-    @ApiModelProperty(value = "标签", required = true)
-    @NotBlank
+    @ApiModelProperty(value = "标签")
     private String tag;
     @ApiModelProperty(value = "是否为默认 0-否 1-是")
     private Boolean defaultStatus;
