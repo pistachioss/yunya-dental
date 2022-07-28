@@ -137,7 +137,7 @@
         from wx_fans wf
         <where>
             <if test="name !=null and name !=''">
-                AND concat(IFNULL(wf.register_name,''))
+                AND concat(IFNULL(wf.nick_name,''))
                 like concat(concat('%', rtrim(#{name})), '%')
             </if>
         </where>

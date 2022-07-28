@@ -45,14 +45,15 @@ public class FeedBackServiceImpl extends BaseBiz<FeedBackMapper, FeedBack> {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
         WxFanByNameForm wxFanByNameForm = new WxFanByNameForm();
+        wxFanByNameForm.setName(form.getName());
         List<WxFansVo>AllfansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
         Map<String, WxFansVo> clinicMap = new HashMap(16);
         AllfansVoList.forEach(z -> clinicMap.put(z.getId() + "", z));
 
         if(!StringUtils.isEmpty( form.getName())){
-            wxFanByNameForm.setName(form.getName());
-            List<WxFansVo>fansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
-            List<Integer> collect = fansVoList.stream().map(WxFansVo::getId).collect(Collectors.toList());
+//            List<WxFansVo>fansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
+//            List<Integer> collect = fansVoList.stream().map(WxFansVo::getId).collect(Collectors.toList());
+            List<Integer> collect = AllfansVoList.stream().map(WxFansVo::getId).collect(Collectors.toList());
             form.setNameList(collect);
         }
         List<FeedBackVO> result = mapper.findFeedBackList(form);
