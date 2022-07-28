@@ -1286,6 +1286,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     PageInfo<GoodsVO> pageInfo = new PageInfo<>(collect);
     pageInfo.setTotal(page.getTotal());
     pageInfo.setPageNum(page.getPageNum());
+    pageInfo.setHasNextPage(page.getPageNum() < page.getPages());
     return pageInfo;
   }
 

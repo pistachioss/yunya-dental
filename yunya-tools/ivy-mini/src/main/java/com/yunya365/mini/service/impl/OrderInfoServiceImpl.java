@@ -334,6 +334,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         PageInfo<OrderFrontVO> pageInfo = new PageInfo<>(result);
         pageInfo.setPageNum(page.getPageNum());
         pageInfo.setTotal(page.getTotal());
+        pageInfo.setHasNextPage(page.getPageNum() < page.getPages());
         return pageInfo;
     }
 

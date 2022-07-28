@@ -81,6 +81,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         PageInfo<VirtualProductVO> pageInfo = new PageInfo<>(collect);
         pageInfo.setTotal(page.getTotal());
         pageInfo.setPageNum(page.getPageNum());
+        pageInfo.setHasNextPage(page.getPageNum() < page.getPages());
         return pageInfo;
     }
 
