@@ -6,6 +6,8 @@ import com.yunya.feign.ivy_mini.domain.form.*;
 import com.yunya.feign.ivy_mini.domain.vo.OrderVO;
 import com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.WxFanByNameForm;
+import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -15,13 +17,16 @@ import com.yunya365.mini.entity.OrderOperateHistory;
 import com.yunya365.mini.mapper.OrderInfoMapper;
 import com.yunya365.mini.mapper.OrderOperateHistoryMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 简介:
@@ -43,19 +48,25 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-//        WxFanByNameForm wxFanByNameForm = new WxFanByNameForm();
+        WxFanByNameForm wxFanByNameForm = new WxFanByNameForm();
 //        List<WxFansVo> AllfansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
 //        Map<String, WxFansVo> clinicMap = new HashMap(16);
 //        AllfansVoList.forEach(z -> clinicMap.put(z.getId() + "", z));
 //
-//        if (!StringUtils.isEmpty(form.getName())) {
-//            wxFanByNameForm.setName(form.getName());
-//            List<WxFansVo> fansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
-//            List<Integer> collect = fansVoList.stream().map(WxFansVo::getId).collect(Collectors.toList());
-//            form.setNameList(collect);
-//        }
-
-        List<OrderVO> result = mapper.findOrderList(form);
+        List<OrderVO> result = new ArrayList<>();
+        if (!StringUtils.isEmpty(form.getName())) {
+            wxFanByNameForm.setName(form.getName());
+            List<WxFansVo> fansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
+            List<Integer> collect = fansVoList.stream().map(WxFansVo::getId).collect(Collectors.toList());
+            form.setNameList(collect);
+            if(collect.size()>0){
+                result  = mapper.findOrderList(form);
+            }else{
+                return new PageInfo<>(result);
+            }
+        }else{
+            result  = mapper.findOrderList(form);
+        }
 
         for (OrderVO a : result) {
 //            WxFansVo copy = clinicMap.get(a.getFansId() + "");

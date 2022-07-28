@@ -5,6 +5,7 @@ import com.yunya.feign.ivy_mini.domain.form.*;
 import com.yunya.feign.ivy_mini.domain.model.OrderRefundModel;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.IOrderInfoService;
@@ -33,6 +34,7 @@ public class OrderPcController extends PcBaseController{
 
     @PostMapping("/order/findlist")
     @ApiOperation("后台-订单-列表")
+    @IgnoreUserToken
     public ResponseResult<PageInfo<OrderVO>> findList(@RequestBody @Valid OrderForm form) {
         return ResponseUtil.success(orderAdminiService.findList(form));
     }
