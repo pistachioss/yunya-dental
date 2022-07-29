@@ -61,7 +61,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
             clinicListVO.setAbbreviation(addressSet.getOrganizationName());
             clinicListVO.setBusinessEndTime(clinicMap.get(addressSet.getOrgId()+"").getBusinessEndTime());
             clinicListVO.setBusinessStartTime(clinicMap.get(addressSet.getOrgId()+"").getBusinessStartTime());
-            clinicListVO.setPath(clinicMap.get(addressSet.getOrgId()+"").getPath());
+            clinicListVO.setPath(clinicMap.get(addressSet.getOrgId()+"").getClinicPath());
             clinicListVO.setLatitude(addressSet.getLatitude());
             clinicListVO.setLongitude(addressSet.getLongitude());
             double distance = 0;
