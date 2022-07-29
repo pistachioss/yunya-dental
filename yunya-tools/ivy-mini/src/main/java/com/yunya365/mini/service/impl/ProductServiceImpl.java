@@ -20,7 +20,6 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseOralTariffCategory;
 import com.yunya365.mini.entity.FansPickUp;
 import com.yunya365.mini.entity.FansReceiveAddress;
 import com.yunya365.mini.service.IFansReceiveAddressService;
@@ -126,18 +125,21 @@ public class ProductServiceImpl implements IProductService {
         List<ProductTypeVO> list = Lists.newArrayList();
         // 产品类型（0-商品 1-虚拟服务）
         if (Objects.equals(FALSE.getCode(), type)) {
-            BaseOralTariffCategory queryForm = new BaseOralTariffCategory();
+            ProductTypeQueryForm queryForm = new ProductTypeQueryForm();
             queryForm.setInservice(true);
-            List<BaseOralTariffCategory> categoryList = treatmentServiceFeign.findBaseOralTariffCategoryList(queryForm);
+            queryForm.setIsOnlineSale(true);
+            List<ProductTypeVO> categoryList = treatmentServiceFeign.findList(queryForm);
             list = categoryList.stream().map(t -> BeanCopierUtils.generalCopyBean(t, ProductTypeVO.class)).collect(toList());
         }
         if (Objects.equals(TRUE.getCode(), type)) {
             ProductTypeQueryForm queryForm = new ProductTypeQueryForm();
             queryForm.setWhetherPage(false);
+            queryForm.setIsOnlineSale(true);
             ResponseResult<PageInfo<ProductTypeVO>> page = discountFeign.findList(queryForm);
             PageInfo<ProductTypeVO> data = page.getData();
             list = Objects.nonNull(data) ? data.getList() : list;
         }
+        list.removeIf(t -> t.getProductNum() <= 0);
         return list;
     }
 

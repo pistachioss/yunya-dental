@@ -1,12 +1,13 @@
 package com.yunya.modules.treatment.controller.rpc;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
@@ -622,5 +623,10 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/goods/free/stock", method = RequestMethod.POST)
   void freeGoodsStock(@Valid @RequestBody List<FreeStockForm> form){
     baseOralTariffBiz.freeGoodsStock(form);
+  }
+
+  @PostMapping("/goods/productType/list")
+  List<ProductTypeVO> findList(@RequestBody ProductTypeQueryForm queryForm){
+    return baseOralTariffCategoryBiz.categortyList(queryForm);
   }
 }

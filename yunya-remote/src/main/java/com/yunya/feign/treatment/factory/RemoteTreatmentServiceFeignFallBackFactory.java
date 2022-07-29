@@ -6,6 +6,8 @@ import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
@@ -278,4 +280,9 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   public void freeGoodsStock(List<FreeStockForm> form) {
 
   }
+
+    @Override
+    public List<ProductTypeVO> findList(ProductTypeQueryForm queryForm) {
+        return null;
+    }
 }
