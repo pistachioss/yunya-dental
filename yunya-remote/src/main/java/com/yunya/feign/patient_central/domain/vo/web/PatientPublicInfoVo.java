@@ -1,14 +1,12 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.io.*;
-import java.math.*;
 import java.util.Date;
 
 /**
