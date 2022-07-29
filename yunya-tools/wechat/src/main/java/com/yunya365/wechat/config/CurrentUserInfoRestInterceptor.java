@@ -1,8 +1,13 @@
 package com.yunya365.wechat.config;
 
+import com.yunya.feign.system.vo.UserInfo;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.constant.CommonConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya365.wechat.enums.WeChatError;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +16,7 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -43,15 +49,47 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
         if (!(handler instanceof HandlerMethod)) {
             return super.preHandle(request, response, handler);
         }
-        log.info("前端请求路径：{}", request.getRequestURI());
-        Object openId = request.getSession().getAttribute(GZH_SESSION_KEY);
-        if (openId == null) {
-            throw new ClientServiceException(WeChatError.WX_USER_NOT_REGISTER);
+        HandlerMethod handlerMethod = (HandlerMethod) handler;
+        CurrentUser annotation = handlerMethod.getBeanType().getAnnotation(CurrentUser.class);
+        if (annotation == null) {
+            annotation = handlerMethod.getMethodAnnotation(CurrentUser.class);
         }
-        String openInfo = redisUtils.get(String.format(WXConstant.WECHAT_OPENID_KEY,openId));
-        if (StringUtils.isBlank(openInfo)) {
-            throw new ClientServiceException(WeChatError.WX_USER_NOT_REGISTER);
+        if (annotation == null) {
+            return super.preHandle(request, response, handler);
         }
+        String token = request.getHeader(CommonConstants.TOKEN_HEADER);
+        if (StringUtils.isEmpty(token)) {
+            if (request.getCookies() != null) {
+                for (Cookie cookie : request.getCookies()) {
+                    if (cookie.getName().equals(CommonConstants.TOKEN_HEADER)) {
+                        token = cookie.getValue();
+                    }
+                }
+            }
+        }
+        UserInfo userInfo = redisUtils.get(RedisConstants.REDIS_KEY_USER_TOKEN + token, UserInfo.class);
+        if (null == userInfo) {
+//            throw new UserAuthException("您还没有登陆，请先登陆！");
+        }
+        BaseContextHandler.setUsername(userInfo.getUsername());
+        BaseContextHandler.setName(userInfo.getName());
+        BaseContextHandler.setUserID(userInfo.getId());
+        Integer currentOrgId = userInfo.getCurrentOrgId();
+        if (currentOrgId != null) {
+            BaseContextHandler.setOrgId(currentOrgId.toString());
+        }
+        if (!request.getRequestURI().contains("/wxAutoReply")) {
+            log.info("前端请求路径：{}", request.getRequestURI());
+            Object openId = request.getSession().getAttribute(GZH_SESSION_KEY);
+            if (openId == null) {
+                throw new ClientServiceException(WeChatError.WX_USER_NOT_REGISTER);
+            }
+            String openInfo = redisUtils.get(String.format(WXConstant.WECHAT_OPENID_KEY,openId));
+            if (StringUtils.isBlank(openInfo)) {
+                throw new ClientServiceException(WeChatError.WX_USER_NOT_REGISTER);
+            }
+        }
+
         return super.preHandle(request, response, handler);
     }
 

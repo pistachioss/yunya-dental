@@ -37,7 +37,7 @@ public class ClinicAchievementVO implements Serializable {
     @ApiModelProperty("目标值")
     private BigDecimal businessGoal = new BigDecimal("0.00");
 
-    @Excel(name = "目标值", cellType = Excel.ColumnType.NUMERIC)
+    @Excel(name = "实际值", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("实际值")
     private BigDecimal actualWorkload = new BigDecimal("0.00");
 

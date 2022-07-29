@@ -80,7 +80,7 @@ public class BaseRefundController {
    */
   @ApiOperation("根据时间段批量操作中间表退费时统计账单数据")
   @PostMapping(value = "/refundDate/statistics/batch", name = "form")
-  public ResponseResult pullRefundDateStatistics(PullForm form) throws InterruptedException {
+  public ResponseResult pullRefundDateStatistics(@RequestBody @Validated PullForm form) throws InterruptedException {
     statEmpRefundBiz.pullRefundDateStatistics(form);
     return ResponseUtil.success(null);
   }

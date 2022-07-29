@@ -23,8 +23,16 @@ public class VisitingRemindContentVo implements Serializable {
     @ApiModelProperty(value = "主键")
     private Integer id;
     /** 患者id */
-    @ApiModelProperty(value = "患者姓名id")
+    @ApiModelProperty(value = "患者id")
     private String patientId;
+
+    /** 患者姓名 */
+    @ApiModelProperty(value = "患者姓名")
+    private String patientName;
+
+    /** 患者头像url */
+    @ApiModelProperty(value = "患者头像url")
+    private String faceUrl;
 
     /** 患者手机号 */
     @ApiModelProperty(value = "患者手机号")
@@ -54,6 +62,10 @@ public class VisitingRemindContentVo implements Serializable {
     /** 备注 */
     @ApiModelProperty(value = "备注")
     private String remarks;
+
+    /** 提醒状态 0-待提醒；1-提醒完成 */
+    @ApiModelProperty(value = "提醒状态 0-待提醒；1-提醒完成")
+    private Boolean status;
 
     /**
      * 是否启用 0-不启用；1-启用

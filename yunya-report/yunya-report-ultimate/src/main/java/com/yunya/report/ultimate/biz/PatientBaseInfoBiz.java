@@ -7,9 +7,11 @@ import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
 import com.yunya.feign.report.domain.query.PatientManageQuery;
+import com.yunya.feign.report.domain.query.PatientOriginConsumptionQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientOrigin;
@@ -22,6 +24,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -231,5 +234,52 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
 
   public List<PatientManageVo> findPatientInfoList(PatientDimensionQueryForm queryForm) {
     return mapper.selectPatientInfoList(queryForm);
+  }
+
+  /**
+   * 渠道来源消费报表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<PatientOriginConsumptionVO> findPatientOriginConsumption(PatientOriginConsumptionQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PatientOriginConsumptionVO> data = mapper.selectPatientOriginConsumption(query);
+    if (StringHelper.isNotEmpty(data)) {
+      List<Integer> patientIds = data.stream().map(PatientOriginConsumptionVO::getPatientId).collect(Collectors.toList());
+      // 患者消费
+      List<PatientCostInfoVO> costInfos = billMapper.selectPatientCostInfoById(patientIds);
+      if (StringHelper.isNotEmpty(costInfos)) {
+        costInfos.forEach(cost->{
+          Integer patientId = cost.getPatientId();
+          data.forEach(patient->{
+            if (patient.getPatientId().equals(patientId)) {
+              patient.setCumulativeConsumption(cost.getCumulativeConsumption());
+              patient.setTotalArrears(cost.getTotalArrears());
+            }
+          });
+        });
+
+      }
+    }
+    return new PageInfo<>(data);
+  }
+
+  /**
+   * 导出渠道来源消费报表
+   *
+   * @param query
+   * @param response
+   * @throws IOException
+   */
+  public void exportPatientOriginConsumption(PatientOriginConsumptionQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<PatientOriginConsumptionVO> result = findPatientOriginConsumption(query).getList();
+    ExcelUtil<PatientOriginConsumptionVO> excelUtil = new ExcelUtil(PatientOriginConsumptionVO.class);
+    String sheetName = "渠道来源消费报表";
+    String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", sheetName);
+    excelUtil.exportExcel(response, result, sheetName, fileName);
   }
 }

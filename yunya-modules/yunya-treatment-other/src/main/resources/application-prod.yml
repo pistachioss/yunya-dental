@@ -27,3 +27,9 @@ logging:
     tk.mybatis: INFO
     com.yunya: INFO
     com.yunya365: INFO
+
+# netty配置
+netty:
+  protocol: ws://ivy2.yunya365.com/api/treatment-netty
+  discovery:
+    server-addr: 172.16.17.181:8848

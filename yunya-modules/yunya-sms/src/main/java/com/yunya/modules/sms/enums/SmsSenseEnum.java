@@ -18,7 +18,8 @@ public enum SmsSenseEnum {
     PRE_CONSUME_REMINDER((byte)4, "预付款消费提醒"),
     COUPON_SALE_REMINDER((byte)5, "卡券售出提醒"),
     DEVICE_BINDING_VERIFYCODE((byte)6, "考勤设备绑定验证码"),
-    RETRIEVE_PWD_VERIFYCODE((byte)7, "找回密码验证码");
+    RETRIEVE_PWD_VERIFYCODE((byte)7, "找回密码验证码"),
+    COUPON_ACTIVED((byte)8, "卡券激活");
 
     private final Byte code;
     private final String value;

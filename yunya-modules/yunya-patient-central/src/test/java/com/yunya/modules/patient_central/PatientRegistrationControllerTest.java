@@ -5,9 +5,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.oss.RemoteOssServiceFeign;
 import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.feign.patient_central.domain.model.*;
+import com.yunya.feign.patient_central.domain.query.PatientRegistrationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientExpInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientRegistrationVO;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.patient_central.biz.CustomerRegistrationBiz;
@@ -115,6 +117,7 @@ public class PatientRegistrationControllerTest {
     @Test
     public void testChildrenAddPatient() {
         ChildrenPatientRegistrationModel model = new ChildrenPatientRegistrationModel();
+        model.setId(108510);
         model.setName("楚风俊");
         model.setOrgId(26);
         model.setAge(10);
@@ -258,5 +261,13 @@ public class PatientRegistrationControllerTest {
         CustomerRegistrationModel model = JSONObject.parseObject(param, CustomerRegistrationModel.class);
         PatientBaseInfoVo patientBaseInfoVo = customerRegistrationBiz.addPatient(model);
         System.out.println(JSONObject.toJSON(patientBaseInfoVo));
+    }
+
+    @Test
+    public void testFindPatientRegistration() {
+        PatientRegistrationQueryForm query = new PatientRegistrationQueryForm();
+        query.setPatientId(186);
+        PatientRegistrationVO data = customerRegistrationController.findPatientRegistrationById(query).getData();
+        System.out.println(JSONObject.toJSON(data));
     }
 }

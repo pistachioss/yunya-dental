@@ -3,21 +3,16 @@ package com.yunya.framework.common.utils;
 import cn.hutool.core.date.DateTime;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.YearMonth;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,6 +27,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TR
  * @author Gaoluding
  * @create 2019-08-11 10:26
  */
+@Slf4j
 public class DateUtil {
   /** 最大秒 */
   public static final int MAX_SECOND = 59;
@@ -587,6 +583,19 @@ public class DateUtil {
   }
 
   /**
+   * 按yyyy-MM-dd格式转换
+   *
+   * @param date
+   * @return
+   */
+  public static String format(LocalDateTime date) {
+    if (ObjectUtils.isEmpty(date)) {
+      return null;
+    }
+    return SDF.format(local2Date(date, "yyyy-MM-dd HH:mm:ss"));
+  }
+
+  /**
    * 格式化日期 - yyyy-MM-dd HH:mm:ss
    *
    * @param date 日期
@@ -595,6 +604,29 @@ public class DateUtil {
    */
   public static String format(Date date, String pattern) {
     return new SimpleDateFormat(pattern).format(date);
+  }
+
+  public static Date local2Date(LocalDateTime localDate, String pattern) {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+    //字符串格式转为LocalDate格式
+    LocalDateTime parse = LocalDateTime.parse(localDate.format(formatter), formatter);
+    //获取时间地区ID
+    ZoneId zoneId = ZoneId.systemDefault();
+    //转换为当地时间
+    ZonedDateTime zonedDateTime = parse.atZone(zoneId);
+    //转为Date类型
+    return Date.from(zonedDateTime.toInstant());
+  }
+
+  /**
+   * 格式化日期 - yyyy-MM-dd HH:mm:ss
+   *
+   * @param date 日期
+   * @param pattern 日期格式
+   * @return 日期字符串
+   */
+  public static String format(LocalDateTime date, String pattern) {
+    return new SimpleDateFormat(pattern).format(local2Date(date, "yyyy-MM-dd HH:mm:ss"));
   }
 
   /**
@@ -606,6 +638,17 @@ public class DateUtil {
    */
   public static String format(Date date, SimpleDateFormat sdf) {
     return sdf.format(date);
+  }
+
+  /**
+   * 格式化日期 - yyyy-MM-dd HH:mm:ss
+   *
+   * @param date 日期
+   * @param sdf 日期解析器
+   * @return 日期字符串
+   */
+  public static String format(LocalDateTime date, SimpleDateFormat sdf) {
+    return sdf.format(local2Date(date, "yyyy-MM-dd HH:mm:ss"));
   }
 
   /**
@@ -666,6 +709,23 @@ public class DateUtil {
   public static Date parse(String date, String pattern) throws ParseException {
     return new SimpleDateFormat(pattern).parse(date);
   }
+
+  /**
+   * 格式化日期 - yyyy-MM-dd HH:mm:ss
+   *
+   * @param date 日期字符串
+   * @return 日期
+   * @throws ParseException 解析异常
+   */
+  public static Date parse(String date) {
+    try {
+      return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date);
+    } catch (ParseException e) {
+      log.error("parse date error: {}", e);
+    }
+    return null;
+  }
+
 
   /**
    * 格式化日期 - yyyy-MM-dd HH:mm:ss
@@ -791,14 +851,36 @@ public class DateUtil {
    * @return
    */
   public static int dateFieldDiff(String startDate, String endDate) {
-    String[] sDates = startDate.split("-");
-    String[] eDates = endDate.split("-");
     if (startDate.matches(MONTH_REGEX)) { // 月
-      return Integer.parseInt(sDates[1]) - Integer.parseInt(eDates[1]);
+      return dateFieldDiff(startDate, endDate, Calendar.MONTH);
     } else if (startDate.matches(YEAR_REGEX)) { // 年
-      return Integer.parseInt(sDates[1]) - Integer.parseInt(eDates[1]);
+      return dateFieldDiff(startDate, endDate, Calendar.YEAR);
     }
     return compareDate(startDate, endDate) - 1; // 日
+  }
+
+  /**
+   * 计算两个日期相差的年份
+   *
+   * @return
+   */
+  public static int dateFieldDiff(String startDate, String endDate, int field) {
+    Calendar cBegin = Calendar.getInstance();
+    Calendar cEnd = Calendar.getInstance();
+    String pattern = "yyyy";
+    int diff = 0;
+    if (field == 2) {
+      pattern = "yyyy-MM";
+      int yearDiff = dateFieldDiff(startDate, endDate, Calendar.YEAR);
+      diff = yearDiff * 12;
+    }
+    try {
+      cBegin.setTime(parse(startDate, pattern));
+      cEnd.setTime(parse(endDate, pattern));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return diff + cBegin.get(field)-cEnd.get(field);
   }
 
   public static int compareDate(String firstDate, String secondDate) {
@@ -1005,7 +1087,85 @@ public class DateUtil {
    * @return
    */
   public static Integer pregancyWeek2Month(Integer pregnancyWeek) {
+    if (ObjectUtils.isEmpty(pregnancyWeek)) {
+      return null;
+    }
     return pregnancyWeek / 4;
+  }
+
+  /**
+   * 时间戳 转 日期时间
+   * @param timestamp
+   * @param pattern
+   * @return
+   */
+  public static String timestamp2DateStr(Long timestamp,String pattern){
+    SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+    return sdf.format(new Date(timestamp)); // 时间戳转换日期
+  }
+
+  /**
+   * 秒转化为时分秒字符串
+   *
+   * @param seconds
+   * @return String
+   */
+  public static String formatSeconds(long seconds) {
+    String timeStr = "00:00:" + less10Markup(seconds);
+    if (seconds > 60) {
+      long second = seconds % 60;
+      long min = seconds / 60;
+      timeStr = "00:" + less10Markup(min)  + ":" + less10Markup(second);
+      if (min > 60) {
+        min = (seconds / 60) % 60;
+        long hour = (seconds / 60) / 60;
+        timeStr = less10Markup(hour) + ":" + less10Markup(min) + ":" + less10Markup(second);
+      }
+    }
+    return timeStr;
+  }
+
+  /**
+   * 不足10前缀补0
+   *
+   * @param num
+   * @return
+   */
+  private static String less10Markup(long num) {
+    String result = num + "";
+    if (num < 10) {
+      result = "0" + result;
+    }
+    return result;
+  }
+
+
+  /**
+   * 计算两个日期之间相差的间隔天数，并换算成相应形式
+   *
+   * 比如：2011-02-02 到  2017-03-02 相差 6年，1个月，0天
+   * @param fromDate
+   * @param toDate
+   * @return
+   */
+  public static Double dateDiff2Double(Temporal fromDate, Temporal toDate, int type) {
+    //间隔天数
+    long diffDays = Math.abs(ChronoUnit.DAYS.between(fromDate, toDate));
+    if (type == 1) {// 返回月份形式, 按30天/月换算
+      long monthPart = diffDays / 30;
+      long dayPart = diffDays % 30;
+      String tmp = StringHelper.joinWith(".", monthPart, dayPart);
+      log.info(" from {} to {} difference days: {} = {}", fromDate, toDate, diffDays, tmp);
+      return Double.valueOf(tmp);
+    } else if (type == 2) {// 返回年份形式，按365天/年换算
+      long monthPart = diffDays / 365;
+      long dayPart = diffDays % 365;
+      String tmp = StringHelper.joinWith(".", monthPart, dayPart);
+      log.info(" from {} to {} difference days: {} = {}", fromDate, toDate, diffDays, tmp);
+      return Double.valueOf(tmp);
+    } else { // 返回日形式
+      return Double.valueOf(diffDays);
+    }
   }
 
   /**

@@ -18,6 +18,7 @@ import com.yunya.feign.treatment_other.domain.form.VisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRemindModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindContentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingRemindDetailVO;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindExecuteVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindVo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -37,6 +38,7 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +47,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -238,16 +241,18 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @param id 提醒记录id
      * @return ResponseResult
      */
-    public ResponseResult findVisitingRemindById(Integer id){
+    public ResponseResult<VisitingRemindContentVo> findVisitingRemindById(Integer id){
         VisitingRemind visitingRemind = mapper.selectByPrimaryKey(id);
         if (visitingRemind == null) {
             return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"没有数据",null);
         }
         VisitingRemindContentVo build = EntityUtils.build(visitingRemind, VisitingRemindContentVo.class);
         if (id != null){
-            PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(id);
-            if (patientTotalInfo != null){
-                build.setMobile(patientTotalInfo.getMobile());
+            PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(id);
+            if (!ObjectUtils.isEmpty(patient)){
+                build.setPatientName(patient.getName());
+                build.setMobile(patient.getMobile());
+                build.setFaceUrl(patient.getFaceUrl());
             } else {
                 build.setMobile("---");
             }
@@ -260,7 +265,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @param query 查询条件
      * @return  ResponseResult
      */
-    public ResponseResult findVisitingRemindByCondition(VisitingRemindQuery query){
+    public ResponseResult<PageInfo<VisitingRemindVo>> findVisitingRemindByCondition(VisitingRemindQuery query){
         query.setInservice(true);
         String medicalNumber = query.getMedicalNumber();
         String distentName = query.getDistentName();
@@ -330,13 +335,17 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             List<DebtAmountModel> finalDebtAmountModelList = debtAmountModelList;
             visitingReminds.forEach(visitingRemind -> {
                 VisitingRemindVo build = EntityUtils.build(visitingRemind, VisitingRemindVo.class);
+                try {
+                    build.setRemindDateTime(DateUtil.timeToDate(visitingRemind.getRemindDate(), visitingRemind.getRemindTime()));
+                } catch (ParseException e) {
+                    log.error("FindVisitingRemindByCondition error: {}", e);
+                }
                 // 设置患者信息
                 this.setPatientInfo(dentistInfoList,patientTotalInfoVoList,finalMemberTypeList,finalDebtAmountModelList,build);
                 visitingRemindVos.add(build);
             });
             // 排序
             searchVisitingRemindVo = this.customSort(visitingRemindVos,query);
-
         }
         // 如果 searchVisitingRemindVo 为空
         if (StringHelper.isEmpty(searchVisitingRemindVo)) {
@@ -401,6 +410,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 return this.sort(list);
             } else if (null != query.getPatientId() && query.getSearchId().equals(SEARCH_ID)){
                 return list;
+            } else if (query.getSearchId().intValue()==4) {
+                return SortUtil.sort(list, SortUtil.comparing(VisitingRemindVo::getStatus).thenComparing(VisitingRemindVo::getRemindDateTime));
             } else {
                 // 按照时间正序排序
                 return this.sort(list);
@@ -767,4 +778,28 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         }
         return 0;
     }
+
+    public VisitingRemindDetailVO findRemindOneById(Integer id) {
+        VisitingRemind remind = mapper.selectByPrimaryKey(id);
+        if (ObjectUtils.isEmpty(remind)) {
+            return null;
+        }
+        VisitingRemindDetailVO result = new VisitingRemindDetailVO();
+        BeanUtils.copyProperties(remind, result);
+        PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(result.getPatientId());
+        if (!ObjectUtils.isEmpty(patient)) {
+            result.setPatientName(patient.getName());
+            result.setMobile(patient.getMobile());
+            result.setFaceUrl(patient.getFaceUrl());
+        }
+        Integer dentistId = result.getDentistId();
+        if (!ObjectUtils.isEmpty(dentistId)) {
+            SysEmployee dentist = remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+            if (!ObjectUtils.isEmpty(dentist)) {
+                result.setDentistName(dentist.getName());
+            }
+        }
+        return result;
+    }
+
 }

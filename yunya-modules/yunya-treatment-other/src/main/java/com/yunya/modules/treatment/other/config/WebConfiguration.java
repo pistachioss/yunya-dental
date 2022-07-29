@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.other.config;
 
 import com.yunya.framework.common.handler.GlobalExceptionHandler;
+import com.yunya.modules.treatment.other.netty.WebSocketNettyServer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -35,5 +36,10 @@ public class WebConfiguration implements WebMvcConfigurer {
   @Bean
   CurrentUserInfoRestInterceptor getUserAuthRestInterceptor() {
     return new CurrentUserInfoRestInterceptor();
+  }
+
+  @Bean
+  WebSocketNettyServer getNettyServer() {
+    return new WebSocketNettyServer();
   }
 }

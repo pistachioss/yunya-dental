@@ -1,21 +1,10 @@
 package com.yunya.modules.employeeattend.rpc;
 
-import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
-import com.yunya.feign.employee_attend.vo.FieldInfoListVO;
-import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
-import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
-import com.yunya.framework.common.annation.RepeatSubmit;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.employee_attend.EmployeeSchedule;
-import com.yunya.modules.employeeattend.biz.FieldInfoBiz;
-import com.yunya.modules.employeeattend.biz.LeaveInfoBiz;
-import com.yunya.modules.employeeattend.biz.WorkOvertimeInfoBiz;
-import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
-import com.yunya.modules.employeeattend.form.FieldInfoForm;
-import com.yunya.modules.employeeattend.form.LeaveInfoForm;
-import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
+import com.yunya.modules.employeeattend.biz.*;
+import com.yunya.modules.employeeattend.form.*;
 import com.yunya.modules.employeeattend.rpc.service.EmployeeScheduleSerivce;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleResultVO;
 import io.swagger.annotations.Api;
@@ -41,6 +30,7 @@ public class EmployeeAttendServiceRest {
   @Autowired private LeaveInfoBiz leaveInfoBiz;
   @Autowired private WorkOvertimeInfoBiz workOvertimeInfoBiz;
   @Autowired private FieldInfoBiz fieldInfoBiz;
+  @Autowired private  AttendanceAddressSetBiz addressSetBiz;
 
   /**
    * 获取门诊地址以及经纬度
@@ -129,5 +119,17 @@ public class EmployeeAttendServiceRest {
   @RequestMapping(value = "/field_info/findList",method = RequestMethod.POST)
   public List<FieldInfoListVO> fieldFindList(@RequestBody @Validated FieldInfoForm fieldInfoForm) {
     return fieldInfoBiz.findList(fieldInfoForm);
+  }
+
+  /**
+   * 根据orgId查询考勤地址列表
+   *
+   * @param orgIds
+   * @return
+   */
+  @ApiOperation("根据orgId查询考勤地址列表")
+  @PostMapping("/attendanceAddress/orgId")
+  public List<AttendanceAddressSetVO> findAttendanceAddressByOrgId(@RequestBody @Validated List<Integer> orgIds) {
+    return addressSetBiz.findAttendanceAddressByOrgId(orgIds);
   }
 }

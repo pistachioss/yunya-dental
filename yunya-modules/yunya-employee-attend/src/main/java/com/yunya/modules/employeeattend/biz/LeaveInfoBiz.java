@@ -155,7 +155,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     if(num > 0){
                         EmployeePushForm employeePushForm = new EmployeePushForm();
                         // 组装
-                        Set<Integer> emp_ids = new HashSet<>();
+                        List<Integer> emp_ids = new ArrayList<>();
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
                         // 根据leaveInfoForm.getApprovalNowPeopleId();查推送号与平台
@@ -196,7 +196,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                         if(n > 0){
                             EmployeePushForm employeePushForm = new EmployeePushForm();
                             // 组装
-                            Set<Integer> emp_ids = new HashSet<>();
+                            List<Integer> emp_ids = new ArrayList<>();
                             leaveInfoForm.getCopyList().forEach(nn -> {
                                 emp_ids.add(nn);
                             });
@@ -300,7 +300,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     }
                     if(num > 0){
                         EmployeePushForm employeePushForm = new EmployeePushForm();
-                        Set<Integer> emp_ids = new HashSet<>();
+                        List<Integer> emp_ids = new ArrayList<>();
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
                         // 根据leaveInfoForm.getApprovalNowPeopleId();查推送号与平台
@@ -350,7 +350,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                         if(n > 0){
                             EmployeePushForm employeePushForm = new EmployeePushForm();
                             // 组装
-                            Set<Integer> emp_ids = new HashSet<>();
+                            List<Integer> emp_ids = new ArrayList<>();
                             leaveInfoByEmForm.getCopyList().forEach(nn -> {
                                 emp_ids.add(nn);
                             });
@@ -434,7 +434,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     }
                     EmployeePushForm employeePushForm = new EmployeePushForm();
                     // 组装
-                    Set<Integer> emp_ids = new HashSet<>();
+                    List<Integer> emp_ids = new ArrayList<>();
                     employeePushForm.setEmpId(emp_ids);
                     employeePushForm.setShowName(showName);
                     employeePushForm.setIds(Arrays.asList(leaveInfoForm.getId()));
@@ -504,7 +504,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     }
                     EmployeePushForm employeePushForm = new EmployeePushForm();
                     // 组装
-                    Set<Integer> emp_ids = new HashSet<>();
+                    List<Integer> emp_ids = new ArrayList<>();
                     employeePushForm.setEmpId(emp_ids);
                     employeePushForm.setShowName(showName);
                     // 撤销
@@ -514,7 +514,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     ApprovalInfo approvalInfo = new ApprovalInfo();
                     approvalInfo.setLeaveId(leaveInfoForm.getId());
                     approvalInfo.setApprovalStatus(1);
-                    approvalInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                    approvalInfo.setCrtId(userId);
                     List<ApprovalInfo> approvalInfoList = approvalInfoMapper.select(approvalInfo);
                     if(approvalInfoList!=null){
                         approvalInfoList.forEach(approvalInfo1 -> {

@@ -6,7 +6,9 @@ import com.yunya.feign.discount.domain.bo.PatientBenefitBo;
 import com.yunya.feign.discount.domain.bo.PatientCardBo;
 import com.yunya.feign.discount.domain.bo.UseClinicBo;
 import com.yunya.feign.discount.domain.bo.ViewAllocateBo;
+import com.yunya.feign.discount.domain.query.CardIyOr365ActivedQuery;
 import com.yunya.feign.discount.domain.vo.CardActiveDetailVo;
+import com.yunya.feign.discount.domain.vo.CardIyOr365VO;
 import com.yunya.feign.discount.domain.vo.CardWxDetailVO;
 import com.yunya.feign.discount.domain.vo.CardWxVO;
 import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
@@ -105,4 +107,6 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
     void updateList(@Param("list") List<Card> list);
 
     List<Integer> listPatientAllCard(@Param("patientId") Integer patientId);
+
+    List<CardIyOr365VO> selectIyOr365CardActivedList(@Param("query") CardIyOr365ActivedQuery query);
 }

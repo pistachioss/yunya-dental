@@ -10,10 +10,10 @@ import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.employee_attend.EmployeeSchedule;
-import com.yunya.models.employee_attend.LeaveInfo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -92,4 +92,14 @@ public interface EmployeeAttendServiceFeign {
   @ApiOperation("获取外勤申请列表")
   @RequestMapping(value = "api/field_info/findList",method = RequestMethod.POST)
   public List<FieldInfoListVO> fieldFindList(@RequestBody @Validated FieldInfoForm fieldInfoForm);
+
+  /**
+   * 根据orgId查询考勤地址列表
+   *
+   * @param orgIds
+   * @return
+   */
+  @ApiOperation("根据orgId查询考勤地址列表")
+  @PostMapping("api/attendanceAddress/orgId")
+  List<AttendanceAddressSetVO> findAttendanceAddressByOrgId(@RequestBody @Validated List<Integer> orgIds);
 }

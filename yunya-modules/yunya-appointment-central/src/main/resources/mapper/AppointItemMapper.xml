@@ -80,8 +80,8 @@
         atype.name as typeName,
         item.appoint_type_id as appointTypeId,
         IFNULL(item.duration,'无') as duration
-        FROM appoint_type atype
-        left join appoint_item item on item.appoint_type_id = atype.id
+        FROM appoint_item item
+        left join appoint_type atype on item.appoint_type_id = atype.id
         <where>
             <if test="form.appointTypeId != null">
                 atype.id =#{form.appointTypeId}

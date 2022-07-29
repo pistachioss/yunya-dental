@@ -4,6 +4,8 @@ import com.yunya.feign.patient_central.domain.model.AdultPatientRegistrationMode
 import com.yunya.feign.patient_central.domain.model.ChildrenPatientRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.CustomerRegistrationModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientRegistrationQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientRegistrationVO;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -66,6 +68,20 @@ public class CustomerRegistrationController {
     public ResponseResult findUserExists(
             @RequestBody PatientBaseInfoQueryForm patientBaseInfoQueryForm) {
         return this.patientBaseInfoBiz.findUserExists(patientBaseInfoQueryForm);
+    }
+
+    /**
+     * 根据患者id查询患者注册信息
+     *
+     * @param query 患者id
+     * @return ResponseResult
+     */
+    @IgnoreUserToken
+    @ApiOperation("根据患者id查询患者注册信息")
+    @PostMapping("/permit/registration/one")
+    public ResponseResult<PatientRegistrationVO> findPatientRegistrationById(@RequestBody @Validated PatientRegistrationQueryForm query) {
+        PatientRegistrationVO result = customerRegistrationBiz.findPatientRegistrationById(query.getPatientId());
+        return ResponseUtil.success(result);
     }
 
     /**

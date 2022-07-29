@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 @Data
 @ApiModel(value = "公司端-患者管理返回")
 public class PatientManageVo {
+    @ExcelIgnore
     @ApiModelProperty(value = "患者ID")
     private Integer patientId;
     @ApiModelProperty(value = "病历编号")
@@ -41,6 +43,10 @@ public class PatientManageVo {
     @ApiModelProperty(value = "会员卡")
     @ExcelProperty(value = "会员卡")
     private String memberTypeName;
+    /** 患者分组*/
+    @ApiModelProperty("患者分组")
+    @ExcelProperty(value = "患者分组")
+    private String patientGroupName;
     @ApiModelProperty(value = "患者类型")
     @ExcelProperty(value = "患者类型")
     private String patientType;

@@ -14,12 +14,4 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @param baseBills 账单列表
    */
   void batchInsertSelective(@Param("baseBills") Set<BaseBill> baseBills);
-
-
-  /**
-   * 查询患者订单数量
-   * @param patientId 患者id
-   * @return 订单数量
-   */
-  Integer selectCountByPatientId(@Param("patientId") Integer patientId);
 }

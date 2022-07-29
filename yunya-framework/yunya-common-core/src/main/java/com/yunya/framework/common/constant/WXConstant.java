@@ -71,6 +71,27 @@ public interface WXConstant {
     String WX_SEND_TEMPLATE_MSG_URL = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=%s";
 
     /**
+     * 设置自动回复消息
+     */
+    String WX_SET_AUTO_REPLY_URL = "https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=%s";
+
+    /**
+    /**
+     * 获取素材列表
+     */
+    String WX_GET_MEDIA_URL = "https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=%s";
+
+    /**
+     * 微信公众号菜单获取
+     */
+    String WX_GET_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/get?access_token=%s";
+
+    /**
+     * 微信公众号菜单创建
+     */
+    String WX_CREATE_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=%s";
+
+    /**
      * 所有模板列表
      */
     String WX_TEMPLATE_URL = "https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=%s";

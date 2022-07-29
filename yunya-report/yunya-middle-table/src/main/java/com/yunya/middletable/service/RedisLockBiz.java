@@ -23,12 +23,14 @@ public class RedisLockBiz {
 
     @Autowired private RedisUtils redisUtils;
 
+    private static final Integer EXPIRE_DURATION = 10;
+
     public void lockedApply(String lockKey, String lockVal, Function function) {
         boolean locked = false;
         try {
-            locked = redisUtils.setLock(lockKey, lockVal, 1, TimeUnit.SECONDS);
+            locked = redisUtils.setLock(lockKey, lockVal, EXPIRE_DURATION, TimeUnit.SECONDS);
             while (!locked) {
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(3);
             }
             function.apply(null);
         } catch (Exception e) {

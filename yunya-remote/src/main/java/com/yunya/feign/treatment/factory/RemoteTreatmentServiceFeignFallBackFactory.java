@@ -262,6 +262,11 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
+  public List<OrderDetailVO> findOrderDetailById(List<Integer> orderDetailIds) {
+    return null;
+  }
+
+  @Override
   public PageInfo<GoodsVO> pageGoods(GoodsQuery query) {
     return null;
   }

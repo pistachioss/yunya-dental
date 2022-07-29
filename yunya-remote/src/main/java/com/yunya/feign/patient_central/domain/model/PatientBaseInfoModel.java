@@ -7,9 +7,13 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简单介绍:</br> 新增患者信息
@@ -123,4 +127,10 @@ public class PatientBaseInfoModel implements Serializable {
      */
     @ApiModelProperty("是否去世")
     private Boolean hasDied;
+
+    /**
+     * 患者分组id列表，取自字典
+     */
+    @ApiModelProperty("患者分组id列表，取自字典")
+    private List<Integer> groupIds;
 }

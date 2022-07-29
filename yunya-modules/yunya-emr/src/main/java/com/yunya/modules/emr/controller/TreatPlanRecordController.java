@@ -3,19 +3,22 @@ package com.yunya.modules.emr.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.emr.domain.form.TreatPlanRecordChangeForm;
 import com.yunya.feign.emr.domain.model.TreatPlanRecordModel;
+import com.yunya.feign.emr.domain.query.PlanTypeDetailQuery;
+import com.yunya.feign.emr.domain.query.PlanTypeStatisticsQuery;
+import com.yunya.feign.emr.domain.query.TreatPlanDetailQuery;
 import com.yunya.feign.emr.domain.query.TreatPlanRecordQuery;
-import com.yunya.feign.emr.domain.vo.MedicalTreatPlanRecordVO;
-import com.yunya.feign.emr.domain.vo.TreatPlanRecordInfoVO;
-import com.yunya.feign.emr.domain.vo.TreatPlanRecordVO;
+import com.yunya.feign.emr.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.emr.biz.TreatPlanRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -40,16 +43,10 @@ public class TreatPlanRecordController {
         return ResponseUtil.success();
     }
 
-    @ApiOperation(value = "根据普通电子病历id查询治疗计划详情")
-    @GetMapping("/one/{medicalId}")
-    public ResponseResult<TreatPlanRecordVO> findTreatPlanOneByMedicalId(@PathVariable(value = "medicalId") Integer medicalId) {
-        return ResponseUtil.success(treatPlanRecordBiz.findTreatPlanOneByMedicalId(medicalId));
-    }
-
-    @ApiOperation(value = "根据治疗计划id查询病历及治疗计划（打印）")
-    @GetMapping("/medicalTreatPlan/{planId}")
-    public ResponseResult<MedicalTreatPlanRecordVO> findMedicalTreatPlanById(@PathVariable(value = "planId") Integer planId) {
-        return ResponseUtil.success(treatPlanRecordBiz.findMedicalTreatPlanById(planId));
+    @ApiOperation(value = "根据治疗计划id查询治疗计划（打印）")
+    @GetMapping("/one/{planId}")
+    public ResponseResult<TreatPlanRecordVO> findOneById(@PathVariable(value = "planId") Integer planId) {
+        return ResponseUtil.success(treatPlanRecordBiz.findOneById(planId));
     }
 
     @ApiOperation("分页查询")
@@ -71,7 +68,42 @@ public class TreatPlanRecordController {
     @ApiOperation("治疗计划变更：方案确认，方案变更，提前终止，撤销终止")
     @PutMapping("/change")
     @CurrentUser
-    public ResponseResult<MedicalTreatPlanRecordVO> treatPlanChange(@RequestBody @Valid TreatPlanRecordChangeForm form) {
+    public ResponseResult<TreatPlanRecordVO> treatPlanChange(@RequestBody @Valid TreatPlanRecordChangeForm form) {
         return ResponseUtil.success(treatPlanRecordBiz.treatPlanChange(form));
+    }
+
+    @ApiOperation("条件查询治疗类型统计列表")
+    @PostMapping("/planType/statistics")
+    public ResponseResult<PageInfo<TreatPlanTypeStatisticsVO>> findTreatPlanTypeStatistics(@Valid @RequestBody PlanTypeStatisticsQuery query) {
+        PageInfo<TreatPlanTypeStatisticsVO> page = treatPlanRecordBiz.findTreatPlanTypeStatistics(query);
+        return ResponseUtil.success(page);
+    }
+
+    @ApiOperation("条件查询治疗类型统计明细列表")
+    @PostMapping("/planType/detail")
+    public ResponseResult<PageInfo<TreatPlanTypeDetailVO>> findTreatPlanTypeDetail(@Valid @RequestBody PlanTypeDetailQuery query) {
+        PageInfo<TreatPlanTypeDetailVO> page = treatPlanRecordBiz.findTreatPlanTypeDetail(query);
+        return ResponseUtil.success(page);
+    }
+
+    @ApiOperation("条件导出治疗类型统计明细列表")
+    @PostMapping("/planType/detail/export")
+    public ResponseResult<T> exportTreatPlanTypeDetail(@Valid @RequestBody PlanTypeDetailQuery query, HttpServletResponse response) throws Exception {
+        treatPlanRecordBiz.exportTreatPlanTypeDetail(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    @ApiOperation("根据治疗计划id和治疗计划详情id查询执行信息列表")
+    @PostMapping("/planDetail/execute")
+    public ResponseResult<PageInfo<TreatPlanDetailAndExecuteVO>> findPlanDetailExecuteList(@Valid @RequestBody TreatPlanDetailQuery query) {
+        PageInfo<TreatPlanDetailAndExecuteVO> result = treatPlanRecordBiz.findPlanDetailExecuteList(query);
+        return ResponseUtil.success(result);
+    }
+
+    @ApiOperation("根据治疗计划id和治疗计划详情id导出执行信息列表")
+    @PostMapping("/planDetail/execute/export")
+    public ResponseResult<T> exportPlanDetailExecuteList(@Valid @RequestBody TreatPlanDetailQuery query, HttpServletResponse response) throws Exception {
+        treatPlanRecordBiz.exportPlanDetailExecuteList(query, response);
+        return ResponseUtil.success(null);
     }
 }

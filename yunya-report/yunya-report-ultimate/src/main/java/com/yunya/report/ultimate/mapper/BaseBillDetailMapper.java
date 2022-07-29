@@ -191,7 +191,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<BaseBillDetail> selectBillDetailByQuery(@Param("query") EmployeeWorkloadQuery query);
+  List<BillItemAmountSharedVO> selectBillDetailByQuery(@Param("query") EmployeeWorkloadQuery query);
 
   /**
    * 根据账单id查询账单详情列表
@@ -199,7 +199,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param billIds
    * @return
    */
-  List<BaseBillDetail> selectBillDetailByBillIds(@Param("billIds") Collection<Integer> billIds);
+  List<BillItemAmountSharedVO> selectBillDetailByBillIds(@Param("billIds") Collection<Integer> billIds);
 
   List<EmployeeFreepaymentWorkloadDetailVO> selectEmployeeFreepaymentWorkloadDetailList(
       @Param("query") EmployeePersonalWorkloadDetailQuery query,
@@ -282,9 +282,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * 根据订单ID列表查询工作量总和
    *
    * @param billIds 订单ID列表
+   * @param existsExecutor 是否按执行人过滤
    * @return BigDecimal
    */
-  List<BillRecordWorkloadVO> selectBillTotalWorkload(@Param("billIds") Collection<Integer> billIds);
+  List<BillRecordWorkloadVO> selectBillTotalWorkload(
+          @Param("billIds") Collection<Integer> billIds,
+          @Param("existsExecutor") Boolean existsExecutor);
 
   /**
    * 根据订单ID列表查询非工作量总和
@@ -527,4 +530,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return
    */
   List<BillItemStatisticsDetailVO> billItemAmountDetailList(@Param("query") BillItemInfoQuery query);
+
+  List<BillDetailtemVO> selectBillDetailItemList(@Param("query") ClinicPerformanceBusinessQuery query);
 }

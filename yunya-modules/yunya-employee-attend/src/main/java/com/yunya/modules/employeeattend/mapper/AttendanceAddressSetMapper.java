@@ -29,4 +29,12 @@ public interface AttendanceAddressSetMapper extends Mapper<AttendanceAddressSet>
      * @return
      */
     AttendanceAddressSetVO findAttendanceAddressSetById(@Param("id") Integer id);
+
+    /**
+     * 根据orgId查询考勤地址列表
+     *
+     * @param orgIds
+     * @return
+     */
+    List<AttendanceAddressSetVO> selectAttendanceAddressByOrgId(@Param("orgIds") List<Integer> orgIds);
 }

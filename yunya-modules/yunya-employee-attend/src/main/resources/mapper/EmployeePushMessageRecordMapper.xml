@@ -26,7 +26,8 @@
         title,
         content,
         had_read AS hadRead,
-        DATE_FORMAT(push_time, '%Y-%m-%d %H:%i:%S') AS pushTime
+        DATE_FORMAT(push_time, '%Y-%m-%d %H:%i:%S') AS pushTime,
+        push_type AS pushType
     FROM employee_push_message_record
     <where>
       <if test="query.userId != null">
@@ -37,5 +38,20 @@
       </if>
     </where>
     ORDER BY push_time DESC
+  </select>
+
+  <select id="selectCountUnRead" resultType="com.yunya.feign.employee_attend.vo.EmpPushMsgUnReadCountVO">
+    SELECT
+        count(id) AS count
+    FROM employee_push_message_record
+    <where>
+      AND had_read = false
+      <if test="query.userId != null">
+        AND user_id = #{query.userId}
+      </if>
+      <if test="query.preDateTime!=null and query.preDateTime!=''">
+        AND DATE_FORMAT(push_time, '%Y-%m-%d %H:%i:%S') &lt;= #{query.preDateTime}
+      </if>
+    </where>
   </select>
 </mapper>

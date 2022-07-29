@@ -135,7 +135,6 @@ public class JpushManager {
                           .build())
                   .setMessage(Message.newBuilder().setTitle(title).setMsgContent(content).build())
                   .build();
-
           if (schedule) {
             result = jpushClient.createSingleSchedule(
                 "Attend_android", scheTime, payload, appMasterSecret, appKey);
@@ -153,7 +152,7 @@ public class JpushManager {
 
   private void crtPushMessageRecord(BaseResult result, EmployeePushForm employeePushForm, int type) {
     if (!ObjectUtils.isEmpty(result) && result.getResponseCode()==200) {
-      employeePushMessageRecordBiz.crtMsgRecord(employeePushForm, type);
+      employeePushMessageRecordBiz.asyncGeneratMsgRecord(employeePushForm, type);
     }
   }
 

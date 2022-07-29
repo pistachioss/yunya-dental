@@ -37,7 +37,6 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 
@@ -119,18 +118,11 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           baseBillDetailMapper.deleteByBillId(dataId);
           // 保存账单明细
           saveBaseBillDetail(dataId);
-          log.info("消息dataId = {}",dataId);
-          // 做接口幂等性校验
-          String key = String.format("msgId:%d", dataId);
-          if (redisUtils.hasKey(key)) {
-            return;
-          }
-          redisUtils.set(key,"",15, TimeUnit.SECONDS);
           // 推荐积分
           addPatientIntegral(bill.getPatientId());
           // 回调收费增加积分
           log.info("回调积分baseBillPayCallback");
-          baseBillPayBiz.addCallBack(bill.getBillId(),baseBillPayCallback);
+          baseBillPayBiz.addCallBack(bill.getBillId(), baseBillPayCallback);
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
@@ -171,33 +163,26 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   /** 判断是否首次下单，若是则推荐者增加500积分 */
   public void addPatientIntegral(Integer patientId) {
-    Integer count = mapper.selectCountByPatientId(patientId);
     CreditsShop addPatientIntegral = new CreditsShop();
-    log.info("推荐患者新加积分: count = {}",count);
-    if (count > 0) {
-      BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
-      basePatientOrigin.setPatientId(patientId);
-      basePatientOrigin.setOriginType(2);
-      basePatientOrigin.setInservice(true);
-      BasePatientOriginLog basePatientOriginLog =
-          basePatientOriginLogMapper.selectOne(basePatientOrigin);
-      log.info("患者基本信息：basePatientOriginLog = {}",basePatientOriginLog);
-      if (basePatientOriginLog != null) {
+    if (isPatientFirstBill(patientId)) {
+      String type = "recommend";
+      Integer originId = findPatientOriginId(patientId, type);
+      if (!ObjectUtils.isEmpty(originId)) {
         CreditsShop patientCreditsShop =
-            creditsShopMapper.selectLastCredits(basePatientOriginLog.getOriginId());
+            creditsShopMapper.selectLastCredits(originId);
         if (patientCreditsShop != null) {
           addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
           // recommend 患者推荐
           addPatientIntegral.setCreditsAccount(patientCreditsShop.getCreditsAccount() + 500);
         } else {
           // 没有患者积分帐户就新建
-          addPatientIntegral.setPatientId(basePatientOriginLog.getOriginId());
+          addPatientIntegral.setPatientId(originId);
           // recommend 患者推荐
           addPatientIntegral.setCreditsAccount(500L);
         }
         addPatientIntegral.setCreditsOption((byte) 0);
         addPatientIntegral.setChannel((byte) 0);
-        addPatientIntegral.setType("recommend");
+        addPatientIntegral.setType(type);
         addPatientIntegral.setCredits(500L);
         addPatientIntegral.setDescription("患者推荐");
         addPatientIntegral.setCrtId(patientId);
@@ -207,6 +192,56 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         creditsShopMapper.insertSelective(addPatientIntegral);
       }
     }
+  }
+
+  /**
+   * 查找有效（未增加推荐积分）的推荐人
+   *
+   * @param patientId 患者id
+   * @param type 积分类型
+   * @return 推荐人id
+   */
+  private Integer findPatientOriginId(Integer patientId, String type) {
+    BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
+    basePatientOrigin.setPatientId(patientId);
+    basePatientOrigin.setOriginType(2);
+    basePatientOrigin.setInservice(true);
+    BasePatientOriginLog basePatientOriginLog =
+            basePatientOriginLogMapper.selectOne(basePatientOrigin);
+    log.info("患者基本信息：basePatientOriginLog = {}",basePatientOriginLog);
+    if (ObjectUtils.isEmpty(basePatientOriginLog)) {
+      return null;
+    }
+    CreditsShop query = new CreditsShop();
+    Integer originId = basePatientOriginLog.getOriginId();
+    query.setPatientId(originId);
+    query.setType(type);
+    query.setInservice(true);
+    query.setCrtId(patientId);
+    List<CreditsShop> list = creditsShopMapper.select(query);
+    if (StringHelper.isNotEmpty(list)) {
+      // 已记录下 该患者patientId 的推荐积分
+      return null;
+    }
+    return originId;
+  }
+
+  /**
+   * 是否是患者的首个账单
+   *
+   * @param patientId
+   * @return
+   */
+  private Boolean isPatientFirstBill(Integer patientId) {
+    Example example = new Example(BaseBill.class);
+    Example.Criteria c = example.createCriteria();
+    c.andEqualTo("patientId", patientId);
+    c.andIsNotNull("billDate");
+    List<BaseBill> bills = mapper.selectByExample(example);
+    if (StringHelper.isNotEmpty(bills) && bills.size()==1) {
+      return true;
+    }
+    return false;
   }
 
   /**

@@ -223,8 +223,8 @@
         group by order_id,remark,authorized_id,patient_id
         ) bbf
         LEFT JOIN base_bill bb ON bb.bill_id=bbf.bill_id
-        LEFT JOIN base_bill_pay bbp ON (bbp.bill_id = bbf.bill_id AND TIMESTAMPDIFF(SECOND,bb.privilege_date,
-        bbp.payee_date)&lt;=5)
+        LEFT JOIN base_bill_pay bbp ON (bbp.bill_id = bbf.bill_id
+        AND ABS(TIMESTAMPDIFF(SECOND,bb.privilege_date,bbp.payee_date))&lt;=5)
         LEFT JOIN base_employee be ON be.user_id=bbp.payee_user_id
         LEFT JOIN base_treatment_process btp ON btp.treatment_id=bb.treatment_id
         LEFT JOIN base_employee emp ON emp.user_id=btp.registered_dentist_id

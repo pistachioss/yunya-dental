@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 简介：维度报表控制层
@@ -388,8 +389,7 @@ public class DimensionReportController {
                     @ApiResponse(
                             code = 200,
                             message =
-                                    "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":0,\"list\":[{\"cmpDate1\":1,\"cmpNum1\":\"100%\",\"abbreviation\":\"古墩路门诊\",\"date1\":1},{\"cmpDate1\":1,\"cmpNum1\":\"100%\",\"abbreviation\":\"合计\",\"date1\":1}],\"pageNum\":0,\"pageSize\":0,\"size\":0,\"startRow\":0,\"endRow\":0,\"pages\":0,\"prePage\":0,\"nextPage\":0,\"isFirstPage\":false,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":false,\"navigatePages\":0,\"navigatepageNums\":null,\"navigateFirstPage\":0,\"navigateLastPage\":0,\"header\":null,\"map\":{\"abbreviation\":\"门诊\",\"date1\":\"2015-2021\",\"cmpDate1\":\"2018-2021\",\"cmpNum1\":\"同比\"},\"contextMap\":{\"洁牙\":[\"date1\",\"cmpDate1\",\"cmpNum1\"]},\"lastPage\":0,\"firstPage\":0},\"audit\":true}; "
-                                            + "\n date前缀-第一个日期+专科项目id； cmpDate前缀-第一个日期+专科项目id；cmpNum前缀-专科项目id的同比")
+                                    "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":5,\"list\":[{\"1\":0,\"firstVisitCount\":0,\"campusName\":\"测试一\",\"treatVisitCount\":0,\"workload\":0,\"nonWorkload\":20}],\"pageNum\":1,\"pageSize\":5,\"size\":5,\"startRow\":0,\"endRow\":4,\"pages\":1,\"prePage\":0,\"nextPage\":0,\"isFirstPage\":true,\"isLastPage\":true,\"hasPreviousPage\":false,\"hasNextPage\":false,\"navigatePages\":8,\"navigatepageNums\":[1],\"navigateFirstPage\":1,\"navigateLastPage\":1,\"header\":null,\"map\":{\"1\":\"检查类\",\"campusName\":\"院区\",\"workload\":\"工作量\",\"nonWorkload\":\"非业绩金额\",\"firstVisitCount\":\"初诊人数\",\"treatVisitCount\":\"就诊人数\"},\"contextMap\":null,\"firstPage\":1,\"lastPage\":1},\"audit\":true}")
             })
     @PostMapping(value = "/campus/achievement/statistics", name = "公司端报表-报表统计-运营报表-院区业绩汇总表")
     public ResponseResult<DynamicHeaderPageInfo<JSONObject>> campusAchievementStatistics(
@@ -428,13 +428,13 @@ public class DimensionReportController {
     }
 
     /**
-     * 根据条件导出院区业绩汇总表
+     * 根据条件导出院区业绩同比表
      *
      * @param query 查询条件
      * @return
      */
-    @ApiOperation("公司端报表-报表统计-运营报表-院区业绩汇总表导出")
-    @PostMapping(value = "/campus/achievement/compare/export", name = "公司端报表-报表统计-运营报表-院区业绩汇总表导出")
+    @ApiOperation("公司端报表-报表统计-运营报表-院区业绩同步表导出")
+    @PostMapping(value = "/campus/achievement/compare/export", name = "公司端报表-报表统计-运营报表-院区业绩同步表导出")
     public ResponseResult<T> campusAchievementCompareExport(
             HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangeQueryForm query)
             throws Exception {
@@ -505,6 +505,64 @@ public class DimensionReportController {
             HttpServletResponse response, @RequestBody @Validated CardCouponUsedDetailQueryForm query)
             throws Exception {
         dimesionReportBiz.cardCouponUsedStatisticsDetailExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 公司端报表-报表统计-365卡购买人数统计表
+     *
+     * @param query
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-365卡购买人数统计表")
+    @PostMapping("/cardCoupon/repurchase/statistics")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> cardCouponRepurchaseStatistics(
+            @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.cardCouponRepurchaseStatistics(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出365卡购买人数统计表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-365卡购买人数统计表导出")
+    @PostMapping(value = "/cardCoupon/repurchase/statistics/export", name = "公司端报表-报表统计-运营报表-365卡购买人数统计导出")
+    public ResponseResult<T> cardCouponRepurchaseStatisticsExport(
+            HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+            throws Exception {
+        dimesionReportBiz.cardCouponRepurchaseStatisticsExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 公司端报表-报表统计-365卡and艾芽卡and就诊人数统计表
+     *
+     * @param query
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-365卡and艾芽卡and就诊人数统计表")
+    @PostMapping("/card365/aiya/treatNum")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> card365AndAiyaAndTreatNumStatistics(
+            @RequestBody @Validated ClinicPerformanceBusinessQuery query) throws Exception {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.card365AndAiyaAndTreatNumStatistics(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出365卡and艾芽卡and就诊人数统计表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-365卡and艾芽卡and就诊人数统计表导出")
+    @PostMapping(value = "/card365/aiya/treatNum/export", name = "公司端报表-报表统计-运营报表-365卡and艾芽卡and就诊人数统计表导出")
+    public ResponseResult<T> card365AndAiyaAndTreatNumStatisticsExport(
+            HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+            throws Exception {
+        dimesionReportBiz.card365AndAiyaAndTreatNumStatisticsExport(query, response);
         return ResponseUtil.success(null);
     }
 }

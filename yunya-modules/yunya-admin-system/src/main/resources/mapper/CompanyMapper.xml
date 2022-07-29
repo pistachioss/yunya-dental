@@ -115,7 +115,7 @@
         ccb.brandName,
         ccb.tel,
         ccb.address,
-        ccb.path,
+        ccb.clinicPath,
         ccb.businessStartTime,
         ccb.businessEndTime
         FROM
@@ -132,7 +132,7 @@
         cb.brandName,
         cb.tel,
         cb.address,
-        cb.path,
+        cb.path AS clinicPath,
         cb.business_start_time AS businessStartTime,
         cb.business_end_time AS businessEndTime
         FROM

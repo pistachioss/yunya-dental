@@ -1,5 +1,9 @@
 package com.yunya.modules.discount.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
+import com.yunya.feign.discount.domain.vo.CouponCommonInfoVO;
 import com.github.pagehelper.*;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -30,6 +34,8 @@ import java.util.stream.Collectors;
 import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
 
+import java.util.List;
+
 /**
  * 简介: 卡券公共信息业务层
  *
@@ -46,6 +52,19 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
     private CouponFileInfoBiz fileInfoBiz;
     @Resource
     private ProductTypeBiz productTypeBiz;
+    /**
+     * 条件查询卡券公用信息列表
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<CouponCommonInfoVO> findList(CouponCommonInfoQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<CouponCommonInfoVO> result = mapper.selectCouponCommonList(query);
+        return new PageInfo<>(result);
+    }
 
     public PageInfo<VirtualProductVO> pageVirtual(VirtualProductQuery query) {
         Page<CouponCommonInfo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());

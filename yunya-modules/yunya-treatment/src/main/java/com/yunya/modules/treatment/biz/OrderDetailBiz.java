@@ -21,6 +21,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
+import com.yunya.feign.report.domain.vo.BillItemAmountSharedVO;
 import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -52,16 +53,14 @@ import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.BillPayDetailRecord;
-import com.yunya.models.treatment.BillPayRecord;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
+import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.BillRecordMapper;
 import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import com.yunya.modules.treatment.mapper.OrderRecordMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,6 +85,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介: 开单明细业务层（开单明细列表查询、添加商品、删除开单明细）
@@ -1214,7 +1214,31 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         // 调整收费方式
         payIds.addAll(billPayRecordMapper.selectAdjustPayList(query));
         // 有效账单的项目应收
-        List<OrderDetail> orderDetails = mapper.selectClinicOrderDetailList(query, payIds);
+        List<BillItemAmountSharedVO> orderDetails = mapper.selectClinicOrderDetailList(query, payIds);
+        if (StringHelper.isNotEmpty(payIds)) {
+          List<BillItemAmountSharedVO> revokeDetails = mapper.selectClinicOrderDetailBeforeRevoke(payIds);
+          if (StringHelper.isNotEmpty(revokeDetails)) {
+            DiscountCouponQuery queryForm = new DiscountCouponQuery();
+            queryForm.setDateType((byte) 1);
+            queryForm.setStartDate(query.getStartDate());
+            queryForm.setEndDate(query.getEndDate());
+            queryForm.setOrderRecordIds(revokeDetails.stream().map(BillItemAmountSharedVO::getBillId).collect(Collectors.toSet()));
+            List<ClinicTariffDiscountCouponVO> discounts = discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
+            for (BillItemAmountSharedVO vo : revokeDetails) {
+              Integer orderRecordId = vo.getBillId();
+              Byte itemType = vo.getItemType();
+              Integer itemId = vo.getItemId();
+              for (ClinicTariffDiscountCouponVO discount : discounts) {
+                if (orderRecordId.equals(discount.getOrderRecordId())
+                        && itemType.equals(discount.getItemType())
+                        && itemId.equals(discount.getItemId())) {
+                  vo.setItemActualAmount(vo.getItemActualAmount().subtract(discount.getDiscountAmount()));
+                }
+              }
+            }
+            orderDetails.addAll(revokeDetails);
+          }
+        }
         // 有效账单的免单收费总价
         List<OrderDetailInfoVO> freePaymentTotal =
                 billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, null, true);
@@ -1235,58 +1259,90 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    */
   private Map<String, BigDecimal> shareTariffFreePayment(
-      List<OrderDetail> orderDetails, List<OrderDetailInfoVO> freePaymentTotal) {
+      List<BillItemAmountSharedVO> orderDetails, List<OrderDetailInfoVO> freePaymentTotal) {
     Map<String, BigDecimal> result = new HashMap<>(16);
     if (StringHelper.isNotEmpty(orderDetails)) {
-      // 开单的[应收总价、免单总价、已计算完的项目应收、项目占比完成度]
+      // 开单的[价目总免单、商品总免单、价目总应收、商品总应收、价目总实收]
       Map<Integer, BigDecimal[]> orderMap = new HashMap<>(16);
       orderDetails.forEach(
           vo -> {
-            Integer orderRecordId = vo.getOrderRecordId();
-            BigDecimal itemReceivalbeAmount = vo.getReceivableAmount();
+            Integer orderRecordId = vo.getBillId();
+            BigDecimal itemReceivalbeAmount = vo.getItemActualAmount();
             BigDecimal[] amount = orderMap.get(orderRecordId);
             if (ObjectUtils.isEmpty(amount)) {
               amount =
-                  new BigDecimal[] {
-                    BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO
+                  new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO
                   };
             }
-            amount[0] = amount[0].add(itemReceivalbeAmount);
+            if (vo.getItemType().intValue()==0) {
+              amount[2] = amount[2].add(itemReceivalbeAmount);
+            } else {
+              amount[3] = amount[3].add(itemReceivalbeAmount);
+            }
             orderMap.put(orderRecordId, amount);
           });
+      orderDetails.forEach(
+        vo->{
+          BigDecimal itemActualAmount = vo.getItemActualAmount();
+          BigDecimal billReceivedAmount = vo.getBillReceivedAmount();
+          if (billReceivedAmount.compareTo(BigDecimal.ZERO)!=0 && vo.getItemType().intValue() == 0) {
+            Integer billId = vo.getBillId();
+            BigDecimal itemReceivedAmount = itemActualAmount.divide(billReceivedAmount, 8, BigDecimal.ROUND_HALF_UP).multiply(vo.getBillReceivedAmount());
+            BigDecimal[] amount = orderMap.get(billId);
+            if (ObjectUtils.isEmpty(amount)) {
+              amount = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+            }
+            amount[4] = amount[4].add(itemReceivedAmount);
+            orderMap.put(billId, amount);
+          }
+        }
+      );
       freePaymentTotal.forEach(
           vo -> {
             Integer orderRecordId = vo.getOrderRecordId();
             BigDecimal[] amount = orderMap.get(orderRecordId);
             if (ObjectUtils.isEmpty(amount)) {
-              amount = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
+              amount = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
             }
-            amount[1] = vo.getTotalAmount();
+            amount[0] = vo.getTotalAmount();
+            BigDecimal billReceivedAmount = amount[4]; // 账单总实收
+            BigDecimal oralFree = amount[0].subtract(billReceivedAmount); // 商品免单
+            // 只有价目表项目免单时
+            if (oralFree.compareTo(BigDecimal.ZERO) > 0) {
+              // 既有价目表，又有商品表项目免单时
+              amount[0] = billReceivedAmount;
+              amount[1] = oralFree;
+            } else {
+              amount[1] = BigDecimal.ZERO;
+            }
             orderMap.put(orderRecordId, amount);
           });
       orderDetails.forEach(
           vo -> {
-            Integer orderRecordId = vo.getOrderRecordId();
+            Integer orderRecordId = vo.getBillId();
             BigDecimal[] amount = orderMap.get(orderRecordId);
-            BigDecimal receivableAmount = vo.getReceivableAmount(); // 项目应收
-            BigDecimal totalAmount = amount[0]; // 账单总应收
-            BigDecimal freePaymentAmount = amount[1]; // 账单总免单
-            BigDecimal freeRatio = BigDecimal.ZERO; // 项目免单占比
-            if (totalAmount.compareTo(BigDecimal.ZERO) > 0) {
-              freeRatio = receivableAmount.divide(totalAmount, 4, BigDecimal.ROUND_HALF_UP);
+            BigDecimal itemActualAmount = vo.getItemActualAmount(); // 项目应收
+            BigDecimal itemFreeTotal = amount[0]; // 价目总免单
+            BigDecimal oralFreeTotal = amount[1]; // 商品总免单
+            BigDecimal itemActualTotal = amount[2];
+            BigDecimal oralActualTotal = amount[3];
+            // 价目免单 = 价目应收/价目总应收 * 价目总免单
+            BigDecimal free = BigDecimal.ZERO;
+            if (vo.getItemType().intValue()==0) {
+              if (itemFreeTotal.compareTo(BigDecimal.ZERO)!=0) {
+                free = itemActualAmount.divide(itemActualTotal, 8, BigDecimal.ROUND_HALF_UP).multiply(itemFreeTotal);
+              }
+            } else {
+              if (oralFreeTotal.compareTo(BigDecimal.ZERO)!=0 && oralActualTotal.compareTo(BigDecimal.ZERO) != 0){
+                free = itemActualAmount.divide(oralActualTotal, 8, BigDecimal.ROUND_HALF_UP).multiply(oralFreeTotal);
+              }
             }
-            amount[2] = amount[2].add(receivableAmount);
-            if (amount[0].compareTo(amount[2]) == 0) { // 最后一个占比项目
-              freeRatio = BigDecimal.ONE.subtract(amount[3]);
-            }
-            amount[3] = amount[3].add(freeRatio);
-            BigDecimal itemFreePaymentAmount = freeRatio.multiply(freePaymentAmount); // 项目免单
-            String key = vo.getType() + "," + vo.getBillingItemId() + "." + vo.getOrgId();
+            String key = vo.getItemType() + "," + vo.getItemId() + "." + vo.getOrgId();
             BigDecimal freePayment = result.get(key);
             if (ObjectUtils.isEmpty(freePayment)) {
               freePayment = BigDecimal.ZERO;
             }
-            result.put(key, freePayment.add(itemFreePaymentAmount));
+            result.put(key, freePayment.add(free));
           });
     }
     return result;
@@ -1300,11 +1356,16 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    */
   private List<ClinicTariffDiscountCouponVO> findTariffCategoryDiscountAmount(
           CategoryIncomeQuery query) {
-    List<Integer> orderRecordIds = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
-    if (StringHelper.isNotEmpty(orderRecordIds)) {
+    List<BillRecord> billRecords = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
+    if (StringHelper.isNotEmpty(billRecords)) {
+      Map<Integer, Integer> map = billRecords.stream().collect(toMap(BillRecord::getOrderRecordId, BillRecord::getOrgId));
       DiscountCouponQuery queryForm = new DiscountCouponQuery();
-      queryForm.setOrderRecordIds(orderRecordIds);
-      return discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
+      queryForm.setOrderRecordIds(map.keySet());
+      List<ClinicTariffDiscountCouponVO> discounts = discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
+      if (StringHelper.isNotEmpty(discounts)) {
+        discounts.forEach(vo-> vo.setOrgId(map.get(vo.getOrderRecordId())));
+      }
+      return discounts;
     }
     return new ArrayList();
   }
@@ -1346,5 +1407,32 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     List<CategoryInfoIncomeVO> list = findCategoryIncomeList(query).getList();
     ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
     excelUtil.exportExcel(response, list, "门诊分类收入汇总", "门诊分类收入汇总");
+  }
+
+  /**
+   * 根据订单详情id查询订单详情列表
+   *
+   * @param orderDetailIds
+   * @return
+   */
+  public List<OrderDetailVO> findOrderDetailById(List<Integer> orderDetailIds) {
+    List<OrderDetailVO> result = new ArrayList<>();
+    if (StringHelper.isNotEmpty(orderDetailIds)) {
+      orderDetailIds.forEach(orderDetailId->{
+        OrderDetailVO vo = new OrderDetailVO();
+        OrderDetail detail = mapper.selectByPrimaryKey(orderDetailId);
+        BeanUtils.copyProperties(detail,vo);
+        vo.setOrderDetailId(orderDetailId);
+        Integer executorId = detail.getExecutorId();
+        if (!ObjectUtils.isEmpty(executorId)) {
+          SysEmployee employee = systemServiceFeign.findSysEmployeeById(executorId);
+          if (!ObjectUtils.isEmpty(employee)) {
+            vo.setExecutorName(employee.getName());
+          }
+        }
+        result.add(vo);
+      });
+    }
+    return result;
   }
 }

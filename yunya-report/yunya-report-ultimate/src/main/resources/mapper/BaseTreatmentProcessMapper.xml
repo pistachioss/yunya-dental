@@ -1172,7 +1172,7 @@
         SELECT
         bo.parent_id AS campusId,
         btp.patient_id AS patientId,
-        DATE_FORMAT(btp.treat_end_time,'%Y%m') AS treatDate,
+        DATE_FORMAT(btp.treat_end_time, '${datePattern}') AS treatDate,
         btp.org_id AS orgId,
         btp.registered_dentist_id AS dentistId
         FROM base_treatment_process btp

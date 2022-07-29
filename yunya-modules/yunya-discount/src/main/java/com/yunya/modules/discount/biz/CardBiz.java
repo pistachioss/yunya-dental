@@ -21,7 +21,6 @@ import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
-import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -131,6 +130,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     @Resource
     private CardCancelLogMapper cardCancelLogMapper;
     @Resource
+    private CardActivedSmsBiz cardActivedSmsBiz;
+    @Resource
     private RedisUtils redisUtils;
     @Resource(name = "customizeThreadPool")
     private ExecutorService cardThreadPool;
@@ -140,8 +141,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private CardBenefitMapper cardBenefitMapper;
     @Resource
     private RemoteRabbitMqServiceFeign mqServiceFeign;
-    @Autowired
-    private RemoteSmsServiceFeign remoteSmsServiceFeign;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Resource
@@ -464,7 +463,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             salesChannel.setName(selfChannel);
             salesChannel = salesChannelMapper.selectOne(salesChannel);
             if (salesChannel == null) {
-                throw new ClientServiceException("请先设置销售渠道", OPERATION_NOT_ALLOW);
+                throw new ClientServiceException("请先设置销售渠道：".concat(selfChannel), OPERATION_NOT_ALLOW);
             }
             //获取组织名
             String orgName = getOrgName(orgId);
@@ -878,15 +877,40 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 return ResponseUtil.error(errorBo.getError());
             }
             //4. 卡券激活
-            this.updateOwnActiveCard(patientId, form, loginUserId, card);
+            card = updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId(), card);
             mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
             log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
+            cardActivedSendSms(card);
             return ResponseUtil.success();
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
                 redisUtils.unlock(lockKey, lockVal);
             }
+        }
+    }
+
+    /** 套餐券 */
+    private static final Byte PACKAGE_VOUCHER = 3;
+    /** 365卡系列*/
+    private static final Byte PROD_TYPE_365 = 14;
+    /** 艾芽卡系列*/
+    private static final Byte PROD_TYPE_IVY = 17;
+    /**
+     * 艾芽卡、365卡创建定时任务，每三个月发一次短信通知客户
+     *
+     * @param card
+     */
+    private void cardActivedSendSms(Card card) {
+        Integer couponId = card.getCouponId();
+        Example example = new Example(CouponCommonInfo.class);
+        Example.Criteria c = example.createCriteria();
+        c.andIn("id", Collections.singleton(couponId));
+        c.andEqualTo("type", SPECIAL_PACKAGE.getCode());
+        c.andIn("productTypeId", Arrays.asList(PROD_TYPE_365, PROD_TYPE_IVY));
+        List<CouponCommonInfo> coupons = couponMapper.selectByExample(example);
+        if (StringHelper.isNotEmpty(coupons)) {
+            cardActivedSmsBiz.sendAndrecordSms(card, coupons.get(0));
         }
     }
 
@@ -934,6 +958,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             Card activeCard = insertOtherActiveCard(patientId, form, loginUserId);
             mqServiceFeign.sendMessage(activeCard.getId(), ADD, BaseCardSingle);
             log.info("【第三方激活发送消息成功】：卡券id[{}]", activeCard.getId());
+            cardActivedSendSms(activeCard);
             return ResponseUtil.success();
         } finally {
             if (locked) {
@@ -2175,7 +2200,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param form        form
      * @param loginUserId loginUserId
      */
-    private void updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId, Card card) {
+    private Card updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId, Integer couponId, Card card) {
         Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
         CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(card.getCouponId());
         LocalDateTime now = LocalDateTime.now();
@@ -2197,8 +2222,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         ownActiveCard.setUpdId(loginUserId);
         ownActiveCard.setActiveDate(now);
         mapper.updateByPrimaryKeySelective(ownActiveCard);
-        //小程序激活
-        miniActive(patientId, card, now, loginUserId);
+        return ownActiveCard;
     }
 
     /**
@@ -3375,6 +3399,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      */
     public BigDecimal findCardSaleCashReceipt(CashReceiptOrRefundQuery query) {
         return mapper.selectCardSaleCashReceipt(query);
+    }
+
+    public List<CardIyOr365VO> findIyOr365CardActivedList(CardIyOr365ActivedQuery query) {
+        return mapper.selectIyOr365CardActivedList(query);
     }
 
     public boolean whetherUseCard(List<Integer> cardIds) {

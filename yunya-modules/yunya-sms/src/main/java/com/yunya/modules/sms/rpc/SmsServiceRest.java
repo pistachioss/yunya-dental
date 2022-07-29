@@ -7,6 +7,7 @@ import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.sms.biz.SmsAutosendEventBiz;
 import com.yunya.modules.sms.biz.SmsSendRecordBiz;
@@ -138,6 +139,6 @@ public class SmsServiceRest {
     @ApiOperation(value = "门诊的初始化短信自动发送事件")
     @RequestMapping(value = "/sms/initAutoSendEvent/{orgId}", method = RequestMethod.GET)
     public ResponseResult<T> initAutoSendEvent(@PathVariable(value = "orgId") Integer orgId) {
-        return smsAutosendEventBiz.initAutoSendEvent(orgId, true);
+        return smsAutosendEventBiz.initAutoSendEvent(orgId, SmsAutosendEventEnum.values(true));
     }
 }

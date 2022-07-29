@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.system.mapper.ClinicLiveCodeVisitMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.system.ClinicLiveCodeVisit" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+    <result column="open_id" property="openId" jdbcType="VARCHAR" />
+    <result column="visit_time" property="visitTime" jdbcType="TIMESTAMP" />
+    <result column="is_first_visit" property="isFirstVisit" jdbcType="BIT" />
+    <result column="longitude" property="longitude" jdbcType="VARCHAR" />
+    <result column="latitude" property="latitude" jdbcType="VARCHAR" />
+    <result column="city" property="city" jdbcType="VARCHAR" />
+    <result column="ip" property="ip" jdbcType="VARCHAR" />
+    <result column="visit_device" property="visitDevice" jdbcType="VARCHAR" />
+    <result column="visit_duration" property="visitDuration" jdbcType="INTEGER" />
+    <result column="intention_org_id" property="intentionOrgId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+
+  <select id="selectClinicLiveCodeVisitByOpenId" resultType="com.yunya.models.system.ClinicLiveCodeVisit">
+    SELECT
+        id,
+        nick_name AS nickName,
+        open_id AS openId,
+        visit_time AS visitTime
+    FROM clinic_live_code_visit clcv
+    where clcv.open_id = #{openId}
+    ORDER BY visit_time DESC
+  </select>
+
+  <select id="selectClinicLiveCodeVisitList" resultType="com.yunya.modules.system.vo.ClinicLiveCodeVisitVO">
+    SELECT
+        clcv.id,
+        clcv.open_id AS openId,
+        clcv.nick_name AS nickName,
+        clcv.open_id AS openId,
+        clcv.visit_time AS visitTime,
+        clcv.is_first_visit AS isFirstVisit,
+        clcv.longitude,
+        clcv.latitude,
+        clcv.city,
+        clcv.ip,
+        clcv.visit_device AS visitDevice,
+        clcv.visit_duration AS visitDuration,
+        cei.abbreviation
+    FROM clinic_live_code_visit clcv
+    LEFT JOIN clinic_ext_info cei ON cei.company_id = clcv. intention_org_id
+    <where>
+      <if test="query.startDate!=null and query.startDate!=''">
+        AND DATE_FORMAT(clcv.visit_time,'%Y-%m-%d') &gt;= #{query.startDate}
+      </if>
+      <if test="query.endDate!=null and query.endDate!=''">
+        AND DATE_FORMAT(clcv.visit_time,'%Y-%m-%d') &lt;= #{query.endDate}
+      </if>
+      <if test="query.orgId != null">
+        AND clcv.intention_org_id = #{query.orgId}
+      </if>
+      <if test="query.isFirstVisit != null">
+        AND clcv.is_first_visit = #{query.isFirstVisit}
+      </if>
+    </where>
+    ORDER BY clcv.visit_time DESC
+  </select>
+</mapper>

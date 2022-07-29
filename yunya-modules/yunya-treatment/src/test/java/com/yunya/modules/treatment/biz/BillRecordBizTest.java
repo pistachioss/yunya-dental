@@ -94,8 +94,8 @@ public class BillRecordBizTest {
   @Test
   public void testFindCurrentMonthStatementStatistic(){
     StatementStatisticQuery query = new StatementStatisticQuery();
-    query.setOrgId(30);
-    query.setQueryDate("2021-10");
+    query.setOrgId(45);
+    query.setQueryDate("2022-05");
     CurrentMonthBillStatisticVO currentMonthStatementStatistic = billRecordBiz.findCurrentMonthStatementStatistic(query);
     System.out.println(JSONObject.toJSON(currentMonthStatementStatistic));
   }

@@ -68,5 +68,12 @@ ribbono:
   MaxAutoRetriesNextServer: 1
   OkToRetryOnAllOperations: false
 
-
-
+# netty配置
+netty:
+  port: 8081
+  path: /websocket/chat
+  protocol: ws://192.168.31.95/api/treatment-netty
+  serviceName: yunya-treatment-netty
+  discovery:
+    namespace:
+    server-addr: 192.168.31.215:8848

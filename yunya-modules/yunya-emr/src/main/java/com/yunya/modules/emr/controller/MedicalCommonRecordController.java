@@ -110,7 +110,7 @@ public class MedicalCommonRecordController {
       MedicalCommonRecordModel medicalCommonRecordModel = new MedicalCommonRecordModel();
       BeanUtils.copyProperties(medical, medicalCommonRecordModel);
       Integer medicalId = medical.getId();
-      medicalCommonRecordModel.setHasPlan(treatPlanRecordBiz.hasPlanByMedicalId(medicalId));
+//      medicalCommonRecordModel.setHasPlan(treatPlanRecordBiz.hasPlanByMedicalId(medicalId));
       // 照片影像
       medicalCommonRecordModel.setXrayFilms(fileMap.get(medicalId));
       medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getMajorDentistId()+"").getName());

@@ -595,6 +595,17 @@ public class TreatmentServiceRest {
   }
 
   /**
+   * 根据订单明细id查询订单明细列表
+   *
+   * @param orderDetailIds
+   * @return
+   */
+  @PostMapping(value = "/order/detail/ids")
+  public List<OrderDetailVO> findOrderDetailById(@Validated @RequestBody List<Integer> orderDetailIds) {
+    return orderDetailBiz.findOrderDetailById(orderDetailIds);
+  }
+
+  /**
    * 小程序查询商品列表
    * @param query:
    * @return PageInfo<GoodsVO>

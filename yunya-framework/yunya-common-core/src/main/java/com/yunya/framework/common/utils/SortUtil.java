@@ -1,5 +1,7 @@
 package com.yunya.framework.common.utils;
 
+import org.springframework.util.ObjectUtils;
+
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
@@ -38,13 +40,44 @@ public class SortUtil<T> {
      * @return
      */
     public static <T, U extends Comparable<? super U>> Comparator<T> comparing(
+            Function<? super T, ? extends U>... keyExtractors) {
+        return comparing(null, keyExtractors);
+    }
+
+    /**
+     *
+     * @param keyComparator 空值排序器
+     * @param keyExtractors 排序字段列表
+     * @param <T>
+     * @param <U>
+     * @return
+     */
+    public static <T, U extends Comparable<? super U>> Comparator<T> comparing(
+            Comparator<? super U> keyComparator,
             Function<? super T, ? extends U>... keyExtractors)
     {
         Objects.requireNonNull(keyExtractors);
         return (Comparator<T> & Serializable)
                 (c1, c2) -> {
                     for (Function<? super T, ? extends U> keyExtractor : keyExtractors) {
-                        int cmp = keyExtractor.apply(c1).compareTo(keyExtractor.apply(c2));
+                        U a1 = keyExtractor.apply(c1);
+                        U a2 = keyExtractor.apply(c2);
+                        int cmp = 0;
+                        if (!ObjectUtils.isEmpty(keyComparator)) {
+                            cmp = keyComparator.compare(a1, a2);
+                        } else {
+                            if (!ObjectUtils.isEmpty(a1) && ObjectUtils.isEmpty(a2)) {
+                                // 参数1非空，参数2为空
+                                return 1;
+                            } else if (ObjectUtils.isEmpty(a1) && !ObjectUtils.isEmpty(a2)) {
+                                // 参数1为空，参数2非空
+                                return -1;
+                            } else if (ObjectUtils.isEmpty(a1) && ObjectUtils.isEmpty(a2)) {
+                                // 参数1非空，参数2为空
+                                return 0;
+                            }
+                            cmp = a1.compareTo(a2);
+                        }
                         if (cmp != 0) {
                             return cmp;
                         }
