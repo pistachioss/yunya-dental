@@ -35,7 +35,7 @@ public class FansReceiveAddressServiceImpl extends ServiceImpl<FansReceiveAddres
         Integer fansId = Integer.valueOf(BaseContextHandler.getUserID());
         FansReceiveAddress address = BeanCopierUtils.generalCopyBean(model, FansReceiveAddress.class);
         address.setFansId(fansId);
-        address.setDetailAddress(address.getProvince() + address.getCity() + address.getRegion() + address.getDetailAddress());
+        address.setDetailAddress(address.getDetailAddress());
         if (model.getDefaultStatus()) {
             updateDefaultStatus(fansId);
         }

@@ -53,7 +53,7 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
             List<CartItemVO> itemVOS = list.stream()
                     .map(t -> BeanCopierUtils.generalCopyBean(t, CartItemVO.class)).collect(toList());
             itemVOS.stream()
-                    .filter(t -> map.containsKey(t.getProductId()) && map.get(t.getProductId()) - t.getQuantity() >= 0)
+                    .filter(t -> map.containsKey(t.getProductId()) && map.get(t.getProductId()) - t.getQuantity() > 0)
                     .forEach(t -> t.setStock(true));
             BigDecimal totalPrice = list.stream().map(t -> t.getProductPrice().multiply(BigDecimal.valueOf(t.getQuantity())))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
