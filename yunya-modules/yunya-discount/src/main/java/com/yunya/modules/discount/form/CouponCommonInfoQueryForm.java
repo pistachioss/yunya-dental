@@ -58,4 +58,10 @@ public class CouponCommonInfoQueryForm {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date endTime;
 
+    /**
+     * 是否线上售卖(0:否 1:是)
+     */
+    @ApiModelProperty("是否线上售卖(0:否 1:是)")
+    private Boolean isOnlineSale;
+
 }

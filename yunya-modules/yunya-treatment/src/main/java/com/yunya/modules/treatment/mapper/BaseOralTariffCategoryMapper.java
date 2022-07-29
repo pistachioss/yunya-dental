@@ -1,5 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.treatment.domain.query.BaseOralTariffCategoryQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffCategoryVO;
 import com.yunya.models.tariff.BaseOralTariffCategory;
@@ -47,4 +49,12 @@ public interface BaseOralTariffCategoryMapper extends Mapper<BaseOralTariffCateg
    * @param list 商品分类列表
    */
   void updateBaseOralTariffCategoryList(@Param("list") List<BaseOralTariffCategory> list);
+
+  /**
+   * 根据条件查询产品分类列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  List<ProductTypeVO> selectProductTypeList(@Param("queryForm") ProductTypeQueryForm queryForm);
 }

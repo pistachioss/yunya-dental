@@ -1,65 +1,86 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.patient_central.mapper.WxFansBindMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.WxFansBind" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="dictionary_id" property="dictionaryId" jdbcType="INTEGER" />
-    <result column="open_id" property="openId" jdbcType="VARCHAR" />
-    <result column="bind" property="bind" jdbcType="BIT" />
-    <result column="bind_time" property="bindTime" jdbcType="TIMESTAMP" />
-    <result column="is_vip" property="isVip" jdbcType="BIT" />
-    <result column="is_owner" property="isOwner" jdbcType="BIT" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-  </resultMap>
-  <insert id="batchInsert" parameterType="java.util.List">
-    insert into wx_fans_bind ( patient_id, dictionary_id,open_id,bind,bind_time,is_vip,is_owner, crt_id) VALUES
-    <foreach collection="list" item="item" index="index" separator=",">
-    (#{item.patientId}, #{item.dictionaryId}, #{item.openId},
-    #{item.bind}, #{item.bindTime},#{item.isVip},
-    #{item.isOwner}, #{item.crtId}
-    )
-    </foreach>
-  </insert>
+<mapper namespace="com.yunya.modules.patient_central.mapper.WxFansBindMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.WxFansBind">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="dictionary_id" property="dictionaryId" jdbcType="INTEGER"/>
+        <result column="open_id" property="openId" jdbcType="VARCHAR"/>
+        <result column="union_id" property="unionId" jdbcType="VARCHAR"/>
+        <result column="bind" property="bind" jdbcType="BIT"/>
+        <result column="bind_time" property="bindTime" jdbcType="TIMESTAMP"/>
+        <result column="is_vip" property="isVip" jdbcType="BIT"/>
+        <result column="is_owner" property="isOwner" jdbcType="BIT"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into wx_fans_bind ( patient_id, dictionary_id,open_id,union_id,bind,bind_time,is_vip,is_owner, crt_id)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.patientId}, #{item.dictionaryId}, #{item.openId}, #{item.unionId},
+            #{item.bind}, #{item.bindTime},#{item.isVip},
+            #{item.isOwner}, #{item.crtId}
+            )
+        </foreach>
+    </insert>
 
     <select id="listWxUsers" resultType="com.yunya.models.patient_central.WxFans">
-      select
-          wf.open_id as openId,
-          wfb.patient_id as patientId,
-          wf.nick_name as nickName
-      from wx_fans_bind wfb
-               inner join wx_fans wf on wf.open_id = wfb.open_id
-      where wfb.patient_id in
+        select
+        wf.open_id as openId,
+        wfb.patient_id as patientId,
+        wf.nick_name as nickName
+        from wx_fans_bind wfb
+        inner join wx_fans wf on wf.open_id = wfb.open_id
+        where wfb.patient_id in
         <foreach collection="list" item="item" open="(" separator="," close=")">
-          #{item}
+            #{item}
         </foreach>
         and wfb.`bind` = 1
     </select>
-  
+
     <select id="wxFansBindPatientList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         SELECT
-            pbi.name,
-            pbi.mobile
+        pbi.name,
+        pbi.mobile
         FROM wx_fans_bind wfb
         LEFT JOIN patient_base_info pbi ON pbi.id=wfb.patient_id
         <where>
             wfb.bind = true
-          <if test="query.openId!=null and query.openId!=''">
-            AND wfb.open_id = #{query.openId}
-          </if>
-          <if test="query.patientId != null">
-            AND EXISTS (
+            <if test="query.unionId!=null and query.unionId!=''">
+                AND wfb.union_id = #{query.unionId}
+            </if>
+            <if test="query.patientId != null">
+                AND EXISTS (
                 SELECT wf.open_id FROM wx_fans wf
                 WHERE wf.open_id=wfb.open_id
                 AND wf.patient_id = #{query.patientId}
-            )
-          </if>
+                )
+            </if>
         </where>
+    </select>
+    <select id="findPatientBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.WxWechatbindAppListVO">
+        SELECT
+        wfb.patient_id as patientId,
+        wfb.union_id as unionId,
+        wfb.dictionary_id as dictionaryId,
+        wfb.crt_time as crtTime,
+        pbi.name as name,
+        pbi.mobile as mobile,
+        pbi.gender as gender
+        FROM
+	    wx_fans_bind wfb
+        LEFT JOIN patient_base_info pbi ON wfb.patient_id = pbi.id
+        <where>
+            <if test="unionId!=null and unionId!=''">
+                AND wfb.union_id = #{unionId}
+            </if>
+        </where>
+      order by  wfb.crt_time desc
     </select>
 </mapper>

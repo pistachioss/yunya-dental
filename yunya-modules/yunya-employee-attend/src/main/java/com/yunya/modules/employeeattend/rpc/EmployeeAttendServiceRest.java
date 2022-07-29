@@ -1,6 +1,14 @@
 package com.yunya.modules.employeeattend.rpc;
 
 import com.yunya.feign.employee_attend.vo.*;
+import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
+import com.yunya.feign.employee_attend.vo.FieldInfoListVO;
+import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
+import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
+import com.yunya.framework.common.annation.RepeatSubmit;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.biz.AttendanceAddressSetBiz;
 import com.yunya.modules.employeeattend.biz.FieldInfoBiz;
@@ -35,7 +43,17 @@ public class EmployeeAttendServiceRest {
   @Autowired private LeaveInfoBiz leaveInfoBiz;
   @Autowired private WorkOvertimeInfoBiz workOvertimeInfoBiz;
   @Autowired private FieldInfoBiz fieldInfoBiz;
-  @Autowired private  AttendanceAddressSetBiz addressSetBiz;
+
+  /**
+   * 获取门诊地址以及经纬度
+   * @param
+   * @return
+   */
+  @RequestMapping(value = "/employee/attend/address", method = RequestMethod.POST)
+  public List<AttendanceAddressSet> findAddress() {
+    List<AttendanceAddressSet> resultVO = employeeScheduleSerivce.findAddress();
+    return resultVO;
+  }
 
   /**
    * 查看员工排班列表

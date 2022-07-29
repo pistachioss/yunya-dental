@@ -64,7 +64,9 @@
                cast(IFNULL(ppi.prepayment_principal,0) as decimal(15,2)) prepaymentPrincipal,
 			   cast(IFNULL(ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentBonus,
 			   cast(IFNULL(pmi.principal_amount + pmi.bonus_amount,0) as decimal(15,2)) memberCardMoneySum,
-			   cast(IFNULL(ppi.prepayment_principal + ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentsMoneySum
+			   cast(IFNULL(ppi.prepayment_principal + ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentsMoneySum,
+			   pmi.point as point,
+			   pmi.crt_time as crtTime
         from patient_base_info pbi
         left join patient_prepayments_info ppi on pbi.id = ppi.patient_id
         left join patient_member_info pmi      on pbi.id = pmi.patient_id
@@ -96,6 +98,7 @@
         pbi.`name`,
         pbi.face_url AS faceUrl,
         pbi.mobile AS mobile,
+        pbi.mobile_owner AS mobileOwner,
         pbi.medical_number AS medicalNumber,
         pbi.gender,
         TIMESTAMPDIFF(

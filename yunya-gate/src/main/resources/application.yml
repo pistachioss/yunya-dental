@@ -226,6 +226,15 @@ spring:
 #            - RemoveRequestHeader=Sec-WebSocket-Protocol #移除请求头
           metadata:
             title: "就诊扩展服务"
+        - id: ivy-mini
+          uri: lb://ivy-mini
+          order: 8764
+          predicates:
+            - Path=/api/ivy/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "艾维小程序服务"
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
@@ -250,7 +259,7 @@ management:
 # 忽略网关鉴权的请求路径（需要忽略的路径前缀 /white）
 gate:
   ignore:
-    startWith: /white,/auth/jwt,/v2/api-docs,/callback/,/central/paizhaohuidiao,/coupon/card/QRCode/init,/registration/permit/add,/registration/permit/userExistsFind,/dict/permit/item/list,/unlock,/user/authorization/code,/user/forget/password,/smsSignatureSet/signSmsReport,/smsTemplateSet/templateSmsReport,/smsSendMessage/smsReport,/smsChargeOrder/notifyUrl,/smsChargeOrder/redirectUrl,/wxVip,/duiba/shop,/appointment/online/,/wxFans/getOwnWxFans,/wxFansBind/bindPatientList,/organization/list,/apidoc,/registration/permit/adult/add,/registration/permit/children/add,/origin/originalTypeAndChildren,/user/list,/central/likePatient,/clinicLiveCode/list,/permit/registration/one,/wxUser/info,/clinicLiveCodeVisit/click
+    startWith: /wxFansBind,/patient/wx,/discount/wx,/aliyunoss,/attendanceAddressSet/clinicList,/ivy/mini,/white,/auth/jwt,/v2/api-docs,/callback/,/central/paizhaohuidiao,/coupon/card/QRCode/init,/registration/permit/add,/registration/permit/userExistsFind,/dict/permit/item/list,/unlock,/user/authorization/code,/user/forget/password,/smsSignatureSet/signSmsReport,/smsTemplateSet/templateSmsReport,/smsSendMessage/smsReport,/smsChargeOrder/notifyUrl,/smsChargeOrder/redirectUrl,/wxVip,/duiba/shop,/appointment/online/,/wxFans/getOwnWxFans,/wxFansBind/bindPatientList,/organization/list,/apidoc,/registration/permit/adult/add,/registration/permit/children/add,/origin/originalTypeAndChildren,/user/list,/central/likePatient,/clinicLiveCode/list,/permit/registration/one,/wxUser/info,/clinicLiveCodeVisit/click
 
 auth:
   serviceId: yunya-auth

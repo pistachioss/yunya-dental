@@ -21,6 +21,8 @@ public class PatientCardOwnerInfoVo implements Serializable {
     /** 卡主id */
     @ApiModelProperty("卡主id")
     private String masterCardId;
+    @ApiModelProperty("头像")
+    private String faceUrl;
 
     /** 卡主会员号 */
     @ApiModelProperty("卡主会员号")
@@ -40,7 +42,7 @@ public class PatientCardOwnerInfoVo implements Serializable {
 
     /** 是否可使用权益 */
     @ApiModelProperty("是否可使用权益")
-    private Boolean isDiscount;
+    private Boolean isDiscount = false;
 
     /** 是否可使用余额 */
     @ApiModelProperty("是否可使用余额")

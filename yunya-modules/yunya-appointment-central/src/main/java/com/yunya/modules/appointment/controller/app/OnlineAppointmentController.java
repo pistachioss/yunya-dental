@@ -8,6 +8,7 @@ import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
 import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
 import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -40,6 +41,8 @@ public class OnlineAppointmentController {
     @Autowired
     private OnlineAppointmentBiz onlineAppointmentBiz;
 
+
+
     @ApiOperation("根据id查询线上预约申请")
     @ApiImplicitParams(
             @ApiImplicitParam(name = "id", value = "预约申请ID",required = true, dataTypeClass = Integer.class)
@@ -66,6 +69,12 @@ public class OnlineAppointmentController {
     @PostMapping
     public ResponseResult<T> addOnlineAppointment(@RequestBody @Validated OnlineAppointmentModel model) {
         return onlineAppointmentBiz.addOnlineAppointment(model);
+    }
+
+    @ApiOperation("取消在线预约申请")
+    @PutMapping("/cancel/{id}")
+    public ResponseResult<T> cancelOnlineAppointment(@PathVariable("id") Integer id) {
+        return onlineAppointmentBiz.cancelOnlineAppointment(id);
     }
 
     @ApiOperation("修改在线预约申请")
@@ -97,7 +106,7 @@ public class OnlineAppointmentController {
 
     @ApiOperation("导出预约申请")
     @PostMapping("/export")
-    public ResponseResult<T> export(HttpServletResponse response, @Validated @RequestBody OnlineAppointmentQuery query) throws IOException {
+    public ResponseResult export(HttpServletResponse response, @Validated @RequestBody OnlineAppointmentQuery query) throws IOException {
         onlineAppointmentBiz.export(response,query);
         return ResponseUtil.success();
     }

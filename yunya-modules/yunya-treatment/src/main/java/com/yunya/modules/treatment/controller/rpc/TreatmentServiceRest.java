@@ -4,20 +4,21 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.discount.domain.form.FreeStockForm;
+import com.yunya.feign.discount.domain.form.LockStockForm;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
+import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
+import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
-import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
+import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.Registered;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.biz.*;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +26,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 简介: 价目表、诊疗服务接口暴露
@@ -74,6 +74,17 @@ public class TreatmentServiceRest {
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
   /** 账单退费 */
   @Autowired private BillRefundRecordBiz refundRecordBiz;
+
+  /**
+   * 根据开单ID查询开单详情与账单详情信息
+   *
+   * @return BigDecimal
+   */
+  @RequestMapping(value = "bill/detail/{orderRecordId}", method = RequestMethod.GET)
+  public BillDetailGroupVO findOrderDetailAndBillDetailByOrderRecordId(
+          @PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    return billRecordBiz.findOrderDetailAndBillDetail(orderRecordId);
+  }
 
   /**
    * 根据商品分类ID查询商品分类信息
@@ -592,5 +603,41 @@ public class TreatmentServiceRest {
   @PostMapping(value = "/order/detail/ids")
   public List<OrderDetailVO> findOrderDetailById(@Validated @RequestBody List<Integer> orderDetailIds) {
     return orderDetailBiz.findOrderDetailById(orderDetailIds);
+  }
+
+  /**
+   * 小程序查询商品列表
+   * @param query:
+   * @return PageInfo<GoodsVO>
+   */
+  @RequestMapping(value = "/mini/goods/page", method = RequestMethod.POST)
+  public PageInfo<GoodsVO> pageGoods(@Validated @RequestBody GoodsQuery query) {
+    return baseOralTariffBiz.pageGoods(query);
+  }
+
+  /**
+   * 查询线上商品集合
+   *
+   * @param ids 商品ids
+   * @return List<BaseOralTariff>
+   */
+  @RequestMapping(value = "/list/oral", method = RequestMethod.POST)
+  List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids){
+    return baseOralTariffBiz.listOnSaleOral(ids);
+  }
+
+  @RequestMapping(value = "/goods/lock/stock", method = RequestMethod.POST)
+  void lockGoodsStock(@Valid @RequestBody List<LockStockForm> form){
+    baseOralTariffBiz.lockGoodsStock(form);
+  }
+
+  @RequestMapping(value = "/goods/free/stock", method = RequestMethod.POST)
+  void freeGoodsStock(@Valid @RequestBody List<FreeStockForm> form){
+    baseOralTariffBiz.freeGoodsStock(form);
+  }
+
+  @PostMapping("/goods/productType/list")
+  List<ProductTypeVO> findList(@RequestBody ProductTypeQueryForm queryForm){
+    return baseOralTariffCategoryBiz.categortyList(queryForm);
   }
 }

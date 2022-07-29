@@ -1,5 +1,6 @@
 package com.yunya.feign.system.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -42,4 +43,12 @@ public class OrganizationInfoDetail implements Serializable {
    * 地址
    */
   private String address;
+  /** 营业开始时间*/
+  @ApiModelProperty("营业开始时间")
+  private String businessStartTime;
+  /** 营业结束时间*/
+  @ApiModelProperty("营业结束时间")
+  private String businessEndTime;
+  @ApiModelProperty("门诊图片")
+  private String path;
 }

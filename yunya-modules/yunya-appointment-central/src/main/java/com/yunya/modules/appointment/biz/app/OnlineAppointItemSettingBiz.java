@@ -47,7 +47,7 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
      * @return
      */
     @Transactional
-    public ResponseResult<T> deleteOnlineAppointItemSetting(Integer dentistId,Integer orgId) {
+    public ResponseResult deleteOnlineAppointItemSetting(Integer dentistId,Integer orgId) {
         OnlineAppointItemSetting query = new OnlineAppointItemSetting();
         query.setDentistId(dentistId);
         query.setOrgId(orgId);
@@ -93,7 +93,7 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
      * @param form 参数
      * @return 返回结果信息
      */
-    public ResponseResult<T> addOrUpdateOnlineAppointItem(OnlineAppointItemSettingForm form) {
+    public ResponseResult addOrUpdateOnlineAppointItem(OnlineAppointItemSettingForm form) {
         Integer itemSettingId = form.getItemSettingId();
 
         OnlineAppointItemSetting query = new OnlineAppointItemSetting();

@@ -49,5 +49,7 @@ public class CardSalePageVo implements Serializable {
     private String orgAddress;
     @ApiModelProperty("门诊电话")
     private String orgIphone;
+    @ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）")
+    private Integer couponType;
 
 }

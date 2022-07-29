@@ -148,7 +148,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @param smsVerifyCodeModel
      * @return
      */
-    public ResponseResult<T> sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
+    public ResponseResult sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
         Integer orgId = COMPANY_ORGID;
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(smsVerifyCodeModel.getEventCode(), null, orgId);
         if (smsTemplateSetVO == null) {
@@ -250,7 +250,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @param models
      * @return
      */
-    public ResponseResult<T> batchSend(String eventCode, Integer templateId, Integer userId, String name, Integer orgId, List<? extends SmsCommonSendRecordModel> models) {
+    public ResponseResult batchSend(String eventCode, Integer templateId, Integer userId, String name, Integer orgId, List<? extends SmsCommonSendRecordModel> models) {
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(eventCode, templateId, orgId);
         if (smsTemplateSetVO == null) {
             return ResponseUtil.success();
@@ -352,7 +352,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      *
      * @param model 短信发送添加模型
      */
-    public ResponseResult<T> batchSend(Integer orgId, Integer userId, String name, SmsBatchSendRecordModel model) {
+    public ResponseResult batchSend(Integer orgId, Integer userId, String name, SmsBatchSendRecordModel model) {
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId(), orgId);
         if (smsTemplateSetVO == null) {
             return ResponseUtil.success();
@@ -416,7 +416,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @param model
      * @return
      */
-    public ResponseResult<T> sendRecord(Integer orgId, Integer userId, String name, SmsSendRecordModel model) {
+    public ResponseResult sendRecord(Integer orgId, Integer userId, String name, SmsSendRecordModel model) {
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId(), orgId);
         if (smsTemplateSetVO == null) {
             return ResponseUtil.success();

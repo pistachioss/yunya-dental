@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central;
 
+import com.yunya.feign.ivy_mini.domain.form.WxSaveFansForm;
 import com.yunya.feign.patient_central.domain.form.*;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
@@ -300,6 +301,9 @@ import java.util.*;
   @PostMapping("/api/wxFans/query")
   WxFans getWxFans(@RequestBody WxUserQuery query);
 
+  @PostMapping("/api/wxFans/findListByName")
+  List<WxFansVo> findListByName(@RequestBody WxFanByNameForm wxFanByNameForm);
+
   @PostMapping("/api/wxFans/detail")
   List<WxFansDetailVO> findDetail(@RequestBody @Validated WxFansDetailForm wxFansDetailForm);
 
@@ -328,4 +332,12 @@ import java.util.*;
   @ApiOperation("条件查询自助登记患者的人数")
   @PostMapping(value = "/api/count/selfRegistrationPatient")
   Integer countSelfRegistrationPatient(@RequestBody SelfRegistrationPatientQuery patientQuery);
+
+  @ApiOperation("保存小程序登录信息")
+  @PostMapping(value = "/api/mini/fans/save")
+  void saveMiniAuth(@RequestBody WxSaveFansForm form);
+
+  @ApiOperation("保存更新微信用户信息")
+  @PostMapping(value = "/api/mini/fans/modify")
+  void saveOrUpdate(@RequestBody WxFans wxFans);
 }

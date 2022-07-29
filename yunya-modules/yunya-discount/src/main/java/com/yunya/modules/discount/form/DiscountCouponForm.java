@@ -128,5 +128,9 @@ public class DiscountCouponForm {
     @ApiModelProperty("是否可混合使用优惠 0.不可以共用 1.可以共用")
     private Integer mixable;
 
-
+    /**
+     * 是否线上售卖(0:否 1:是)
+     */
+    @ApiModelProperty("是否线上售卖(0:否 1:是)")
+    private Boolean isOnlineSale;
 }

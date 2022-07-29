@@ -13,6 +13,10 @@ public class WxUserQuery {
     @ApiModelProperty("用户标识码")
     private String openId;
 
+    /** 用户标识码*/
+    @ApiModelProperty("（新）用户标识码")
+    private String unionId;
+
     /** 患者ID*/
     @ApiModelProperty("患者ID")
     private Integer patientId;

@@ -112,4 +112,37 @@
         select `name`, `number`, id
         from base_oral_tariff_category_view
     </select>
+    <select id="selectProductTypeList" resultType="com.yunya.feign.discount.domain.vo.ProductTypeVO">
+        SELECT
+            bota.id,
+            bota.NAME,
+            bota.inservice,
+            bota.crt_id AS crtId,
+            bota.crt_name AS crtName,
+            IFNULL(ci.productNum, 0) productNum
+        FROM
+            base_oral_tariff_category bota
+                LEFT JOIN (
+                SELECT
+                    count(id) productNum,
+                    oral_tariff_category_id id
+                FROM
+                    base_oral_tariff bot
+                <where>
+                    <if test="queryForm.isOnlineSale != null">
+                         bot.is_online_sale = #{queryForm.isOnlineSale}
+                    </if>
+                </where>
+                GROUP BY
+                    bot.oral_tariff_category_id
+            ) ci ON ci.id = bota.id
+        <where>
+            <if test="queryForm.name != null and queryForm.name !=  ''">
+                and bota.name like concat('%', #{queryForm.name}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and bota.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
 </mapper>

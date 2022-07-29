@@ -1,8 +1,10 @@
 package com.yunya.modules.patient_central.mapper;
 
+import com.yunya.feign.patient_central.domain.query.MemberExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo;
 import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientCardOwnerInfoVo;
@@ -20,6 +22,10 @@ import java.util.List;
  */
 @Repository
 public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
+
+    List<MasertMemberRechargeRecordDetailVo> findMemberRechargeRecordInfo(MemberExpendRecordQueryForm form);
+    List<MasertMemberRechargeRecordDetailVo> findMemberPrepaidRecordInfo(MemberExpendRecordQueryForm form);
+
     /**
      * 根据患者id查询会员基本信息(会员卡界面基本信息（非全部信息）)
      * @param id 患者id

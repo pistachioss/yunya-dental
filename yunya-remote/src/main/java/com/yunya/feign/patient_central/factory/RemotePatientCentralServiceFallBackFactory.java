@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.factory;
 
 
+import com.yunya.feign.ivy_mini.domain.form.WxSaveFansForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
@@ -191,6 +192,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
+    public List<WxFansVo> findListByName(WxFanByNameForm wxFanByNameForm) {
+        return null;
+    }
+
+    @Override
     public List<WxFansDetailVO> findDetail(WxFansDetailForm wxFansDetailForm) {
         return null;
     }
@@ -223,5 +229,15 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     @Override
     public Integer countSelfRegistrationPatient(SelfRegistrationPatientQuery patientQuery) {
         return null;
+    }
+
+    @Override
+    public void saveMiniAuth(WxSaveFansForm form) {
+
+    }
+
+    @Override
+    public void saveOrUpdate(WxFans wxFans) {
+
     }
 }

@@ -4,27 +4,27 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.discount.domain.form.FreeStockForm;
+import com.yunya.feign.discount.domain.form.LockStockForm;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
+import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
+import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
-import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
+import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.Registered;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 简介: 就诊、价目表服务调用降级处理 111
@@ -37,6 +37,11 @@ import java.util.Set;
 @Slf4j
 @Component
 public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatmentServiceFeign {
+  @Override
+  public BillDetailGroupVO findOrderDetailAndBillDetailByOrderRecordId(Integer orderRecordId) {
+    return null;
+  }
+
   @Override
   public BaseOralTariffCategory findBaseOralTariffCategoryById(Integer id) {
     return null;
@@ -260,4 +265,29 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   public List<OrderDetailVO> findOrderDetailById(List<Integer> orderDetailIds) {
     return null;
   }
+
+  @Override
+  public PageInfo<GoodsVO> pageGoods(GoodsQuery query) {
+    return null;
+  }
+
+  @Override
+  public List<ProductBO> listOnSaleOral(Collection<Integer> ids) {
+    return null;
+  }
+
+  @Override
+  public void lockGoodsStock(List<LockStockForm> form) {
+
+  }
+
+  @Override
+  public void freeGoodsStock(List<FreeStockForm> form) {
+
+  }
+
+    @Override
+    public List<ProductTypeVO> findList(ProductTypeQueryForm queryForm) {
+        return null;
+    }
 }

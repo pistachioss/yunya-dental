@@ -44,4 +44,6 @@ public interface YunyaServiceNameConstants {
   String YUNYA_WECHAT = "wechat";
   /** aliyun-oss */
   String YUNYA_ALIYUN_OSS = "aliyun-oss";
+  /** 艾维小程序 */
+  String IVY_MINI = "ivy-mini";
 }

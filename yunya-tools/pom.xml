@@ -16,6 +16,7 @@
         <module>aliyun-oss</module>
         <module>rabbit-mq</module>
         <module>wechat</module>
+        <module>ivy-mini</module>
     </modules>
 
 </project>

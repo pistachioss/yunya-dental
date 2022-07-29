@@ -59,6 +59,7 @@
         <swagger-ui.version>1.9.6</swagger-ui.version>
         <easyexcel-version>2.2.6</easyexcel-version>
         <collections4-version>4.1</collections4-version>
+        <wx-sdk-version>4.3.6.B</wx-sdk-version>
     </properties>
 
     <dependencyManagement>
@@ -264,6 +265,12 @@
                 <version>${collections4-version}</version>
             </dependency>
 
+            <!-- https://mvnrepository.com/artifact/com.github.binarywang/weixin-java-pay -->
+            <dependency>
+                <groupId>com.github.binarywang</groupId>
+                <artifactId>weixin-java-pay</artifactId>
+                <version>${wx-sdk-version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

@@ -30,6 +30,16 @@ public class OrderDetailInfoVO implements Serializable {
   /** 本单优惠金额 */
   @ApiModelProperty("本单优惠金额")
   private BigDecimal privilegeAmount;
+
+  @ApiModelProperty("应收金额（消费总额）")
+  private BigDecimal receivableAmount;
+  @ApiModelProperty("实际应收金额")
+  private BigDecimal actualReceivableAmount;
+  @ApiModelProperty("已收金额（本单收费总额）")
+  private BigDecimal receivedAmount;
+  @ApiModelProperty("欠费金额（本单欠费）")
+  private BigDecimal debtAmount;
+
   /** 开单状态 */
   @ApiModelProperty("订单状态（0-账单未锁定 ；1-账单锁定；2-结算完成状态；3-收费中）")
   private Byte status;

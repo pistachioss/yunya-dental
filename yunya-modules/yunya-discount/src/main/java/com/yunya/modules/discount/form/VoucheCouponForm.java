@@ -138,5 +138,11 @@ public class VoucheCouponForm {
   @ApiModelProperty("是否启用")
   private Boolean isInservice;
 
+  /**
+   * 是否线上售卖(0:否 1:是)
+   */
+  @ApiModelProperty("是否线上售卖(0:否 1:是)")
+  private Boolean isOnlineSale;
+
 
 }

@@ -32,7 +32,54 @@
       pmio.status status,pmio.principal_amount principalAmount,pmio.bonus_amount bonusAmount,pmio.point point,pmio.last_expired_time lastExpiredTime,
       pmio.next_expired_time nextExpiredTime,pmio.remarks remarks,pmio.inservice inservice
     </sql>
-
+    <select id="findMemberRechargeRecordInfo" resultType="com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo">
+    (select pbi.name consumerName,1 type ,DATE_FORMAT(mer.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,
+    (mer.expend_principal+mer.expend_gift) rechargePrincipal from member_expend_record mer
+    left JOIN patient_base_info pbi on mer.patient_id = pbi.id
+    where mer.inservice = 1  and DATE_FORMAT(mer.crt_time,'%Y-%m') >
+    DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
+    and mer.member_id = #{memberId} and mer.patient_id = #{patientId}
+    )
+    UNION
+    (select NULL consumerName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+recharge_bonus) rechargePrincipal
+    from member_recharge_record
+    where inservice = 1 and type = 0 and DATE_FORMAT(crt_time,'%Y-%m') >
+    DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
+    and member_id = #{memberId}
+    )
+    UNION
+    (select pbi.name consumerName,2 type,DATE_FORMAT(mrr.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,mrr.actual_return_amount rechargePrincipal
+    from member_return_record  mrr
+      left JOIN patient_base_info pbi on mrr.patient_id = pbi.id
+      where mrr.inservice = 1 and DATE_FORMAT(mrr.crt_time,'%Y-%m') >
+      DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
+      and mrr.member_id = #{memberId} and mrr.patient_id = #{patientId}
+)
+    </select>
+    <select id="findMemberPrepaidRecordInfo" resultType="com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo">
+    (select pbi.name consumerName,1 type ,DATE_FORMAT(mer.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,
+    (mer.expend_principal+mer.expend_gift) rechargePrincipal from prepaid_expend_record mer
+    left JOIN patient_base_info pbi on mer.patient_id = pbi.id
+    where mer.inservice = 1 and DATE_FORMAT(mer.crt_time,'%Y-%m') >
+    DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
+    and mer.prepaid_id = #{memberId} and mer.patient_id = #{patientId}
+    )
+    UNION
+    (select NULL consumerName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+recharge_bonus) rechargePrincipal
+    from prepaid_recharge_record
+    where inservice = 1 and type = 0 and DATE_FORMAT(crt_time,'%Y-%m') >
+    DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
+    and prepaid_id = #{memberId}
+    )
+    UNION
+    (select pbi.name consumerName,2 type,DATE_FORMAT(mrr.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,mrr.actual_return_amount rechargePrincipal
+    from prepaid_return_record  mrr
+      left JOIN patient_base_info pbi on mrr.patient_id = pbi.id
+      where mrr.inservice = 1 and DATE_FORMAT(mrr.crt_time,'%Y-%m') >
+      DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
+      and mrr.prepaid_id = #{memberId} and mrr.patient_id = #{patientId}
+)
+    </select>
     <!-- 根据患者id查询会员基本信息(会员卡界面基本信息（非全部信息）) -->
     <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo">
      select pmio.org_id orgId, pmio.patient_id, pmio.id,pmio.card_number cardNumber,pmio.member_type_id memberTypeId,pmio.crt_time crtTime,pbio.name name,
@@ -46,7 +93,8 @@
     <!-- 查询会员卡关联关系 -->
     <select id="findMemberBindingRelation"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo">
-      select pmr.id bindId,(select name from patient_base_info  where id = pmr.secondary_card_id )name,pmr.master_card_id masterCardId,pmr.secondary_card_id secondaryCardId,pmr.bind_type bindType
+      select pmr.id bindId,(select name from patient_base_info  where id = pmr.secondary_card_id )name,pmr.master_card_id masterCardId,
+      pmr.secondary_card_id secondaryCardId,pmr.bind_type bindType,pbi.face_url as faceUrl
       from patient_member_relation pmr join patient_base_info pbi on pmr.master_card_id = pbi.id
       where pmr.master_card_id = #{form.patientId} and bind_type = #{form.bindType}
     </select>
@@ -95,7 +143,7 @@
     <!-- 查询主卡人信息 -->
     <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo">
         select id,patient_id masterCardId, member_type_id masterCardTypeId,
-        (select name from patient_base_info where id = patient_id) masterName,card_number masterCardNumber
+        (select name from patient_base_info where id = patient_id) masterName,card_number masterCardNumber,point,crt_time crtTime
         from patient_member_info where patient_id = #{form.patientId}
     </select>
 

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya365.mini.mapper.ExpertIntroductionMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.ExpertIntroduction" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="appellation" property="appellation" jdbcType="VARCHAR" />
+    <result column="honor" property="honor" jdbcType="VARCHAR" />
+    <result column="expertise" property="expertise" jdbcType="VARCHAR" />
+    <result column="picture_address" property="pictureAddress" jdbcType="VARCHAR" />
+    <result column="is_sort" property="isSort" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="findExpertIntroductionList" resultType="com.yunya.feign.ivy_mini.domain.vo.ExpertIntroductionVO">
+    SELECT
+    id,
+    name,
+    appellation as appellation,
+    honor as honor,
+    expertise as expertise,
+    picture_address as pictureAddress,
+    is_sort as isSort,
+    status as status,
+    crt_time as crtTime,
+    upd_time as updTime
+    FROM expert_introduction
+    <where>
+      <if test="name!=null and name!=''">
+        AND name like CONCAT(CONCAT('%',#{name}),'%')
+      </if>
+      <if test="status != null">
+        AND status = #{status}
+      </if>
+    </where>
+    order by is_sort ${isSort} ,
+    crt_time desc
+  </select>
+</mapper>
