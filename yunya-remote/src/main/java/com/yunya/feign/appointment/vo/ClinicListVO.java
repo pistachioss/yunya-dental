@@ -40,4 +40,13 @@ public class ClinicListVO  implements Serializable {
     private String businessEndTime;
     @ApiModelProperty("门诊图片")
     private String path;
+    /**
+     * 考勤地址经度
+     */
+    private String longitude;
+
+    /**
+     * 考勤地址纬度
+     */
+    private String latitude;
 }
