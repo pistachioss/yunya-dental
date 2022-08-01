@@ -57,7 +57,7 @@
 )
     </select>
     <select id="findMemberPrepaidRecordInfo" resultType="com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo">
-    (select mer.crt_name consumerName,1 type ,DATE_FORMAT(mer.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,
+    (select mer.crt_name as consumerName,1 type ,DATE_FORMAT(mer.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,
     (mer.expend_principal+mer.expend_gift) rechargePrincipal from prepaid_expend_record mer
     left JOIN patient_base_info pbi on mer.patient_id = pbi.id
     where mer.inservice = 1 and DATE_FORMAT(mer.crt_time,'%Y-%m') >
