@@ -290,10 +290,12 @@
       <if test="orderType != null and orderType != ''">
         and order_type =  #{orderType}
       </if>
+      <if test="name != null and name != ''">
       AND concat(IFNULL(od.receiver_name,''),
       IFNULL(od.receiver_phone,''),
       IFNULL(od.receiver_detail_address,''))
       like concat(concat('%', rtrim(#{name})), '%')
+      </if>
     </where>
     GROUP BY
     od.id
