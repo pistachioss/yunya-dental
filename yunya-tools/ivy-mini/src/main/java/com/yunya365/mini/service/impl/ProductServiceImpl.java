@@ -191,7 +191,9 @@ public class ProductServiceImpl implements IProductService {
                 FansReceiveAddress defaultAddress = fansReceiveAddressService.getDefaultAddress(fansId);
                 addressBO = Objects.isNull(defaultAddress) ? addressBO : BeanCopierUtils.generalCopyBean(defaultAddress, FansAddressBO.class);
             }
-            addressBO.setDetailAddress(addressBO.getProvince() + addressBO.getCity() + addressBO.getRegion() + addressBO.getDetailAddress());
+            if (Objects.nonNull(addressBO)) {
+                addressBO.setDetailAddress(addressBO.getProvince() + addressBO.getCity() + addressBO.getRegion() + addressBO.getDetailAddress());
+            }
         }
         return addressBO;
     }

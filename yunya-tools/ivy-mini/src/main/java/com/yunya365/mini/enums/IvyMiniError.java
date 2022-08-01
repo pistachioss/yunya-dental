@@ -50,6 +50,7 @@ public enum IvyMiniError implements RestError {
     THIRD_PARTY_ERROR(40, "短信服务异常"),
     SMS_EXPIRED(41, "手机验证码已过期，请重新获取"),
     CAPTCHA_NOT_MATCH(42, "验证码输入不正确"),
+    ADDRESS_IS_NULL(43, "请先添加收货地址"),
     ;
     private final Integer code;
     private final String value;

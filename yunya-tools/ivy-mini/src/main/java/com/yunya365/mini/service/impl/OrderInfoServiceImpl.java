@@ -934,16 +934,19 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         FansAddressBO pickUp = productService.getAddress(userId, null, FALSE.getCode());
         FansAddressBO address = productService.getAddress(userId, null, TRUE.getCode());
         //自提
-        PayReceiveAddressVO pickVO = BeanCopierUtils.generalCopyBean(pickUp, PayReceiveAddressVO.class);
-        pickVO.setReceiverName(pickUp.getName());
-        pickVO.setReceiverPhone(pickUp.getPhoneNumber());
-        deliveryOrderVO.setPickUp(pickVO);
+        if (Objects.nonNull(pickUp)) {
+            PayReceiveAddressVO pickVO = BeanCopierUtils.generalCopyBean(pickUp, PayReceiveAddressVO.class);
+            pickVO.setReceiverName(pickUp.getName());
+            pickVO.setReceiverPhone(pickUp.getPhoneNumber());
+            deliveryOrderVO.setPickUp(pickVO);
+        }
         //配送
-        PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class);
-        addressVO.setReceiverName(address.getName());
-        addressVO.setReceiverPhone(address.getPhoneNumber());
-        deliveryOrderVO.setDelivery(addressVO);
-
+        if (Objects.nonNull(address)) {
+            PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(address, PayReceiveAddressVO.class);
+            addressVO.setReceiverName(address.getName());
+            addressVO.setReceiverPhone(address.getPhoneNumber());
+            deliveryOrderVO.setDelivery(addressVO);
+        }
         return deliveryOrderVO;
     }
 
@@ -967,6 +970,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setDeliveryType(model.getDeliveryType().byteValue());
             //收货人信息：姓名、电话、邮编、地址
             address = productService.getAddress(null, fansReceiveAddressId, model.getDeliveryType());
+            if (Objects.isNull(address)) {
+                throw ClientServiceException.wrap(ADDRESS_IS_NULL);
+            }
             orderInfo.setReceiverName(address.getName());
             orderInfo.setReceiverPhone(address.getPhoneNumber());
             orderInfo.setReceiverPostCode(address.getPostCode());
