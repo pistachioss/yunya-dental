@@ -169,7 +169,7 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public FansAddressBO getAddress(Integer fansId, Integer addressId, Integer deliveryType) {
-        FansAddressBO addressBO = new FansAddressBO();
+        FansAddressBO addressBO = null;
         //配送方式（0->自提 1->配送）
         boolean b = Objects.isNull(addressId) && Objects.nonNull(fansId);
         if (Objects.equals(FALSE.getCode(), deliveryType)) {
