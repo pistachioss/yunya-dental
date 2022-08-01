@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * @description:
@@ -20,6 +21,7 @@ public class CreateOrderBaseModel {
     @ApiModelProperty("配送方式（0->自提 1->配送）")
     private Integer deliveryType;
     @ApiModelProperty("备注")
+    @Size(max = 50)
     private String remark;
     @ApiModelProperty(value = "自提定位地址")
     private String locationAddress;
