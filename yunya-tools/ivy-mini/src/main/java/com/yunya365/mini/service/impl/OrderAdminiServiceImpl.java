@@ -48,25 +48,21 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        WxFanByNameForm wxFanByNameForm = new WxFanByNameForm();
-//        List<WxFansVo> AllfansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
-//        Map<String, WxFansVo> clinicMap = new HashMap(16);
-//        AllfansVoList.forEach(z -> clinicMap.put(z.getId() + "", z));
-//
+
         List<OrderVO> result = new ArrayList<>();
-        if (!StringUtils.isEmpty(form.getName())) {
-            wxFanByNameForm.setName(form.getName());
-            List<WxFansVo> fansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
-            List<Integer> collect = fansVoList.stream().map(WxFansVo::getId).collect(Collectors.toList());
-            form.setNameList(collect);
-            if(collect.size()>0){
+//        if (!StringUtils.isEmpty(form.getName())) {
+//            wxFanByNameForm.setName(form.getName());
+//            List<WxFansVo> fansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
+//            List<Integer> collect = fansVoList.stream().map(WxFansVo::getId).collect(Collectors.toList());
+//            form.setNameList(collect);
+//            if(collect.size()>0){
                 result  = mapper.findOrderList(form);
-            }else{
-                return new PageInfo<>(result);
-            }
-        }else{
-            result  = mapper.findOrderList(form);
-        }
+//            }else{
+//                return new PageInfo<>(result);
+//            }
+//        }else{
+//            result  = mapper.findOrderList(form);
+//        }
 
         for (OrderVO a : result) {
 //            WxFansVo copy = clinicMap.get(a.getFansId() + "");
