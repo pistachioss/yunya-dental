@@ -667,13 +667,26 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 return activeVO;
             }).collect(toList());
             vo.setActiveVO(activeVOS);
+            boolean whetherUseCard = discountFeign.whetherUseCard(carIds);
+            vo.setWhetherUsed(whetherUseCard);
         }
         List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
         if (CollectionUtils.isNotEmpty(orderItems)) {
             List<PayOrderItemVO> collect = orderItems.stream().map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
             vo.setItemVO(collect);
         }
+
         return vo;
+    }
+
+    @Override
+    public List<OrderInfo> listShipped(Integer confirmDays) {
+        Date expiredDate = new Date(new Date().getTime() + (-confirmDays * 24 * 60 * 60 * 1000L));
+        return ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getStatus, HAS_SHIP.getCode())
+                .eq(OrderInfo::getProductType, FALSE.getCode())
+                .eq(OrderInfo::getConfirmStatus, FALSE.getCode())
+                .eq(OrderInfo::getDeleteStatus, FALSE.getCode())
+                .le(OrderInfo::getDeliveryTime, expiredDate).list();
     }
 
     private PayOrderVO assembleOrderDetail(OrderInfo orderInfo) {

@@ -22,5 +22,6 @@ public class OrderVirtualDetailVO {
     private List<VirtualActiveVO> activeVO;
     @ApiModelProperty(value = "二维码数据")
     private List<QrCodeVO> qrList;
-
+    @ApiModelProperty(value = "卡券是否被使用（0-否 1-是）")
+    private boolean whetherUsed;
 }

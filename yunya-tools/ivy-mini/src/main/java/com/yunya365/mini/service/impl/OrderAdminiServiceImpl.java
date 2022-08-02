@@ -6,8 +6,6 @@ import com.yunya.feign.ivy_mini.domain.form.*;
 import com.yunya.feign.ivy_mini.domain.vo.OrderVO;
 import com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.query.WxFanByNameForm;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -17,16 +15,12 @@ import com.yunya365.mini.entity.OrderOperateHistory;
 import com.yunya365.mini.mapper.OrderInfoMapper;
 import com.yunya365.mini.mapper.OrderOperateHistoryMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * 简介:
@@ -82,7 +76,7 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         BeanUtils.copyProperties(form, order);
 
         order.setUpdTime(new Date(System.currentTimeMillis()));
-
+        order.setDeliveryTime(new Date(System.currentTimeMillis()));
         int result = mapper.updateByPrimaryKeySelective(order);
         if (result <= 0) {
             return ResponseUtil.success("数据修改失败！");

@@ -145,4 +145,6 @@ public interface IOrderInfoService extends IService<OrderInfo> {
     PayOrderVO refundDetail(Integer orderId);
 
     OrderVirtualDetailVO virtualOrderDetail(Integer orderId);
+
+    List<OrderInfo> listShipped(Integer confirmDays);
 }

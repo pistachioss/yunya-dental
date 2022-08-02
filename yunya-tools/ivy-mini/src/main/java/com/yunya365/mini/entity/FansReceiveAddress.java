@@ -82,7 +82,7 @@ public class FansReceiveAddress implements Serializable {
     /**
      * 标签
      */
-    @TableField("tag")
+    @TableField(value = "tag", updateStrategy = FieldStrategy.IGNORED)
     private String tag;
 
     /**

@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IOrderSettingService extends IService<OrderSetting> {
 
+    void autoConfirm();
 }
