@@ -103,7 +103,7 @@ LEFT JOIN vouche_coupon vc on vc.coupon_id = cci.id
 LEFT JOIN discount_coupon dc on dc.coupon_id = cci.id
 LEFT JOIN coupon_file_info cfi on cfi.coupon_id = cci.id and cfi.file_type = 0
 WHERE
-	cd.patient_id = #{patientId} and cci.type in(0,1,2,3) and cci.is_inservice = 1 GROUP BY cd.id
+	cd.patient_id = #{patientId} and cd.status in (2,3) and cci.type in(0,1,2,3) and cci.is_inservice = 1 GROUP BY cd.id
     </select>
 
     <select id="getSumNumByCouponId" resultType="int">
