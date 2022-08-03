@@ -43,7 +43,7 @@ public class BannerServiceImpl extends BaseBiz<BannerMapper, Banner> {
         botList.forEach(z -> cliListsMap.put(z.getId() + "", z.getName()));
         for(BannerVO bannerVO:result){
             if(bannerVO.getLinkType()==1){
-                bannerVO.setLinkContext(cliListsMap.get(bannerVO.getId()+""));
+                bannerVO.setLinkContext(cliListsMap.get(bannerVO.getProductId()+""));
             }
         }
         return result;
