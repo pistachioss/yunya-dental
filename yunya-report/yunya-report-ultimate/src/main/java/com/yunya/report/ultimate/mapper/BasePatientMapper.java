@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.form.PatientNotSeenForm;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BasePatient;
+import com.yunya.models.report.CreditsShop;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -13,6 +14,8 @@ import java.util.List;
 
 /** @author YK */
 public interface BasePatientMapper extends Mapper<BasePatient> {
+
+  CreditsShop lastPatientCredits(@Param("patientId") Integer patientId);
 
   /**
    * 根据姓名/手机号/拼音姓名

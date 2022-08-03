@@ -22,6 +22,7 @@ import com.yunya.feign.treatment_other.domain.vo.XRayFilmVO;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.report.CreditsShop;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
@@ -63,6 +64,10 @@ public class PatientMemberAppController {
     private  PatientBaseInfoBiz patientBaseInfoBiz;
     @Resource
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Resource
+    private RemoteReportServiceFeign remoteReportServiceFeign;
+
+
     /**
      * 我的-会员信息
      *
@@ -72,7 +77,10 @@ public class PatientMemberAppController {
     @ApiOperation("小程序-我的-会员信息")
     @GetMapping("patientMember/{patientId}")
     public ResponseResult<PatientPublicInfoVo> findMemberBaseInfo(@PathVariable("patientId") Integer patientId) {
-        return ResponseUtil.success( patientBaseInfoBiz.findPatientPublicInfoById(patientId));
+        CreditsShop creditsShop = remoteReportServiceFeign.lastPatientCredits(patientId);
+        PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(patientId);
+        patientPublicInfoVo.setPoint(creditsShop.getCreditsAccount());
+        return ResponseUtil.success(patientPublicInfoVo);
     }
 
     @ApiOperation("小程序-我的-会员信息-详情")
