@@ -783,7 +783,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             vo.setProductPic(picList);
             vo.setOrderDate(DateUtil.format(t.getCrtTime(), "yyyyMMddHHmm"));
             vo.setPayAmount(t.getPayAmount());
-            vo.setTotalAmount(t.getTotalAmount());
+            vo.setTotalAmount(t.getPayAmount());
             vo.setTotalQuantity(totalQuantity);
             vo.setProductPieces(itemList.size());
             vo.setProductPrice(Objects.isNull(orderItem) ? null : orderItem.getProductPrice());
@@ -968,7 +968,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderInfo.setFansId(userId);
         orderInfo.setPayType(model.getPayType().byteValue());
         orderInfo.setTotalAmount(calcTotalAmount(itemBoList));
-        orderInfo.setPayAmount(calcTotalAmount(itemBoList));
         orderInfo.setSourceType((byte) 1);
         //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
         orderInfo.setStatus((byte) 0);
@@ -976,13 +975,15 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //商品类型 0-商品 1-虚拟服务
         orderInfo.setProductType(model.getProductType().byteValue());
         orderInfo.setRemark(model.getRemark());
+        Integer deliveryType = model.getDeliveryType();
+        BigDecimal freightAmount = null;
         FansAddressBO address;
         //商品类产品有自提和配送区分
         if (FALSE.getCode().equals(model.getProductType())) {
             //配送方式：0->自提 1->配送
-            orderInfo.setDeliveryType(model.getDeliveryType().byteValue());
+            orderInfo.setDeliveryType(deliveryType.byteValue());
             //收货人信息：姓名、电话、邮编、地址
-            address = productService.getAddress(null, fansReceiveAddressId, model.getDeliveryType());
+            address = productService.getAddress(null, fansReceiveAddressId, deliveryType);
             if (Objects.isNull(address)) {
                 throw ClientServiceException.wrap(ADDRESS_IS_NULL);
             }
@@ -993,10 +994,15 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setReceiverCity(address.getCity());
             orderInfo.setReceiverRegion(address.getRegion());
             orderInfo.setReceiverDetailAddress(address.getDetailAddress());
-            if (FALSE.equals(model.getDeliveryType())) {
+            if (FALSE.equals(deliveryType)) {
                 orderInfo.setReceiverDetailAddress(model.getLocationAddress());
+            } else {
+                Distribution distribution = distributionService.findList();
+                freightAmount = Objects.nonNull(distribution) ? distribution.getSendingPrice() : null;
+                orderInfo.setFreightAmount(freightAmount);
             }
         }
+        orderInfo.setPayAmount(calcTotalAmount(itemBoList).add(Objects.isNull(freightAmount) ? BigDecimal.ZERO : freightAmount));
         //0->未确认；1->已确认
         orderInfo.setConfirmStatus((byte) 0);
         orderInfo.setDeleteStatus((byte) 0);
