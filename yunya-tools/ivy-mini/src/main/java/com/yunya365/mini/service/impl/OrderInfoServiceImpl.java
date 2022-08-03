@@ -894,7 +894,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         StringBuilder sb = new StringBuilder();
         String date = DateUtil.format(LocalDate.now(), "yyyyMMdd");
         String key = Joiner.on(":").join(ORDER_ID_GENERATE, date);
-        Long increment = redisUtils.incr(key, 1);
+        Long increment = 1L;
+        if (redisUtils.hasKey(key)) {
+            increment = redisUtils.incr(key, 1);
+        } else {
+            long remainSeconds = Duration.between(java.time.LocalDateTime.of(LocalDate.now(), LocalTime.MAX), java.time.LocalDateTime.now()).getSeconds();
+            redisUtils.set(key, 1, Math.abs(remainSeconds), TimeUnit.SECONDS);
+        }
         sb.append(date);
         sb.append(String.format("%02d", order.getSourceType()));
         sb.append(String.format("%02d", order.getPayType()));
