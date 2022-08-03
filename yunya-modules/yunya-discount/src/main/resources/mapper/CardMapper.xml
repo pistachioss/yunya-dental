@@ -87,10 +87,10 @@ SELECT
 	cci.name as couponName,
 	cci.type as couponType,
 	CASE
-WHEN cci.type = 0 THEN vc.activation_deadline
-WHEN cci.type = 1 THEN dc.activation_deadline
-WHEN cci.type = 2 THEN pc.activation_deadline
-WHEN cci.type = 3 THEN spc.activation_deadline
+WHEN cci.type = 0 THEN if(vc.effective_days = 0,null,date_add(date_format(cd.active_date, '%Y-%m-%d'), INTERVAL vc.effective_days DAY))
+WHEN cci.type = 1 THEN if(dc.effective_days = 0,null,date_add(date_format(cd.active_date, '%Y-%m-%d'), INTERVAL dc.effective_days DAY))
+WHEN cci.type = 2 THEN if(pc.effective_days = 0,null,date_add(date_format(cd.active_date, '%Y-%m-%d'), INTERVAL pc.effective_days DAY))
+WHEN cci.type = 3 THEN if(spc.effective_days = 0,null,date_add(date_format(cd.active_date, '%Y-%m-%d'), INTERVAL spc.effective_days DAY))
 END as activationDeadline,
 cfi.file_name as fileName,
 cfi.path
