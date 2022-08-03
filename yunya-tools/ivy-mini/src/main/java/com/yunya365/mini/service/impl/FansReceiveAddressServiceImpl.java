@@ -75,9 +75,17 @@ public class FansReceiveAddressServiceImpl extends ServiceImpl<FansReceiveAddres
 
     @Override
     public FansReceiveAddress getDefaultAddress(Integer fansId) {
-        return ChainWrappers.lambdaQueryChain(baseMapper)
+        FansReceiveAddress defaultAddress = ChainWrappers.lambdaQueryChain(baseMapper)
                 .eq(FansReceiveAddress::getFansId, fansId)
                 .eq(FansReceiveAddress::getDefaultStatus, 1).one();
+        if (Objects.isNull(defaultAddress)) {
+            return ChainWrappers.lambdaQueryChain(baseMapper)
+                    .eq(FansReceiveAddress::getFansId, fansId)
+                    .orderByDesc(FansReceiveAddress::getCrtTime)
+                    .last("limit 1")
+                    .one();
+        }
+        return defaultAddress;
     }
 
     private void updateDefaultStatus(Integer fansId) {

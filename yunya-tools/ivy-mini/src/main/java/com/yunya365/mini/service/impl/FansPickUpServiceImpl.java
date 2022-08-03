@@ -2,6 +2,7 @@ package com.yunya365.mini.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.yunya.feign.ivy_mini.domain.form.FansPickUpForm;
 import com.yunya.feign.ivy_mini.domain.model.FansPickUpModel;
 import com.yunya.feign.ivy_mini.domain.vo.FansPickUpVO;
@@ -13,6 +14,7 @@ import com.yunya365.mini.entity.FansPickUp;
 import com.yunya365.mini.entity.FansReceiveAddress;
 import com.yunya365.mini.mapper.FansPickUpMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
@@ -65,6 +67,14 @@ public class FansPickUpServiceImpl extends BaseBiz<FansPickUpMapper, FansPickUp>
         Example example = new Example(FansPickUp.class);
         example.createCriteria().andEqualTo("fansId", fansId)
                 .andEqualTo("defaultStatus", 1);
-        return mapper.selectOneByExample(example);
+        FansPickUp fansPickUp = mapper.selectOneByExample(example);
+        if (Objects.isNull(fansPickUp)) {
+            Example example1 = new Example(FansPickUp.class);
+            example1.createCriteria().andEqualTo("fansId", fansId);
+            example1.orderBy("crtTime").desc();
+            List<FansPickUp> fansPickUps = mapper.selectByExample(example1);
+            return CollectionUtils.isEmpty(fansPickUps) ? null : fansPickUps.get(0);
+        }
+        return fansPickUp;
     }
 }
