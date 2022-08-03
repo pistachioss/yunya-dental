@@ -937,7 +937,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         calcAmountVO.setFreightAmount(freightAmount);
         calcAmountVO.setTotalAmount(totalAmount);
-        calcAmountVO.setPayAmount(totalAmount);
+        calcAmountVO.setPayAmount(totalAmount.add(freightAmount));
         calcAmountVO.setStartSendingPrice(startSendingPrice);
         return calcAmountVO;
     }
