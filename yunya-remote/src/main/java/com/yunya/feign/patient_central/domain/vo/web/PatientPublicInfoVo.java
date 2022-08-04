@@ -123,7 +123,7 @@ public class PatientPublicInfoVo implements Serializable {
     private String prepaymentNumber;
 
     @ApiModelProperty(value = "积分")
-    private Long point;
+    private Long point = 0L;
 
     /**
      * 图标

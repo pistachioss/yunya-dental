@@ -79,7 +79,9 @@ public class PatientMemberAppController {
     public ResponseResult<PatientPublicInfoVo> findMemberBaseInfo(@PathVariable("patientId") Integer patientId) {
         CreditsShop creditsShop = remoteReportServiceFeign.lastPatientCredits(patientId);
         PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(patientId);
-        patientPublicInfoVo.setPoint(creditsShop.getCreditsAccount());
+        if(creditsShop!=null){
+            patientPublicInfoVo.setPoint(creditsShop.getCreditsAccount());
+        }
         return ResponseUtil.success(patientPublicInfoVo);
     }
 
