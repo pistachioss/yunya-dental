@@ -15,6 +15,7 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.app.OnlineAppointmentBiz;
 import io.swagger.annotations.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -101,6 +102,15 @@ public class OnlineAppointmentController {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
         List<OnlineAppointmentVo> results = onlineAppointmentBiz.findByCondition(query);
+        for(OnlineAppointmentVo appointmentVo:results){
+            if(StringUtils.isEmpty(appointmentVo.getAppointTime())){
+                if(appointmentVo.getAppointMa()==0){
+                    appointmentVo.setAppointTime("09:00");
+                }else{
+                    appointmentVo.setAppointTime("13:00");
+                }
+            }
+        }
         return ResponseUtil.success(new PageInfo<OnlineAppointmentVo>(results));
     }
 
