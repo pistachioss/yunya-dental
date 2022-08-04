@@ -69,5 +69,7 @@ public class OrderWechatDetailVO {
     private String receiverName = "";
     @ApiModelProperty(value = "收货人电话")
     private String receiverPhone = "";
+    @ApiModelProperty(value = "下单微信")
+    private String fansName;
 
 }
