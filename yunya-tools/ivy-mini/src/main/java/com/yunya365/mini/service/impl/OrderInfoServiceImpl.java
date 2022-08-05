@@ -319,7 +319,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         Page<OrderInfo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
         List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper)
-                .select(OrderInfo::getId, OrderInfo::getTotalAmount, OrderInfo::getPayAmount, OrderInfo::getStatus, OrderInfo::getCrtTime, OrderInfo::getProductType)
+                .select(OrderInfo::getId, OrderInfo::getTotalAmount, OrderInfo::getPayAmount, OrderInfo::getStatus
+                        , OrderInfo::getCrtTime, OrderInfo::getProductType, OrderInfo::getDeliveryType)
                 .eq(Objects.nonNull(query.getStatus()), OrderInfo::getStatus, query.getStatus())
                 .eq(OrderInfo::getDeleteStatus, FALSE.getCode()).orderByDesc(OrderInfo::getCrtTime)
                 .eq(OrderInfo::getFansId, userId)
@@ -789,6 +790,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             vo.setProductPrice(Objects.isNull(orderItem) ? null : orderItem.getProductPrice());
             vo.setProductName(Objects.isNull(orderItem) ? null : orderItem.getProductName());
             vo.setProductType(t.getProductType());
+            vo.setDeliveryType(t.getDeliveryType());
             return vo;
         }).collect(toList());
     }

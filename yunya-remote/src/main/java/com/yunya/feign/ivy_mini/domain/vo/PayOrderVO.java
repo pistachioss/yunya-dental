@@ -42,4 +42,6 @@ public class PayOrderVO{
     private Date closeDate;
     @ApiModelProperty(value = "商家回复（通过这个字段判断退款是否失败）")
     private String mchReply;
+    @ApiModelProperty(value = "确认收货时间（取货时间）")
+    private Date receiveTime;
 }

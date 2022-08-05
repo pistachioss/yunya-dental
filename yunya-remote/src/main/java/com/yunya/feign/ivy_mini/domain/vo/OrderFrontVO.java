@@ -38,4 +38,6 @@ public class OrderFrontVO {
     private String productName;
     @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")
     private Byte productType;
+    @ApiModelProperty(value = "配送方式（0->自提 1->配送）")
+    private Byte deliveryType;
 }
