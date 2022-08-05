@@ -83,10 +83,19 @@ public class ProductServiceImpl implements IProductService {
             List<ProductBO> couponList = discountFeign.listOnSaleOral(couponIds);
             Map<Integer, ProductBO> goodsMap = baseOralTariffs.stream()
                     .collect(toMap(ProductBO::getProductId, Function.identity()));
+            Map<Integer, ProductBO> couponMap = couponList.stream()
+                    .collect(toMap(ProductBO::getProductId, Function.identity()));
             collect = typedTuples.stream().map(t -> {
-                Integer id = Integer.valueOf(Objects.requireNonNull(t.getValue()));
+                String value = t.getValue();
+                Integer aProductType = Integer.valueOf(value.split("_")[0]);
+                Integer id = Integer.valueOf(value.split("_")[1]);
                 Double score = t.getScore();
-                ProductBO oralTariff = goodsMap.get(id);
+                ProductBO oralTariff;
+                if (Objects.equals(aProductType, FALSE.getCode())) {
+                    oralTariff = goodsMap.get(id);
+                } else {
+                    oralTariff = couponMap.get(id);
+                }
                 HotSaleVO vo = new HotSaleVO();
                 if (Objects.nonNull(oralTariff)) {
                     String itemPic = oralTariff.getProductPic();
