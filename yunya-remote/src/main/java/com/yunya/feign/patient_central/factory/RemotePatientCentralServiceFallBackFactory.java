@@ -207,6 +207,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
+    public WxFans getWxfansInfo(Integer fansId) {
+        return null;
+    }
+
+    @Override
     public List<WxCardUseVo> listPatientCardRecord(String cardNumber, Integer type) {
         return null;
     }

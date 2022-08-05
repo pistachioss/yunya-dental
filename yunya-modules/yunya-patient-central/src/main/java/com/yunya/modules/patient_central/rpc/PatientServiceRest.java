@@ -335,6 +335,12 @@ public class PatientServiceRest {
     return wxFansBiz.getWxPatientInfo(patientId);
   }
 
+  @ApiOperation("根据fansId查询微信用户信息")
+  @RequestMapping(value = "/wx/fansId/{fansId}", method = RequestMethod.GET)
+  public WxFans getWxfansInfo(@PathVariable("fansId") Integer fansId) {
+    return wxFansBiz.selectById(fansId);
+  }
+
   @ApiOperation("查询微信用户的会员卡和预付款使用记录")
   @RequestMapping(value = "/wx/card/record", method = RequestMethod.GET)
   public List<WxCardUseVo> listPatientCardRecord(

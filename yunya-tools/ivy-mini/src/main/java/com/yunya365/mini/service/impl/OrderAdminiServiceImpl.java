@@ -13,6 +13,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.patient_central.WxFans;
 import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderOperateHistory;
 import com.yunya365.mini.mapper.OrderInfoMapper;
@@ -97,10 +98,11 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
     }
 
     public OrderWechatDetailVO findDetail(OrderDetailForm form) {
-        WxPatientVo wxPatientVo = remotePatientCentralServiceFeign.getWxPatientInfo(form.getId());
-
         OrderWechatDetailVO result =  mapper.findDetail(form.getId());
-        result.setFansName(wxPatientVo.getUserName());
+
+        WxFans wxFans = remotePatientCentralServiceFeign.getWxfansInfo(result.getFansId());
+
+        result.setFansName(wxFans.getNickName());
         result.setReceivingInformation(result.getReceiverName() + " " + result.getReceiverPhone() + " " + result.getAddress());
         return result;
     }
