@@ -12,5 +12,6 @@ import java.util.List;
 public class BatchCancelCardForm {
     private List<Integer> cardIds;
     private Integer orgId;
+    private Integer loginUserId;
 
 }

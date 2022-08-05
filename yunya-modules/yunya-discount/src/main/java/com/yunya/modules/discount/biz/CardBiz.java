@@ -740,36 +740,41 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
     @Transactional(rollbackFor = Exception.class)
     public void batchCancelCardSold(BatchCancelCardForm form) {
-        int orgId = form.getOrgId();
-        List<Integer> cardIds = form.getCardIds();
-        RestErrorBo errorBo;
-        Example example = new Example(Card.class);
-        example.createCriteria().andIn("id", cardIds);
-        List<Card> cards = mapper.selectByExample(example);
-        Map<Integer, Card> cardMap = cards.stream().collect(toMap(Card::getId, Function.identity(), (o,n) -> n));
-        //优惠券信息
-        Set<Integer> couponIds = cards.stream().map(Card::getCouponId).collect(toSet());
-        Example example1 = new Example(CouponCommonInfo.class);
-        example1.createCriteria().andIn("id", couponIds);
-        List<CouponCommonInfo> coupons = couponMapper.selectByExample(example1);
-        Map<Integer, CouponCommonInfo> couponMap = coupons.stream()
-                .collect(toMap(CouponCommonInfo::getId, Function.identity(), (o,n) -> n));
-        for (Integer cardId : cardIds) {
-            //1. 检查卡券
-            Card card = cardMap.get(cardId);
-            errorBo = checkCardForCancelSale(cardId, card, orgId);
-            Integer couponId = card.getCouponId();
-            //2. 检查优惠券
-            CouponCommonInfo couponInfo = couponMap.get(card.getCouponId());
-            if (couponInfo == null || !couponInfo.getIsInservice()) {
-                log.warn("【批量售卖失败】优惠券[{}]不存在", couponId);
+        try {
+            BaseContextHandler.setUserID(String.valueOf(form.getLoginUserId()));
+            int orgId = form.getOrgId();
+            List<Integer> cardIds = form.getCardIds();
+            RestErrorBo errorBo;
+            Example example = new Example(Card.class);
+            example.createCriteria().andIn("id", cardIds);
+            List<Card> cards = mapper.selectByExample(example);
+            Map<Integer, Card> cardMap = cards.stream().collect(toMap(Card::getId, Function.identity(), (o,n) -> n));
+            //优惠券信息
+            Set<Integer> couponIds = cards.stream().map(Card::getCouponId).collect(toSet());
+            Example example1 = new Example(CouponCommonInfo.class);
+            example1.createCriteria().andIn("id", couponIds);
+            List<CouponCommonInfo> coupons = couponMapper.selectByExample(example1);
+            Map<Integer, CouponCommonInfo> couponMap = coupons.stream()
+                    .collect(toMap(CouponCommonInfo::getId, Function.identity(), (o,n) -> n));
+            for (Integer cardId : cardIds) {
+                //1. 检查卡券
+                Card card = cardMap.get(cardId);
+                errorBo = checkCardForCancelSale(cardId, card, orgId);
+                Integer couponId = card.getCouponId();
+                //2. 检查优惠券
+                CouponCommonInfo couponInfo = couponMap.get(card.getCouponId());
+                if (couponInfo == null || !couponInfo.getIsInservice()) {
+                    log.warn("【批量售卖失败】优惠券[{}]不存在", couponId);
+                }
+                //更新取消卡券售出
+                updateCardForCancel(card);
+                //取消售出增加日志记录
+                this.saveCancelCardLog(cardId);
+                mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
+                log.info("【批量取消售出卡券发送消息成功】：卡券id[{}]", couponId);
             }
-            //更新取消卡券售出
-            updateCardForCancel(card);
-            //取消售出增加日志记录
-            this.saveCancelCardLog(cardId);
-            mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
-            log.info("【批量取消售出卡券发送消息成功】：卡券id[{}]", couponId);
+        } finally {
+            BaseContextHandler.remove();
         }
     }
 

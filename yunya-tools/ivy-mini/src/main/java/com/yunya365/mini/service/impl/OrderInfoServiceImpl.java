@@ -287,7 +287,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                     virtualService.soldActiveOrInvalid(orderInfo.getId(), false);
                 }
                 //热销产品
-                hotSaleCal(orderInfo.getId(), true);
+                hotSaleCal(orderInfo.getId(), true, productType);
             }
             return WxPayNotifyResponse.success("处理成功!");
         } catch (Exception e) {
@@ -580,12 +580,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(refundTime));
                 if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
                     //如果是虚拟卡券(已激活：删除 未激活：取消售出)
-                    cancelSoldCard(orderId);
+                    cancelSoldCard(orderInfo);
                     //退款成功 虚拟卡券删除
                     virtualService.deleteOrderCard(orderId);
                 }
                 //热销产品
-                hotSaleCal(orderInfo.getId(), false);
+                hotSaleCal(orderInfo.getId(), false, orderInfo.getProductType());
             } else {
                 java.time.LocalDateTime now = java.time.LocalDateTime.now();
                 apply.setRefundStatus(TRUE.getCode());
@@ -621,7 +621,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             baseMapper.updateByPrimaryKeySelective(orderInfo);
             if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
                 //取消售出卡券
-                cancelSoldCard(orderId);
+                cancelSoldCard(orderInfo);
                 virtualService.deleteOrderCard(orderId);
             }
         }
@@ -1118,7 +1118,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return discountFeign.whetherUseCard(carIds);
     }
 
-    private void cancelSoldCard(Integer orderId) {
+    private void cancelSoldCard(OrderInfo orderInfo) {
+        Integer orderId = orderInfo.getId();
         List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId), true);
         if (CollectionUtils.isNotEmpty(orderVirtual)) {
             log.info("取消卡券售出，orderId：{}", orderId);
@@ -1130,6 +1131,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                BatchCancelCardForm form = new BatchCancelCardForm();
                form.setCardIds(soldCards);
                form.setOrgId(21);
+               form.setLoginUserId(orderInfo.getFansId());
                discountFeign.batchCancelCard(form);
            }
             //已激活卡券
@@ -1141,11 +1143,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
     }
 
-    private void hotSaleCal(Integer orderId, boolean increase) {
+    private void hotSaleCal(Integer orderId, boolean increase, int productType) {
         List<OrderItem> items = orderItemService.listByOrderIds(Collections.singleton(orderId));
         for (OrderItem item : items) {
             Integer productQuantity = item.getProductQuantity();
-            redisUtils.zIncrBy(HOT_SALE_PRODUCT, item.getProductId().toString(), increase ? productQuantity : -productQuantity);
+            redisUtils.zIncrBy(HOT_SALE_PRODUCT, productType + "_" + item.getProductId().toString(), increase ? productQuantity : -productQuantity);
         }
     }
 
