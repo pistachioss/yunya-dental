@@ -104,7 +104,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     private void expireToRedis(AuthInfoVO authInfo, String[] tokenArr) {
         authInfo.setLastEnterDate(LocalDateTime.now());
-//        AbstractLogin.storageToRedis(authInfo, () -> tokenArr, BusinessConstants.TOKEN_EXPIRE, redisUtils);
+        LoginServiceImpl.storageToRedis(authInfo, () -> tokenArr, TOKEN_EXPIRE, redisUtils);
     }
 
     private void deleteToken(AuthInfoVO authInfo, String[] tokenArr) {
