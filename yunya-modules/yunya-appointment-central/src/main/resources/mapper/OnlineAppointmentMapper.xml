@@ -122,6 +122,7 @@
                 and oa.inservice = #{query.inservice}
             </if>
         </where>
+        order by oa.appoint_date DESC
     </select>
 
 </mapper>

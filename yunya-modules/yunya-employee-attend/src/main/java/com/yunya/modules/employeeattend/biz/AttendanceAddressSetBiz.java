@@ -71,7 +71,8 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
             clinicListVO.setDistance(distance / 1000);
             reList.add(clinicListVO);
         }
-        return reList;
+        List<ClinicListVO> zhenList = reList.stream().sorted(Comparator.comparing(ClinicListVO::getDistance)).collect(Collectors.toList());
+        return zhenList;
     }
 
     /**
