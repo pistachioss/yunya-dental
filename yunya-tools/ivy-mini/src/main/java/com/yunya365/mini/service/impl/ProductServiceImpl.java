@@ -3,6 +3,7 @@ package com.yunya365.mini.service.impl;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
@@ -60,10 +61,26 @@ public class ProductServiceImpl implements IProductService {
         Set<ZSetOperations.TypedTuple<String>> typedTuples = redisUtils.zRevrangeWithScores(RedisConstants.HOT_SALE_PRODUCT, 0, 10);
         List<HotSaleVO> collect = Lists.newArrayListWithCapacity(10);
         if (CollectionUtils.isNotEmpty(typedTuples)) {
-            Set<Integer> productIds = typedTuples.stream()
-                    .map(t -> Integer.valueOf(Objects.requireNonNull(t.getValue()))).collect(toSet());
+            Set<String> productIds = typedTuples.stream()
+                    .map(t -> Objects.requireNonNull(t.getValue())).collect(toSet());
+            HashMap<Integer, List<Integer>> map = Maps.newHashMap();
+            productIds.forEach(t -> {
+                Integer aProductType = Integer.valueOf(t.split("_")[0]);
+                Integer aProductId = Integer.valueOf(t.split("_")[1]);
+                map.compute(aProductType, (k, ov) -> {
+                    if (CollectionUtils.isEmpty(ov)) {
+                        return Lists.newArrayList(aProductId);
+                    }
+                    ov.add(aProductId);
+                    return ov;
+                });
+            });
+            //0-商品 1-虚拟服务
+            List<Integer> goodsIds = map.get(FALSE.getCode());
+            List<Integer> couponIds = map.get(TRUE.getCode());
             //查询线上商品集合
-            List<ProductBO> baseOralTariffs = treatmentServiceFeign.listOnSaleOral(productIds);
+            List<ProductBO> baseOralTariffs = treatmentServiceFeign.listOnSaleOral(goodsIds);
+            List<ProductBO> couponList = discountFeign.listOnSaleOral(couponIds);
             Map<Integer, ProductBO> goodsMap = baseOralTariffs.stream()
                     .collect(toMap(ProductBO::getProductId, Function.identity()));
             collect = typedTuples.stream().map(t -> {
