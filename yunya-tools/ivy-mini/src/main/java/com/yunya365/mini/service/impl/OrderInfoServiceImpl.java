@@ -1014,7 +1014,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 //起送价判断
                 BigDecimal startSendingPrice = Objects.nonNull(distribution) ? distribution.getStartSendingPrice() : null;
                 if (Objects.nonNull(startSendingPrice) && startSendingPrice.compareTo(totalAmount) > 0) {
-                    throw ClientServiceException.wrap(SEND_AMOUNT_LACK, startSendingPrice.subtract(orderInfo.getPayAmount()).toPlainString());
+                    throw ClientServiceException.wrap(SEND_AMOUNT_LACK, startSendingPrice.subtract(totalAmount)
+                            .stripTrailingZeros().toPlainString());
                 }
             }
         }
