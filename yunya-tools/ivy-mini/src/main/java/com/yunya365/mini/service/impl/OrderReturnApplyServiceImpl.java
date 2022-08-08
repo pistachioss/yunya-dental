@@ -7,6 +7,7 @@ import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
+import com.google.common.collect.Lists;
 import com.yunya.feign.ivy_mini.domain.model.OrderRefundApplyModel;
 import com.yunya.feign.ivy_mini.domain.model.OrderRefundModel;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -91,6 +92,10 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
             OrderReturnApply apply = queryRefund(orderInfo.getId());
             if (Objects.isNull(apply)) {
                 throw ClientServiceException.wrap(ORDER_ERROR);
+            }
+            if (Lists.newArrayList(REFUNDING.getCode(), REFUND_REFUSE.getCode())
+                    .contains(apply.getHandleStatus())) {
+                throw ClientServiceException.wrap(ORDER_REFUNDING);
             }
             if (!Objects.equals(HANDLE_PENDING.getCode(), apply.getHandleStatus())) {
                 throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
