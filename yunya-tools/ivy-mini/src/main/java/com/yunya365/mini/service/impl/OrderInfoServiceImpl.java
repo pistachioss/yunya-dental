@@ -156,11 +156,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer quantity = model.getQuantity();
         //商品类型
         Integer productType = model.getProductType();
+        List<OrderItemBO> itemBoList = null;
         try {
             //加锁
             locked = lock(CREATE_ORDER_LOCK, productId, userId);
             //查询原始商品或虚拟服务
-            List<OrderItemBO> itemBoList = productService.listProductOrderItem(Collections.singleton(productId), productType);
+            itemBoList = productService.listProductOrderItem(Collections.singleton(productId), productType);
             if (CollectionUtils.isEmpty(itemBoList)) {
                 throw ClientServiceException.wrap(PRODUCT_LACK);
             }
@@ -173,28 +174,33 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             }
             //进行库存锁定
             lockStock(productId, quantity, null, productType);
-            //创建订单
-            OrderInfo orderInfo = assembleOrder(userId, model, itemBoList, model.getFansReceiveAddressId());
-            //生成支付单
-            WxPaymentVO wxPaymentVO = wxPay(orderInfo);
-            baseMapper.insertDynamic(orderInfo);
-            List<OrderItem> itemList = itemBoList.stream().map(t -> {
-                OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
-                orderItem.setOrderId(orderInfo.getId());
-                orderItem.setOrderSn(orderInfo.getOrderSn());
-                return orderItem;
-            }).collect(toList());
-            orderItemService.saveBatch(itemList);
-            //保存预付单信息
-            wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
-            CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
-            //发送延迟消息取消订单
-            sendOrderMessage(orderInfo.getId());
-            if (Objects.equals(TRUE.getCode(), productType)) {
-                //虚拟服务售卖卡券
-                soldCard(orderInfo);
+            try {
+                //创建订单
+                OrderInfo orderInfo = assembleOrder(userId, model, itemBoList, model.getFansReceiveAddressId());
+                //生成支付单
+                WxPaymentVO wxPaymentVO = wxPay(orderInfo);
+                baseMapper.insertDynamic(orderInfo);
+                List<OrderItem> itemList = itemBoList.stream().map(t -> {
+                    OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
+                    orderItem.setOrderId(orderInfo.getId());
+                    orderItem.setOrderSn(orderInfo.getOrderSn());
+                    return orderItem;
+                }).collect(toList());
+                orderItemService.saveBatch(itemList);
+                //保存预付单信息
+                wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
+                CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
+                //发送延迟消息取消订单
+                sendOrderMessage(orderInfo.getId());
+                if (Objects.equals(TRUE.getCode(), productType)) {
+                    //虚拟服务售卖卡券
+                    soldCard(orderInfo);
+                }
+                return vo;
+            } catch (Exception e) {
+                freeStock(productType, BeanCopierUtils.listGeneralCopyBean(itemBoList, OrderItem.class));
+                throw e;
             }
-            return vo;
         } finally {
             if (locked) {
                 log.info("【解锁成功】商品详情创建订单");
@@ -217,27 +223,32 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         //进行库存锁定
         lockStock(null, null, orderItemBOS, model.getProductType());
-        //创建订单
-        OrderInfo orderInfo = assembleOrder(userId, model, orderItemBOS, model.getFansReceiveAddressId());
-        //删除购物车中的下单商品
-        cartItemService.delete(model.getCartIds());
-        //生成支付单
-        WxPaymentVO wxPaymentVO = wxPay(orderInfo);
-        baseMapper.insertDynamic(orderInfo);
-        List<OrderItem> itemList = orderItemBOS.stream().map(t -> {
-            OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
-            orderItem.setProductQuantity(t.getProductQuantity());
-            orderItem.setOrderId(orderInfo.getId());
-            orderItem.setOrderSn(orderInfo.getOrderSn());
-            return orderItem;
-        }).collect(toList());
-        orderItemService.saveBatch(itemList);
-        //保存预付单信息
-        wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
-        CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
-        //发送延迟消息取消订单
-        sendOrderMessage(orderInfo.getId());
-        return vo;
+        try {
+            //创建订单
+            OrderInfo orderInfo = assembleOrder(userId, model, orderItemBOS, model.getFansReceiveAddressId());
+            //删除购物车中的下单商品
+            cartItemService.delete(model.getCartIds());
+            //生成支付单
+            WxPaymentVO wxPaymentVO = wxPay(orderInfo);
+            baseMapper.insertDynamic(orderInfo);
+            List<OrderItem> itemList = orderItemBOS.stream().map(t -> {
+                OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
+                orderItem.setProductQuantity(t.getProductQuantity());
+                orderItem.setOrderId(orderInfo.getId());
+                orderItem.setOrderSn(orderInfo.getOrderSn());
+                return orderItem;
+            }).collect(toList());
+            orderItemService.saveBatch(itemList);
+            //保存预付单信息
+            wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
+            CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
+            //发送延迟消息取消订单
+            sendOrderMessage(orderInfo.getId());
+            return vo;
+        } catch (Exception e) {
+            freeStock(model.getProductType(), BeanCopierUtils.listGeneralCopyBean(orderItemBOS, OrderItem.class));
+            throw e;
+        }
     }
 
     @Override
@@ -494,7 +505,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //商店放回购物车或下订单页面
         addCart(orderInfo, orderItems);
         //释放库存
-        freeStock(orderInfo, orderItems);
+        freeStock(orderInfo.getProductType().intValue(), orderItems);
     }
 
     @Override
@@ -759,14 +770,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
     }
 
-    private void freeStock(OrderInfo orderInfo, List<OrderItem> orderItems) {
+    private void freeStock(Integer productType, List<OrderItem> orderItems) {
         List<FreeStockForm> forms = orderItems.stream().map(t -> {
             FreeStockForm form = new FreeStockForm();
             form.setProductId(t.getProductId());
             form.setQuantity(t.getProductQuantity());
             return form;
         }).collect(toList());
-        productService.freeStock(forms, orderInfo.getProductType().intValue());
+        productService.freeStock(forms, productType);
     }
 
     private List<OrderFrontVO> assembleFrontOrder(List<OrderInfo> list, List<OrderItem> orderItems) {
@@ -1135,20 +1146,20 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             //已激活卡券
             List<Integer> soldCards = orderVirtual.stream()
                     .filter(t -> Objects.isNull(t.getPatientId())).map(OrderVirtual::getCardId).collect(toList());
-           if (CollectionUtils.isNotEmpty(soldCards)) {
-               //取消售出
-               BatchCancelCardForm form = new BatchCancelCardForm();
-               form.setCardIds(soldCards);
-               form.setOrgId(21);
-               form.setLoginUserId(orderInfo.getFansId());
-               discountFeign.batchCancelCard(form);
-           }
+            if (CollectionUtils.isNotEmpty(soldCards)) {
+                //取消售出
+                BatchCancelCardForm form = new BatchCancelCardForm();
+                form.setCardIds(soldCards);
+                form.setOrgId(21);
+                form.setLoginUserId(orderInfo.getFansId());
+                discountFeign.batchCancelCard(form);
+            }
             //已激活卡券
             List<Integer> activeCards = orderVirtual.stream()
                     .filter(t -> Objects.nonNull(t.getPatientId())).map(OrderVirtual::getCardId).collect(toList());
-           if (CollectionUtils.isNotEmpty(activeCards)) {
-               discountFeign.deleteCard(activeCards);
-           }
+            if (CollectionUtils.isNotEmpty(activeCards)) {
+                discountFeign.deleteCard(activeCards);
+            }
         }
     }
 
