@@ -985,6 +985,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderInfo.setRemark(model.getRemark());
         Integer deliveryType = model.getDeliveryType();
         BigDecimal freightAmount = null;
+        Distribution distribution = null;
         FansAddressBO address;
         //商品类产品有自提和配送区分
         if (FALSE.getCode().equals(model.getProductType())) {
@@ -1005,12 +1006,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if (FALSE.equals(deliveryType)) {
                 orderInfo.setReceiverDetailAddress(model.getLocationAddress());
             } else {
-                Distribution distribution = distributionService.findList();
+                distribution = distributionService.findList();
                 freightAmount = Objects.nonNull(distribution) ? distribution.getSendingPrice() : null;
                 orderInfo.setFreightAmount(freightAmount);
             }
         }
         orderInfo.setPayAmount(calcTotalAmount(itemBoList).add(Objects.isNull(freightAmount) ? BigDecimal.ZERO : freightAmount));
+        //起送价判断
+        BigDecimal startSendingPrice = Objects.nonNull(distribution) ? distribution.getStartSendingPrice() : null;
+        if (Objects.nonNull(startSendingPrice) && startSendingPrice.compareTo(orderInfo.getPayAmount()) > 0) {
+            throw ClientServiceException.wrap(SEND_AMOUNT_LACK, startSendingPrice.subtract(orderInfo.getPayAmount()));
+        }
         //0->未确认；1->已确认
         orderInfo.setConfirmStatus((byte) 0);
         orderInfo.setDeleteStatus((byte) 0);
