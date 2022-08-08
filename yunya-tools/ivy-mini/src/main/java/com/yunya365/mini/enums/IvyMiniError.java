@@ -51,7 +51,7 @@ public enum IvyMiniError implements RestError {
     SMS_EXPIRED(41, "手机验证码已过期，请重新获取"),
     CAPTCHA_NOT_MATCH(42, "验证码输入不正确"),
     ADDRESS_IS_NULL(43, "请先添加收货地址"),
-    SEND_AMOUNT_LACK(44, "起送价不足，还差%d起送"),
+    SEND_AMOUNT_LACK(44, "起送价不足，还差%s起送"),
     ;
     private final Integer code;
     private final String value;

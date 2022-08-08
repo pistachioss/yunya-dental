@@ -44,4 +44,6 @@ public class PayOrderVO{
     private String mchReply;
     @ApiModelProperty(value = "确认收货时间（取货时间）")
     private Date receiveTime;
+    @ApiModelProperty(value = "配送费")
+    private BigDecimal freightAmount;
 }
