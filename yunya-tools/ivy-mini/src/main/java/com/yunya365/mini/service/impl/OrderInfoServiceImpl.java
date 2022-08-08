@@ -679,7 +679,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             throw ClientServiceException.wrap(ORDER_ERROR);
         }
         vo.setOrderVO(assembleOrderDetail(orderInfo));
-        List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId), false);
+        List<OrderVirtual> orderVirtual = virtualService.listByOrderIds(Collections.singleton(orderId), null);
         if (CollectionUtils.isNotEmpty(orderVirtual)) {
             List<Integer> carIds = orderVirtual.stream().map(OrderVirtual::getCardId).collect(toList());
             List<CardQrCodeVo> qrList = discountFeign.batchCardQrCode(carIds);
