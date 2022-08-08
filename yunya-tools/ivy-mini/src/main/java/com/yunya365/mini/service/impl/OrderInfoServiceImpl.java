@@ -565,6 +565,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     public String wxRefundNotify(HttpServletRequest request, HttpServletResponse response) {
+        Integer orderId = null;
+        Byte status = null;
+        Byte productType = null;
         try {
             String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
             log.info("微信退款回调结果：{}", xmlResult);
@@ -585,22 +588,24 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if (Objects.isNull(orderInfo)) {
                 throw ClientServiceException.wrap(ORDER_DATA_ERROR);
             }
-            Integer orderId = orderInfo.getId();
+            orderId = orderInfo.getId();
             OrderReturnApply apply = returnApplyService.queryRefund(orderId);
-            if (Objects.equals(refundStatus, "SUCCESS")) {
+            productType = orderInfo.getProductType();
+            status = orderInfo.getStatus();
+            if (Objects.equals(refundStatus, "SUCCESS") && Objects.equals(APPLY_REFUND.getCode().byteValue(), status)) {
                 java.time.LocalDateTime refundTime = java.time.LocalDateTime.parse(successTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 apply.setUpdTime(refundTime);
                 apply.setRefundStatus(FALSE.getCode());
                 orderInfo.setStatus(REFUND_SUCCESS.getCode().byteValue());
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(refundTime));
-                if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
+                if (Objects.equals(TRUE.getCode().byteValue(), productType)) {
                     //如果是虚拟卡券(已激活：删除 未激活：取消售出)
                     cancelSoldCard(orderInfo);
                     //退款成功 虚拟卡券删除
                     virtualService.deleteOrderCard(orderId);
                 }
                 //热销产品
-                hotSaleCal(orderInfo.getId(), false, orderInfo.getProductType());
+                hotSaleCal(orderInfo.getId(), false, productType.intValue());
             } else {
                 java.time.LocalDateTime now = java.time.LocalDateTime.now();
                 apply.setRefundStatus(TRUE.getCode());
@@ -608,7 +613,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 apply.setHandleNote("微信退款失败");
                 orderInfo.setStatus(apply.getPreStatus().byteValue());
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(now));
-                if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
+                if (Objects.equals(TRUE.getCode().byteValue(), productType)) {
                     //退款失败，卡券解除限制
                     virtualService.soldActiveOrInvalid(orderId, false);
                 }
@@ -619,6 +624,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         } catch (Exception e) {
             log.error("退款回调结果异常", e);
             return WxPayNotifyResponse.fail(e.getMessage());
+        } finally {
+            if (Objects.equals(APPLY_REFUND.getCode().byteValue(), status)) {
+                //释放库存
+                freeStock(productType.intValue(), orderItemService.listByOrderIds(Collections.singleton(orderId)));
+            }
         }
     }
 
