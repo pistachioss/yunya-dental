@@ -553,6 +553,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         if (Objects.isNull(orderInfo)) {
             throw ClientServiceException.wrap(ORDER_ERROR);
         }
+        if (Lists.newArrayList(SHIP_PENDING.getCode(), HAS_SHIP.getCode(), FINISH.getCode())
+                .contains(orderInfo.getStatus().intValue())) {
+            throw ClientServiceException.wrap(ORDER_REFUNDING);
+        }
         if (!Objects.equals(APPLY_REFUND.getCode(), orderInfo.getStatus().intValue())) {
             throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
         }
