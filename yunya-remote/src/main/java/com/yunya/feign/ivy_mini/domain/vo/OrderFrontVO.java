@@ -40,4 +40,6 @@ public class OrderFrontVO {
     private Byte productType;
     @ApiModelProperty(value = "配送方式（0->自提 1->配送）")
     private Byte deliveryType;
+    @ApiModelProperty(value = "退款审批状态（1->退款成功；2->退款拒绝）")
+    private Integer handleStatus;
 }
