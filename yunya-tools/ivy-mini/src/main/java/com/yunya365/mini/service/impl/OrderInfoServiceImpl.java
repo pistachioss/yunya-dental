@@ -560,6 +560,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         if (!Objects.equals(APPLY_REFUND.getCode(), orderInfo.getStatus().intValue())) {
             throw ClientServiceException.wrap(ORDER_REFUND_STATUS_ERROR);
         }
+        //先更新订单状态
+        if (Objects.equals(REFUNDING.getCode(), model.getStatus())) {
+            orderInfo.setStatus(REFUND_SUCCESS.getCode().byteValue());
+            baseMapper.updateById(orderInfo);
+        }
         returnApplyService.refund(orderInfo, model);
     }
 
@@ -592,7 +597,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             OrderReturnApply apply = returnApplyService.queryRefund(orderId);
             productType = orderInfo.getProductType();
             status = orderInfo.getStatus();
-            if (Objects.equals(refundStatus, "SUCCESS") && Objects.equals(APPLY_REFUND.getCode().byteValue(), status)) {
+            if (Objects.equals(refundStatus, "SUCCESS")) {
                 java.time.LocalDateTime refundTime = java.time.LocalDateTime.parse(successTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 apply.setUpdTime(refundTime);
                 apply.setRefundStatus(FALSE.getCode());

@@ -36,8 +36,8 @@ wx:
     michId: 1319671401
     appSecret: 2cfb0904bc87f47fe73ddaaeb3d7359a
     useSandboxEnv: false
-    notifyUrl: https://5f67-183-128-184-51.jp.ngrok.io/api/ivy/mini/wx/notify
-    refundNotifyUrl: https://5f67-183-128-184-51.jp.ngrok.io/api/ivy/mini/wx/refund/notify
+    notifyUrl: https://6a89-183-128-184-51.ap.ngrok.io/api/ivy/mini/wx/notify
+    refundNotifyUrl: https://6a89-183-128-184-51.ap.ngrok.io/api/ivy/mini/wx/refund/notify
     keyPath: classpath:static/apiclient_cert.p12
 
 
