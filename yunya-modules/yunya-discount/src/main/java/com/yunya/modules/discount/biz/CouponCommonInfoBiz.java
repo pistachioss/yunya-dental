@@ -70,6 +70,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         Page<CouponCommonInfo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
         Example example = new Example(CouponCommonInfo.class);
         Example.Criteria criteria = example.createCriteria().andEqualTo("isOnlineSale", true);
+        criteria.andEqualTo("isInservice", 1);
         if (Objects.nonNull(query.getProductCategoryId())) {
             criteria.andEqualTo("productTypeId", query.getProductCategoryId());
         }
