@@ -6,6 +6,9 @@ import com.yunya.feign.ivy_mini.domain.model.OrderRefundModel;
 import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderReturnApply;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * <p>
  * 订单退货申请 服务类
@@ -22,4 +25,5 @@ public interface IOrderReturnApplyService extends IService<OrderReturnApply> {
 
     void refund(OrderInfo orderInfo, OrderRefundModel model);
 
+    List<OrderReturnApply> listLast(Collection<Integer> orderIds);
 }

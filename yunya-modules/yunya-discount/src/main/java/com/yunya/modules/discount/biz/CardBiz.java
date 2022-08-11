@@ -662,6 +662,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         List<CouponCommonInfo> coupons = couponMapper.selectByExample(example1);
         Map<Integer, CouponCommonInfo> couponMap = coupons.stream()
                 .collect(toMap(CouponCommonInfo::getId, Function.identity(), (o,n) -> n));
+        Map<Integer, Integer> map = queryQrCodeLimit(coupons);
         for (Integer cardId : cardIds) {
             Card card = cardMap.get(cardId);
             CardQrCodeVo vo = new CardQrCodeVo();
@@ -701,9 +702,35 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                                 .encode(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword())), card.getId())
                         .getBytes()));
             }
+            Integer limitCount = map.get(coupon.getId());
+            vo.setLimitCount(limitCount);
             list.add(vo);
         }
         return list;
+    }
+
+    private Map<Integer, Integer> queryQrCodeLimit(List<CouponCommonInfo> coupons) {
+        Map<Integer, Integer> map1 = Maps.newHashMapWithExpectedSize(coupons.size());
+        Map<Byte, Set<Integer>> map = coupons.stream()
+                .collect(groupingBy(CouponCommonInfo::getType, mapping(CouponCommonInfo::getId, toSet())));
+        Set<Integer> voucher = map.get(0);
+        Set<Integer> _package = map.get(2);
+        Set<Integer> special = map.get(3);
+        Example voucherExample = new Example(VoucheCoupon.class);
+        voucherExample.createCriteria().andIn("couponId", voucher);
+        List<VoucheCoupon> voucherCoupon = voucherMapper.selectByExample(voucherExample);
+
+        Example _packageExample = new Example(PackageCoupon.class);
+        _packageExample.createCriteria().andEqualTo("couponId", _package);
+        List<PackageCoupon>  packageCoupon = packageMapper.selectByExample(_packageExample);
+
+        Example specialExample = new Example(SpecialPackageCoupon.class);
+        specialExample.createCriteria().andEqualTo("couponId", special);
+        List<SpecialPackageCoupon> specialPackageCoupon = specialPackageMapper.selectByExample(specialExample);
+        voucherCoupon.forEach(t -> map1.put(t.getCouponId(), t.getLimitCount()));
+        packageCoupon.forEach(t -> map1.put(t.getCouponId(), t.getLimitCount()));
+        packageCoupon.forEach(t -> map1.put(t.getCouponId(), t.getLimitCount()));
+        return map1;
     }
 
     /**

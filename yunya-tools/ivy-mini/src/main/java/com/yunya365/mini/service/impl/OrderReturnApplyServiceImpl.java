@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.*;
 
 import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
@@ -118,6 +118,11 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
             log.error("微信退款失败！订单号：{},原因:{}", orderInfo.getOrderSn(), e.getMessage());
             throw ClientServiceException.wrap(CB_PAY_ERROR);
         }
+    }
+
+    @Override
+    public List<OrderReturnApply> listLast(Collection<Integer> orderIds) {
+        return baseMapper.listLast(orderIds);
     }
 
     private WxPayRefundRequest assembleRefundModel(OrderInfo orderInfo, OrderReturnApply apply) {

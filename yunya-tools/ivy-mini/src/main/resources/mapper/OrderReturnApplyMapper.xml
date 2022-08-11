@@ -23,4 +23,24 @@
         <result column="upd_time" property="updTime" />
     </resultMap>
 
+    <select id="listLast" resultType="com.yunya365.mini.entity.OrderReturnApply">
+        SELECT
+            a.*
+        FROM
+            order_return_apply a
+        WHERE
+            order_id IN
+        <foreach collection="orderIds" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+          AND 1 > (
+            SELECT
+                count(*)
+            FROM
+                order_return_apply
+            WHERE
+                order_id = a.order_id
+              AND upd_time > a.upd_time
+        )
+    </select>
 </mapper>

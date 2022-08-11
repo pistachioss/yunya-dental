@@ -342,7 +342,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
         Set<Integer> orderIds = list.stream().map(OrderInfo::getId).collect(toSet());
         List<OrderItem> orderItems = orderItemService.listByOrderIds(orderIds);
-        List<OrderFrontVO> result = assembleFrontOrder(list, orderItems);
+        //查询退款
+        List<OrderReturnApply> applyList = returnApplyService.listLast(orderIds);
+        List<OrderFrontVO> result = assembleFrontOrder(list, orderItems, applyList);
         PageInfo<OrderFrontVO> pageInfo = new PageInfo<>(result);
         pageInfo.setPageNum(page.getPageNum());
         pageInfo.setTotal(page.getTotal());
@@ -799,9 +801,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         productService.freeStock(forms, productType);
     }
 
-    private List<OrderFrontVO> assembleFrontOrder(List<OrderInfo> list, List<OrderItem> orderItems) {
+    private List<OrderFrontVO> assembleFrontOrder(List<OrderInfo> list, List<OrderItem> orderItems, List<OrderReturnApply> applyList) {
         Map<Integer, List<OrderItem>> orderItemMap = orderItems.stream().collect(groupingBy(OrderItem::getOrderId, toList()));
+        Map<Integer, OrderReturnApply> applyMap = applyList.stream().collect(toMap(OrderReturnApply::getOrderId, Function.identity()));
         return list.stream().filter(t -> orderItemMap.containsKey(t.getId())).map(t -> {
+            OrderReturnApply apply = applyMap.get(t.getId());
             List<OrderItem> itemList = orderItemMap.get(t.getId());
             //封面图片
             List<String> picList = itemList.stream().map(OrderItem::getProductPic)
@@ -821,6 +825,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             vo.setProductName(Objects.isNull(orderItem) ? null : orderItem.getProductName());
             vo.setProductType(t.getProductType());
             vo.setDeliveryType(t.getDeliveryType());
+            vo.setHandleStatus(Objects.isNull(apply) ? null : apply.getHandleStatus());
             return vo;
         }).collect(toList());
     }

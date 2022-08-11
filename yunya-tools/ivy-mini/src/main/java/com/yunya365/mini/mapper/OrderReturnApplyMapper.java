@@ -1,8 +1,12 @@
 package com.yunya365.mini.mapper;
 
-import com.yunya365.mini.entity.OrderReturnApply;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.yunya365.mini.entity.OrderReturnApply;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * <p>
@@ -15,4 +19,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface OrderReturnApplyMapper extends BaseMapper<OrderReturnApply> {
 
+    List<OrderReturnApply> listLast(@Param("orderIds") Collection<Integer> orderIds);
 }
