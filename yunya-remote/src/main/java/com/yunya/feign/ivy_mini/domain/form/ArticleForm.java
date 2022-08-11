@@ -35,11 +35,11 @@ public class ArticleForm extends PageQuery implements Serializable {
     private Integer status;
 
     @ApiModelProperty(value = "排序字段 reading_number:按照阅读数/ crt_time：按照创建时间 可不传但不要空字符串")
-    private String orderByColumn;
+    private String orderByColumn = "crt_time" ;
 
     /** 排序的方向desc或者asc */
     @ApiModelProperty(value = "排序的方向desc或者asc 可不传但不要空字符串")
-    private String isAsc = "asc";
+    private String isAsc = "desc";
 
 
 }

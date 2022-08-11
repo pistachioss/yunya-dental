@@ -43,9 +43,41 @@
     </where>
     order by
      <if test="orderByColumn != null and orderByColumn!=''">
-       ${orderByColumn} ${isAsc} ,
+       ${orderByColumn} ${isAsc} ,sort desc
       </if>
-    sort desc
+    <if test="orderByColumn == null or orderByColumn==''">
+      sort desc ,crt_time desc
+    </if>
+  </select>
+  <select id="findArticleAppList" resultType="com.yunya.feign.ivy_mini.domain.vo.ArticleVO">
+    SELECT
+    id,
+    name,
+    article_url as articleUrl,
+    cover_picture as coverPicture,
+    type as type,
+    sort as isSort,
+    reading_number as readingNumber,
+    status as status,
+    crt_time as crtTime,
+    upd_time as updTime
+    FROM article
+    <where>
+      <if test="name!=null and name!=''">
+        AND name like CONCAT(CONCAT('%',#{name}),'%')
+      </if>
+      <if test="status != null">
+        AND status = #{status}
+      </if>
+      <if test="type!=null and type!=''">
+        AND type = #{type}
+      </if>
+    </where>
+    order by  sort desc
+    <if test="orderByColumn != null and orderByColumn!=''">
+      , ${orderByColumn} ${isAsc}
+    </if>
+
   </select>
   <update id="updateSortById" parameterType="com.yunya365.mini.entity.Article" >
     update article

@@ -42,7 +42,7 @@ public class ArticleAppletController extends BaseController{
     @PostMapping("/article/findlist")
     @ApiOperation("小程序-口腔科普/艾维动态-列表(传type和status即可)")
     public ResponseResult<PageInfo<ArticleVO>> findList(@RequestBody @Valid ArticleForm form) {
-        return ResponseUtil.success(articleService.findList(form));
+        return ResponseUtil.success(articleService.findAppList(form));
     }
 
     @GetMapping("/article/findone/{id}")

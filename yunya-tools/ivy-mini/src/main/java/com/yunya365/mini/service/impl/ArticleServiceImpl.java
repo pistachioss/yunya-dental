@@ -44,6 +44,14 @@ public class ArticleServiceImpl extends BaseBiz<ArticleMapper, Article> {
         return new PageInfo<>(result);
     }
 
+    public PageInfo<ArticleVO> findAppList(ArticleForm form) {
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
+        }
+        List<ArticleVO> result = mapper.findArticleAppList(form);
+        return new PageInfo<>(result);
+    }
+
     public void add(ArticleAddForm form) {
         Article entity = new Article();
         BeanUtils.copyProperties(form, entity);

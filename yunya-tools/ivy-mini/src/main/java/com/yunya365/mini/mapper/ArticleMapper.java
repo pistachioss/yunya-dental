@@ -11,6 +11,8 @@ public interface ArticleMapper extends Mapper<Article> {
 
    List<ArticleVO> findArticleList(ArticleForm form);
 
+   List<ArticleVO> findArticleAppList(ArticleForm form);
+
    Integer selectNextId(Article article);
 
    Integer selectPreviousId(Article article);
