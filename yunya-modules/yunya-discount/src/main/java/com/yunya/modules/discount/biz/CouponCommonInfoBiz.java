@@ -1,16 +1,13 @@
 package com.yunya.modules.discount.biz;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
-import com.yunya.feign.discount.domain.vo.CouponCommonInfoVO;
 import com.github.pagehelper.*;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
+import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.CouponCommonInfoVO;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
@@ -33,8 +30,6 @@ import java.util.stream.Collectors;
 
 import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
-
-import java.util.List;
 
 /**
  * 简介: 卡券公共信息业务层
@@ -118,13 +113,12 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
             if (CollectionUtils.isNotEmpty(couponFileInfos)) {
                 Optional<CouponFileInfo> fileInfo = couponFileInfos.stream()
                         .filter(t -> Objects.equals((byte) 2, t.getFileType())).findFirst();
-                Optional<CouponFileInfo> fileInfo1 = couponFileInfos.stream()
-                        .filter(t -> Objects.equals((byte) 0, t.getFileType())).findFirst();
+                List<String> fileInfo1 = couponFileInfos.stream()
+                        .filter(t -> Objects.equals((byte) 0, t.getFileType()) && StringUtils.isNotBlank(t.getPath()))
+                        .map(CouponFileInfo::getPath)
+                        .collect(toList());
                 vo.setDetailHtml(fileInfo.map(CouponFileInfo::getPath).orElse(null));
-                vo.setProductPics(fileInfo1.map(t -> {
-                    String path = t.getPath();
-                    return StringUtils.isNotBlank(path) ? Lists.newArrayList(Splitter.on(",").split(path)) : null;
-                }).orElse(null));
+                vo.setProductPics(fileInfo1);
             }
         }
         return vo;
