@@ -2254,6 +2254,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         ownActiveCard.setUpdId(loginUserId);
         ownActiveCard.setActiveDate(now);
         mapper.updateByPrimaryKeySelective(ownActiveCard);
+        //小程序激活
+        miniActive(patientId, card, now, loginUserId);
         return ownActiveCard;
     }
 
