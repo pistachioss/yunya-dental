@@ -1078,6 +1078,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if ( totalAmount.compareTo(BigDecimal.ZERO) <= 0 ) {
                 //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
                 orderInfo.setStatus((byte) 3);
+                orderInfo.setPaymentTime(payDate);
             }
         }
         orderInfo.setPayAmount(totalAmount);
