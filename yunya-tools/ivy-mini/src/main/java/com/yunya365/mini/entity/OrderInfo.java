@@ -73,6 +73,12 @@ public class OrderInfo {
     private Byte status;
 
     /**
+     * 是否核销(0-否 1-是)
+     */
+    @Column(name = "active_status")
+    private Boolean activeStatus;
+
+    /**
      * 订单类型：0->正常订单；1->秒杀订单；2-拼团订单
      */
     @Column(name = "order_type")

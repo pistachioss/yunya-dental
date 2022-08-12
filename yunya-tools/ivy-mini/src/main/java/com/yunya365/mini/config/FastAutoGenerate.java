@@ -42,7 +42,7 @@ public class FastAutoGenerate {
                    .templateEngine(new FreemarkerTemplateEngine())
                  */
                 .templateConfig(builder -> builder.disable(
-                        TemplateType.MAPPER,TemplateType.CONTROLLER,TemplateType.SERVICE,TemplateType.SERVICEIMPL).build())
+                        TemplateType.MAPPER,TemplateType.CONTROLLER,TemplateType.SERVICE,TemplateType.SERVICEIMPL,TemplateType.XML).build())
                 .execute();
     }
 
