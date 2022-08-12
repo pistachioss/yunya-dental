@@ -177,8 +177,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             try {
                 //创建订单
                 OrderInfo orderInfo = assembleOrder(userId, model, itemBoList, model.getFansReceiveAddressId());
-                //生成支付单
-                WxPaymentVO wxPaymentVO = wxPay(orderInfo);
+                WxPaymentVO wxPaymentVO = null;
+                if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
+                    //生成支付单
+                    wxPaymentVO = wxPay(orderInfo);
+                    //保存预付单信息
+                    wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
+                }
                 baseMapper.insertDynamic(orderInfo);
                 List<OrderItem> itemList = itemBoList.stream().map(t -> {
                     OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
@@ -187,8 +192,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                     return orderItem;
                 }).collect(toList());
                 orderItemService.saveBatch(itemList);
-                //保存预付单信息
-                wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
                 CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
                 //发送延迟消息取消订单
                 sendOrderMessage(orderInfo.getId());
@@ -228,8 +231,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             OrderInfo orderInfo = assembleOrder(userId, model, orderItemBOS, model.getFansReceiveAddressId());
             //删除购物车中的下单商品
             cartItemService.delete(model.getCartIds());
-            //生成支付单
-            WxPaymentVO wxPaymentVO = wxPay(orderInfo);
+            WxPaymentVO wxPaymentVO = null;
+            if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
+                //生成支付单
+                wxPaymentVO = wxPay(orderInfo);
+                //保存预付单信息
+                wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
+            }
             baseMapper.insertDynamic(orderInfo);
             List<OrderItem> itemList = orderItemBOS.stream().map(t -> {
                 OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
@@ -239,8 +247,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 return orderItem;
             }).collect(toList());
             orderItemService.saveBatch(itemList);
-            //保存预付单信息
-            wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
             CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
             //发送延迟消息取消订单
             sendOrderMessage(orderInfo.getId());
