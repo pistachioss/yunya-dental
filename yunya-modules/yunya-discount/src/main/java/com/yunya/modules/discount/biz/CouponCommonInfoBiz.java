@@ -14,8 +14,8 @@ import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.models.discount.CouponCommonInfo;
-import com.yunya.models.discount.CouponFileInfo;
+import com.yunya.models.discount.*;
+import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +47,10 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
     private CouponFileInfoBiz fileInfoBiz;
     @Resource
     private ProductTypeBiz productTypeBiz;
+    @Resource
+    private CouponAllocateMapper allocateMapper;
+    @Resource
+    private CardBiz cardBiz;
     /**
      * 条件查询卡券公用信息列表
      *
@@ -120,6 +124,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
                 vo.setDetailHtml(fileInfo.map(CouponFileInfo::getPath).orElse(null));
                 vo.setProductPics(fileInfo1);
             }
+            vo.setStock(unsold(couponId));
         }
         return vo;
     }
@@ -181,5 +186,12 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
             commonInfo.setSale((Objects.isNull(commonInfo.getSale()) ? 0 : commonInfo.getSale()) - freeStockForm.getQuantity());
             mapper.updateByPrimaryKeySelective(commonInfo);
         }
+    }
+
+    private int unsold(Integer couponId) {
+        Example example = new Example(Card.class);
+        example.createCriteria().andEqualTo("couponId", couponId)
+                .andEqualTo("status", 0);
+        return cardBiz.selectCountByExample(example);
     }
 }
