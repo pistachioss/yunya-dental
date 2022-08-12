@@ -1165,6 +1165,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             virtual.setCrtId(userId);
             virtual.setUpdId(userId);
             virtual.setDeleteStatus(true);
+            if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                virtual.setDeleteStatus(false);
+            }
             list.add(virtual);
         }
 
