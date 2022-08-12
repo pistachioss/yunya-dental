@@ -109,10 +109,17 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
                     WxPayRefundResult refund = wxPayService.refund(refundRequest);
                     apply.setOutOrderNo(refund.getRefundId());
                 } else {
+                    //金额0元 直接退款
                     apply.setRefundStatus(FALSE.getCode());
                     orderInfo.setStatus(REFUND_SUCCESS.getCode().byteValue());
+                    orderInfo.setActiveStatus(false);
                     orderInfo.setUpdTime(DateUtil.localDateTimeToDate(now));
                     orderInfoService.updateById(orderInfo);
+                    if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
+                        orderInfoService.deleteCard(orderInfo);
+                    }
+                    //热销产品
+                    orderInfoService.hotSaleCal(orderInfo.getId(), false, orderInfo.getProductType().intValue());
                 }
             } else {
                 apply.setHandleNote(model.getRejectReason());

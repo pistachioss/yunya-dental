@@ -200,6 +200,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                     //虚拟服务售卖卡券
                     soldCard(orderInfo);
                 }
+                //金额0元，直接售卖完成
+                if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0 ) {
+                    //热销产品
+                    hotSaleCal(orderInfo.getId(), true, productType);
+                }
                 return vo;
             } catch (Exception e) {
                 freeStock(productType, BeanCopierUtils.listGeneralCopyBean(itemBoList, OrderItem.class));
@@ -613,10 +618,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 orderInfo.setStatus(REFUND_SUCCESS.getCode().byteValue());
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(refundTime));
                 if (Objects.equals(TRUE.getCode().byteValue(), productType)) {
-                    //如果是虚拟卡券(已激活：删除 未激活：取消售出)
-                    cancelSoldCard(orderInfo);
-                    //退款成功 虚拟卡券删除
-                    virtualService.deleteOrderCard(orderId);
+                    //删除卡券
+                    deleteCard(orderInfo);
                 }
                 //热销产品
                 hotSaleCal(orderInfo.getId(), false, productType.intValue());
@@ -734,6 +737,23 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         ChainWrappers.lambdaUpdateChain(baseMapper)
                 .set(OrderInfo::getActiveStatus, activeStatus)
                 .eq(OrderInfo::getId, orderId);
+    }
+
+    @Override
+    public void deleteCard(OrderInfo orderInfo) {
+        //如果是虚拟卡券(已激活：删除 未激活：取消售出)
+        cancelSoldCard(orderInfo);
+        //退款成功 虚拟卡券删除
+        virtualService.deleteOrderCard(orderInfo.getId());
+    }
+
+    @Override
+    public void hotSaleCal(Integer orderId, boolean increase, int productType) {
+        List<OrderItem> items = orderItemService.listByOrderIds(Collections.singleton(orderId));
+        for (OrderItem item : items) {
+            Integer productQuantity = item.getProductQuantity();
+            redisUtils.zIncrBy(HOT_SALE_PRODUCT, productType + "_" + item.getProductId().toString(), increase ? productQuantity : -productQuantity);
+        }
     }
 
     private PayOrderVO assembleOrderDetail(OrderInfo orderInfo) {
@@ -1082,7 +1102,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             }
         } else {
             //订单金额为0元
-            if ( totalAmount.compareTo(BigDecimal.ZERO) <= 0 ) {
+            if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
                 //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
                 orderInfo.setStatus((byte) 3);
                 orderInfo.setPaymentTime(payDate);
@@ -1222,14 +1242,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if (CollectionUtils.isNotEmpty(activeCards)) {
                 discountFeign.deleteCard(activeCards);
             }
-        }
-    }
-
-    private void hotSaleCal(Integer orderId, boolean increase, int productType) {
-        List<OrderItem> items = orderItemService.listByOrderIds(Collections.singleton(orderId));
-        for (OrderItem item : items) {
-            Integer productQuantity = item.getProductQuantity();
-            redisUtils.zIncrBy(HOT_SALE_PRODUCT, productType + "_" + item.getProductId().toString(), increase ? productQuantity : -productQuantity);
         }
     }
 

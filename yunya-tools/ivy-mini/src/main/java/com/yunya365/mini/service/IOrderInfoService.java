@@ -154,4 +154,8 @@ public interface IOrderInfoService extends IService<OrderInfo> {
      * @param activeStatus:
      */
     void activeStatus(Integer orderId, boolean activeStatus);
+
+    void deleteCard(OrderInfo orderInfo);
+
+    void hotSaleCal(Integer orderId, boolean increase, int productType);
 }
