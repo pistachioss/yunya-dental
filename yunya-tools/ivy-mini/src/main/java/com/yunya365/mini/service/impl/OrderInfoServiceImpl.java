@@ -143,6 +143,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         vo.setCalcAmountVO(calcOrderAmount(orderItemVOS));
         //判断购物车中商品是否都有库存
         checkCartStockStatus(orderItemBOS, orderItemVOS);
+        vo.setProductType(FALSE.getCode());
         return vo;
     }
 

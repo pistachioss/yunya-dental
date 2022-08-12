@@ -23,12 +23,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
 import static com.yunya365.mini.enums.OrderRefundEnum.*;
+import static com.yunya365.mini.enums.OrderStatusEnum.*;
 
 /**
  * <p>
@@ -102,9 +104,16 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
             }
             LocalDateTime now = LocalDateTime.now();
             if (Objects.equals(REFUNDING.getCode(), model.getStatus())) {
-                WxPayRefundRequest refundRequest = assembleRefundModel(orderInfo, apply);
-                WxPayRefundResult refund = wxPayService.refund(refundRequest);
-                apply.setOutOrderNo(refund.getRefundId());
+                if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
+                    WxPayRefundRequest refundRequest = assembleRefundModel(orderInfo, apply);
+                    WxPayRefundResult refund = wxPayService.refund(refundRequest);
+                    apply.setOutOrderNo(refund.getRefundId());
+                } else {
+                    apply.setRefundStatus(FALSE.getCode());
+                    orderInfo.setStatus(REFUND_SUCCESS.getCode().byteValue());
+                    orderInfo.setUpdTime(DateUtil.localDateTimeToDate(now));
+                    orderInfoService.updateById(orderInfo);
+                }
             } else {
                 apply.setHandleNote(model.getRejectReason());
                 orderInfo.setStatus(apply.getPreStatus().byteValue());
