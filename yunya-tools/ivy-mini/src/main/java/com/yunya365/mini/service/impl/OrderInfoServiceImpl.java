@@ -1029,6 +1029,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer deliveryType = model.getDeliveryType();
         BigDecimal freightAmount = null;
         Distribution distribution = null;
+        Date payDate = new Date();
         FansAddressBO address;
         //商品类产品有自提和配送区分
         if (FALSE.getCode().equals(model.getProductType())) {
@@ -1052,6 +1053,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 if ( totalAmount.compareTo(BigDecimal.ZERO) <= 0 ) {
                     //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
                     orderInfo.setStatus((byte) 2);
+                    orderInfo.setPaymentTime(payDate);
                 }
             } else {
                 distribution = distributionService.findList();
@@ -1068,6 +1070,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 if ( totalAmount.compareTo(BigDecimal.ZERO) <= 0 ) {
                     //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
                     orderInfo.setStatus((byte) 1);
+                    orderInfo.setPaymentTime(payDate);
                 }
             }
         } else {
