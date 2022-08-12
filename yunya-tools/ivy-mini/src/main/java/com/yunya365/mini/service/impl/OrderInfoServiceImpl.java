@@ -729,6 +729,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .le(OrderInfo::getDeliveryTime, expiredDate).list();
     }
 
+    @Override
+    public void activeStatus(Integer orderId, boolean activeStatus) {
+        ChainWrappers.lambdaUpdateChain(baseMapper)
+                .set(OrderInfo::getActiveStatus, activeStatus)
+                .eq(OrderInfo::getId, orderId);
+    }
+
     private PayOrderVO assembleOrderDetail(OrderInfo orderInfo) {
         PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
         payOrderVO.setOrderId(orderInfo.getId());
@@ -1165,6 +1172,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             virtual.setCrtId(userId);
             virtual.setUpdId(userId);
             virtual.setDeleteStatus(true);
+            //订单金额0元
             if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0) {
                 virtual.setDeleteStatus(false);
             }

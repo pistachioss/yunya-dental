@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
 import com.yunya365.mini.entity.OrderVirtual;
 import com.yunya365.mini.mapper.OrderVirtualMapper;
+import com.yunya365.mini.service.IOrderInfoService;
 import com.yunya365.mini.service.IOrderVirtualService;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +24,9 @@ import java.util.Objects;
  */
 @Service
 public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, OrderVirtual> implements IOrderVirtualService {
+
+    @Resource
+    private IOrderInfoService orderInfoService;
 
     @Override
     public List<OrderVirtual> listByOrderIds(Collection<Integer> ids, Boolean deleteStatus) {
@@ -48,12 +53,12 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
     public void activeCard(VirtualActiveForm form) {
         String orderSn = form.getOrderSn();
         Integer cardId = form.getCardId();
-        Long count = ChainWrappers.lambdaQueryChain(baseMapper)
+        OrderVirtual virtual = ChainWrappers.lambdaQueryChain(baseMapper)
                 .eq(OrderVirtual::getOrderSn, orderSn)
                 .eq(OrderVirtual::getCardId, cardId)
                 .eq(OrderVirtual::getDeleteStatus, false)
-                .count();
-        if (count > 0) {
+                .one();
+        if (Objects.nonNull(virtual)) {
             ChainWrappers.lambdaUpdateChain(baseMapper)
                     .eq(OrderVirtual::getOrderSn, form.getOrderSn())
                     .eq(OrderVirtual::getCardId, form.getCardId())
@@ -63,13 +68,26 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
                     .set(OrderVirtual::getActiveDate, form.getActiveDate())
                     .set(OrderVirtual::getUpdId, form.getActiveUserId())
                     .update();
+            //订单核销状态更新
+            boolean calActiveStatus = calActiveStatus(orderSn);
+            if (calActiveStatus) {
+                orderInfoService.activeStatus(virtual.getOrderId(), true);
+            }
         }
-
     }
 
     @Override
     public void deleteCard(Integer cardId) {
         ChainWrappers.lambdaUpdateChain(baseMapper)
                 .eq(OrderVirtual::getCardId, cardId).remove();
+    }
+
+    private boolean calActiveStatus(String orderSn) {
+        //未核销卡券
+        Long count = ChainWrappers.lambdaQueryChain(baseMapper)
+                .eq(OrderVirtual::getOrderSn, orderSn)
+                .eq(OrderVirtual::getDeleteStatus, false)
+                .isNull(OrderVirtual::getPatientId).count();
+        return count > 0;
     }
 }

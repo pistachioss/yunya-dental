@@ -147,4 +147,11 @@ public interface IOrderInfoService extends IService<OrderInfo> {
     OrderVirtualDetailVO virtualOrderDetail(Integer orderId);
 
     List<OrderInfo> listShipped(Integer confirmDays);
+
+    /**
+     * 虚拟服务核销状态更新
+     * @param orderId:
+     * @param activeStatus:
+     */
+    void activeStatus(Integer orderId, boolean activeStatus);
 }
