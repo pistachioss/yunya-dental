@@ -345,6 +345,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .select(OrderInfo::getId, OrderInfo::getTotalAmount, OrderInfo::getPayAmount, OrderInfo::getStatus
                         , OrderInfo::getCrtTime, OrderInfo::getProductType, OrderInfo::getDeliveryType)
                 .eq(Objects.nonNull(query.getStatus()), OrderInfo::getStatus, query.getStatus())
+                .eq(Objects.nonNull(query.getActiveStatus()), OrderInfo::getActiveStatus, query.getActiveStatus())
                 .eq(OrderInfo::getDeleteStatus, FALSE.getCode()).orderByDesc(OrderInfo::getCrtTime)
                 .eq(OrderInfo::getFansId, userId)
                 .eq(Objects.nonNull(query.getProductType()), OrderInfo::getProductType, query.getProductType())

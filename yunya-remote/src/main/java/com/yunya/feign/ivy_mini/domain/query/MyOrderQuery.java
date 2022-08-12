@@ -19,4 +19,6 @@ public class MyOrderQuery extends PageQuery {
     private Integer status;
     @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")
     private Integer productType;
+    @ApiModelProperty(value = "是否核销(0-否 1-是)")
+    private Boolean activeStatus;
 }
