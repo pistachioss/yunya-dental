@@ -597,19 +597,20 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       ClinicTariff tariff = new ClinicTariff();
       ClinicOralTariff oralTariff = new ClinicOralTariff();
       BigDecimal price = BigDecimal.valueOf(0);
-      for (OrderDetailModel detail : models) {
+      for (OrderDetailModel model : models) {
         OrderDetail entity = new OrderDetail();
         entity.setOrgId(orgId);
         entity.setTreatmentRecordId(treatmentRecordId);
-        entity.setToothBit(detail.getToothBit());
-        entity.setExecutorId(detail.getExecutorId());
-        entity.setRemarks(detail.getRemarks());
-        Byte type = detail.getType();
+        entity.setToothBit(model.getToothBit());
+        entity.setExecutorId(model.getExecutorId());
+        entity.setConsulterId(model.getConsulterId());
+        entity.setRemarks(model.getRemarks());
+        Byte type = model.getType();
         entity.setType(type);
-        Integer itemId = detail.getBillingItemId();
+        Integer itemId = model.getBillingItemId();
         entity.setBillingItemId(itemId);
         // 记录当时的开单项目名称 需求修改
-        entity.setBillingItemName(detail.getBillingItemName());
+        entity.setBillingItemName(model.getBillingItemName());
         String itemKey = type + REDIS_KEY_ITEM_INFO + itemId;
         // 从缓存查询开单项目
         switch (type) {
@@ -647,7 +648,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             break;
         }
         entity.setPrice(price);
-        Integer quantity = detail.getQuantity();
+        Integer quantity = model.getQuantity();
         entity.setQuantity(quantity);
         BigDecimal detailTotal = price.multiply(BigDecimal.valueOf(quantity));
         entity.setReceivableAmount(detailTotal);

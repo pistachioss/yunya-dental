@@ -50,6 +50,9 @@ public class OrderDetailModel implements Serializable {
   @ApiModelProperty("执行人ID（type为0时必传！）")
   private Integer executorId;
 
+  @ApiModelProperty("咨询师ID")
+  private Integer consulterId;
+
   @ApiModelProperty("备注")
   @Size(max = 150, message = "开单备注最多150个字符！")
   private String remarks;
