@@ -16,6 +16,7 @@
         <result column="receivable_amount" jdbcType="DECIMAL" property="receivableAmount"/>
         <result column="tooth_bit" jdbcType="VARCHAR" property="toothBit"/>
         <result column="executor_id" jdbcType="INTEGER" property="executorId"/>
+        <result column="consulter_id" jdbcType="INTEGER" property="consulterId"/>
         <result column="source_type" jdbcType="TINYINT" property="sourceType"/>
         <result column="remarks" jdbcType="VARCHAR" property="remarks"/>
         <result column="inservice" jdbcType="BIT" property="inservice"/>
@@ -66,6 +67,7 @@
         od.receivable_amount as receivableAmount,
         od.tooth_bit as toothBit,
         od.executor_id as executorId,
+        od.consulter_id as consulterId,
         od.remarks
         from order_detail od
         <where>
@@ -93,6 +95,7 @@
             100 AS discountRate,
             od.tooth_bit AS toothBit,
             od.executor_id AS executorId,
+            od.consulter_id as consulterId,
             od.source_type AS sourceType,
             od.remarks
         FROM
