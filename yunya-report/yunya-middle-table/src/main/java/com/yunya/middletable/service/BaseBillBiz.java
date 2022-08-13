@@ -95,6 +95,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       BaseBillDetail baseBillDetail = baseBillDetailMapper.selectByPrimaryKey(dataId);
       if (baseBillDetail != null) {
         baseBillDetail.setExecutorId(detail.getExecutorId());
+        baseBillDetail.setConsulterId(detail.getConsulterId());
         baseBillDetailMapper.updateByPrimaryKeySelective(baseBillDetail);
       }
     }
@@ -373,6 +374,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     baseBillDetail.setOrgId(detail.getOrgId());
     baseBillDetail.setBillId(detail.getOrderRecordId());
     baseBillDetail.setExecutorId(detail.getExecutorId());
+    baseBillDetail.setConsulterId(detail.getConsulterId());
     baseBillDetail.setItemId(detail.getBillingItemId());
     baseBillDetail.setItemType(detail.getType());
     baseBillDetail.setSourceType(detail.getSourceType());
@@ -522,6 +524,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBillDetail.setOrgId(detail.getOrgId());
       baseBillDetail.setBillId(detail.getOrderRecordId());
       baseBillDetail.setExecutorId(detail.getExecutorId());
+      baseBillDetail.setConsulterId(detail.getConsulterId());
       baseBillDetail.setItemId(detail.getBillingItemId());
       baseBillDetail.setItemType(detail.getType());
       baseBillDetail.setSourceType(detail.getSourceType());
