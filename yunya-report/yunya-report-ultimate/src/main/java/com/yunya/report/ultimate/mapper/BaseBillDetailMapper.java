@@ -551,12 +551,4 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   List<BillItemStatisticsDetailVO> billItemAmountDetailList(
       @Param("query") BillItemInfoQuery query);
 
-  /**
-   * 咨询师应收工作量
-   *
-   * @param query
-   * @return
-   */
-  List<EmployeeWorkloadVO> selectConsulterReceivableWorkload(
-      @Param("query") ClinicEmployeeWorkloadQuery query);
 }
