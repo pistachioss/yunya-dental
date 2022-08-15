@@ -624,6 +624,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       ClinicOralTariff oralTariff = new ClinicOralTariff();
       BigDecimal price = BigDecimal.valueOf(0);
       for (OrderDetailModel model : models) {
+        model.compareParams();
         OrderDetail entity = new OrderDetail();
         entity.setOrgId(orgId);
         entity.setTreatmentRecordId(treatmentRecordId);
