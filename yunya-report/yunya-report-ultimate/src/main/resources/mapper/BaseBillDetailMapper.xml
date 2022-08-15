@@ -4842,10 +4842,9 @@
         br.org_id,
         br.refund_date,
         brd.refund_amount,
-        if(#{query.isConsulter} = 0, bbd.executor_id, bbd.executor_id) as employeeId,
+        if(#{query.isConsulter} = 0, brd.executor_id, brd.executor_id) as employeeId
         FROM base_refund_detail brd
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
-        ) brd
         <where>
             <if test="query.isConsulter == 0">
                 and brd.executor_id > 0
@@ -4884,6 +4883,7 @@
                 </if>
             </if>
         </where>
+        ) brd
         GROUP BY brd.employeeId, brd.org_id
     </select>
 
