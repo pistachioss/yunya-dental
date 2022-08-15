@@ -4842,7 +4842,7 @@
         br.org_id,
         br.refund_date,
         brd.refund_amount,
-        if(#{query.isConsulter} = 0, brd.executor_id, brd.executor_id) as employeeId
+        if(#{query.isConsulter} = 0, brd.executor_id, brd.consulter_id) as employeeId
         FROM base_refund_detail brd
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         <where>
@@ -4852,6 +4852,9 @@
             <if test="query.isConsulter == 1">
                 and brd.consulter_id > 0
             </if>
+        </where>
+        ) brd
+        <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 and brd.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
@@ -4883,7 +4886,6 @@
                 </if>
             </if>
         </where>
-        ) brd
         GROUP BY brd.employeeId, brd.org_id
     </select>
 
