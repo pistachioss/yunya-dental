@@ -899,6 +899,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             RestErrorBo errorBo;
             //3. 检查卡券
             Card card = mapper.selectByPrimaryKey(cardId);
+            if (Objects.equals(MINI_CARD_REMARK, card.getRemark())) {
+                boolean refund = ivyMiniServiceFeign.cardRefund(cardId);
+                if (refund) {
+                    return ResponseUtil.error(DiscountError.CARD_ORDER_REFUND);
+                }
+            }
             errorBo = checkCardForOwnActive(form.getPayId(), card);
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
