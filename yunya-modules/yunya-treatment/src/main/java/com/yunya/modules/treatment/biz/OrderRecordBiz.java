@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -131,8 +132,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     // 处理门诊价目表价格
     if (StringHelper.isNotEmpty(orderDetails)) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
-      List<Integer> orderDetailIds = orderDetails.stream().map(OrderDetailVO::getOrderDetailId).collect(Collectors.toList());
-      Map<Integer, List<Integer>> planDetails = remoteEmrServiceFeign.findOrderWithPlanDetailById(orderDetailIds);
+      List<Integer> orderDetailIds =
+          orderDetails.stream().map(OrderDetailVO::getOrderDetailId).collect(Collectors.toList());
+      Map<Integer, List<Integer>> planDetails =
+          remoteEmrServiceFeign.findOrderWithPlanDetailById(orderDetailIds);
       if (StringHelper.isNotEmpty(memberTypes)) {
         orderDetails.forEach(
             tariffVO -> {
@@ -188,7 +191,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
                 .multiply(BigDecimal.valueOf(memberType.getRate()))
                 .divide(BigDecimal.valueOf(100), 2));
       }
-      memberPrices.put(memberTypeId, memberPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
+      memberPrices.put(memberTypeId, memberPrice.setScale(2, RoundingMode.HALF_UP));
     }
     tariffVO.setMemberPrices(memberPrices);
   }
@@ -217,7 +220,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
       if (null != memberPriceResult) {
         memberTypeId = memberPriceResult.getMemberTypeId();
-        memberPrice = memberPriceResult.getDiscountPrice().setScale(2, BigDecimal.ROUND_HALF_UP);
+        memberPrice = memberPriceResult.getDiscountPrice().setScale(2, RoundingMode.HALF_UP);
       } else {
         memberTypeId = memberType.getId();
         memberPrice =
@@ -225,7 +228,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
                     .getPrice()
                     .multiply(BigDecimal.valueOf(memberType.getRate()))
                     .divide(BigDecimal.valueOf(100), 2))
-                .setScale(2, BigDecimal.ROUND_HALF_UP);
+                .setScale(2, RoundingMode.HALF_UP);
       }
       memberPrices.put(memberTypeId, memberPrice);
     }
@@ -289,7 +292,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       orderDetail.setTreatmentRecordId(treatmentRecordId);
       List<OrderDetail> deletedDetails = orderDetailBiz.selectList(orderDetail);
       if (StringHelper.isNotEmpty(deletedDetails)) {
-        deletedDetailIds = deletedDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
+        deletedDetailIds =
+            deletedDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
       }
       orderDetailBiz.delete(orderDetail);
       if (StringHelper.isNotEmpty(orderDetails)) {
@@ -335,27 +339,32 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @return
    */
   private int saveTreatPlanDetailWriteoffQuanity(
-      List<OrderDetail> orderDetails, List<OrderDetailModel> models, List<Integer> deletedDetailIds) {
+      List<OrderDetail> orderDetails,
+      List<OrderDetailModel> models,
+      List<Integer> deletedDetailIds) {
     if (StringHelper.isNotEmpty(models) && StringHelper.isNotEmpty(orderDetails)) {
       TreatPlanDetailWriteoffModel model = new TreatPlanDetailWriteoffModel();
       List<TreatPlanDetailWriteoffInfoModel> list = new ArrayList<>();
-      orderDetails.forEach(detail->{
-        Integer billingItemId = detail.getBillingItemId();
-        Byte type = detail.getType();
-        models.forEach(vo->{
-          List<Integer> planDetailIds = vo.getPlanDetailIds();
-          if (!ObjectUtils.isEmpty(planDetailIds)
-                  && vo.getBillingItemId().equals(billingItemId) && vo.getType().equals(type)) {
-            TreatPlanDetailWriteoffInfoModel obj = new TreatPlanDetailWriteoffInfoModel();
-            obj.setTreatmentId(detail.getTreatmentRecordId());
-            obj.setQuantity(detail.getQuantity());
-            obj.setOrderDetailId(detail.getId());
-            obj.setPlanDetailIds(planDetailIds);
-            obj.setCrtId(detail.getCrtId());
-            list.add(obj);
-          }
-        });
-      });
+      orderDetails.forEach(
+          detail -> {
+            Integer billingItemId = detail.getBillingItemId();
+            Byte type = detail.getType();
+            models.forEach(
+                vo -> {
+                  List<Integer> planDetailIds = vo.getPlanDetailIds();
+                  if (!ObjectUtils.isEmpty(planDetailIds)
+                      && vo.getBillingItemId().equals(billingItemId)
+                      && vo.getType().equals(type)) {
+                    TreatPlanDetailWriteoffInfoModel obj = new TreatPlanDetailWriteoffInfoModel();
+                    obj.setTreatmentId(detail.getTreatmentRecordId());
+                    obj.setQuantity(detail.getQuantity());
+                    obj.setOrderDetailId(detail.getId());
+                    obj.setPlanDetailIds(planDetailIds);
+                    obj.setCrtId(detail.getCrtId());
+                    list.add(obj);
+                  }
+                });
+          });
       model.setWriteoffInfoModels(list);
       model.setDeletedOrderDetailIds(deletedDetailIds);
       remoteEmrServiceFeign.treatPlanWriteOffQunatity(model);
@@ -545,7 +554,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     OrderDetail orderDetail = new OrderDetail();
     orderDetail.setOrderRecordId(orderRecordId);
     List<OrderDetail> details = orderDetailBiz.selectList(orderDetail);
-    List<Integer> deletedDetailIds = details.stream().map(OrderDetail::getId).collect(Collectors.toList());
+    List<Integer> deletedDetailIds =
+        details.stream().map(OrderDetail::getId).collect(Collectors.toList());
     orderDetailBiz.delete(orderDetail);
 
     List<OrderDetail> orderDetails =
@@ -553,7 +563,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     TreatmentRecord treatmentRecord = treatmentRecordBiz.selectById(treatmentRecordId);
     List<VisitingRecord> visitingRecordList = new ArrayList<>();
     if (StringHelper.isNotEmpty(orderDetails)
-            && !treatmentRecordBiz.patientHasDied(treatmentRecord.getPatientId())) {
+        && !treatmentRecordBiz.patientHasDied(treatmentRecord.getPatientId())) {
       orderDetails.forEach(
           detail -> {
             detail.setOrderRecordId(orderRecordId);
@@ -634,7 +644,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderDetail.setOrderRecordId(orderRecordId);
     orderDetail.setInservice(true);
     List<OrderDetail> orderDetailsData = orderDetailBiz.selectList(orderDetail);
-    List<Integer> deletedDetailIds = orderDetailsData.stream().map(OrderDetail::getId).collect(Collectors.toList());
+    List<Integer> deletedDetailIds =
+        orderDetailsData.stream().map(OrderDetail::getId).collect(Collectors.toList());
     // 获取调整后的开单明细，并比较是否有修改
     List<OrderDetailModel> detailModels = model.getOrderDetailModels();
     if (orderDetailsData.size() == detailModels.size()) {
