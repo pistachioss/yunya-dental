@@ -38,4 +38,7 @@ public class ClinicEmployeeWorkloadQuery extends MultiClinicEmployeeQuery implem
   /** 是否过滤值全部为0的数据 */
   @ApiModelProperty("是否启用过滤:0：否；1：是")
   private Byte enableFilter;
+
+  @ApiModelProperty(value = "是否查询咨询师", required = true, notes = "默认否，查询咨询师业绩时请传 'true'")
+  private boolean isConsulter = false;
 }
