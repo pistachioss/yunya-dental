@@ -37,3 +37,13 @@ wx:
     notifyUrl: http://test.ivy2.yunya365.com/api/ivy/mini/wx/notify
     refundNotifyUrl: http://test.ivy2.yunya365.com/api/ivy/mini/wx/refund/notify
     keyPath: classpath:static/apiclient_cert.p12
+
+cloopen:
+  sms:
+    appId: aaf98f894fd44d15014fdfc9a7970cc3
+    accountSid: 8a48b5514fd49643014fde330538197f
+    accountToken: 7ceef6f6728e4f34b1efec64c97df79a
+    host: app.cloopen.com
+    port: 8883
+    templateId: 1091107
+    timeOut: 15
