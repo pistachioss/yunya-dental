@@ -109,7 +109,7 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
      *      0   5    20    35    50    65
      * @param order
      */
-    private void asyncWikiOrder(SmsChargeOrder order) {
+    public void asyncWikiOrder(SmsChargeOrder order) {
         executorService.submit(()->{
             try {
                 int retryTimes = 5;
