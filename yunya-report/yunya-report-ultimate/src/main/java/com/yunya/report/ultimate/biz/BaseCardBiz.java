@@ -4,7 +4,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -23,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
@@ -43,7 +41,7 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
   /** 365卡系列*/
   private static final Byte PROD_TYPE_365 = 14;
   /** 商品：IVY365年卡*/
-  private static final String IVY_365CARD = "IVY365年卡";
+  private static final List<String> IVY_365CARD = Arrays.asList("IVY365年卡","IVY 1365年卡","IVY 2365年卡");
   /** 产品 */
   @Autowired private BaseCouponBiz baseCouponBiz;
   /** 门诊 */
@@ -154,8 +152,8 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
     return new PageInfo<>(result);
   }
 
-  private List<Integer> findCard365OralIds(String ivy365card) {
-    List<BaseTariffInfo> orals = baseTariffInfoBiz.findOralItemListByName(ivy365card);
+  private List<Integer> findCard365OralIds(List<String> ivy365card) {
+    List<BaseTariffInfo> orals = baseTariffInfoBiz.findOralItemListInName(ivy365card);
     return orals.stream().map(BaseTariffInfo::getItemId).collect(Collectors.toList());
   }
 

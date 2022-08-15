@@ -21,8 +21,8 @@
         <result column="last_visit_date" property="lastVisitDate" jdbcType="TIMESTAMP"/>
         <result column="last_visit_outpatient" property="lastVisitOutpatient" jdbcType="VARCHAR"/>
         <result column="last_visit_doctors" property="lastVisitDoctors" jdbcType="VARCHAR"/>
-        <result column="cumulative_consumption" property="cumulativeConsumption" jdbcType="INTEGER"/>
-        <result column="total_arrears" property="totalArrears" jdbcType="INTEGER"/>
+        <result column="cumulative_consumption" property="cumulativeConsumption" jdbcType="DECIMAL"/>
+        <result column="total_arrears" property="totalArrears" jdbcType="DECIMAL"/>
         <result column="number_of_visits" property="numberOfVisits" jdbcType="INTEGER"/>
     </resultMap>
     <select id="lastPatientCredits" resultType="com.yunya.models.report.CreditsShop">

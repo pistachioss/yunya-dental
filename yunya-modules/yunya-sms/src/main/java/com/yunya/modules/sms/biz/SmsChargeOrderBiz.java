@@ -10,6 +10,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.RetryUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsChargeOrder;
@@ -17,6 +18,7 @@ import com.yunya.modules.sms.enums.SmsOrderStatusEnum;
 import com.yunya.modules.sms.exception.SignException;
 import com.yunya.modules.sms.mapper.SmsChargeOrderMapper;
 import com.yunya.modules.sms.utl.WikiUtl;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -54,8 +56,6 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
     /** 线程池 */
     @Resource(name = "poolExecutor")
     private ExecutorService executorService;
-    /** 采宝订单过期时长：两个小时 */
-    private final long expireIn = 3600000 * 2;
 
     /**
      * 分页查询短信充值列表
@@ -76,6 +76,8 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
      * @param smsChargeOrderModel 签名设置添加模型
      */
     public SmsChargeOrderVO create(SmsChargeOrderModel smsChargeOrderModel) {
+        Date now = new Date(System.currentTimeMillis());
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
         BeanUtil.copyProperties(smsChargeOrderModel, smsChargeOrder);
         smsChargeOrder.setOrderStatus(SmsOrderStatusEnum.WAIT_PAY.getCode());
@@ -84,10 +86,10 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         Long amount = smsChargeOrder.getPrice().multiply(new BigDecimal(100)).longValue();
         String orderNo = UUID.randomUUID().toString();
         smsChargeOrder.setOrderNo(orderNo);
-        smsChargeOrder.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        smsChargeOrder.setCrtTime(new Date());
-        smsChargeOrder.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-        smsChargeOrder.setUptTime(new Date());
+        smsChargeOrder.setCrtId(userId);
+        smsChargeOrder.setCrtTime(now);
+        smsChargeOrder.setUptId(userId);
+        smsChargeOrder.setUptTime(now);
         smsChargeOrder.setCrtUser(BaseContextHandler.getName());
         int count = mapper.insert(smsChargeOrder);
         if (count != 1) {
@@ -131,6 +133,14 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         });
     }
 
+    public static void main(String[] args) {
+        Date d1 = DateUtil.parse("2022-07-16 16:34:47");
+        Date d2 = DateUtil.parse("2022-07-16 16:34:27");
+        long expireIn = 3600000 * 2;
+        System.out.println(d1.getTime() - d2.getTime() <= expireIn);
+
+    }
+
     /**
      * 同步采宝订单信息
      * @param smsChargeOrderVOS
@@ -139,21 +149,18 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
     public Object syncWikiOrder(Collection<SmsChargeOrderVO> smsChargeOrderVOS) {
         Date now = new Date(System.currentTimeMillis());
         smsChargeOrderVOS.forEach(smsChargeOrderVO -> {
-            Date crtTime = smsChargeOrderVO.getCrtTime();
             SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
             try {
                 JSONObject data = WikiUtl.queryOrder(smsChargeOrderVO.getOrderNo(), smsChargeOrderVO.getCbOrderNo());
                 String orderStatus = data.getString("order_status");
                 if (StringHelper.isNotEmpty(orderStatus)) {
                     byte status = SmsOrderStatusEnum.CLOSED.getCode();//关闭
-                    if (now.getTime() - crtTime.getTime() <= expireIn) {//未超时
-                        if ("PAY_SUC".equals(orderStatus)) {
-                            status = SmsOrderStatusEnum.PAY_SUC.getCode();
-                        } else if ("PAY_FAIL".equals(orderStatus)) {
-                            status = SmsOrderStatusEnum.PAY_FAIL.getCode();
-                        } else if ("PAY_WAIT".equals(orderStatus)) {
-                            status = SmsOrderStatusEnum.WAIT_PAY.getCode();
-                        }
+                    if ("PAY_SUC".equals(orderStatus)) {
+                        status = SmsOrderStatusEnum.PAY_SUC.getCode();
+                    } else if ("PAY_FAIL".equals(orderStatus)) {
+                        status = SmsOrderStatusEnum.PAY_FAIL.getCode();
+                    } else if ("PAY_WAIT".equals(orderStatus)) {
+                        status = SmsOrderStatusEnum.WAIT_PAY.getCode();
                     }
                     smsChargeOrder.setId(smsChargeOrderVO.getId());
                     smsChargeOrder.setCbOrderNo(data.getString("cb_order_no"));

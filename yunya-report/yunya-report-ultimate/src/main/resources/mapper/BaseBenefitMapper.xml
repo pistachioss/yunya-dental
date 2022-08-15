@@ -26,335 +26,431 @@
 
     <select id="listCardUsedByParam" resultType="com.yunya.feign.report.domain.vo.CardUsedStatisticsVo">
         select
-            `bco`.`coupon_name`,
-            case
-                when `bco`.`coupon_type` = 0 then '代金券'
-                when `bco`.`coupon_type` = 1 then '折扣券'
-                when `bco`.`coupon_type` = 2 then '兑换券'
-                when `bco`.`coupon_type` = 3 then '套餐券'
-                when `bco`.`coupon_type` = 4 then '充值卡'
-                else null
-                end                              as coupon_type,
-            `bcd`.`card_number`,
-            `bp`.`name`                          as `cardOwner`,
-            `bcd`.`sale_channel_name`,
-            `bo`.`abbreviation`                  as `usedClinicName`,
-            date_format(`bf`.`use_date`, '%Y-%m-%d') as `usedDate`,
-            `bp1`.`name`                         as `usedPatientName`,
-            `bp1`.`mobile`                       as `usedPatientMobile`,
-            `be`.`employee_name`                 as `dentistName`,
-            `bb`.`bill_num`                      as `billNumber`,
-            `bb`.`order_amount`,
-            ifnull(sum(`bf`.`benefit_amount`), 0)as `benefitAmount`,
-            `bb`.`actual_amount`,
-            `be1`.`employee_name`                as `operateBenefitUser`
+        `bco`.`coupon_name`,
+        case
+        when `bco`.`coupon_type` = 0 then '代金券'
+        when `bco`.`coupon_type` = 1 then '折扣券'
+        when `bco`.`coupon_type` = 2 then '兑换券'
+        when `bco`.`coupon_type` = 3 then '套餐券'
+        when `bco`.`coupon_type` = 4 then '充值卡'
+        else null
+        end as coupon_type,
+        `bcd`.`card_number`,
+        `bp`.`name` as `cardOwner`,
+        `bcd`.`sale_channel_name`,
+        `bo`.`abbreviation` as `usedClinicName`,
+        date_format(`bf`.`use_date`, '%Y-%m-%d') as `usedDate`,
+        `bp1`.`name` as `usedPatientName`,
+        `bp1`.`mobile` as `usedPatientMobile`,
+        `be`.`employee_name` as `dentistName`,
+        `bb`.`bill_num` as `billNumber`,
+        `bb`.`order_amount`,
+        ifnull(sum(`bf`.`benefit_amount`), 0)as `benefitAmount`,
+        `bb`.`actual_amount`,
+        `be1`.`employee_name` as `operateBenefitUser`
         from `base_benefit` `bf`
-            inner join `base_coupon` `bco` on `bco`.`coupon_id` = `bf`.`coupon_id`
-            inner join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
-            inner join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
-            <!-- 卡主 -->
-            inner join `base_patient` `bp` on `bp`.`patient_id` = `bcd`.`patient_id`
-            <!-- 优惠券使用患者 -->
-            inner join `base_patient` `bp1` on `bp1`.`patient_id` = `bf`.`patient_id`
-            inner join `base_treatment_process` `btp` on `btp`.`treatment_id` = `bb`.`treatment_id`
-            <!-- 挂号医生 -->
-            inner join `base_employee` `be` on `be`.`user_id` = `btp`.`registered_dentist_id`
-            inner join `base_organization` `bo` on `bo`.`org_id` = `bf`.`org_id`
-            <!-- 优惠券操作人 -->
-            inner join `base_employee` `be1` on `be1`.`user_id` = `bf`.`operate_user_id`
+        inner join `base_coupon` `bco` on `bco`.`coupon_id` = `bf`.`coupon_id`
+        inner join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
+        inner join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
+        <!-- 卡主 -->
+        inner join `base_patient` `bp` on `bp`.`patient_id` = `bcd`.`patient_id`
+        <!-- 优惠券使用患者 -->
+        inner join `base_patient` `bp1` on `bp1`.`patient_id` = `bf`.`patient_id`
+        inner join `base_treatment_process` `btp` on `btp`.`treatment_id` = `bb`.`treatment_id`
+        <!-- 挂号医生 -->
+        inner join `base_employee` `be` on `be`.`user_id` = `btp`.`registered_dentist_id`
+        inner join `base_organization` `bo` on `bo`.`org_id` = `bf`.`org_id`
+        <!-- 优惠券操作人 -->
+        inner join `base_employee` `be1` on `be1`.`user_id` = `bf`.`operate_user_id`
         where `bco`.`coupon_type` != 4
-            <if test="couponName !=null and couponName != ''">
-                and `bco`.`coupon_name` like concat('%', #{couponName}, '%')
-            </if>
-            <if test="billNumber !=null and billNumber != ''">
-                and `bb`.`bill_num` like concat('%', #{billNumber}, '%')
-            </if>
-            <if test="cardNumber !=null and cardNumber != ''">
-                and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
-            </if>
-            <if test="patientKeyWord !=null and patientKeyWord != ''">
-                and (`bp1`.`name` like concat('%', #{patientKeyWord}, '%') or `bp1`.`mobile` like concat('%', #{patientKeyWord}, '%')
-                or `bp1`.`pinyin_name` like concat('%', #{patientKeyWord}, '%'))
-            </if>
-            <if test="orgIds != null and orgIds.size() > 0">
-                and `bf`.`org_id` in
-                <foreach collection="orgIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="dentistIds != null and dentistIds.size() > 0">
-                and `btp`.`registered_dentist_id` in
-                <foreach collection="dentistIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="usedStartDate != null and usedEndDate != null">
-                and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; DATE_ADD(#{usedEndDate} ,INTERVAL '1' DAY))
-            </if>
-            <if test="soldChannelIds != null and soldChannelIds.size() > 0">
-                and `bcd`.`sale_channel_id` in
-                <foreach collection="soldChannelIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="couponTypes != null and couponTypes.size() > 0">
-                and `bco`.`coupon_type` in
-                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
+        <if test="couponName !=null and couponName != ''">
+            and `bco`.`coupon_name` like concat('%', #{couponName}, '%')
+        </if>
+        <if test="billNumber !=null and billNumber != ''">
+            and `bb`.`bill_num` like concat('%', #{billNumber}, '%')
+        </if>
+        <if test="cardNumber !=null and cardNumber != ''">
+            and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
+        </if>
+        <if test="patientKeyWord !=null and patientKeyWord != ''">
+            and (`bp1`.`name` like concat('%', #{patientKeyWord}, '%') or `bp1`.`mobile` like concat('%',
+            #{patientKeyWord}, '%')
+            or `bp1`.`pinyin_name` like concat('%', #{patientKeyWord}, '%'))
+        </if>
+        <if test="orgIds != null and orgIds.size() > 0">
+            and `bf`.`org_id` in
+            <foreach collection="orgIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="dentistIds != null and dentistIds.size() > 0">
+            and `btp`.`registered_dentist_id` in
+            <foreach collection="dentistIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="usedStartDate != null and usedEndDate != null">
+            and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; DATE_ADD(#{usedEndDate} ,INTERVAL '1'
+            DAY))
+        </if>
+        <if test="soldChannelIds != null and soldChannelIds.size() > 0">
+            and `bcd`.`sale_channel_id` in
+            <foreach collection="soldChannelIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="couponTypes != null and couponTypes.size() > 0">
+            and `bco`.`coupon_type` in
+            <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         group by `bf`.`card_id`, `bf`.`order_id`
         order by `bf`.`use_date` desc
     </select>
 
     <select id="listCouponDetailUsedByParam" resultType="com.yunya.feign.report.domain.vo.CouponUsedDetailVo">
         select
-            `bcd`.`card_number`,
-            `bp`.`name`                          as `cardOwner`,
-            `bcd`.`sale_channel_name`,
-            `bo`.`abbreviation`                  as `usedClinicName`,
-            date_format(`bf`.`use_date`, '%Y-%m-%d') as `usedDate`,
-            `bp1`.`name`                         as `usedPatientName`,
-            `bp1`.`mobile`                       as `usedPatientMobile`,
-            `be`.`employee_name`                 as `dentistName`,
-            `bb`.`bill_num`                      as `billNumber`,
-            `bb`.`order_amount`,
-            ifnull(sum(`bf`.`benefit_amount`), 0)as `benefitAmount`,
-            `bb`.`actual_amount`,
-            `be1`.`employee_name`                as `operateBenefitUser`
+        `bcd`.`card_number`,
+        `bp`.`name` as `cardOwner`,
+        `bcd`.`sale_channel_name`,
+        `bo`.`abbreviation` as `usedClinicName`,
+        date_format(`bf`.`use_date`, '%Y-%m-%d') as `usedDate`,
+        `bp1`.`name` as `usedPatientName`,
+        `bp1`.`mobile` as `usedPatientMobile`,
+        `be`.`employee_name` as `dentistName`,
+        `bb`.`bill_num` as `billNumber`,
+        `bb`.`order_amount`,
+        ifnull(sum(`bf`.`benefit_amount`), 0)as `benefitAmount`,
+        `bb`.`actual_amount`,
+        `be1`.`employee_name` as `operateBenefitUser`
         from `base_benefit` `bf`
-            left join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
-            left join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
-            <!-- 卡主 -->
-            left join `base_patient` `bp` on `bp`.`patient_id` = `bcd`.`patient_id`
-            <!-- 优惠券使用患者 -->
-            left join `base_patient` `bp1` on `bp1`.`patient_id` = `bf`.`patient_id`
-            left join `base_treatment_process` `btp` on `btp`.`treatment_id` = `bb`.`treatment_id`
-            <!-- 挂号医生 -->
-            left join `base_employee` `be` on `be`.`user_id` = `btp`.`registered_dentist_id`
-            left join `base_organization` `bo` on `bo`.`org_id` = `bf`.`org_id`
-            <!-- 优惠券操作人 -->
-            left join `base_employee` `be1` on `be1`.`user_id` = `bf`.`operate_user_id`
+        left join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
+        left join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
+        <!-- 卡主 -->
+        left join `base_patient` `bp` on `bp`.`patient_id` = `bcd`.`patient_id`
+        <!-- 优惠券使用患者 -->
+        left join `base_patient` `bp1` on `bp1`.`patient_id` = `bf`.`patient_id`
+        left join `base_treatment_process` `btp` on `btp`.`treatment_id` = `bb`.`treatment_id`
+        <!-- 挂号医生 -->
+        left join `base_employee` `be` on `be`.`user_id` = `btp`.`registered_dentist_id`
+        left join `base_organization` `bo` on `bo`.`org_id` = `bf`.`org_id`
+        <!-- 优惠券操作人 -->
+        left join `base_employee` `be1` on `be1`.`user_id` = `bf`.`operate_user_id`
         where `bf`.`coupon_id` = #{couponId}
-            <if test="cardNumber !=null and cardNumber != ''">
-                and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
-            </if>
-            <if test="patientKeyWord !=null and patientKeyWord != ''">
-                and (`bp1`.`name` like concat('%', #{patientKeyWord}, '%') or `bp1`.`mobile` like concat('%', #{patientKeyWord}, '%')
-                or `bp1`.`pinyin_name` like concat('%', #{patientKeyWord}, '%'))
-            </if>
-            <if test="billNumber !=null and billNumber != ''">
-                and `bb`.`bill_num` like concat('%', #{billNumber}, '%')
-            </if>
-            <if test="orgIds != null and orgIds.size() > 0">
-                and `bf`.`org_id` in
-                <foreach collection="orgIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="dentistIds != null and dentistIds.size() > 0">
-                and `btp`.`registered_dentist_id` in
-                <foreach collection="dentistIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="usedStartDate != null and usedEndDate != null">
-                and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; #{usedEndDate})
-            </if>
-            <if test="soldChannelIds != null and soldChannelIds.size() > 0">
-                and `bcd`.`sale_channel_id` in
-                <foreach collection="soldChannelIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
+        <if test="cardNumber !=null and cardNumber != ''">
+            and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
+        </if>
+        <if test="patientKeyWord !=null and patientKeyWord != ''">
+            and (`bp1`.`name` like concat('%', #{patientKeyWord}, '%') or `bp1`.`mobile` like concat('%',
+            #{patientKeyWord}, '%')
+            or `bp1`.`pinyin_name` like concat('%', #{patientKeyWord}, '%'))
+        </if>
+        <if test="billNumber !=null and billNumber != ''">
+            and `bb`.`bill_num` like concat('%', #{billNumber}, '%')
+        </if>
+        <if test="orgIds != null and orgIds.size() > 0">
+            and `bf`.`org_id` in
+            <foreach collection="orgIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="dentistIds != null and dentistIds.size() > 0">
+            and `btp`.`registered_dentist_id` in
+            <foreach collection="dentistIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="usedStartDate != null and usedEndDate != null">
+            and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; #{usedEndDate})
+        </if>
+        <if test="soldChannelIds != null and soldChannelIds.size() > 0">
+            and `bcd`.`sale_channel_id` in
+            <foreach collection="soldChannelIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         group by `bf`.`card_id`, `bf`.`order_id`
         order by `bf`.`use_date` desc
     </select>
 
     <select id="listCardUsedRecordByParam" resultType="com.yunya.feign.report.domain.vo.CardUsedRecordVo">
         select
-            bcd.card_id as cardId,
-            bb.bill_id as order_id,
-            date_format(`bf`.`use_date`, '%Y-%m-%d') as `usedDate`,
-            date_format(`bb`.`order_date`, '%Y-%m-%d') as `orderDate`,
-            `bb`.`bill_num`                         as `billNumber`,
-                `bp`.`name`                         as `usedPatientName`,
-                `bp`.`mobile`                       as `usedPatientMobile`,
-            `bco`.`coupon_name`,
-            case
-                when `bco`.`coupon_type` = 0 then '代金券'
-                when `bco`.`coupon_type` = 1 then '折扣券'
-                when `bco`.`coupon_type` = 2 then '兑换券'
-                when `bco`.`coupon_type` = 3 then '套餐券'
-                when `bco`.`coupon_type` = 4 then '充值卡'
-                else null
-                end                                   as coupon_type,
-            `bcd`.`sale_channel_name`,
-            `bcd`.`card_number`,
-            `be`.`employee_name`                    as `operateBenefitUser`
+        bcd.card_id as cardId,
+        bb.bill_id as order_id,
+        date_format(`bf`.`use_date`, '%Y-%m-%d') as `usedDate`,
+        date_format(`bb`.`order_date`, '%Y-%m-%d') as `orderDate`,
+        `bb`.`bill_num` as `billNumber`,
+        `bp`.`name` as `usedPatientName`,
+        `bp`.`mobile` as `usedPatientMobile`,
+        `bco`.`coupon_name`,
+        case
+        when `bco`.`coupon_type` = 0 then '代金券'
+        when `bco`.`coupon_type` = 1 then '折扣券'
+        when `bco`.`coupon_type` = 2 then '兑换券'
+        when `bco`.`coupon_type` = 3 then '套餐券'
+        when `bco`.`coupon_type` = 4 then '充值卡'
+        else null
+        end as coupon_type,
+        `bcd`.`sale_channel_name`,
+        `bcd`.`card_number`,
+        `be`.`employee_name` as `operateBenefitUser`
         from `base_benefit` `bf`
-            inner join `base_coupon` `bco` on `bco`.`coupon_id` = `bf`.`coupon_id`
-            inner join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
-            left join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
-            <!-- 优惠券使用患者 -->
-            left join `base_patient` `bp` on `bp`.`patient_id` = `bf`.`patient_id`
-            <!-- 优惠券操作人 -->
-            left join `base_employee` `be` on `be`.`user_id` = `bf`.`operate_user_id`
+        inner join `base_coupon` `bco` on `bco`.`coupon_id` = `bf`.`coupon_id`
+        inner join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
+        left join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
+        <!-- 优惠券使用患者 -->
+        left join `base_patient` `bp` on `bp`.`patient_id` = `bf`.`patient_id`
+        <!-- 优惠券操作人 -->
+        left join `base_employee` `be` on `be`.`user_id` = `bf`.`operate_user_id`
         where `bco`.`coupon_type` != 4
-            <if test="orgId != null">
-                and `bf`.`org_id` = #{orgId}
-            </if>
-            <if test="usedStartDate != null and usedEndDate != null">
-                and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; date_add(#{usedEndDate}, interval 1 day))
-            </if>
-            <if test="couponName !=null and couponName != ''">
-                and `bco`.`coupon_name` like concat('%', #{couponName}, '%')
-            </if>
-            <if test="cardNumber !=null and cardNumber != ''">
-                and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
-            </if>
-            <if test="patientKeyword !=null and patientKeyword != ''">
-                and (`bp`.`name` like concat('%', #{patientKeyword}, '%') or `bp`.`mobile` like concat('%', #{patientKeyword}, '%')
-                or `bp`.`pinyin_name` like concat('%', #{patientKeyword}, '%'))
-            </if>
-            <if test="couponTypes != null and couponTypes.size() > 0">
-                and `bco`.`coupon_type` in
-                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="saleChannelIds != null and saleChannelIds.size() > 0">
-                and `bcd`.`sale_channel_id` in
-                <foreach collection="saleChannelIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
+        <if test="orgId != null">
+            and `bf`.`org_id` = #{orgId}
+        </if>
+        <if test="usedStartDate != null and usedEndDate != null">
+            and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; date_add(#{usedEndDate}, interval 1
+            day))
+        </if>
+        <if test="couponName !=null and couponName != ''">
+            and `bco`.`coupon_name` like concat('%', #{couponName}, '%')
+        </if>
+        <if test="cardNumber !=null and cardNumber != ''">
+            and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
+        </if>
+        <if test="patientKeyword !=null and patientKeyword != ''">
+            and (`bp`.`name` like concat('%', #{patientKeyword}, '%') or `bp`.`mobile` like concat('%',
+            #{patientKeyword}, '%')
+            or `bp`.`pinyin_name` like concat('%', #{patientKeyword}, '%'))
+        </if>
+        <if test="couponTypes != null and couponTypes.size() > 0">
+            and `bco`.`coupon_type` in
+            <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="saleChannelIds != null and saleChannelIds.size() > 0">
+            and `bcd`.`sale_channel_id` in
+            <foreach collection="saleChannelIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         group by `bf`.`card_id`, `bf`.`order_id`
         order by `bf`.`use_date` desc
     </select>
 
     <select id="listCardUsedDetailByBillId" resultType="com.yunya.feign.report.domain.vo.CardUsedDetailVo">
-        select
-            sum(bf.benefit_amount) as amount,
-            count(bf.coupon_id) as num,
-            bt.item_num as itemNum,
-            bt.item_name as itemName,
-            be.employee_name as executor
+        select sum(bf.benefit_amount) as amount,
+               count(bf.coupon_id)    as num,
+               bt.item_num            as itemNum,
+               bt.item_name           as itemName,
+               be.employee_name       as executor
         from base_benefit bf
-            inner join base_coupon bco on bco.coupon_id = bf.coupon_id
-			left join base_tariff_info bt on bt.item_id=bf.item_id and bt.item_type=bf.item_type
-			left join base_employee be on be.user_id = bf.operate_user_id
-        where
-            bco.coupon_type != 4
-            and bf.order_id = #{query.orderId}
-            and bf.card_id = #{query.cardId}
-        group by bf.coupon_id,bf.order_detail_id,bt.item_num,bt.item_name,bf.operate_user_id
+                 inner join base_coupon bco on bco.coupon_id = bf.coupon_id
+                 left join base_tariff_info bt on bt.item_id = bf.item_id and bt.item_type = bf.item_type
+                 left join base_employee be on be.user_id = bf.operate_user_id
+        where bco.coupon_type != 4
+          and bf.order_id = #{query.orderId}
+          and bf.card_id = #{query.cardId}
+        group by bf.coupon_id, bf.order_detail_id, bt.item_num, bt.item_name, bf.operate_user_id
         order by `bf`.`use_date` desc
     </select>
 
     <select id="listCardUseById" resultType="com.yunya.feign.report.domain.vo.OnceCardUseVo">
-        SELECT
-        `bti`.`item_id`,
-        `bti`.`item_name`,
-        `bti`.`item_type`,
-        count(*) AS useQuantity,
-        date_format( `bf`.`use_date`, '%Y-%m-%d' ) AS `useDate`,
-        `bo`.`abbreviation` AS `usedClinicName`,
-        `bp`.`name` AS `usedPatientName`,
-        `be`.`employee_name` AS `dentistName`,
-        ifnull( sum( `bf`.`benefit_amount` ), 0 ) AS `benefitAmount`
-        FROM
-        `base_benefit` `bf`
-        LEFT JOIN `base_bill` `bb` ON `bb`.`bill_id` = `bf`.`order_id`
-        LEFT JOIN `base_treatment_process` `btp` ON `btp`.`treatment_id` = `bb`.`treatment_id`
-        AND `btp`.`patient_id` = `bf`.`patient_id` -- 挂号医生
-        LEFT JOIN `base_employee` `be` ON `be`.`user_id` = `btp`.`registered_dentist_id`
-        LEFT JOIN `base_tariff_info` `bti` ON `bti`.`item_id` = `bf`.`item_id`
-        AND `bti`.`item_type` = `bf`.`item_type` -- 优惠券使用患者
-        LEFT JOIN `base_patient` `bp` ON `bp`.`patient_id` = `bf`.`patient_id`
-        LEFT JOIN `base_organization` `bo` ON `bo`.`org_id` = `bf`.`org_id`
-        WHERE
-        `bf`.`card_id` = #{cardId}
-        AND `bf`.`choice_benefit_type` = 0
-        GROUP BY
-        `bf`.`order_id`,
-        `bf`.`order_detail_id`
-        ORDER BY
-        `bf`.`use_date` ASC
+        SELECT `bti`.`item_id`,
+               `bti`.`item_name`,
+               `bti`.`item_type`,
+               count(*)                                 AS useQuantity,
+               date_format(`bf`.`use_date`, '%Y-%m-%d') AS `useDate`,
+               `bo`.`abbreviation`                      AS `usedClinicName`,
+               `bp`.`name`                              AS `usedPatientName`,
+               `be`.`employee_name`                     AS `dentistName`,
+               ifnull(sum(`bf`.`benefit_amount`), 0)    AS `benefitAmount`
+        FROM `base_benefit` `bf`
+                 LEFT JOIN `base_bill` `bb` ON `bb`.`bill_id` = `bf`.`order_id`
+                 LEFT JOIN `base_treatment_process` `btp` ON `btp`.`treatment_id` = `bb`.`treatment_id`
+            AND `btp`.`patient_id` = `bf`.`patient_id` -- 挂号医生
+                 LEFT JOIN `base_employee` `be` ON `be`.`user_id` = `btp`.`registered_dentist_id`
+                 LEFT JOIN `base_tariff_info` `bti` ON `bti`.`item_id` = `bf`.`item_id`
+            AND `bti`.`item_type` = `bf`.`item_type` -- 优惠券使用患者
+                 LEFT JOIN `base_patient` `bp` ON `bp`.`patient_id` = `bf`.`patient_id`
+                 LEFT JOIN `base_organization` `bo` ON `bo`.`org_id` = `bf`.`org_id`
+        WHERE `bf`.`card_id` = #{cardId}
+          AND `bf`.`choice_benefit_type` = 0
+        GROUP BY `bf`.`order_id`,
+                 `bf`.`order_detail_id`
+        ORDER BY `bf`.`use_date` ASC
     </select>
 
     <select id="listItemUseById" resultType="com.yunya.feign.report.domain.vo.BenefitItemVo">
-        select
-            `bci`.`item_id`,
-            `bti`.`item_name`,
-            `bci`.`quantity`                                as `originalQuantity`,
-        if((`bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) &lt; 0
-        ,0,`bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) as `remainingQuantity`
+        select `bci`.`item_id`,
+               `bti`.`item_name`,
+               `bci`.`quantity`                                          as `originalQuantity`,
+               if((`bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) &lt; 0
+                   , 0, `bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) as `remainingQuantity`
         from `base_card` `c`
-             inner join `base_coupon_item` `bci` on `bci`.`coupon_id` = `c`.`coupon_id`
-             left join `base_tariff_info` `bti` on `bti`.`item_id` = `bci`.`item_id`
-                                            and `bti`.`item_type` = `bci`.`type`
-             left join (select
-                            `bb`.`item_id`,
-                            `bb`.`item_type`,
-                            `bb`.`card_id`,
-                            count(*) as `useCount`
-                        from `base_benefit` `bb`
-                        where `bb`.`card_id` = #{cardId}
-                          and `bb`.`choice_benefit_type` = 0
-                          and `bb`.`coupon_type` in (2, 3)
-                        group by `bb`.`item_id`, `bb`.`item_type`) `temp`
-                       on `bci`.`item_id` = `temp`.`item_id`
-                       and `temp`.`item_type` = `bci`.`type`
+                 inner join `base_coupon_item` `bci` on `bci`.`coupon_id` = `c`.`coupon_id`
+                 left join `base_tariff_info` `bti` on `bti`.`item_id` = `bci`.`item_id`
+            and `bti`.`item_type` = `bci`.`type`
+                 left join (select `bb`.`item_id`,
+                                   `bb`.`item_type`,
+                                   `bb`.`card_id`,
+                                   count(*) as `useCount`
+                            from `base_benefit` `bb`
+                            where `bb`.`card_id` = #{cardId}
+                              and `bb`.`choice_benefit_type` = 0
+                              and `bb`.`coupon_type` in (2, 3)
+                            group by `bb`.`item_id`, `bb`.`item_type`) `temp`
+                           on `bci`.`item_id` = `temp`.`item_id`
+                               and `temp`.`item_type` = `bci`.`type`
         where `c`.`card_id` = #{cardId}
         group by `bci`.`item_id`, `bci`.`type`
     </select>
 
     <select id="listAllItemUse" resultType="com.yunya.feign.report.domain.vo.BenefitItemVo">
         select
-            `c`.`card_id`,
-            `bco`.`coupon_name`,
-            `bci`.`item_id`,
-            `bti`.item_num                                            as itemNo,
-            `bti`.`item_name`,
-            `bti`.`unit`                                              as itemUnit,
-            `bti`.`price`                                             as itemPrice,
-            `bci`.`quantity`                                          as `originalQuantity`,
-            if((`bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) &lt; 0
-                , 0, `bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) as `remainingQuantity`
+        `c`.`card_id`,
+        `bco`.`coupon_name`,
+        `bci`.`item_id`,
+        `bti`.item_num as itemNo,
+        `bti`.`item_name`,
+        `bti`.`unit` as itemUnit,
+        `bti`.`price` as itemPrice,
+        `bci`.`quantity` as `originalQuantity`,
+        if((`bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) &lt; 0
+        , 0, `bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) as `remainingQuantity`
         from `base_card` `c`
-                 inner join `base_coupon_item` `bci` on `bci`.`coupon_id` = `c`.`coupon_id`
-                 inner join `base_coupon` `bco` on `bco`.`coupon_id` = `c`.`coupon_id`
-                 left join `base_tariff_info` `bti` on `bti`.`item_id` = `bci`.`item_id`
-            and `bti`.`item_type` = `bci`.`type`
-                 left join (select
-                                `bb`.`item_id`,
-                                `bb`.`item_type`,
-                                `bb`.`card_id`,
-                                count(*) as `useCount`
-                            from `base_benefit` `bb`
-                            where `bb`.`card_id` in
-                                <foreach collection="cardIds" item="item" open="(" separator="," close=")">
-                                    #{item}
-                                </foreach>
-                              and `bb`.`choice_benefit_type` = 0
-                              and `bb`.`coupon_type` in (2, 3)
-                            group by `bb`.`card_id`, `bb`.`item_id`, `bb`.`item_type`
-                            ORDER BY `bb`.`card_id` desc) `temp`
-                           on `c`.`card_id` = `temp`.`card_id`
-                               and `bci`.`item_id` = `temp`.`item_id`
-                               and `temp`.`item_type` = `bci`.`type`
+        inner join `base_coupon_item` `bci` on `bci`.`coupon_id` = `c`.`coupon_id`
+        inner join `base_coupon` `bco` on `bco`.`coupon_id` = `c`.`coupon_id`
+        left join `base_tariff_info` `bti` on `bti`.`item_id` = `bci`.`item_id`
+        and `bti`.`item_type` = `bci`.`type`
+        left join (select
+        `bb`.`item_id`,
+        `bb`.`item_type`,
+        `bb`.`card_id`,
+        count(*) as `useCount`
+        from `base_benefit` `bb`
+        where `bb`.`card_id` in
+        <foreach collection="cardIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and `bb`.`choice_benefit_type` = 0
+        and `bb`.`coupon_type` in (2, 3)
+        group by `bb`.`card_id`, `bb`.`item_id`, `bb`.`item_type`
+        ORDER BY `bb`.`card_id` desc) `temp`
+        on `c`.`card_id` = `temp`.`card_id`
+        and `bci`.`item_id` = `temp`.`item_id`
+        and `temp`.`item_type` = `bci`.`type`
         where `c`.`status` in (2, 3)
-            and `bco`.`coupon_type` in (2, 3)
-            and (
-            isnull(`c`.`activation_deadline`)
-                or `c`.`activation_deadline` >= date_format(now(), '%y-%m-%d')
-            )
-            and `c`.`card_id` in
-                <foreach collection="cardIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
+        and `bco`.`coupon_type` in (2, 3)
+        and (
+        isnull(`c`.`activation_deadline`)
+        or `c`.`activation_deadline` >= date_format(now(), '%y-%m-%d')
+        )
+        and `c`.`card_id` in
+        <foreach collection="cardIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
         group by `c`.`card_id`, `bci`.`item_id`, `bci`.`type`,`c`.`active_date`
         order by `c`.`active_date`
+    </select>
+    <!-- 查询卡券使用记录 -->
+    <select id="selectCardUseRecord" resultType="com.yunya.feign.report.domain.vo.CardConsumeRecordVO">
+        select
+        t.*
+        from (
+        SELECT
+        bb.cardId,
+        bb.couponId,
+        bcn.coupon_name as couponName,
+        bcd.sale_channel_id as saleChannelId,
+        bcd.sale_channel_name as saleChannelName,
+        date_format(bcd.active_date, '%Y-%m-%d') as activationDate,
+        bb.cardUseDate,
+        bb.cardUseOrgId,
+        bon.abbreviation as cardUseOrgName,
+        bbl.order_amount as orderAmount,
+        bb.benefitAmount,
+        bbl.received_amount as receivedAmount,
+        bb.operatorId,
+        bee.employee_name as operatorName,
+        bb.patientId,
+        bpt.`name` as patientName,
+        bpt.medical_number as medicalNum,
+        bpt.mobile,
+        timestampdiff(year, bpt.birthday, current_date) as age,
+        bpt.gender,
+        bpt.origin_type as patientOriginTypeId,
+        bpt.origin_type_name as patientOriginTypeName,
+        bpt.origin_id as patientOriginId,
+        bpt.first_visit_outpatient as firstVisitOrgId,
+        bpt.firstVisitOrgName,
+        bpt.first_visit_doctors as firstVisitDentistId,
+        bpt.firstVisitDentistName,
+        bpt.firstVisitDate,
+        bbl1.totalConsumeAmount,
+        bbl1.totalDebtAmount
+        FROM (SELECT bbt.card_id AS cardId,
+        bbt.coupon_id AS couponId,
+        bbt.operate_user_id AS operatorId,
+        SUM(benefit_amount) AS benefitAmount,
+        bbt.use_date AS cardUseDate,
+        bbt.org_id AS cardUseOrgId,
+        bbt.patient_id as patientId,
+        bbt.order_id as orderId
+        FROM base_benefit bbt
+        WHERE bbt.benefit_type = 1
+        GROUP BY bbt.order_id) bb
+        left join base_coupon bcn on bb.couponId = bcn.coupon_id
+        left join base_organization bon on bb.cardUseOrgId = bon.org_id
+        LEFT JOIN base_card bcd on bb.cardId = bcd.card_id
+        left join base_bill bbl on bb.orderId = bbl.bill_id
+        left join base_employee bee on bb.operatorId = bee.user_id
+        left join(
+        select bp.patient_id,
+        bp.name,
+        bp.mobile,
+        bp.gender,
+        bp.medical_number,
+        bp.birthday,
+        bp.origin_type,
+        bp.origin_type_name,
+        bp.origin_id,
+        bp.first_visit_outpatient,
+        bo.abbreviation as firstVisitOrgName,
+        date_format(bp.first_visit_date, '%Y-%m-%d') as firstVisitDate,
+        bp.first_visit_doctors,
+        be.employee_name as firstVisitDentistName
+        from base_patient bp
+        left join base_organization bo on bp.first_visit_outpatient = bo.org_id
+        left join base_employee be on bp.first_visit_doctors = be.user_id
+        ) bpt on bb.patientId = bpt.patient_id
+        left join (
+        select patient_id,
+        sum(received_amount) as totalConsumeAmount,
+        sum(debt_amount) as totalDebtAmount
+        from base_bill
+        group by patient_id
+        ) bbl1 on bb.patientId = bbl1.patient_id
+        ) t
+        <where>
+            <if test="query.activationStartDate != null and query.activationStartDate != ''">
+                and t.activationDate &gt;= #{query.activationStartDate}
+            </if>
+            <if test="query.activationEndDate != null and query.activationEndDate != ''">
+                and t.activationDate &lt;= #{query.activationEndDate}
+            </if>
+            <if test="query.saleChannelIds != null and query.saleChannelIds.length > 0">
+                and t.saleChannelId in
+                <foreach collection="query.saleChannelIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.couponIds != null and query.couponIds.length > 0">
+                and t.couponId in
+                <foreach collection="query.couponIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>
