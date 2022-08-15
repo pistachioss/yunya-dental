@@ -182,8 +182,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
                     //生成支付单
                     wxPaymentVO = wxPay(orderInfo);
-                    //保存预付单信息
-                    wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
                 }
                 baseMapper.insertDynamic(orderInfo);
                 List<OrderItem> itemList = itemBoList.stream().map(t -> {
@@ -193,6 +191,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                     return orderItem;
                 }).collect(toList());
                 orderItemService.saveBatch(itemList);
+                //保存预付单信息
+                wxPayInfoService.save(wxPaymentVO, orderInfo);
                 CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
                 //发送延迟消息取消订单
                 sendOrderMessage(orderInfo.getId());
@@ -241,8 +241,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
                 //生成支付单
                 wxPaymentVO = wxPay(orderInfo);
-                //保存预付单信息
-                wxPayInfoService.save(wxPaymentVO, orderInfo.getId());
             }
             baseMapper.insertDynamic(orderInfo);
             List<OrderItem> itemList = orderItemBOS.stream().map(t -> {
@@ -253,6 +251,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 return orderItem;
             }).collect(toList());
             orderItemService.saveBatch(itemList);
+            //保存预付单信息
+            wxPayInfoService.save(wxPaymentVO, orderInfo);
             CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
             //发送延迟消息取消订单
             sendOrderMessage(orderInfo.getId());
