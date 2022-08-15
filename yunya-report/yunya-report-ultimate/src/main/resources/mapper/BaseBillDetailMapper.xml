@@ -4483,7 +4483,7 @@
         SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS workload
         FROM (
         SELECT
-        if(query.isConsulter = 0, bbd.executor_id, bbd.consulter_id) as employeeId,
+        if(#{query.isConsulter} = 0, bbd.executor_id, bbd.consulter_id) as employeeId,
         bbd.discount_amount,
         bbd.org_id,
         bbd.price,
@@ -4605,7 +4605,7 @@
         FROM (
         SELECT
         bbd.bill_id,
-        if(query.isConsulter = 0, bbd.executor_id, bbd.consulter_id) as employeeId,
+        if(#{query.isConsulter} = 0, bbd.executor_id, bbd.consulter_id) as employeeId,
         bbd.org_id AS org_id,
         SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billWorkload
         FROM base_bill_detail bbd
@@ -4651,7 +4651,7 @@
         SUM(bbd.coupon_workload) AS workload
         FROM (
         SELECT
-        if(query.isConsulter = 0, bbd.executor_id, bbd.consulter_id) as employeeId,
+        if(#{query.isConsulter} = 0, bbd.executor_id, bbd.consulter_id) as employeeId,
         bbd.org_id,
         bbd.coupon_workload
         FROM base_bill_detail bbd
@@ -4804,7 +4804,7 @@
         FROM (
         SELECT
         bbd.bill_id,
-        if(query.isConsulter = 0, bbd.executor_id, bbd.consulter_id) as employeeId,
+        if(#{query.isConsulter} = 0, bbd.executor_id, bbd.consulter_id) as employeeId,
         SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billWorkload
         FROM base_bill_detail bbd
         <where>
@@ -4842,7 +4842,7 @@
         br.org_id,
         br.refund_date,
         brd.refund_amount,
-        if(query.isConsulter = 0, bbd.executor_id, bbd.executor_id) as employeeId,
+        if(#{query.isConsulter} = 0, bbd.executor_id, bbd.executor_id) as employeeId,
         FROM base_refund_detail brd
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         ) brd
@@ -4884,7 +4884,7 @@
                 </if>
             </if>
         </where>
-        GROUP BY brd.executor_id, brd.org_id
+        GROUP BY brd.employeeId, brd.org_id
     </select>
 
     <!--查询执行人的项目实收工作量-->
