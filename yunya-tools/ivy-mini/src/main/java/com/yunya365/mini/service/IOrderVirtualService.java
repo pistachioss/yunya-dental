@@ -26,4 +26,6 @@ public interface IOrderVirtualService extends IService<OrderVirtual> {
     void activeCard(VirtualActiveForm form);
 
     void deleteCard(Integer cardId);
+
+    boolean cardRefund(Integer cardId);
 }

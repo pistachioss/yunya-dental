@@ -3,6 +3,7 @@ package com.yunya365.mini.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
+import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderVirtual;
 import com.yunya365.mini.mapper.OrderVirtualMapper;
 import com.yunya365.mini.service.IOrderInfoService;
@@ -13,6 +14,8 @@ import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+
+import static com.yunya365.mini.enums.OrderStatusEnum.*;
 
 /**
  * <p>
@@ -80,6 +83,19 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
     public void deleteCard(Integer cardId) {
         ChainWrappers.lambdaUpdateChain(baseMapper)
                 .eq(OrderVirtual::getCardId, cardId).remove();
+    }
+
+    @Override
+    public boolean cardRefund(Integer cardId) {
+        OrderVirtual orderVirtual = ChainWrappers.lambdaQueryChain(baseMapper)
+                .select(OrderVirtual::getOrderId)
+                .eq(OrderVirtual::getCardId, cardId)
+                .isNull(OrderVirtual::getPatientId).one();
+        if (Objects.nonNull(orderVirtual)) {
+            OrderInfo orderInfo = orderInfoService.getById(orderVirtual.getOrderId());
+            return Objects.equals(APPLY_REFUND.getCode().byteValue(), orderInfo.getStatus());
+        }
+        return false;
     }
 
     private boolean calActiveStatus(String orderSn) {

@@ -28,5 +28,11 @@ public class OrderVirtualController {
     public void activeCard(@RequestBody @Valid VirtualActiveForm form) {
        virtualService.activeCard(form);
     }
+
+    @GetMapping("/card/refund")
+    @IgnoreUserToken
+    public boolean cardRefund( @RequestParam Integer cardId) {
+        return virtualService.cardRefund(cardId);
+    }
 }
 

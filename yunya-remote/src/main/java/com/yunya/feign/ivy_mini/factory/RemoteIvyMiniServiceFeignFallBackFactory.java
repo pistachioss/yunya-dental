@@ -22,4 +22,10 @@ public class RemoteIvyMiniServiceFeignFallBackFactory implements RemoteIvyMiniSe
     public void activeCard(VirtualActiveForm form) {
 
     }
+
+    @Override
+    public boolean cardRefund(Integer cardId) {
+        return false;
+    }
+
 }
