@@ -78,13 +78,21 @@ public class ProductServiceImpl implements IProductService {
             //0-商品 1-虚拟服务
             List<Integer> goodsIds = map.get(FALSE.getCode());
             List<Integer> couponIds = map.get(TRUE.getCode());
+            Map<Integer, ProductBO> goodsMap = null;
+            Map<Integer, ProductBO> couponMap = null;
             //查询线上商品集合
-            List<ProductBO> baseOralTariffs = treatmentServiceFeign.listOnSaleOral(goodsIds);
-            List<ProductBO> couponList = discountFeign.listOnSaleOral(couponIds);
-            Map<Integer, ProductBO> goodsMap = baseOralTariffs.stream()
-                    .collect(toMap(ProductBO::getProductId, Function.identity()));
-            Map<Integer, ProductBO> couponMap = couponList.stream()
-                    .collect(toMap(ProductBO::getProductId, Function.identity()));
+            if (CollectionUtils.isNotEmpty(goodsIds)) {
+                List<ProductBO> baseOralTariffs = treatmentServiceFeign.listOnSaleOral(goodsIds);
+                goodsMap = baseOralTariffs.stream()
+                        .collect(toMap(ProductBO::getProductId, Function.identity()));
+            }
+            if (CollectionUtils.isNotEmpty(couponIds)) {
+                List<ProductBO> couponList = discountFeign.listOnSaleOral(couponIds);
+                couponMap = couponList.stream()
+                        .collect(toMap(ProductBO::getProductId, Function.identity()));
+            }
+            Map<Integer, ProductBO> finalCouponMap = couponMap;
+            Map<Integer, ProductBO> finalGoodsMap = goodsMap;
             collect = typedTuples.stream().map(t -> {
                 String value = t.getValue();
                 Integer aProductType = Integer.valueOf(value.split("_")[0]);
@@ -92,9 +100,9 @@ public class ProductServiceImpl implements IProductService {
                 Double score = t.getScore();
                 ProductBO oralTariff;
                 if (Objects.equals(aProductType, FALSE.getCode())) {
-                    oralTariff = goodsMap.get(id);
+                    oralTariff = finalGoodsMap.get(id);
                 } else {
-                    oralTariff = couponMap.get(id);
+                    oralTariff = finalCouponMap.get(id);
                 }
                 HotSaleVO vo = new HotSaleVO();
                 if (Objects.nonNull(oralTariff)) {
