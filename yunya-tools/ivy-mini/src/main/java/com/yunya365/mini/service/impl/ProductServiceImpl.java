@@ -113,9 +113,9 @@ public class ProductServiceImpl implements IProductService {
                     vo.setProductPrice(oralTariff.getProductPrice());
                     vo.setStock(oralTariff.getStock());
                     vo.setSoldQuantity(oralTariff.getSoldQuantity());
+                    vo.setProductType(aProductType);
+                    vo.setSoldQuantity(Objects.requireNonNull(score).intValue());
                 }
-                vo.setSoldQuantity(Objects.requireNonNull(score).intValue());
-                vo.setProductType(FALSE.getCode());
                 return vo;
             }).collect(toList());
         }
