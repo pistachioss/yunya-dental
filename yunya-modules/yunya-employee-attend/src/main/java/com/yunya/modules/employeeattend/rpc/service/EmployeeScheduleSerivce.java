@@ -10,6 +10,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.biz.ClinicScheduleBiz;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
@@ -180,5 +181,9 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
    */
   public BaseEmployeeScheduleVO findEmInfoById(Integer Id) {
     return mapper.findEmInfoById(Id);
+  }
+
+  public List<AttendanceAddressSet> findAddress() {
+    return mapper.findAddress();
   }
 }

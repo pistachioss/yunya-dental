@@ -35,7 +35,8 @@ public class OnlineAppointmentVo implements Serializable {
      */
     @ApiModelProperty("预约ID,可能为空")
     private Integer appointmentId;
-
+    @ApiModelProperty("头像")
+    private String headImgurl;
     /**
      * 门诊ID
      */
@@ -182,4 +183,28 @@ public class OnlineAppointmentVo implements Serializable {
      */
     @ApiModelProperty("下班时间")
     private String offworkingHours;
+
+    /**
+     * 微信唯一标识openId,唯一标识
+     */
+    @ApiModelProperty(value = "union_id,唯一标识",required = true)
+    private String unionId;
+
+    /**
+     * 意向预约来源 0公众号 1小程序
+     */
+    @ApiModelProperty(value = "意向预约来源 0公众号 1小程序",required = true)
+    private Integer wxType;
+
+    /**
+     * 预约时间 0上午 1下午
+     */
+    @ApiModelProperty(value = "预约时间 0上午 1下午",required = true)
+    private Integer appointMa;
+
+    /**
+     * 备注
+     */
+    @ApiModelProperty(value = "备注")
+    private String remark;
 }

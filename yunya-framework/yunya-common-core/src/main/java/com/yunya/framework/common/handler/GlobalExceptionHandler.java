@@ -1,12 +1,10 @@
 package com.yunya.framework.common.handler;
 
+import com.github.binarywang.wxpay.exception.WxPayException;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.exception.auth.ClientInvalidException;
-import com.yunya.framework.common.exception.auth.ClientTokenException;
-import com.yunya.framework.common.exception.auth.UserAuthException;
-import com.yunya.framework.common.exception.auth.UserTokenException;
+import com.yunya.framework.common.exception.auth.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -14,14 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.ConnectException;
+import java.util.Objects;
 import java.util.concurrent.CompletionException;
 
 /**
@@ -89,7 +87,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseResult methodArgumentNotValidHandler(
       MethodArgumentNotValidException e, HttpServletRequest request) {
-    String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+    FieldError fieldError = e.getBindingResult().getFieldError();
+    String message = Objects.requireNonNull(fieldError).getField() + fieldError.getDefaultMessage();
     logger.error("error in \nurl :{} \nmsg:{}", request.getRequestURI(), message);
     return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, message, null);
   }
@@ -126,6 +125,19 @@ public class GlobalExceptionHandler {
           HttpServletResponse response, CompletionException ex) {
     response.setStatus(200);
     log.error("CompletableFuture异常：{}",ex.getMessage(), ex);
+    Throwable cause = ex.getCause();
+    if (cause instanceof ClientServiceException) {
+      ClientServiceException cex = (ClientServiceException) ex.getCause();
+      return ResponseUtil.fail(cex.getStatus(), cex.getMessage(), null);
+    }
+    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, cause.getMessage(), null);
+  }
+
+  @ExceptionHandler(WxPayException.class)
+  public ResponseResult handleWxPayException(
+          HttpServletResponse response, WxPayException ex) {
+    response.setStatus(200);
+    log.error("微信支付：{}",ex.getMessage(), ex);
     Throwable cause = ex.getCause();
     if (cause instanceof ClientServiceException) {
       ClientServiceException cex = (ClientServiceException) ex.getCause();

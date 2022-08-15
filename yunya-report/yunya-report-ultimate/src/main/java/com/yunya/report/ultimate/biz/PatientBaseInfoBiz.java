@@ -10,11 +10,13 @@ import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.query.PatientOriginConsumptionQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientOrigin;
+import com.yunya.models.report.CreditsShop;
 import com.yunya.report.ultimate.mapper.*;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +53,10 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
   @Resource private BaseEmployeeMapper baseEmployeeMapper;
 
   @Resource private BasePatientOriginMapper basePatientOriginMapper;
+
+  public CreditsShop lastPatientCredits(Integer patientId) {
+    return mapper.lastPatientCredits(patientId);
+  }
 
   /**
    * 查询患者预约信息

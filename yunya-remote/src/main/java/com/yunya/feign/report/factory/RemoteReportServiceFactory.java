@@ -7,6 +7,7 @@ import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.models.report.CreditsShop;
 
 import java.util.List;
 
@@ -39,6 +40,11 @@ public class RemoteReportServiceFactory implements RemoteReportServiceFeign {
 
     @Override
     public List<PatientBaseInfoVo> findPatientLikePatientInfo(PatientLikeFinleQueryForm form) {
+        return null;
+    }
+
+    @Override
+    public CreditsShop lastPatientCredits(Integer patiendId) {
         return null;
     }
 

@@ -32,8 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
@@ -122,6 +121,12 @@ public class CardController {
     public ResponseResult<CardQrCodeVo> cardQrCodeCheck(@NotNull @RequestParam Integer cardId) {
         CardQrCodeVo codeVo = cardBiz.cardQrCodeCheck(cardId);
         return ResponseUtil.success(codeVo);
+    }
+
+    @ApiOperation(value = "卡券二维码页面打开(批量)")
+    @PostMapping("/coupon/card/QRCode/batch/init")
+    public List<CardQrCodeVo> batchCardQrCode(@NotEmpty @RequestBody List<Integer> cardIds) {
+        return cardBiz.batchCardQrCode(cardIds);
     }
 
     @ApiOperation(value = "取消售出")

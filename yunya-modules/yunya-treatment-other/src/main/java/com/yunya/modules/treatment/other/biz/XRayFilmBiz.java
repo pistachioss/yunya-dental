@@ -6,9 +6,7 @@ import com.yunya.feign.treatment_other.domain.form.XRayFilmForm;
 import com.yunya.feign.treatment_other.domain.model.XRayFilmInfoModel;
 import com.yunya.feign.treatment_other.domain.query.ToothRootQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
-import com.yunya.feign.treatment_other.domain.vo.ToothRootCountVo;
-import com.yunya.feign.treatment_other.domain.vo.ToothRootVo;
-import com.yunya.feign.treatment_other.domain.vo.XRayFilmVO;
+import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -19,15 +17,12 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.other.mapper.XRayFilmMapper;
 import com.yunya.modules.treatment.other.utils.TreatmentOtherUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -51,7 +46,7 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
      * @param patientId 患者ID
      * @param models 参数模型
      */
-    public ResponseResult<T> addBatch(Integer patientId, List<XRayFilmInfoModel> models){
+    public ResponseResult addBatch(Integer patientId, List<XRayFilmInfoModel> models){
         List<XRayFilm> xRayFilms = new ArrayList<>();
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         String username = BaseContextHandler.getName();

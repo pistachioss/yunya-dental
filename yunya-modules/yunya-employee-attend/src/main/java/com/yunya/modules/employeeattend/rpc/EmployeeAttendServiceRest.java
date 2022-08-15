@@ -1,15 +1,10 @@
 package com.yunya.modules.employeeattend.rpc;
 
 import com.yunya.feign.employee_attend.vo.*;
+import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.employee_attend.EmployeeSchedule;
-import com.yunya.modules.employeeattend.biz.AttendanceAddressSetBiz;
-import com.yunya.modules.employeeattend.biz.FieldInfoBiz;
-import com.yunya.modules.employeeattend.biz.LeaveInfoBiz;
-import com.yunya.modules.employeeattend.biz.WorkOvertimeInfoBiz;
-import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
-import com.yunya.modules.employeeattend.form.FieldInfoForm;
-import com.yunya.modules.employeeattend.form.LeaveInfoForm;
-import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
+import com.yunya.modules.employeeattend.biz.*;
+import com.yunya.modules.employeeattend.form.*;
 import com.yunya.modules.employeeattend.rpc.service.EmployeeScheduleSerivce;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleResultVO;
 import io.swagger.annotations.Api;
@@ -36,6 +31,17 @@ public class EmployeeAttendServiceRest {
   @Autowired private WorkOvertimeInfoBiz workOvertimeInfoBiz;
   @Autowired private FieldInfoBiz fieldInfoBiz;
   @Autowired private  AttendanceAddressSetBiz addressSetBiz;
+
+  /**
+   * 获取门诊地址以及经纬度
+   * @param
+   * @return
+   */
+  @RequestMapping(value = "/employee/attend/address", method = RequestMethod.POST)
+  public List<AttendanceAddressSet> findAddress() {
+    List<AttendanceAddressSet> resultVO = employeeScheduleSerivce.findAddress();
+    return resultVO;
+  }
 
   /**
    * 查看员工排班列表

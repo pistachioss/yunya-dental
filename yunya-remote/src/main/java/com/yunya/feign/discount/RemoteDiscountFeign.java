@@ -1,14 +1,16 @@
 package com.yunya.feign.discount;
 
-import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
-import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
-import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
-import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
+import com.yunya.feign.discount.domain.query.*;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
+import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
@@ -16,10 +18,13 @@ import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 @FeignClient(
@@ -77,4 +82,40 @@ public interface RemoteDiscountFeign {
      */
     @PostMapping("/benefit/tariffCategory/discountCoupon")
     List<ClinicTariffDiscountCouponVO> findClinicTariffCategoryDiscountCoupon(@RequestBody DiscountCouponQuery query);
+
+    @RequestMapping(value = "/mini/virtual/page", method = RequestMethod.POST)
+    PageInfo<VirtualProductVO> pageVirtual(@Validated @RequestBody VirtualProductQuery query);
+
+    @RequestMapping(value = "/mini/coupon/{couponId}", method = RequestMethod.GET)
+    VirtualDetailVO couponDetail(@PathVariable(value = "couponId") Integer couponId);
+
+    @PostMapping("/productType/list")
+    ResponseResult<PageInfo<ProductTypeVO>> findList(@RequestBody ProductTypeQueryForm queryForm);
+
+    @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.POST)
+    List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids);
+
+    @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.POST)
+    void lockVirtualStock(@Valid @RequestBody List<LockStockForm> form);
+
+    @RequestMapping(value = "/coupon/free/stock", method = RequestMethod.POST)
+    void freeVirtualStock(@Valid @RequestBody List<FreeStockForm> form);
+
+    @PostMapping("/coupon/sale/card/page")
+    ResponseResult<PageInfo<CardSalePageVo>> getCardSalePageVo(@Valid @RequestBody CardSaleQuery query);
+
+    @RequestMapping(value = "/card/use", method = RequestMethod.POST)
+    boolean whetherUseCard(@NotEmpty @RequestBody List<Integer> cardIds);
+
+    @PostMapping("/coupon/card/QRCode/batch/init")
+    List<CardQrCodeVo> batchCardQrCode(@NotEmpty @RequestBody List<Integer> cardIds);
+
+    @PostMapping("/coupon/card/cancel/batch")
+    void batchCancelCard(@RequestBody BatchCancelCardForm form);
+
+    @PutMapping("/mini/coupon/card/sale")
+    ResponseResult miniSoldCard(@Valid @RequestBody MiniCardSoldForm form);
+
+    @DeleteMapping("/mini/card/delete/batch")
+    void deleteCard(@RequestBody List<Integer> cardIds);
 }

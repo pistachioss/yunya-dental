@@ -2,6 +2,7 @@ package com.yunya.feign.rabbitmq.factory;
 
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.report.domain.model.MessageOrderModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,12 @@ import java.util.Map;
 public class RabbitMqFallBackFactory implements RemoteRabbitMqServiceFeign {
   @Override
   public String sendMessage(MessageModel messageModel) {
+    log.error("remoteRabbitMqServiceFeign: rabbitmq service 未启用");
+    return "fail";
+  }
+
+  @Override
+  public String sendOrderDirectMessage(MessageOrderModel messageModel) {
     log.error("remoteRabbitMqServiceFeign: rabbitmq service 未启用");
     return "fail";
   }

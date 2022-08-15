@@ -176,7 +176,7 @@ public class CompanyReportOfFinanceController {
    */
   @ApiOperation(value = "公司端报表-财务报表-充值卡充值统计的全部明细导出")
   @PostMapping("/recharge/statistics/AllExport")
-  public ResponseResult<PageInfo<RechargeVo>> findRechargePageAllExport(
+  public ResponseResult findRechargePageAllExport(
           @Valid @RequestBody RechargeQuery query, HttpServletResponse response) throws IOException {
     discountBiz.findRechargePageAllExport(query, response);
     return ResponseUtil.success();

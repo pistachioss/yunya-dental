@@ -28,4 +28,10 @@ public class FileForm {
    */
   @ApiModelProperty("文档")
   private List<FileInfo> docs;
+
+  /**
+   * 图像
+   */
+  @ApiModelProperty("产品介绍图像")
+  private List<FileInfo> proPaths;
 }

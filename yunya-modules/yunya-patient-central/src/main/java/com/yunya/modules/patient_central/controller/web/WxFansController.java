@@ -2,10 +2,10 @@ package com.yunya.modules.patient_central.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.WxFans;
 import com.yunya.modules.patient_central.biz.WxFansBiz;
@@ -13,10 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -107,5 +104,48 @@ public class WxFansController {
             throw new ClientServiceException("非关注公众号用户请先关注艾维口腔公众号！",OPERATION_NOT_ALLOW);
         }
         return ResponseUtil.success(ownWxFans);
+    }
+
+    /**
+     * 微信用户-用户管理列表
+     *
+     * @param
+     * @return ResponseResult<PageInfo<WxFansVo>>
+     */
+    @ApiOperation("微信用户-用户管理列表")
+    @PostMapping("/wechat/list")
+    public ResponseResult<PageInfo<WxWechatFansVo>> findWechatList(
+            @RequestBody @Validated WxFansWechatQueryForm wxFansWechatQueryForm) {
+        return ResponseUtil.success(
+                wxFansBiz.findWechatList(wxFansWechatQueryForm));
+    }
+    /**
+     * 微信用户-用户管理列表
+     *
+     * @param
+     * @return
+     */
+    @ApiOperation("微信用户-启用禁用")
+    @PutMapping("/wechat/update")
+    public ResponseResult findWechatList(
+            @RequestBody @Validated WxFansWechatUpdateForm wxFansWechatUpdateForm) {
+        WxFans wxFans = new WxFans();
+        BeanUtil.copy(wxFansWechatUpdateForm,wxFans);
+        return ResponseUtil.success(
+                wxFansBiz.updateSelectiveById(wxFans));
+    }
+
+    /**
+     * 微信用户-查询地图标记范围内用户
+     *
+     * @param
+     * @return
+     */
+    @ApiOperation("微信用户-查询地图标记范围内用户")
+    @PostMapping("/wechat/mapList")
+    public ResponseResult<WxWechatMapAndBindFansVo> findMapList(
+            @RequestBody @Validated WxFansMapQueryForm wxFansMapQueryForm) {
+        return ResponseUtil.success(
+                wxFansBiz.findMapList(wxFansMapQueryForm));
     }
 }

@@ -14,6 +14,7 @@ public enum PreFixCode {
     TREATMENT_OTHER(20),
     MIDDLE_TABLE(21),
     WCHAR(22),
+    IVY_MINI(23),
     ;
 
 

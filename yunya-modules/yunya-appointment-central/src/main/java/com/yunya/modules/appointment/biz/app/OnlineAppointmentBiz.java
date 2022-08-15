@@ -7,7 +7,9 @@ import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
 import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.WxFanByNameForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -97,21 +99,34 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         }
         return ResponseUtil.success(onlineAppointment);
     }
+    public ResponseResult cancelOnlineAppointment(Integer id) {
+        Example example = new Example(OnlineAppointment.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("id",id);
+        int count = mapper.selectCountByExample(example);
+        if (count <= 0) {
+            return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
+        }
+        OnlineAppointment build = new OnlineAppointment();
+        build.setId(id);
+        build.setStatus(new Byte("2"));
+        return ResponseUtil.success(mapper.updateByPrimaryKeySelective(build));
 
+    }
     /**
      * 新增在线预约申请
      * @param model 预约申请参数
      * @return 结果
      */
-    public ResponseResult<T> addOnlineAppointment(OnlineAppointmentModel model) {
+    public ResponseResult addOnlineAppointment(OnlineAppointmentModel model) {
         OnlineAppointment build = EntityUtils.build(model, OnlineAppointment.class);
 
         // 判断预约申请是否已满
-        boolean allowApply = checkApplyRules(model.getOrgId(), model.getAppointItemId(), model.getAppointDate(), model.getAppointTime());
-        if (!allowApply) {
-            return ResponseUtil.fail(AppointmentError.ONLINE_APPOINT_OUT_OF_CAPACITY.getCode(),
-                    AppointmentError.ONLINE_APPOINT_OUT_OF_CAPACITY.getMessage(),null);
-        }
+//        boolean allowApply = checkApplyRules(model.getOrgId(), model.getAppointItemId(), model.getAppointDate(), model.getAppointTime());
+//        if (!allowApply) {
+//            return ResponseUtil.fail(AppointmentError.ONLINE_APPOINT_OUT_OF_CAPACITY.getCode(),
+//                    AppointmentError.ONLINE_APPOINT_OUT_OF_CAPACITY.getMessage(),null);
+//        }
         build.setCrtName(build.getPatientName());
         OnlineAppointItem item = new OnlineAppointItem();
         item.setItemId(model.getAppointItemId());
@@ -133,7 +148,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         if (status <= 0) {
             ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
         }
-        return ResponseUtil.success();
+        return ResponseUtil.success(build.getId());
     }
 
     /**
@@ -161,7 +176,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param form 预约申请参数
      * @return 结果
      */
-    public ResponseResult<T> updateOnlineAppointment(OnlineAppointmentForm form) {
+    public ResponseResult updateOnlineAppointment(OnlineAppointmentForm form) {
         Integer id = form.getId();
         Example example = new Example(OnlineAppointment.class);
         Example.Criteria criteria = example.createCriteria();
@@ -202,7 +217,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param id 预约申请ID
      * @return 结果
      */
-    public ResponseResult<T> deleteOnlineAppointmentById(Integer id) {
+    public ResponseResult deleteOnlineAppointmentById(Integer id) {
         Example example = new Example(OnlineAppointment.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",id);
@@ -256,10 +271,22 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             setDentistInfo(results);
             setOrgInfo(results);
             setPatientInfo(results);
+            setHeadImgurl(results);
         }
         return results;
     }
 
+    private void setHeadImgurl(List<OnlineAppointmentVo> results) {
+        List<WxFansVo>list = remotePatientCentralServiceFeign.findListByName(new WxFanByNameForm());
+        if (StringHelper.isNotEmpty(list)) {
+            results.forEach(onlineAppointmentVo -> {
+                list.stream().filter(
+                        e -> e.getOpenId().equals(onlineAppointmentVo.getOpenId()))
+                        .findAny()
+                        .ifPresent(entity -> onlineAppointmentVo.setHeadImgurl(entity.getHeadImgurl()));
+            });
+        }
+    }
     /**
      * 设置患者信息
      * @param results 预约申请列表

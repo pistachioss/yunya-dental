@@ -15,7 +15,6 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.TreatPlan;
 import com.yunya.modules.treatment.other.mapper.TreatPlanMapper;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +46,7 @@ public class TreatPlanBiz extends BaseBiz<TreatPlanMapper, TreatPlan> {
      * 批量上传（可单独上传）
      * @param model 参数模型
      */
-    public ResponseResult<T> addBatch(TreatPlanModel model){
+    public ResponseResult addBatch(TreatPlanModel model){
         Date now = new Date(System.currentTimeMillis());
         List<XUploadFileModel> files = model.getList();
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());

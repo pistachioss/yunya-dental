@@ -1,7 +1,6 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
 import com.yunya.feign.report.domain.query.VipLogoQueryForm;
 import com.yunya.feign.report.domain.vo.VipLogoVo;
 import com.yunya.feign.report.domain.vo.VipRateVo;
@@ -12,7 +11,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.report.ultimate.biz.PatientVipLogoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +31,7 @@ public class PatientVipLogoController {
     private PatientVipLogoBiz patientVipLogoBiz;
 
     @GetMapping("/update/{id}")
-    public ResponseResult<String> update(@PathVariable("id") Integer id) {
+    public ResponseResult update(@PathVariable("id") Integer id) {
         if (id != 9527 && id != 9528) {
             return ResponseUtil.error(500, "reject");
         }

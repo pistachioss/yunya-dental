@@ -25,7 +25,18 @@
         <result column="total_arrears" property="totalArrears" jdbcType="DECIMAL"/>
         <result column="number_of_visits" property="numberOfVisits" jdbcType="INTEGER"/>
     </resultMap>
-
+    <select id="lastPatientCredits" resultType="com.yunya.models.report.CreditsShop">
+        select
+        credits_account
+        from credits_shop
+        <where>
+            <if test="patientId != null">
+                patient_id = #{patientId}
+            </if>
+            order by id desc,crt_time desc
+            limit 1
+        </where>
+    </select>
     <!-- 根据姓名/手机号/拼音姓名 -->
     <select id="selectKilePatientId" resultType="java.lang.Integer">
         select patient_id

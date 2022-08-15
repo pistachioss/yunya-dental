@@ -129,4 +129,10 @@ public class PackageCouponForm {
 
     @ApiModelProperty("是否分配")
     private Boolean isDistribution = true;
+
+    /**
+     * 是否线上售卖(0:否 1:是)
+     */
+    @ApiModelProperty("是否线上售卖(0:否 1:是)")
+    private Boolean isOnlineSale;
 }

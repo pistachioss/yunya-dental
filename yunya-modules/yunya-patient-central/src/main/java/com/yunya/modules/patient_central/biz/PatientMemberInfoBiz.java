@@ -8,6 +8,7 @@ import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
@@ -96,10 +97,40 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   /** 微信推送 */
   @Autowired private RemoteWechatServiceFeign remoteWechatServiceFeign;
 
+  @Autowired private WxFansBiz wxFansBiz;
   /** 预付款Mapper */
   @Autowired
   private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
+  public List<MasertMemberRechargeRecordDetailVo> findMemberRechargeRecordInfo(MemberExpendRecordQueryForm form) {
+      return mapper.findMemberRechargeRecordInfo(form);
+  }
+
+  public List<MasertMemberRechargeRecordDetailVo> findMemberPrepaidRecordInfo(MemberExpendRecordQueryForm form) {
+    return mapper.findMemberPrepaidRecordInfo(form);
+  }
+
+  public MasertMemberInfoVo findMasertMember(String unionId) {
+    Integer id = wxFansBiz.getPatientIdByUonId(unionId);
+    if(id==null){
+        return null;
+    }
+    PatientMemberInfoQueryForm form = new PatientMemberInfoQueryForm();
+    form.setPatientId(id);
+    MasertMemberInfoVo masertMemberInfoVo = patientMemberInfoMapper.selectMasertMemberInfo(form);
+    if (masertMemberInfoVo != null) {
+      // 获取会员卡名称
+      MemberType memberType =
+              this.remoteSystemServiceFeign.findMemberTypeById(
+                      masertMemberInfoVo.getMasterCardTypeId());
+      if (memberType != null) {
+        masertMemberInfoVo.setMasterMemberCardName(memberType.getName());
+        masertMemberInfoVo.setRate(memberType.getRate());
+        masertMemberInfoVo.setPictureCode(memberType.getPictureCode());
+      }
+    }
+    return masertMemberInfoVo;
+  }
 
   /**
    * 根据患者id查询会员基本信息

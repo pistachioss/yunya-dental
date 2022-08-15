@@ -30,7 +30,7 @@ public class XRayFilmQuery implements Serializable {
     @ApiModelProperty(value = "患者ID")
     private Integer patientId;
 
-    @ApiModelProperty(value = "X-光片类型",
+    @ApiModelProperty(value = "X-光片类型 0-照片；1-根尖片；2-全景片；3-正位片；4-侧位片；5-关节片；6-正畸片；7-其他片",
             allowableValues = "0-照片；1-根尖片；2-全景片；3-正位片；4-侧位片；5-关节片；6-正畸片；7-其他片")
     private Byte type;
 

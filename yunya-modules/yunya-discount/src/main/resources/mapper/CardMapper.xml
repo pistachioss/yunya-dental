@@ -44,6 +44,67 @@
                 #{item}
             </foreach>
     </select>
+    <select id="findCardWxDetail" resultType="com.yunya.feign.discount.domain.vo.CardWxDetailVO">
+SELECT
+	cci.id as couponId,
+		CASE
+WHEN cci.type = 0 THEN vc.useable_clinci
+WHEN cci.type = 1 THEN dc.useable_clinic
+WHEN cci.type = 2 THEN pc.useable_clinic
+WHEN cci.type = 3 THEN spc.useable_clinic
+END as useableClinic,
+		CASE
+WHEN cci.type = 0 THEN vc.limit_count
+WHEN cci.type = 1 THEN 1
+WHEN cci.type = 2 THEN pc.limit_count
+WHEN cci.type = 3 THEN spc.limit_count
+END as limitCount,
+	CASE
+WHEN cci.type = 0 THEN vc.mixed_use_type
+WHEN cci.type = 1 THEN dc.mixable
+WHEN cci.type = 2 THEN pc.mixable
+WHEN cci.type = 3 THEN spc.mixable
+END as mixable,
+	CASE
+WHEN cci.type = 0 THEN 0
+WHEN cci.type = 1 THEN 0
+WHEN cci.type = 2 THEN pc.use_way
+WHEN cci.type = 3 THEN spc.use_way
+END as useWay
+FROM
+coupon_common_info cci
+LEFT JOIN package_coupon pc on pc.coupon_id = cci.id
+LEFT JOIN special_package_coupon spc on spc.coupon_id = cci.id
+LEFT JOIN vouche_coupon vc on vc.coupon_id = cci.id
+LEFT JOIN discount_coupon dc on dc.coupon_id = cci.id
+WHERE
+	cci.id = #{couponId}
+    </select>
+    <select id="findCardWxList" resultType="com.yunya.feign.discount.domain.vo.CardWxVO">
+SELECT
+    cd.id as cardId,
+	cd.coupon_id as couponId,
+	cci.name as couponName,
+	cci.type as couponType,
+	CASE
+WHEN cci.type = 0 THEN if(vc.effective_days = 0,null,date_add(date_format(cd.active_date, '%Y-%m-%d'), INTERVAL vc.effective_days DAY))
+WHEN cci.type = 1 THEN if(dc.effective_days = 0,null,date_add(date_format(cd.active_date, '%Y-%m-%d'), INTERVAL dc.effective_days DAY))
+WHEN cci.type = 2 THEN if(pc.effective_days = 0,null,date_add(date_format(cd.active_date, '%Y-%m-%d'), INTERVAL pc.effective_days DAY))
+WHEN cci.type = 3 THEN if(spc.effective_days = 0,null,date_add(date_format(cd.active_date, '%Y-%m-%d'), INTERVAL spc.effective_days DAY))
+END as activationDeadline,
+cfi.file_name as fileName,
+cfi.path
+FROM
+	card cd
+LEFT JOIN coupon_common_info cci on cd.coupon_id = cci.id
+LEFT JOIN package_coupon pc on pc.coupon_id = cci.id
+LEFT JOIN special_package_coupon spc on spc.coupon_id = cci.id
+LEFT JOIN vouche_coupon vc on vc.coupon_id = cci.id
+LEFT JOIN discount_coupon dc on dc.coupon_id = cci.id
+LEFT JOIN coupon_file_info cfi on cfi.coupon_id = cci.id and cfi.file_type = 0
+WHERE
+	cd.patient_id = #{patientId} and cd.status in (2,3) and cci.type in(0,1,2,3) and cci.is_inservice = 1 GROUP BY cd.id
+    </select>
 
     <select id="getSumNumByCouponId" resultType="int">
         select

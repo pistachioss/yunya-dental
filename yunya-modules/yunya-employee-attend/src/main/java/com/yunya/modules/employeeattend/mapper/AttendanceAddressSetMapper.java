@@ -1,6 +1,8 @@
 package com.yunya.modules.employeeattend.mapper;
 
 
+import com.yunya.feign.appointment.domain.query.ClinicListQuery;
+import com.yunya.feign.appointment.vo.ClinicListVO;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetQueryForm;
 import com.yunya.feign.employee_attend.vo.AttendanceAddressSetVO;
 import com.yunya.models.employee_attend.AttendanceAddressSet;
@@ -10,7 +12,8 @@ import tk.mybatis.mapper.common.Mapper;
 import java.util.List;
 
 public interface AttendanceAddressSetMapper extends Mapper<AttendanceAddressSet> {
-    
+
+
     /**
      * 分页查询考勤地址设置列表
      *

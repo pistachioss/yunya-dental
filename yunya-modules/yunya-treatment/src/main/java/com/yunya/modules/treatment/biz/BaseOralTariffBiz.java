@@ -1,26 +1,26 @@
 package com.yunya.modules.treatment.biz;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.yunya.feign.discount.domain.form.FreeStockForm;
+import com.yunya.feign.discount.domain.form.LockStockForm;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
+import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
+import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
-import com.yunya.feign.treatment.domain.form.BaseOralTariffForm;
-import com.yunya.feign.treatment.domain.form.ClinicItemPriceForm;
-import com.yunya.feign.treatment.domain.form.TariffUnitePriceForm;
-import com.yunya.feign.treatment.domain.model.BaseOralTariffImportModel;
-import com.yunya.feign.treatment.domain.model.BaseOralTariffModel;
-import com.yunya.feign.treatment.domain.model.ClinicItemPriceModel;
-import com.yunya.feign.treatment.domain.model.TariffUniteModel;
+import com.yunya.feign.treatment.domain.form.*;
+import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffExportVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffVO;
 import com.yunya.feign.treatment.domain.vo.ClinicItemPriceVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -28,47 +28,40 @@ import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.tariff.*;
 import com.yunya.models.tariff.BaseOralTariff;
+import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import com.yunya.models.tariff.BaseOralTariffCategory;
 import com.yunya.models.tariff.BaseOralTariffHistory;
 import com.yunya.models.tariff.ClinicOralTariff;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
-import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
-import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
-import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
-import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
-import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
-import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.framework.common.enums.TrueFalseEnum.*;
+import static java.util.stream.Collectors.*;
 
 /**
  * 描述: 商品商品业务层
@@ -98,6 +91,9 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   /** 线程池 */
   @Resource(name = "treatmentThreadPool")
   private ExecutorService importExcelThreadPool;
+  @Resource
+  private BaseOralTariffCategoryBiz baseOralTariffCategoryBiz;
+
 
   /**
    * 根据ID查询商品商品信息（包含门诊商品商品价格信息）
@@ -1270,5 +1266,106 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
         clinicOralTariffBiz.batchInsert(clinicOralTariffs);
       }
     }
+  }
+
+  /**
+   * 小程序查询商品列表
+   * @param query: query
+   * @return PageInfo<GoodsVO>
+   */
+  public PageInfo<GoodsVO> pageGoods(GoodsQuery query) {
+    Page<BaseOralTariff> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    Example example = new Example(BaseOralTariff.class);
+    Example.Criteria criteria = example.createCriteria()
+            .andEqualTo("isOnlineSale", true);
+    Example.Criteria criteria1 = example.createCriteria();
+    if (StringUtils.isNotBlank(query.getKeyword())) {
+      criteria1.orLike("itemNumber", "%" + query.getKeyword() + "%");
+      criteria1.orLike("name", "%" + query.getKeyword() + "%");
+      criteria1.orLike("pinyin", "%" + query.getKeyword() + "%");
+    }
+    Example.Criteria criteria2 = example.createCriteria();
+    if (Objects.nonNull(query.getProductCategoryId())) {
+      criteria2.andEqualTo("oralTariffCategoryId", query.getProductCategoryId());
+    }
+    example.and(criteria1);
+    example.and(criteria2);
+    List<BaseOralTariff> baseOralTariffs = mapper.selectByExample(example);
+
+    List<GoodsVO> collect = page.getResult().stream().map(t -> {
+      String itemPic = t.getItemPic();
+      GoodsVO goodsVO = new GoodsVO();
+      goodsVO.setProductId(t.getId());
+      goodsVO.setProductName(t.getName());
+      goodsVO.setProductPic(StringHelper.splitFirst(itemPic));
+      goodsVO.setProductPrice(t.getPrice());
+      goodsVO.setProductType(FALSE.getCode());
+      return goodsVO;
+    }).collect(Collectors.toList());
+    PageInfo<GoodsVO> pageInfo = new PageInfo<>(collect);
+    pageInfo.setTotal(page.getTotal());
+    pageInfo.setPageNum(page.getPageNum());
+    pageInfo.setHasNextPage(page.getPageNum() < page.getPages());
+    return pageInfo;
+  }
+
+    public List<ProductBO> listOnSaleOral(Collection<Integer> ids) {
+      if (CollectionUtils.isEmpty(ids)) {
+        return Lists.newArrayList();
+      }
+      Example example = new Example(BaseOralTariff.class);
+      example.selectProperties("id","itemNumber","name","unit","price","stock","itemPic","sale","oralTariffCategoryId");
+      Example.Criteria criteria = example.createCriteria().andIn("id", ids)
+              .andEqualTo("isOnlineSale", true)
+              .andEqualTo("inservice", true);
+      List<BaseOralTariff> tariffs = mapper.selectByExample(example);
+      //查询商品分类
+      BaseOralTariffCategory queryForm = new BaseOralTariffCategory();
+      queryForm.setInservice(true);
+      List<BaseOralTariffCategory> categoryList = baseOralTariffCategoryBiz.selectList(queryForm);
+      return assembleProductBO(tariffs, categoryList);
+    }
+
+  public void lockGoodsStock(List<LockStockForm> form) {
+    for (LockStockForm lockStockForm : form) {
+      BaseOralTariff baseOralTariff = mapper.selectByPrimaryKey(lockStockForm.getProductId());
+      baseOralTariff.setSale((Objects.isNull(baseOralTariff.getSale()) ? 0 : baseOralTariff.getSale()) + lockStockForm.getQuantity());
+      baseOralTariff.setStock((Objects.isNull(baseOralTariff.getStock()) ? 0 : baseOralTariff.getStock()) - lockStockForm.getQuantity());
+      mapper.updateByPrimaryKeySelective(baseOralTariff);
+    }
+  }
+
+  public void freeGoodsStock(List<FreeStockForm> form) {
+    for (FreeStockForm freeStockForm : form) {
+      BaseOralTariff baseOralTariff = mapper.selectByPrimaryKey(freeStockForm.getProductId());
+      baseOralTariff.setSale((Objects.isNull(baseOralTariff.getSale()) ? 0 : baseOralTariff.getSale()) - freeStockForm.getQuantity());
+      baseOralTariff.setStock((Objects.isNull(baseOralTariff.getStock()) ? 0 : baseOralTariff.getStock()) + freeStockForm.getQuantity());
+      mapper.updateByPrimaryKeySelective(baseOralTariff);
+    }
+  }
+
+  private List<ProductBO> assembleProductBO(List<BaseOralTariff> tariffs, List<BaseOralTariffCategory> cateGoryList) {
+    List<ProductBO> collect = tariffs.stream().map(t -> {
+      String itemPic = t.getItemPic();
+      ProductBO bo = new ProductBO();
+      bo.setProductId(t.getId());
+      bo.setProductName(t.getName());
+      bo.setProductPic(itemPic);
+      bo.setProductSn(t.getItemNumber());
+      bo.setStock(Objects.isNull(t.getStock()) ? 0 : t.getStock());
+      bo.setSoldQuantity(Objects.isNull(t.getSale()) ? 0 : t.getSale());
+      bo.setProductPrice(t.getPrice());
+      bo.setProductType(FALSE.getCode());
+      bo.setProductCategoryId(t.getOralTariffCategoryId());
+      return bo;
+    }).collect(Collectors.toList());
+    Map<Integer, BaseOralTariffCategory> categoryMap = cateGoryList.stream().collect(toMap(BaseOralTariffCategory::getId, Function.identity()));
+    collect.stream()
+            .filter(t -> categoryMap.containsKey(t.getProductCategoryId()))
+            .forEach(t -> {
+              BaseOralTariffCategory category = categoryMap.get(t.getProductCategoryId());
+              t.setProductCategoryName(category.getName());
+            });
+    return collect;
   }
 }

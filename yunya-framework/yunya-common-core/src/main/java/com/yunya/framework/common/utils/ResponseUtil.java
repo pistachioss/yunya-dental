@@ -53,8 +53,8 @@ public class ResponseUtil {
    *
    * @return
    */
-  public static ResponseResult success() {
-    return result(SUCCESS_STATUS, SUCCESS_MSG, null, ResponseUtil.ADUIT);
+  public static ResponseResult<Boolean> success() {
+    return result(SUCCESS_STATUS, SUCCESS_MSG, true, ResponseUtil.ADUIT);
   }
 
 
@@ -112,8 +112,8 @@ public class ResponseUtil {
    * @param audit 审核状态
    * @return
    */
-  public static <T>ResponseResult result(Integer status, String msg, T data, Boolean audit) {
-    ResponseResult responseResult = new ResponseResult();
+  public static <T>ResponseResult<T> result(Integer status, String msg, T data, Boolean audit) {
+    ResponseResult<T> responseResult = new ResponseResult<>();
     responseResult.setStatus(status);
     responseResult.setMsg(msg);
     responseResult.setData(data);

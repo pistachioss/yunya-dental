@@ -13,6 +13,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -1147,7 +1148,7 @@ public class DateUtil {
    * @param toDate
    * @return
    */
-  public static Double dateDiff2Double(Temporal fromDate, Temporal toDate, int type){
+  public static Double dateDiff2Double(Temporal fromDate, Temporal toDate, int type) {
     //间隔天数
     long diffDays = Math.abs(ChronoUnit.DAYS.between(fromDate, toDate));
     if (type == 1) {// 返回月份形式, 按30天/月换算
@@ -1165,5 +1166,55 @@ public class DateUtil {
     } else { // 返回日形式
       return Double.valueOf(diffDays);
     }
+  }
+
+  /**
+   * Date转换为LocalDateTime
+   *
+   * @param date 日期
+   */
+  public static LocalDateTime date2LocalDateTime(Date date) {
+    if (date == null) {
+      return LocalDateTime.now();
+    }
+    Instant instant = date.toInstant();
+    ZoneId zoneId = ZoneId.systemDefault();
+    return instant.atZone(zoneId).toLocalDateTime();
+  }
+
+  /**
+   * 日期格式化
+   *
+   * @param temporal 时间
+   * @param pattern  表达式
+   * @return 格式化后的时间
+   */
+  public static String format(TemporalAccessor temporal, String pattern) {
+    return DateTimeFormatter.ofPattern(pattern).format(temporal);
+  }
+
+  /**
+   * 将字符串转换为时间
+   *
+   * @param dateStr 时间字符串
+   * @param pattern 表达式
+   * @return 时间
+   */
+  public static TemporalAccessor parseStr(String dateStr, String pattern) {
+    DateTimeFormatter format = DateTimeFormatter.ofPattern(pattern);
+    return format.parse(dateStr);
+  }
+
+  public static Date localDateTimeToDate(LocalDateTime time) {
+     //获取系统默认时区
+    ZoneId zoneId = ZoneId.systemDefault();
+    //时区的日期和时间
+    ZonedDateTime zonedDateTime = time.atZone(zoneId);
+    //获取时刻
+    return Date.from(zonedDateTime.toInstant());
+  }
+
+  public static void main(String[] args) {
+    System.out.println(parse2Date("1941-09-04"));
   }
 }
