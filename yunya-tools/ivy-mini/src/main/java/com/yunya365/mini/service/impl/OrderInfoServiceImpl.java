@@ -1087,7 +1087,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 distribution = distributionService.findList();
                 freightAmount = Objects.nonNull(distribution) ? distribution.getSendingPrice() : null;
                 orderInfo.setFreightAmount(freightAmount);
-                totalAmount = totalAmount.add(Objects.isNull(freightAmount) ? BigDecimal.ZERO : freightAmount);
                 //起送价判断
                 BigDecimal startSendingPrice = Objects.nonNull(distribution) ? distribution.getStartSendingPrice() : null;
                 if (Objects.nonNull(startSendingPrice) && startSendingPrice.compareTo(totalAmount) > 0) {
