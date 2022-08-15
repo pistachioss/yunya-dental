@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 
 /**
  * 简介:公司端报表-报表统计-市场报表控制层
@@ -57,5 +59,13 @@ public class CompanyReportOfMarket {
       @RequestBody @Validated CardConsumeQuery query) {
     PageInfo<CardConsumeRecordVO> pageInfo = discountBiz.getCardConsumeRecordList(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+  @ApiOperation("导出卡券使用记录列表（销售渠道消费报表导出）")
+  @PostMapping(value = "/card-consume/export", name = "销售渠道消费报表导出")
+  public void exportCardConsumeRecord(
+      HttpServletResponse response, @RequestBody @Validated CardConsumeQuery query)
+      throws IOException {
+    discountBiz.exportCardConsumeRecord(response, query);
   }
 }

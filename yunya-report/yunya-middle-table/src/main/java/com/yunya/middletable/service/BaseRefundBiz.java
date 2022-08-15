@@ -213,6 +213,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     OrderDetail detail = orderDetailMapper.selectByPrimaryKey(billDetailId);
     if (!ObjectUtils.isEmpty(detail)) {
       refundDetail.setExecutorId(detail.getExecutorId());
+      refundDetail.setConsulterId(detail.getConsulterId());
       refundDetail.setItemId(detail.getBillingItemId());
       refundDetail.setItemType(detail.getType());
       refundDetail.setItemName(detail.getBillingItemName());

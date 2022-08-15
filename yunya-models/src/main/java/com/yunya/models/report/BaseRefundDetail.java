@@ -1,159 +1,47 @@
 package com.yunya.models.report;
 
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 
+@Data
 @Table(name = "base_refund_detail")
 public class BaseRefundDetail {
-    /**
-     * 退费明细ID
-     */
-    @Id
-    @Column(name = "refund_detail_id")
-    private Integer refundDetailId;
+  /** 退费明细ID */
+  @Id
+  @Column(name = "refund_detail_id")
+  private Integer refundDetailId;
 
-    /**
-     * 退费记录ID
-     */
-    @Column(name = "refund_id")
-    private Integer refundId;
+  /** 退费记录ID */
+  @Column(name = "refund_id")
+  private Integer refundId;
 
-    /**
-     * 订单明细ID
-     */
-    @Column(name = "bill_detail_id")
-    private Integer billDetailId;
+  /** 订单明细ID */
+  @Column(name = "bill_detail_id")
+  private Integer billDetailId;
 
-    /**
-     * 退费金额
-     */
-    @Column(name = "refund_amount")
-    private BigDecimal refundAmount;
+  /** 退费金额 */
+  @Column(name = "refund_amount")
+  private BigDecimal refundAmount;
 
-    /**
-     * 执行人ID
-     */
-    @Column(name = "executor_id")
-    private Integer executorId;
+  /** 执行人ID */
+  @Column(name = "executor_id")
+  private Integer executorId;
 
-    /**
-     * 项目ID
-     */
-    @Column(name = "item_id")
-    private Integer itemId;
-    /**
-     * 项目名称
-     */
-    @Column(name = "item_name")
-    private String itemName;
-    /**
-     * 项目类型（0-价目表；1-商品）
-     */
-    @Column(name = "item_type")
-    private Byte itemType;
-    /**
-     * 获取退费明细ID
-     *
-     * @return refund_detail_id - 退费明细ID
-     */
-    public Integer getRefundDetailId() {
-        return refundDetailId;
-    }
+  /** 咨询师ID */
+  @Column(name = "consulter_id")
+  private Integer consulterId;
 
-    /**
-     * 设置退费明细ID
-     *
-     * @param refundDetailId 退费明细ID
-     */
-    public void setRefundDetailId(Integer refundDetailId) {
-        this.refundDetailId = refundDetailId;
-    }
-
-    /**
-     * 获取退费记录ID
-     *
-     * @return refund_id - 退费记录ID
-     */
-    public Integer getRefundId() {
-        return refundId;
-    }
-
-    /**
-     * 设置退费记录ID
-     *
-     * @param refundId 退费记录ID
-     */
-    public void setRefundId(Integer refundId) {
-        this.refundId = refundId;
-    }
-
-    /**
-     * 获取订单明细ID
-     *
-     * @return bill_detail_id - 订单明细ID
-     */
-    public Integer getBillDetailId() {
-        return billDetailId;
-    }
-
-    /**
-     * 设置订单明细ID
-     *
-     * @param billDetailId 订单明细ID
-     */
-    public void setBillDetailId(Integer billDetailId) {
-        this.billDetailId = billDetailId;
-    }
-
-    /**
-     * 获取退费金额
-     *
-     * @return refund_amount - 退费金额
-     */
-    public BigDecimal getRefundAmount() {
-        return refundAmount;
-    }
-
-    /**
-     * 设置退费金额
-     *
-     * @param refundAmount 退费金额
-     */
-    public void setRefundAmount(BigDecimal refundAmount) {
-        this.refundAmount = refundAmount;
-    }
-
-    public Integer getExecutorId() {
-        return executorId;
-    }
-
-    public void setExecutorId(Integer executorId) {
-        this.executorId = executorId;
-    }
-
-    public Byte getItemType() {
-        return itemType;
-    }
-
-    public void setItemType(Byte itemType) {
-        this.itemType = itemType;
-    }
-
-    public Integer getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(Integer itemId) {
-        this.itemId = itemId;
-    }
-
-    public String getItemName() {
-        return itemName;
-    }
-
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
-    }
+  /** 项目ID */
+  @Column(name = "item_id")
+  private Integer itemId;
+  /** 项目名称 */
+  @Column(name = "item_name")
+  private String itemName;
+  /** 项目类型（0-价目表；1-商品） */
+  @Column(name = "item_type")
+  private Byte itemType;
 }

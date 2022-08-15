@@ -14,7 +14,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-/** @author YK */
+/**
+ * @author YK
+ */
 public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   /**
    * 根据条件查询账单项目收入明细列表
@@ -286,8 +288,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return BigDecimal
    */
   List<BillRecordWorkloadVO> selectBillTotalWorkload(
-          @Param("billIds") Collection<Integer> billIds,
-          @Param("existsExecutor") Boolean existsExecutor);
+      @Param("billIds") Collection<Integer> billIds,
+      @Param("existsExecutor") Boolean existsExecutor);
 
   /**
    * 根据订单ID列表查询非工作量总和
@@ -384,7 +386,9 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return
    */
   List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(
-      @Param("query") ClinicPerformanceBusinessQuery query, @Param("column1") String column1, @Param("column2") String column2);
+      @Param("query") ClinicPerformanceBusinessQuery query,
+      @Param("column1") String column1,
+      @Param("column2") String column2);
 
   List<Integer> billIdByMonthFreePayment(@Param("query") BillCategoryIncomeQuery query);
 
@@ -395,8 +399,9 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param billids
    * @return list
    */
-  List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") NonMonthCategoryIncomeQuery query,
-                                                @Param("billIds") Collection<Integer> billids);
+  List<NonMonthCategoryVO> nonMonthCategoryList(
+      @Param("query") NonMonthCategoryIncomeQuery query,
+      @Param("billIds") Collection<Integer> billids);
 
   /**
    * 按非本月账单且当月使用优惠（或当月收费）的账单id列表
@@ -406,9 +411,9 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<Integer> selectBillIdsByNonMonth(@Param("query") NonMonthCategoryIncomeQuery query);
 
-
   /**
    * 根据条件查询非当月优惠金额列表
+   *
    * @param query
    * @return
    */
@@ -416,10 +421,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   /**
    * 根据条件查询原价并按项目大类分组
+   *
    * @param query
    * @return
    */
-  List<CategoryInfoIncomeVO> selectOriginalAmountGroupByCategory(@Param("query")BillCategoryIncomeQuery query);
+  List<CategoryInfoIncomeVO> selectOriginalAmountGroupByCategory(
+      @Param("query") BillCategoryIncomeQuery query);
 
   /**
    * 根据条件按月份分组门诊补入工作量
@@ -436,7 +443,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query 查询条件
    * @return PageInfo<BillItemStatisticsInfoVO>
    */
-  List<BillItemStatisticsInfoVO> billItemStatiticsInfo(@Param("query")BillItemInfoQuery query);
+  List<BillItemStatisticsInfoVO> billItemStatiticsInfo(@Param("query") BillItemInfoQuery query);
 
   /**
    * 根据条件查询个人开单项目实收金额统计明细表
@@ -444,7 +451,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<BillItemReceivedStatisticsVO> billItemReceivedStatistics(@Param("query") BillItemInfoQuery query);
+  List<BillItemReceivedStatisticsVO> billItemReceivedStatistics(
+      @Param("query") BillItemInfoQuery query);
 
   /**
    * 查询门诊员工的应收工作量
@@ -452,7 +460,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<EmployeeWorkloadVO> selectClinicEmployeeReceivableWorkload(@Param("query") ClinicEmployeeWorkloadQuery query);
+  List<EmployeeWorkloadVO> selectClinicEmployeeReceivableWorkload(
+      @Param("query") ClinicEmployeeWorkloadQuery query);
 
   /**
    * 查询门诊员工的实收工作量
@@ -461,7 +470,9 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param groupByOrgId
    * @return
    */
-  List<EmployeeWorkloadVO> selectClinicEmployeeReceivedWorkload(@Param("query") ClinicEmployeeWorkloadQuery query, @Param("groupByOrgId") boolean groupByOrgId);
+  List<EmployeeWorkloadVO> selectClinicEmployeeReceivedWorkload(
+      @Param("query") ClinicEmployeeWorkloadQuery query,
+      @Param("groupByOrgId") boolean groupByOrgId);
 
   /**
    * 查询门诊员工的补入工作量
@@ -469,7 +480,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<EmployeeWorkloadVO> selectClinicEmployeeSupplementWorkload(@Param("query") ClinicEmployeeWorkloadQuery query);
+  List<EmployeeWorkloadVO> selectClinicEmployeeSupplementWorkload(
+      @Param("query") ClinicEmployeeWorkloadQuery query);
 
   /**
    * 查询门诊员工的免单支付工作量
@@ -477,7 +489,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<EmployeeWorkloadVO> selectClinicEmployeeFreePaymentWorkload(@Param("query") ClinicEmployeeWorkloadQuery query);
+  List<EmployeeWorkloadVO> selectClinicEmployeeFreePaymentWorkload(
+      @Param("query") ClinicEmployeeWorkloadQuery query);
 
   /**
    * 查询门诊员工的退费工作量
@@ -485,7 +498,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<EmployeeWorkloadVO> selectClinicEmployeeRefundWorkload(@Param("query") ClinicEmployeeWorkloadQuery query);
+  List<EmployeeWorkloadVO> selectClinicEmployeeRefundWorkload(
+      @Param("query") ClinicEmployeeWorkloadQuery query);
 
   /**
    * 查询执行人的项目实收工作量
@@ -493,7 +507,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffWorkload(@Param("query") BillItemTollWorkloadQuery query);
+  List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffWorkload(
+      @Param("query") BillItemTollWorkloadQuery query);
 
   /**
    * 查询执行人的项目免单支付金额
@@ -501,7 +516,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffFreepaymentAmount(@Param("query") BillItemTollWorkloadQuery query);
+  List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffFreepaymentAmount(
+      @Param("query") BillItemTollWorkloadQuery query);
 
   /**
    * 查询执行人的项目补入工作量
@@ -509,7 +525,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffSupplementWorkload(@Param("query") BillItemTollWorkloadQuery query);
+  List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffSupplementWorkload(
+      @Param("query") BillItemTollWorkloadQuery query);
 
   /**
    * 查询执行人的项目退费工作量
@@ -517,9 +534,11 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffRefundWorkload(@Param("query") BillItemTollWorkloadQuery query);
+  List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffRefundWorkload(
+      @Param("query") BillItemTollWorkloadQuery query);
 
-  List<PersonalBillItemVO> selectBillItemNumByQuery(@Param("query") PatientDimensionQueryForm query);
+  List<PersonalBillItemVO> selectBillItemNumByQuery(
+      @Param("query") PatientDimensionQueryForm query);
 
   List<StatEmpBill> selectBillingOralItemList(@Param("query") MultiClinicDateRangeQueryForm query);
 
