@@ -27,5 +27,5 @@ public interface RemoteIvyMiniServiceFeign {
     void activeCard(@RequestBody @Valid VirtualActiveForm form);
 
     @GetMapping("/card/refund")
-    public boolean cardRefund( @RequestParam Integer cardId);
+    boolean cardRefund(@RequestParam("cardId") Integer cardId);
 }
