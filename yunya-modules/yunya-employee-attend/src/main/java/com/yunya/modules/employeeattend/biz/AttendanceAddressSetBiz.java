@@ -54,7 +54,16 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
         clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
         List<AttendanceAddressSet> list = mapper.selectAll();
         List<ClinicListVO> reList = new ArrayList<>();
+
+        ArrayList<String> channelArray = new ArrayList<>();
+        channelArray.add("总院");
+        channelArray.add("天目山路门诊");
+        channelArray.add("云牙测试门诊");
+        channelArray.add("文二西路门诊");
         for (AttendanceAddressSet addressSet : list) {
+            if(channelArray.contains(addressSet.getOrganizationName())){
+                continue;
+            }
             ClinicListVO clinicListVO = new ClinicListVO();
             clinicListVO.setId(addressSet.getOrgId());
             clinicListVO.setAddress(addressSet.getAttendanceAddress());
