@@ -859,6 +859,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             vo.setProductType(t.getProductType());
             vo.setDeliveryType(t.getDeliveryType());
             vo.setHandleStatus(Objects.isNull(apply) ? null : apply.getHandleStatus());
+            vo.setActiveStatus(t.getActiveStatus());
             return vo;
         }).collect(toList());
     }
