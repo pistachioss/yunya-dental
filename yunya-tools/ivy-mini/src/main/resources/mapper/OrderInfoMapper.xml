@@ -324,4 +324,26 @@
     where od.id = #{id}
 
   </select>
+
+  <select id="myList" resultType="com.yunya365.mini.entity.OrderInfo">
+    select
+      id,total_amount,pay_amount,status,crt_time,product_type,delivery_type
+    from order_info
+    where
+      fans_id = #{fansId}
+      and delete_status = 0
+      <if test="query.status != null and  query.status != 3">
+        and status = #{query.status}
+        <if test="query.query.productType != null">
+          and product_type = 1
+          and active_status = 0
+        </if>
+      </if>
+      <if test="query.status == 3">
+        and ((`status` = 3 and product_type = 0)
+          or (`status` = 3 and product_type = 1
+          and active_status = 1))
+      </if>
+    order by crt_time desc
+  </select>
 </mapper>
