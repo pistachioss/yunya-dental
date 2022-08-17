@@ -97,7 +97,13 @@ public class PatientMemberAppController {
         form.setPatientId(patientId);
         MemberRelationVo memberRelationVo = patientMemberInfoBiz.findMemberBindingRelation(form);
 
+        CreditsShop creditsShop = remoteReportServiceFeign.lastPatientCredits(patientId);
+
         PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(patientId);
+        if(creditsShop!=null){
+            patientPublicInfoVo.setPoint(creditsShop.getCreditsAccount());
+        }
+
 
         masertMemberDetailVo.setMemberRelationVo(memberRelationVo);
         masertMemberDetailVo.setPatientCardOwnerInfoVos(patientCardOwnerInfoVos);
