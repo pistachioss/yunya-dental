@@ -16,8 +16,7 @@ import com.yunya365.mini.config.WxMiniPayProperties;
 import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderReturnApply;
 import com.yunya365.mini.mapper.OrderReturnApplyMapper;
-import com.yunya365.mini.service.IOrderInfoService;
-import com.yunya365.mini.service.IOrderReturnApplyService;
+import com.yunya365.mini.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +47,8 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
     private WxPayService wxPayService;
     @Resource
     private IOrderInfoService orderInfoService;
+    @Resource
+    private IOrderVirtualService virtualService;
     @Resource
     private WxMiniPayProperties properties;
 
@@ -126,6 +127,9 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
                 orderInfo.setStatus(apply.getPreStatus().byteValue());
                 orderInfo.setUpdTime(DateUtil.localDateTimeToDate(now));
                 orderInfoService.updateById(orderInfo);
+                if (Objects.equals(orderInfo.getProductType().intValue(), TRUE.getCode())) {
+                    virtualService.soldActiveOrInvalid(orderInfo.getId(), false);
+                }
             }
             apply.setUpdTime(now);
             apply.setHandleStatus(model.getStatus());
