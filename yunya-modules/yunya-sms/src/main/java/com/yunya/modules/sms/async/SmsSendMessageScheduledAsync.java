@@ -58,7 +58,22 @@ public class SmsSendMessageScheduledAsync {
         if (StringHelper.isEmpty(orgInfos)) {
             return;
         }
-        orgInfos.forEach(orgInfo-> threadPoolExecutor.submit(()->{
+//        orgInfos.forEach(orgInfo-> threadPoolExecutor.submit(()->{
+//            SmsAutoEventSendRecordModel smsAutoEventSendRecordModel = redisUtils.rPop(
+//                    RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgInfo.getId(), SmsAutoEventSendRecordModel.class);
+//            if (smsAutoEventSendRecordModel == null) {
+//                return;
+//            }
+//            log.info("开始处理短信：{}", JSONObject.toJSONString(smsAutoEventSendRecordModel));
+//            try {
+//                smsSendRecordBiz.batchSendByEventCode(smsAutoEventSendRecordModel);
+//                log.info("处理短信完成");
+//            } catch (Exception e) {
+//                log.error("smsSendMessageAsync error", e);
+//            }
+//        }));
+
+        orgInfos.forEach(orgInfo->{
             SmsAutoEventSendRecordModel smsAutoEventSendRecordModel = redisUtils.rPop(
                     RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgInfo.getId(), SmsAutoEventSendRecordModel.class);
             if (smsAutoEventSendRecordModel == null) {
@@ -71,7 +86,7 @@ public class SmsSendMessageScheduledAsync {
             } catch (Exception e) {
                 log.error("smsSendMessageAsync error", e);
             }
-        }));
+        });
     }
 
     /**
