@@ -521,6 +521,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         addCart(orderInfo, orderItems);
         //释放库存
         freeStock(orderInfo.getProductType().intValue(), orderItems);
+        if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
+            //取消售出卡券
+            cancelSoldCard(orderInfo);
+            virtualService.deleteOrderCard(orderId);
+        }
     }
 
     @Override
