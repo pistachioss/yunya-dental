@@ -734,6 +734,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void activeStatus(Integer orderId, boolean activeStatus) {
         ChainWrappers.lambdaUpdateChain(baseMapper)
                 .set(OrderInfo::getActiveStatus, activeStatus)

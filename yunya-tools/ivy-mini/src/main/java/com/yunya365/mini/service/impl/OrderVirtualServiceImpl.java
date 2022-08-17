@@ -54,16 +54,19 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
 
     @Override
     public void activeCard(VirtualActiveForm form) {
-        String orderSn = form.getOrderSn();
         Integer cardId = form.getCardId();
         OrderVirtual virtual = ChainWrappers.lambdaQueryChain(baseMapper)
-                .eq(OrderVirtual::getOrderSn, orderSn)
                 .eq(OrderVirtual::getCardId, cardId)
                 .eq(OrderVirtual::getDeleteStatus, false)
                 .one();
         if (Objects.nonNull(virtual)) {
+            //订单核销状态更新
+            boolean calActiveStatus = calActiveStatus(virtual.getOrderSn());
+            if (calActiveStatus) {
+                orderInfoService.activeStatus(virtual.getOrderId(), true);
+            }
             ChainWrappers.lambdaUpdateChain(baseMapper)
-                    .eq(OrderVirtual::getOrderSn, form.getOrderSn())
+                    .eq(OrderVirtual::getOrderId, virtual.getOrderId())
                     .eq(OrderVirtual::getCardId, form.getCardId())
                     .set(OrderVirtual::getActiveMobile, form.getPatientMobile())
                     .set(OrderVirtual::getPatientId, form.getPatientId())
@@ -71,11 +74,6 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
                     .set(OrderVirtual::getActiveDate, form.getActiveDate())
                     .set(OrderVirtual::getUpdId, form.getActiveUserId())
                     .update();
-            //订单核销状态更新
-            boolean calActiveStatus = calActiveStatus(orderSn);
-            if (calActiveStatus) {
-                orderInfoService.activeStatus(virtual.getOrderId(), true);
-            }
         }
     }
 

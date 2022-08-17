@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 public class VirtualActiveForm {
     private Integer cardId;
     private Integer patientId;
-    private String orderSn;
     private String patientMobile;
     private String patientName;
     private LocalDateTime activeDate;

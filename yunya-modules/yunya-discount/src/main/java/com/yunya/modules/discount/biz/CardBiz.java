@@ -3462,7 +3462,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             form.setCardId(card.getId());
             form.setActiveDate(now);
             form.setActiveUserId(loginUserId);
-            form.setOrderSn(card.getSoldPhoneNumber());
             form.setPatientId(patientId);
             form.setPatientMobile(patientBaseInfo.getMobile());
             form.setPatientName(patientBaseInfo.getName());
