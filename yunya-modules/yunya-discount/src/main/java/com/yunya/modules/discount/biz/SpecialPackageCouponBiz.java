@@ -115,6 +115,7 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
 
             couponCommonInfo.setAvailableSaleStartDate(specialPackageCouponForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(specialPackageCouponForm.getAvailableSaleEndDate());
+            couponCommonInfo.setIsOnlineSale(specialPackageCouponForm.getIsOnlineSale());
             //更新基础信息
             couponCommonInfoBiz.updateById(couponCommonInfo);
             specialPackageCoupon.setCouponId(specialPackageCouponForm.getId());
