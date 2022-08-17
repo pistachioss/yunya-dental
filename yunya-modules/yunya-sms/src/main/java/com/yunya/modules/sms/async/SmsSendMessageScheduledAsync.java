@@ -55,6 +55,7 @@ public class SmsSendMessageScheduledAsync {
     @Scheduled(cron = "*/5 * * * * ?")
     public void smsSendMessageAsyncByEventCode() {
         List<OrganizationInfoDetail> orgInfos = getOrganizationList();
+        log.info("开始处理短信队列数据：门诊：{}", JSONObject.toJSON(orgInfos));
         if (StringHelper.isEmpty(orgInfos)) {
             return;
         }
@@ -76,15 +77,17 @@ public class SmsSendMessageScheduledAsync {
         orgInfos.forEach(orgInfo->{
             SmsAutoEventSendRecordModel smsAutoEventSendRecordModel = redisUtils.rPop(
                     RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgInfo.getId(), SmsAutoEventSendRecordModel.class);
+            log.info("开始处理短信队列门诊:{}； 数据：{}", orgInfo.getId(), JSONObject.toJSON(smsAutoEventSendRecordModel));
             if (smsAutoEventSendRecordModel == null) {
                 return;
             }
             log.info("开始处理短信：{}", JSONObject.toJSONString(smsAutoEventSendRecordModel));
             try {
                 smsSendRecordBiz.batchSendByEventCode(smsAutoEventSendRecordModel);
-                log.info("处理短信完成");
             } catch (Exception e) {
                 log.error("smsSendMessageAsync error", e);
+            } finally {
+                log.info("处理短信完成");
             }
         });
     }
