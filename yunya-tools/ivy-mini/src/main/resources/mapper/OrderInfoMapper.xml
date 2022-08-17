@@ -334,7 +334,7 @@
       and delete_status = 0
       <if test="query.status != null and  query.status != 3">
         and status = #{query.status}
-        <if test="query.query.productType != null">
+        <if test="query.productType != null">
           and product_type = 1
           and active_status = 0
         </if>
