@@ -743,7 +743,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public void activeStatus(Integer orderId, boolean activeStatus) {
         ChainWrappers.lambdaUpdateChain(baseMapper)
                 .set(OrderInfo::getActiveStatus, activeStatus)
-                .eq(OrderInfo::getId, orderId);
+                .eq(OrderInfo::getId, orderId).update();
     }
 
     @Override
@@ -1169,7 +1169,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         MiniCardSoldForm soldForm = new MiniCardSoldForm();
         CardSoldForm form = new CardSoldForm();
         form.setCardIds(cardIds);
-        form.setSoldTarget(userId.toString());
+        form.setSoldTarget(BaseContextHandler.getName());
         form.setSoldPhoneNumber(orderInfo.getOrderSn());
         form.setSoldType(0);
         form.setSendText(0);
