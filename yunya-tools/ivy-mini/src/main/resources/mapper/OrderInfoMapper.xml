@@ -342,6 +342,7 @@
           and active_status = 1))
         </if>
         <if test="query.productType != null">
+          and status = #{query.status}
           and product_type = 1
           and active_status = 0
         </if>
