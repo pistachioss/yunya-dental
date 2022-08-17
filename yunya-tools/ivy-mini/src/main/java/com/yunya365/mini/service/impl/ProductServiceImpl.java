@@ -58,7 +58,7 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public List<HotSaleVO> hotSale() {
-        Set<ZSetOperations.TypedTuple<String>> typedTuples = redisUtils.zRevrangeWithScores(RedisConstants.HOT_SALE_PRODUCT, 0, 10);
+        Set<ZSetOperations.TypedTuple<String>> typedTuples = redisUtils.zRevrangeWithScores(RedisConstants.HOT_SALE_PRODUCT, 0, 9);
         List<HotSaleVO> collect = Lists.newArrayListWithCapacity(10);
         if (CollectionUtils.isNotEmpty(typedTuples)) {
             Set<String> productIds = typedTuples.stream()
