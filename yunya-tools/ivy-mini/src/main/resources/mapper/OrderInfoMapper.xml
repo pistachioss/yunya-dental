@@ -332,17 +332,19 @@
     where
       fans_id = #{fansId}
       and delete_status = 0
-      <if test="query.status != null and  query.status != 3">
+      <if test="query.status != null and query.status != 3">
         and status = #{query.status}
+      </if>
+      <if test="query.status == 3">
+        <if test="query.productType == null">
+          and ((`status` = 3 and product_type = 0)
+          or (`status` = 3 and product_type = 1
+          and active_status = 1))
+        </if>
         <if test="query.productType != null">
           and product_type = 1
           and active_status = 0
         </if>
-      </if>
-      <if test="query.status == 3">
-        and ((`status` = 3 and product_type = 0)
-          or (`status` = 3 and product_type = 1
-          and active_status = 1))
       </if>
     order by crt_time desc
   </select>
