@@ -8,6 +8,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.sms.SmsOrgStatistics;
 import com.yunya.modules.sms.mapper.SmsOrgStatisticsMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.BALANCE
  * @Date: 2020/12/16 13:37
  * @since: 1.0.0
  */
+@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgStatistics> {
@@ -86,8 +88,10 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
     public void incrByOrgId(Integer smsNum, Integer surplus, BigDecimal price, Integer orgId) {
         Date now = new Date(System.currentTimeMillis());
         try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
-                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+            while (!redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
+                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS)) {
+                threadSleep(2);
+            }
             SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
             SmsOrgStatistics entity = new SmsOrgStatistics();
             if (smsOrgStatisticsVO != null) {
@@ -141,8 +145,10 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
     public void decrByOrgId(int usedNum, Integer orgId, Integer userId) {
         Date now = new Date(System.currentTimeMillis());
         try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
-                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+            while (!redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
+                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS)) {
+                threadSleep(2);
+            }
             SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
             SmsOrgStatistics entity = new SmsOrgStatistics();
             if (smsOrgStatisticsVO == null) {
@@ -154,7 +160,7 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
                 surplusNum = 0;
             }
             if (usedNum > surplusNum) {
-                throw new ClientServiceException("短信余额不足！",BALANCE_INSUFFICIENT);
+                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
             entity.setId(smsOrgStatisticsVO.getId());
             entity.setSurplusNum(usedNum);
@@ -164,6 +170,14 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
             redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
+        }
+    }
+
+    private void threadSleep(Integer second) {
+        try {
+            TimeUnit.SECONDS.sleep(second);
+        } catch (InterruptedException e) {
+            log.error("threadSleep error: {}", e);
         }
     }
 }
