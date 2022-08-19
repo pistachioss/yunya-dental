@@ -691,6 +691,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       smsModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
       smsModel.setName(BaseContextHandler.getName());
       smsModel.setModels(Collections.singletonList(model));
+//      log.info("推送短信队列数据：{}", JSONObject.toJSON(smsModel));
       redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgId, smsModel);
     }
   }
