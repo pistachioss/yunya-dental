@@ -222,9 +222,6 @@
         ) AS numNoBind
         FROM
         wx_fans AS wf
-        <where>
-            and wf.fans_status = 2
-        </where>
         HAVING
         distance &lt;= #{distance}
     </select>
