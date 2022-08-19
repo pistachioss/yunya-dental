@@ -30,4 +30,6 @@ public class WxUserInfoForm {
     private Double longitude;
     @ApiModelProperty(value = "纬度")
     private Double latitude;
+    @ApiModelProperty(value = "最后一次登录地址")
+    private String lastLoginAddress;
 }

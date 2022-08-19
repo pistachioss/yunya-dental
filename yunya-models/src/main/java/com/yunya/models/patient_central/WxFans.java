@@ -159,6 +159,12 @@ public class WxFans {
     private String address;
 
     /**
+     * 最后一次登录地址
+     */
+    @Column(name = "last_login_address")
+    private String lastLoginAddress;
+
+    /**
      * 经度
      */
     private Double longitude;
