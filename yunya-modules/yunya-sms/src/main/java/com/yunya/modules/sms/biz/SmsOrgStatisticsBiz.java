@@ -88,10 +88,8 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
     public void incrByOrgId(Integer smsNum, Integer surplus, BigDecimal price, Integer orgId) {
         Date now = new Date(System.currentTimeMillis());
         try {
-            while (!redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
-                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS)) {
-                threadSleep(2);
-            }
+            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
+                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
             SmsOrgStatistics entity = new SmsOrgStatistics();
             if (smsOrgStatisticsVO != null) {
@@ -145,10 +143,8 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
     public void decrByOrgId(int usedNum, Integer orgId, Integer userId) {
         Date now = new Date(System.currentTimeMillis());
         try {
-            while (!redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
-                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS)) {
-                threadSleep(2);
-            }
+            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
+                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
             SmsOrgStatistics entity = new SmsOrgStatistics();
             if (smsOrgStatisticsVO == null) {
@@ -170,14 +166,6 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
             redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
-        }
-    }
-
-    private void threadSleep(Integer second) {
-        try {
-            TimeUnit.SECONDS.sleep(second);
-        } catch (InterruptedException e) {
-            log.error("threadSleep error: {}", e);
         }
     }
 }
