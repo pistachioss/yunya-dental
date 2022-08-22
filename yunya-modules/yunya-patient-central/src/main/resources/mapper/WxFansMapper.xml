@@ -235,6 +235,6 @@
       FROM
 	  wx_fans_bind wfb
       LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
-      where wfb.open_id = #{openId}
+      where wfb.union_id = #{unionId}
   </select>
 </mapper>
