@@ -64,7 +64,7 @@ public class WxFanBindController {
     }
 
     /**
-     * 客服中心-用户管理-绑定患者
+     * 客服中心-用户管理-解除绑定
      *
      * @param
      * @return

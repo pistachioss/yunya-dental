@@ -149,7 +149,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
 
         WxFansBind wxFansBind = new WxFansBind();
         wxFansBind.setUnionId(wxFansBindForm.getUnionId());
-        wxFansBind.setPatientId(wxFansBindForm.getPatientId());
+//        wxFansBind.setPatientId(wxFansBindForm.getPatientId());
         int num = mapper.selectCount(wxFansBind);
         if (num == 1) {
             wxFans.setBind(false);
