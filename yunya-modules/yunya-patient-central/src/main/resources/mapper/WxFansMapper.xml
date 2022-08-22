@@ -90,7 +90,7 @@
         order by wf.crt_time desc
     </select>
     <select id="findList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
-        select wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as
+        select wf.last_login_address as lastLoginAddress,wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as
         openId,wf.union_id as
         unionId,pbi.name,wf.register_mobile as mobile,
         wf.remark,wf.crt_time as crtTime,wf.bind as isBind,

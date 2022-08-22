@@ -49,5 +49,7 @@ public class WxFansVo implements Serializable {
     private Date crtTime;
     @ApiModelProperty("绑定状态0:未绑定患者 1:已绑定患者")
     private Integer isBind;
+    @ApiModelProperty("最后一次登录地址")
+    private String lastLoginAddress;
 }
 
