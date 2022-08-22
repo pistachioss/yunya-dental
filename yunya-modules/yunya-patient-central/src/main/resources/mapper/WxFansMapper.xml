@@ -175,7 +175,6 @@
         wx_fans AS wf
         left join patient_base_info pbi on wf.patient_id = pbi.id
         <where>
-            and wf.fans_status = 2
             <if test="isBind !=null">
                 and wf.bind = #{isBind}
             </if>
