@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
 
@@ -191,6 +192,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
     private int unsold(Integer couponId) {
         Example example = new Example(Card.class);
         example.createCriteria().andEqualTo("couponId", couponId)
+                .andEqualTo("orgId", COMPANY_ORGID)
                 .andEqualTo("status", 0);
         return cardBiz.selectCountByExample(example);
     }
