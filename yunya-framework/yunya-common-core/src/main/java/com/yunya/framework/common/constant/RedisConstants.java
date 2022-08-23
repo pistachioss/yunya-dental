@@ -1,5 +1,6 @@
 package com.yunya.framework.common.constant;
 
+import com.google.common.base.Joiner;
 import com.yunya.framework.common.utils.StringHelper;
 import lombok.Data;
 import lombok.ToString;
@@ -139,6 +140,28 @@ public class RedisConstants implements Serializable {
   /** 员工账单时统计锁 */
   public static final String LOCK_STATISTICS_EMP_BILL = "lock:statistics:emp:bill:";
 
+  /** ---------------------------------艾维小程序------------------------------------------ */
+  /** mini登录token */
+  public static final String MINI_TOKEN = "mini:token";
+  /** mini登录id */
+  public static final String MINI_USER_ID =  "mini:userId";
+  /** 登录session_key */
+  public static final String MINI_SESSION_KEY = "mini:session_key";
+  /** 微信小程序access_token_key 用于保存在redis中的key */
+  public static final String MINI_ACCESS_TOKEN_KEY = "wechat:mini:accessToken";
+  /** 小程序热销产品 */
+  public static final String HOT_SALE_PRODUCT = "hot:sale:product";
+  /** 下单key */
+  public static final String CREATE_ORDER_LOCK = "create:order:lock";
+  /** 生成订单id key */
+  public static final String ORDER_ID_GENERATE = "order:id:generate";
+  /** 退款 key */
+  public static final String REFUND_ORDER_LOCK = "refund:order:lock";
+  /** 确认收货 key */
+  public static final String CONFIRM_ORDER_LOCK = "confirm:order:lock";
+  /** 小程序验证码 */
+  public static final String MINI_CAPTCHA =  "mini:captcha";
+
   /**
    * 设置key中的占位符
    *
@@ -175,5 +198,10 @@ public class RedisConstants implements Serializable {
     }
 
     return sb.toString();
+  }
+
+  public static String buildLockCacheKey(String lockPrefix, Object suffix)
+  {
+    return Joiner.on(":").join(lockPrefix, suffix);
   }
 }

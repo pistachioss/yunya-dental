@@ -4,15 +4,10 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.middletable.service.patient.BasePatientOriginBiz;
 import com.yunya.middletable.service.patient.BasePatientOriginLogBiz;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -37,7 +32,7 @@ public class BasePatientOriginLogController {
    * @param model 条件模型
    */
   @PostMapping("/operate")
-  public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
+  public ResponseResult operate(@RequestBody @Validated MessageModel model) {
     basePatientOriginLogBiz.operate(model);
     return ResponseUtil.success();
   }
@@ -48,7 +43,7 @@ public class BasePatientOriginLogController {
    */
   @ApiOperation("批量同步患者来源")
   @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
-  public ResponseResult<T> pullPatientData(@RequestBody PullForm form) throws InterruptedException {
+  public ResponseResult pullPatientData(@RequestBody PullForm form) throws InterruptedException {
     basePatientOriginLogBiz.pullPatientData(form);
     return ResponseUtil.success();
   }

@@ -162,7 +162,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
      * @return
      */
     private List<BillExecutorItemVO> sharedItemAmount(List<BillExecutorItemVO> details, Map<String, BigDecimal> freeMap, Function<BillExecutorItemVO, String> func) {
-        // 每个账单的执行实收总额，免单实收总额
+        // 每个账单对应的：账单应收，执行人项目总应收（排除掉商品）
         Map<String, BigDecimal[]> total = new HashMap<>(16);
         if (StringHelper.isNotEmpty(details)) {
             details = details.stream().collect(Collectors.toList());
@@ -189,13 +189,16 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                         }
                         BigDecimal receivedWorkload = BigDecimal.ZERO;
                         if (sum[0].compareTo(BigDecimal.ZERO) != 0) {
+                            // 账单中项目已收 = 账单中项目应收 / 账单应收 * 账单总已收
                             receivedWorkload = receivableWorkload.divide(sum[0], 8, BigDecimal.ROUND_HALF_UP).multiply(detail.getTotalReceivedWorkload());
                         }
                         BigDecimal freePaymentWorkload = BigDecimal.ZERO;
                         if (sum[1].compareTo(BigDecimal.ZERO) != 0) {
+                            // 如果项目免单 >= 执行人项目总应收，则重置项目免单（排除掉商品）
                             if (freePayment.compareTo(sum[1])>0) {
                                 freePayment = sum[1];
                             }
+                            // 账单中项目免单已收 = 账单中项目应收 / 执行人项目总应收 * 账单免单总已收
                             freePaymentWorkload = receivableWorkload.divide(sum[1], 8, BigDecimal.ROUND_HALF_UP).multiply(freePayment);
                         }
                         detail.setReceivedWorkload(receivedWorkload);

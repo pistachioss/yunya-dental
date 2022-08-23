@@ -1,6 +1,8 @@
 package com.yunya365.wechat.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yunya.feign.wechat.domain.form.WxSuCaiForm;
+import com.yunya.feign.wechat.domain.model.WxAutoTextReplyModel;
 import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
 import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.constant.WXConstant;
@@ -76,6 +78,58 @@ public abstract class AbstractWxBaseApi {
             throw new ClientServiceException(jsonObject.getString("errmsg"), errCode);
         }
         return jsonObject.getString("msgid");
+    }
+
+    public String pushAutoReply(Object pushModel) {
+        String accessToken = getAccessToken();
+        String url = String.format(WXConstant.WX_SET_AUTO_REPLY_URL, accessToken);
+        String resultStr = restTemplate.postForObject(url, pushModel, String.class);
+        log.info("自动回复消息推送返回：{}", resultStr);
+        JSONObject jsonObject = JSONObject.parseObject(resultStr);
+        Integer errCode = jsonObject.getInteger("errcode");
+        if (errCode != null && errCode != 0) {
+            throw new ClientServiceException(jsonObject.getString("errmsg"), errCode);
+        }
+        return jsonObject.getString("msgid");
+    }
+
+    public WxMediaVo getMediaList(WxSuCaiForm pushModel) {
+        String accessToken = getAccessToken();
+        String url = String.format(WXConstant.WX_GET_MEDIA_URL, accessToken);
+        String resultStr = restTemplate.postForObject(url, pushModel, String.class);
+        log.info("自动回复消息推送返回：{}", resultStr);
+        JSONObject jsonObject = JSONObject.parseObject(resultStr);
+        Integer errCode = jsonObject.getInteger("errcode");
+        if (errCode != null && errCode != 0) {
+            throw new ClientServiceException(jsonObject.getString("errmsg"), errCode);
+        }
+        return JSONObject.parseObject(resultStr, WxMediaVo.class);
+    }
+
+    public JSONObject menuGet() {
+        String accessToken = getAccessToken();
+        String url = String.format(WXConstant.WX_GET_MENU_URL, accessToken);
+        String resultStr = restTemplate.getForObject(url, String.class);
+        log.info("公众号获取菜单返回：{}", resultStr);
+        JSONObject jsonObject = JSONObject.parseObject(resultStr);
+        Integer errCode = jsonObject.getInteger("errcode");
+        if (errCode != null && errCode != 0) {
+            throw new ClientServiceException(jsonObject.getString("errmsg"), errCode);
+        }
+        return jsonObject;
+    }
+
+    public JSONObject menuCreate(JSONObject menu) {
+        String accessToken = getAccessToken();
+        String url = String.format(WXConstant.WX_CREATE_MENU_URL, accessToken);
+        String resultStr = restTemplate.postForObject(url, menu, String.class);
+        log.info("公众号创建菜单返回：{}", resultStr);
+        JSONObject jsonObject = JSONObject.parseObject(resultStr);
+        Integer errCode = jsonObject.getInteger("errcode");
+        if (errCode != null && errCode != 0) {
+            throw new ClientServiceException(jsonObject.getString("errmsg"), errCode);
+        }
+        return jsonObject;
     }
 
     public WxKfOnlineVo listOnlineKf() {

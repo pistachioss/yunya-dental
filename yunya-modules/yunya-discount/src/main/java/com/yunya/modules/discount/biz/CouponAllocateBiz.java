@@ -6,25 +6,19 @@ import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.BaseException;
-import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.discount.Card;
 import com.yunya.models.discount.CouponAllocate;
 import com.yunya.modules.discount.form.CouponAllocateDetailForm;
-import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.form.CouponAllocateForm;
+import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.vo.CouponAllocateDetailVO;
 import com.yunya.modules.discount.vo.CouponAllocateVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author 杨柳絮

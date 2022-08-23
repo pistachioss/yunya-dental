@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya365.wechat.mapper.WxAutomsgMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.wechat.WxAutomsg">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" jdbcType="INTEGER" property="id" />
+    <result column="CompID" jdbcType="VARCHAR" property="compid" />
+    <result column="EventKey" jdbcType="VARCHAR" property="eventkey" />
+    <result column="EventName" jdbcType="VARCHAR" property="eventname" />
+    <result column="MsgText" jdbcType="VARCHAR" property="msgtext" />
+    <result column="IsValid" jdbcType="BIT" property="isvalid" />
+    <result column="UpdateTime" jdbcType="TIMESTAMP" property="updatetime" />
+    <result column="UpdateUser" jdbcType="VARCHAR" property="updateuser" />
+    <result column="CreateTime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="CreateUser" jdbcType="VARCHAR" property="createuser" />
+    <result column="MsgTitle" jdbcType="VARCHAR" property="msgtitle" />
+    <result column="MsgUrl" jdbcType="VARCHAR" property="msgurl" />
+    <result column="MsgPicUrl" jdbcType="VARCHAR" property="msgpicurl" />
+    <result column="MsgType" jdbcType="VARCHAR" property="msgtype" />
+    <result column="EventDisp" jdbcType="INTEGER" property="eventdisp" />
+  </resultMap>
+
+  <select id="selectAllOrderBy" resultType="com.yunya.models.wechat.WxAutomsg">
+    select * from wx_automsg order by EventName, EventDisp
+  </select>
+</mapper>

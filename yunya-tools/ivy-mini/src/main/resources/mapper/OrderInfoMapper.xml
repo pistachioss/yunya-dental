@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya365.mini.mapper.OrderInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.OrderInfo" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="fans_id" property="fansId" jdbcType="INTEGER" />
+    <result column="order_sn" property="orderSn" jdbcType="VARCHAR" />
+    <result column="total_amount" property="totalAmount" jdbcType="DECIMAL" />
+    <result column="pay_amount" property="payAmount" jdbcType="DECIMAL" />
+    <result column="freight_amount" property="freightAmount" jdbcType="DECIMAL" />
+    <result column="coupon_amount" property="couponAmount" jdbcType="DECIMAL" />
+    <result column="pay_type" property="payType" jdbcType="TINYINT" />
+    <result column="source_type" property="sourceType" jdbcType="TINYINT" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="order_type" property="orderType" jdbcType="TINYINT" />
+    <result column="product_type" property="productType" jdbcType="TINYINT" />
+    <result column="delivery_type" property="deliveryType" jdbcType="TINYINT" />
+    <result column="delivery_company" property="deliveryCompany" jdbcType="VARCHAR" />
+    <result column="delivery_sn" property="deliverySn" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="confirm_status" property="confirmStatus" jdbcType="TINYINT" />
+    <result column="delete_status" property="deleteStatus" jdbcType="TINYINT" />
+
+    <result column="receiver_name" property="receiverName" jdbcType="VARCHAR" />
+    <result column="receiver_phone" property="receiverPhone" jdbcType="VARCHAR" />
+    <result column="receiver_post_code" property="receiverPostCode" jdbcType="VARCHAR" />
+    <result column="receiver_province" property="receiverProvince" jdbcType="VARCHAR" />
+    <result column="receiver_city" property="receiverCity" jdbcType="VARCHAR" />
+    <result column="receiver_region" property="receiverRegion" jdbcType="VARCHAR" />
+    <result column="receiver_detail_address" property="receiverDetailAddress" jdbcType="VARCHAR" />
+
+    <result column="payment_time" property="paymentTime" jdbcType="TIMESTAMP" />
+    <result column="delivery_time" property="deliveryTime" jdbcType="TIMESTAMP" />
+    <result column="receive_time" property="receiveTime" jdbcType="TIMESTAMP" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+  </resultMap>
+  <resultMap id="DetailResultMap" type="com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO" >
+
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="fansId" property="fansId" jdbcType="INTEGER" />
+    <result column="orderSn" property="orderSn" jdbcType="VARCHAR" />
+    <result column="crtTIme" property="crtTIme" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="deliveryCompany" property="deliveryCompany" jdbcType="VARCHAR" />
+    <result column="receivingInformation" property="receivingInformation" jdbcType="VARCHAR" />
+    <result column="payAmount" property="payAmount" jdbcType="DECIMAL" />
+    <result column="deliverySn" property="deliverySn" jdbcType="VARCHAR" />
+    <result column="address" property="address" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="receiverName" property="receiverName" jdbcType="VARCHAR" />
+    <result column="receiverPhone" property="receiverPhone" jdbcType="VARCHAR" />
+    <collection property="topGradeList" resultMap="ItemResultMap"/>
+  </resultMap>
+
+  <resultMap id="ItemResultMap" type="com.yunya.feign.ivy_mini.domain.vo.OrderItemVO" >
+    <result column="productPrice" property="productPrice" jdbcType="DECIMAL" />
+    <result column="productName" property="productName" jdbcType="VARCHAR" />
+    <result column="productQuantity" property="productQuantity" jdbcType="INTEGER" />
+  </resultMap>
+  <insert id="insertDynamic" keyColumn="id" keyProperty="id" parameterType="com.yunya365.mini.entity.OrderInfo" useGeneratedKeys="true">
+    insert into order_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="fansId != null">
+        fans_id,
+      </if>
+      <if test="orderSn != null">
+        order_sn,
+      </if>
+      <if test="outOrderNo != null">
+        out_order_no,
+      </if>
+      <if test="totalAmount != null">
+        total_amount,
+      </if>
+      <if test="payAmount != null">
+        pay_amount,
+      </if>
+      <if test="freightAmount != null">
+        freight_amount,
+      </if>
+      <if test="couponAmount != null">
+        coupon_amount,
+      </if>
+      <if test="payType != null">
+        pay_type,
+      </if>
+      <if test="sourceType != null">
+        source_type,
+      </if>
+      <if test="status != null">
+        `status`,
+      </if>
+      <if test="orderType != null">
+        order_type,
+      </if>
+      <if test="productType != null">
+        product_type,
+      </if>
+      <if test="deliveryType != null">
+        delivery_type,
+      </if>
+      <if test="deliveryCompany != null">
+        delivery_company,
+      </if>
+      <if test="deliverySn != null">
+        delivery_sn,
+      </if>
+      <if test="remark != null">
+        remark,
+      </if>
+      <if test="confirmStatus != null">
+        confirm_status,
+      </if>
+      <if test="deleteStatus != null">
+        delete_status,
+      </if>
+      <if test="receiverName != null">
+        receiver_name,
+      </if>
+      <if test="receiverPhone != null">
+        receiver_phone,
+      </if>
+      <if test="receiverPostCode != null">
+        receiver_post_code,
+      </if>
+      <if test="receiverProvince != null">
+        receiver_province,
+      </if>
+      <if test="receiverCity != null">
+        receiver_city,
+      </if>
+      <if test="receiverRegion != null">
+        receiver_region,
+      </if>
+      <if test="receiverDetailAddress != null">
+        receiver_detail_address,
+      </if>
+      <if test="paymentTime != null">
+        payment_time,
+      </if>
+      <if test="deliveryTime != null">
+        delivery_time,
+      </if>
+      <if test="receiveTime != null">
+        receive_time,
+      </if>
+      <if test="crtTime != null">
+        crt_time,
+      </if>
+      <if test="updTime != null">
+        upd_time,
+      </if>
+      <if test="updId != null">
+        upd_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="fansId != null">
+        #{fansId,jdbcType=INTEGER},
+      </if>
+      <if test="orderSn != null">
+        #{orderSn,jdbcType=VARCHAR},
+      </if>
+      <if test="outOrderNo != null">
+        #{outOrderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="totalAmount != null">
+        #{totalAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="payAmount != null">
+        #{payAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="freightAmount != null">
+        #{freightAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="couponAmount != null">
+        #{couponAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="payType != null">
+        #{payType,jdbcType=TINYINT},
+      </if>
+      <if test="sourceType != null">
+        #{sourceType,jdbcType=TINYINT},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=TINYINT},
+      </if>
+      <if test="orderType != null">
+        #{orderType,jdbcType=TINYINT},
+      </if>
+      <if test="productType != null">
+        #{productType,jdbcType=TINYINT},
+      </if>
+      <if test="deliveryType != null">
+        #{deliveryType,jdbcType=TINYINT},
+      </if>
+      <if test="deliveryCompany != null">
+        #{deliveryCompany,jdbcType=VARCHAR},
+      </if>
+      <if test="deliverySn != null">
+        #{deliverySn,jdbcType=VARCHAR},
+      </if>
+      <if test="remark != null">
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="confirmStatus != null">
+        #{confirmStatus,jdbcType=TINYINT},
+      </if>
+      <if test="deleteStatus != null">
+        #{deleteStatus,jdbcType=TINYINT},
+      </if>
+      <if test="receiverName != null">
+        #{receiverName,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverPhone != null">
+        #{receiverPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverPostCode != null">
+        #{receiverPostCode,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverProvince != null">
+        #{receiverProvince,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverCity != null">
+        #{receiverCity,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverRegion != null">
+        #{receiverRegion,jdbcType=VARCHAR},
+      </if>
+      <if test="receiverDetailAddress != null">
+        #{receiverDetailAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="paymentTime != null">
+        #{paymentTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deliveryTime != null">
+        #{deliveryTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="receiveTime != null">
+        #{receiveTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="crtTime != null">
+        #{crtTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updTime != null">
+        #{updTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updId != null">
+        #{updId,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+
+    <select id="findOrderList" resultType="com.yunya.feign.ivy_mini.domain.vo.OrderVO">
+    select
+    od.id,
+    od.fans_id,
+    od.status,
+    od.order_sn,
+    od.confirm_status,
+    od.crt_time,
+    od.pay_amount,
+      od.delivery_type,
+    od.delivery_company,
+    GROUP_CONCAT(oi.product_name ) as topGradeList,
+    od.receiver_detail_address as address,
+    od.receiver_name as receiverName,
+    od.receiver_phone as receiverPhone
+    FROM
+    `order_info`  od
+    LEFT JOIN order_item oi ON od.id = oi.order_id
+    <where>
+      <if test="crtTime != null and crtTime != ''">
+        and DATE_FORMAT(od.crt_time, "%Y-%m-%d" ) = DATE_FORMAT( #{crtTime}, "%Y-%m-%d" )
+      </if>
+      <if test="nameList != null and nameList.size > 0">
+        and od.fans_id in
+        <foreach collection="nameList" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+      <if test="status != null">
+        and od.status =  #{status}
+      </if>
+      <if test="orderType != null and orderType != ''">
+        and order_type =  #{orderType}
+      </if>
+      <if test="name != null and name != ''">
+      AND concat(IFNULL(od.receiver_name,''),
+      IFNULL(od.receiver_phone,''),
+      IFNULL(od.receiver_detail_address,''))
+      like concat(concat('%', rtrim(#{name})), '%')
+      </if>
+    </where>
+    GROUP BY
+    od.id
+  </select>
+  <select id="findDetail" resultMap="DetailResultMap">
+    select
+    od.id as id,
+    od.fans_id as fansId,
+    od.status as status,
+    od.order_sn as orderSn,
+    od.confirm_status as confirmStatus,
+    od.crt_time as crtTIme,
+    od.pay_amount as payAmount ,
+    od.delivery_company as deliveryCompany,
+    od.delivery_sn AS deliverySn,
+    od.remark as remark,
+    oi.product_name as productName,
+    oi.product_price as productPrice,
+    oi.product_quantity as productQuantity,
+    od.receiver_detail_address as address,
+    od.receiver_name as receiverName,
+    od.receiver_phone as receiverPhone
+    FROM
+    `order_info`  od
+    LEFT JOIN order_item oi ON od.id = oi.order_id
+    where od.id = #{id}
+
+  </select>
+
+  <select id="myList" resultType="com.yunya365.mini.entity.OrderInfo">
+    select
+      id,total_amount,pay_amount,status,crt_time,product_type,delivery_type,active_status
+    from order_info
+    where
+      fans_id = #{fansId}
+      and delete_status = 0
+      <if test="query.status != null and query.status != 3">
+        and status = #{query.status}
+      </if>
+      <if test="query.status == 3">
+        <if test="query.productType == null">
+          and ((`status` = 3 and product_type = 0)
+          or (`status` = 3 and product_type = 1
+          and active_status = 1))
+        </if>
+        <if test="query.productType != null">
+          and status = #{query.status}
+          and product_type = 1
+          and active_status = 0
+        </if>
+      </if>
+    order by crt_time desc
+  </select>
+</mapper>

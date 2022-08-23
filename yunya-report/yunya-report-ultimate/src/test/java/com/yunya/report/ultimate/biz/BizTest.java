@@ -135,7 +135,7 @@ public class BizTest {
 
     @Test
     public void test9() throws ExecutionException, InterruptedException {
-        String param = "{\"dentistIds\":[659],\"workStatus\":[],\"endDate\":\"2021-03-26\",\"orgId\":35,\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-03-26\",\"whetherPage\":true}";
+        String param = "{\"dentistIds\":[],\"workStatus\":[],\"endDate\":\"2022-05-31\",\"orgIds\":[31],\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2022-05-01\",\"whetherPage\":true}";
         EmployeeDiagnosisQuery query = JSONObject.parseObject(param, EmployeeDiagnosisQuery.class);
         PageInfo<EmployeeDiagnosisInfoVO> result = baseUserPostBiz.findEmployeeDiagnosisInfoList(query);
         System.out.println(JSONObject.toJSON(result));
@@ -150,7 +150,7 @@ public class BizTest {
 
     @Test
     public void findClinicDataStatisticsInfo() {
-        String param = "{\"orgIds\":[26],\"dateType\":1,\"startDate\":\"2021-03\",\"endDate\":\"2021-03\"}";
+        String param = "{\"orgIds\":[26],\"dateType\":1,\"startDate\":\"2022-06\",\"endDate\":\"2022-06\"}";
         DataStatisticsQuery query = JSONObject.parseObject(param, DataStatisticsQuery.class);
         ClinicDataStatisticsInfoVO clinicDataStatisticsInfoVO = clinicDataStatisticsBiz.findClinicDataStatisticsInfo(query);
         System.out.println(JSONObject.toJSON(clinicDataStatisticsInfoVO));
@@ -293,7 +293,7 @@ public class BizTest {
      */
     @Test
     public void clinicPerformanceList() {
-        String param = "{\"orgIds\":[63],\"dateType\":\"0\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2022-05-10\",\"endDate\":\"2022-05-10\",\"whetherPage\":true}";
+        String param = "{\"dateType\":\"1\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2022-06\",\"endDate\":\"2022-06\",\"whetherPage\":true}";
         ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
         long t1 = System.currentTimeMillis();
         DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicPerformanceList(query);

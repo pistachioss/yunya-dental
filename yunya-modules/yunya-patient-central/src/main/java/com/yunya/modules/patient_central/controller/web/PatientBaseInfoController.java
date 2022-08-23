@@ -140,7 +140,7 @@ public class PatientBaseInfoController {
    */
   @ApiOperation("根据姓名/病例编号/手机号/姓名拼音模糊查询患者")
   @PostMapping("/likePatient")
-  public ResponseResult findPatientByNameAndMobile(
+  public ResponseResult<List<PatientBaseInfoVo>> findPatientByNameAndMobile(
       @RequestBody @Validated PatientLikeFinleQueryForm patientBaseInfoQueryForm) throws ParseException {
     return ResponseUtil.success(
         this.patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm));

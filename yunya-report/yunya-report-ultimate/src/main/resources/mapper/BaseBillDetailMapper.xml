@@ -2359,13 +2359,13 @@
         WHERE bbd.bill_id = #{billId}
     </select>
 
-    <select id="selectBillDetailByQuery" resultType="com.yunya.models.report.BaseBillDetail">
+    <select id="selectBillDetailByQuery" resultType="com.yunya.feign.report.domain.vo.BillItemAmountSharedVO">
         select
         t.org_id as orgId,
         t.bill_id as billId,
         t.executor_id as executorId,
-        IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount,
-        bbd.actual_amount AS discountAmount
+        IFNULL(t.price * t.quantity - t.discount_amount, 0) as itemReceivedAmount,
+        bbd.actual_amount AS billReceivedAmount
         from base_bill_detail t
         left join base_bill bbd on t.bill_id=bbd.bill_id
         <where>
@@ -2407,23 +2407,24 @@
         </where>
     </select>
 
-    <select id="selectBillDetailByBillIds" resultType="com.yunya.models.report.BaseBillDetail">
+    <select id="selectBillDetailByBillIds" resultType="com.yunya.feign.report.domain.vo.BillItemAmountSharedVO">
         select
         t.bill_id as billId,
         t.executor_id as executorId,
-        IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount,
-        bb.actual_amount AS discountAmount,
+        IFNULL(t.price * t.quantity - t.discount_amount, 0) as itemActualAmount,
+        bb.actual_amount AS billActualAmount,
+        bb.received_amount AS billReceivedAmount,
         t.item_type AS itemType,
         t.item_id AS itemId
         from base_bill_detail t
         left join base_bill bb ON bb.bill_id = t.bill_id
         <where>
-            AND t.executor_id > 0
             and bb.bill_id in
             <foreach collection="billIds" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </where>
+        ORDER BY t.item_type
     </select>
 
     <!-- 根据条件查询员工个人免单支付工作量明细列表 -->
@@ -4282,10 +4283,11 @@
             <if test="query.itemType != null">
                 and bbd.item_type=#{query.itemType}
             </if>
-            <if test="query.orgId != null">
-                and btp.org_id = #{query.orgId}
-                and bbd.org_id = #{query.orgId}
-                and bb.org_id = #{query.orgId}
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                and btp.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.employeeIds!=null and query.employeeIds.size()>0">
                 AND bbd.executor_id in
@@ -5260,17 +5262,19 @@
     <select id="billItemAmountDetailList"
             resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsDetailVO">
         SELECT
-        DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
-        bb.bill_num AS billNum,
-        bbd.quantity,
-        bem.employee_name as regDentistName,
-        be.employee_name as executorName,
-        IFNULL(bbd.price*bbd.quantity - bbd.discount_amount, 0) as amount,
-        bbd.remark,
-        bp.name AS patientName,
-        bp.patient_id as patientId,
-        bp.mobile,
-        bo.abbreviation
+            DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
+            bb.bill_num AS billNum,
+            bbd.quantity,
+            bem.employee_name as regDentistName,
+            be.employee_name as executorName,
+            IFNULL(bbd.price*bbd.quantity - bbd.discount_amount, 0) as amount,
+            bbd.remark,
+            bti.category_name AS categoryName,
+            bti.item_name AS itemName,
+            bp.name AS patientName,
+            bp.patient_id as patientId,
+            bp.mobile,
+            bo.abbreviation
         FROM
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
@@ -5345,4 +5349,32 @@
         bb.bill_num desc
     </select>
 
+    <select id="selectBillDetailItemList" resultType="com.yunya.feign.report.domain.vo.BillDetailtemVO">
+        SELECT
+            bbd.org_id AS orgId,
+            bbd.item_id AS itemId,
+            bbd.item_type AS itemType,
+            bb.patient_id AS patientId,
+            bb.order_date AS orderDate,
+            bbd.quantity AS quantity
+        FROM base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
+        <where>
+            <if test="query.itemType != null">
+                AND bbd.item_type = #{query.itemType}
+            </if>
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bbd.item_id in
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.billIds!=null and query.billIds.size()>0">
+                and bbd.bill_id IN
+                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -8,6 +8,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.sms.SmsOrgStatistics;
 import com.yunya.modules.sms.mapper.SmsOrgStatisticsMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.BALANCE
  * @Date: 2020/12/16 13:37
  * @since: 1.0.0
  */
+@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgStatistics> {
@@ -154,7 +156,7 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
                 surplusNum = 0;
             }
             if (usedNum > surplusNum) {
-                throw new ClientServiceException("短信余额不足！",BALANCE_INSUFFICIENT);
+                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
             entity.setId(smsOrgStatisticsVO.getId());
             entity.setSurplusNum(usedNum);

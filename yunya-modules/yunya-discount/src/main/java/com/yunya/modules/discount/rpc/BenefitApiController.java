@@ -1,21 +1,23 @@
 package com.yunya.modules.discount.rpc;
 
-import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
-import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
+import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.discount.biz.BenefitBiz;
-import com.yunya.modules.discount.biz.CardBiz;
+import com.yunya.modules.discount.biz.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -23,7 +25,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -39,6 +43,8 @@ public class BenefitApiController {
 
     @Resource
     private BenefitBiz benefitBiz;
+    @Resource
+    private CouponCommonInfoBiz couponBiz;
 
     @ApiOperation(value = "收费-选择优惠")
     @PostMapping("/order/choice/benefit")
@@ -111,5 +117,50 @@ public class BenefitApiController {
     @PostMapping("/benefit/tariffCategory/discountCoupon")
     public List<ClinicTariffDiscountCouponVO> findClinicTariffCategoryDiscountCoupon(@RequestBody DiscountCouponQuery queryForm) {
         return benefitBiz.findClinicTariffCategoryDiscountCoupon(queryForm);
+    }
+
+    @RequestMapping(value = "/mini/virtual/page", method = RequestMethod.POST)
+    public PageInfo<VirtualProductVO> pageVirtual(@Validated @RequestBody VirtualProductQuery query){
+        return couponBiz.pageVirtual(query);
+    }
+
+    @RequestMapping(value = "/mini/coupon/{couponId}", method = RequestMethod.GET)
+    public VirtualDetailVO couponDetail(@PathVariable(value = "couponId") Integer couponId){
+        return couponBiz.couponDetail(couponId);
+    }
+
+    @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.POST)
+    public List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids){
+        return couponBiz.listOnSaleOral(ids);
+    }
+
+    @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.POST)
+    void lockVirtualStock(@Valid @RequestBody List<LockStockForm> form){
+        couponBiz.lockVirtualStock(form);
+    }
+
+    @RequestMapping(value = "/coupon/free/stock", method = RequestMethod.POST)
+    void freeVirtualStock(@Valid @RequestBody List<FreeStockForm> form) {
+        couponBiz.freeVirtualStock(form);
+    }
+
+    @RequestMapping(value = "/card/use", method = RequestMethod.POST)
+    boolean whetherUseCard(@NotEmpty @RequestBody List<Integer> cardIds) {
+        return cardBiz.whetherUseCard(cardIds);
+    }
+
+    @PostMapping("/coupon/card/cancel/batch")
+    public void batchCancelCard(@RequestBody BatchCancelCardForm form) {
+        cardBiz.batchCancelCardSold(form);
+    }
+
+    @PutMapping("/mini/coupon/card/sale")
+    public ResponseResult miniSoldCard(@Valid @RequestBody MiniCardSoldForm form) {
+        return cardBiz.miniSoldCard(form);
+    }
+
+    @DeleteMapping("/mini/card/delete/batch")
+    void deleteCard(@RequestBody List<Integer> cardIds){
+        cardBiz.removeCardList(cardIds);
     }
 }

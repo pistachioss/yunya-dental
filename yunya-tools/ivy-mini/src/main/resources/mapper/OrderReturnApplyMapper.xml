@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya365.mini.mapper.OrderReturnApplyMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.OrderReturnApply">
+        <id column="id" property="id" />
+        <result column="order_id" property="orderId" />
+        <result column="order_sn" property="orderSn" />
+        <result column="return_amount" property="returnAmount" />
+        <result column="return_name" property="returnName" />
+        <result column="return_phone" property="returnPhone" />
+        <result column="handle_status" property="handleStatus" />
+        <result column="refund_status" property="refundStatus" />
+        <result column="pre_status" property="preStatus" />
+        <result column="delivery_status" property="deliveryStatus" />
+        <result column="handle_time" property="handleTime" />
+        <result column="reason" property="reason" />
+        <result column="description" property="description" />
+        <result column="handle_note" property="handleNote" />
+        <result column="handle_man" property="handleMan" />
+        <result column="crt_time" property="crtTime" />
+        <result column="upd_time" property="updTime" />
+    </resultMap>
+
+    <select id="listLast" resultType="com.yunya365.mini.entity.OrderReturnApply">
+        SELECT
+            a.*
+        FROM
+            order_return_apply a
+        WHERE
+            order_id IN
+        <foreach collection="orderIds" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+          AND 1 > (
+            SELECT
+                count(*)
+            FROM
+                order_return_apply
+            WHERE
+                order_id = a.order_id
+              AND upd_time > a.upd_time
+        )
+    </select>
+</mapper>

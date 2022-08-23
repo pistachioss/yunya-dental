@@ -99,6 +99,7 @@ public class BaseCardServiceImpl{
 	 */
 	private void operateSingleData(Integer cardId) {
 		Card card = cardMapper.selectByPrimaryKey(cardId);
+		log.info("卡券同步信息：{}", card);
 		if (card == null) {
 			deleteCard(cardId);
 		} else {

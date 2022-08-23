@@ -19,6 +19,7 @@ public enum SmsAutosendEventEnum {
     PREPAY_CONSUME(2, "预付款消费", "prepay_consume"),
 //    BIRTHDAY_WISH(2, "生日祝福", "birthday_wish"),
 //    PRODUCT_EXPIRATION_REMIND(2, "产品到期提醒", "product_expiration_remind"),
+    SP_COUPON_ACTIVED(2, "365卡or艾芽卡券激活", "sp_coupon_actived"),
     COUPON_SOLD(0, "卡券售出", "coupon_sold"),
     FORGET_PASSWORD(1, "找回密码", "forget_password"),
     ATTENDANCE_DEVICE_BINDING(1, "考勤设备绑定", "attendance_device_binding");
@@ -72,7 +73,7 @@ public enum SmsAutosendEventEnum {
         return code;
     }
 
-    public static String getValue(Integer code) {
+    public String getValueByCode(Integer code) {
         if (code != null) {
             for (SmsAutosendEventEnum item : values()) {
                 if (Objects.equals(item.getType(), code)) {

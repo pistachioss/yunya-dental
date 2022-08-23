@@ -37,8 +37,23 @@ public class BaseException extends RuntimeException {
     super(cause);
   }
 
+  public BaseException(final int code, Throwable cause) {
+    super(cause);
+    this.status = code;
+  }
+
   public BaseException(
       String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
+  }
+
+  public BaseException(int code, String message, Throwable cause) {
+    super(message, cause);
+    this.status = code;
+  }
+
+  public BaseException(final int code, final String format, Object... args) {
+    super(String.format(format, args));
+    this.status = code;
   }
 }

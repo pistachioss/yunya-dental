@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya365.mini.mapper.WxPayInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.WxPayInfo">
+        <id column="id" property="id" />
+        <id column="order_id" property="orderId" />
+        <result column="app_id" property="appId" />
+        <result column="time_stamp" property="timeStamp" />
+        <result column="nonce_str" property="nonceStr" />
+        <result column="package_value" property="packageValue" />
+        <result column="sign_type" property="signType" />
+        <result column="pay_sign" property="paySign" />
+        <result column="crt_id" property="crtId" />
+        <result column="crt_time" property="crtTime" />
+    </resultMap>
+
+</mapper>

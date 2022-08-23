@@ -3,6 +3,7 @@ package com.yunya.framework.common.interceptor;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -15,16 +16,18 @@ public class FeignBasicAuthRequestInterceptor implements RequestInterceptor {
 	public void apply(RequestTemplate requestTemplate) {
 		ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
 				.getRequestAttributes();
-		HttpServletRequest request = attributes.getRequest();
-		Enumeration<String> headerNames = request.getHeaderNames();
-		if (headerNames != null) {
-			while (headerNames.hasMoreElements()) {
-				String name = headerNames.nextElement();
-				if ("content-length".equals(name)) {
-					continue;
+		if (!ObjectUtils.isEmpty(attributes)) {
+			HttpServletRequest request = attributes.getRequest();
+			Enumeration<String> headerNames = request.getHeaderNames();
+			if (headerNames != null) {
+				while (headerNames.hasMoreElements()) {
+					String name = headerNames.nextElement();
+					if ("content-length".equals(name)) {
+						continue;
+					}
+					String values = request.getHeader(name);
+					requestTemplate.header(name, values);
 				}
-				String values = request.getHeader(name);
-				requestTemplate.header(name, values);
 			}
 		}
 //		Enumeration<String> bodyNames = request.getParameterNames();

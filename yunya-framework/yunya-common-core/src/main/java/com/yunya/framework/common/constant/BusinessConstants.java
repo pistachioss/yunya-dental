@@ -136,4 +136,9 @@ public class BusinessConstants {
   public static final String CN_EN_NAME_REGEXP = "^[\\u4E00-\\u9FA5A-Za-z0-9_]+$";
   /** 拼音名字正则表达式 */
   public static final String PINYIN_REGEXP = "^[A-Za-z]+$";
+  /** mini token 前缀 */
+  public static final String MINI_TOKEN_PREFIX = "mini ";
+
+  /********************************mini wechat*****************************/
+  public static final String MINI_CARD_REMARK = "小程序虚拟服务售卖";
 }

@@ -7,6 +7,7 @@ import com.yunya.feign.employee_attend.form.LeaveInfoForm;
 import com.yunya.feign.employee_attend.form.WorkOvertimeInfoForm;
 import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.models.employee_attend.LeaveInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,11 @@ import java.util.List;
 @Component
 public class EmployeeAttendServiceFallBackFactory implements EmployeeAttendServiceFeign {
 
+
+  @Override
+  public List<AttendanceAddressSet> findAddress() {
+    return null;
+  }
 
   @Override
   public EmployeeScheduleResultVO findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
@@ -61,6 +67,11 @@ public class EmployeeAttendServiceFallBackFactory implements EmployeeAttendServi
 
   @Override
   public List<FieldInfoListVO> fieldFindList(@RequestBody @Validated FieldInfoForm fieldInfoForm){
+    return null;
+  }
+
+  @Override
+  public List<AttendanceAddressSetVO> findAttendanceAddressByOrgId(List<Integer> orgIds) {
     return null;
   }
 }

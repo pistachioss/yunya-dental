@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.biz;
 
+import com.yunya.feign.report.domain.query.BaseCouponQueryForm;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.BaseCoupon;
 import com.yunya.report.ultimate.mapper.BaseCouponMapper;
@@ -19,7 +20,25 @@ import java.util.List;
 @Service
 public class BaseCouponBiz extends BaseBiz<BaseCouponMapper, BaseCoupon> {
 
+    /**
+     * 条件查询产品卡券列表
+     *
+     * @param couponIds
+     * @return
+     */
     public List<BaseCoupon> findBaseCouponListByCouponId(Collection<Integer> couponIds) {
-        return mapper.selectBaseCouponListByCouponId(couponIds);
+        BaseCouponQueryForm queryForm = new BaseCouponQueryForm();
+        queryForm.setCouponIds(couponIds);
+        return findBaseCouponList(queryForm);
+    }
+
+    /**
+     * 条件查询产品卡券列表
+     *
+     * @param query
+     * @return
+     */
+    public List<BaseCoupon> findBaseCouponList(BaseCouponQueryForm query) {
+        return mapper.selectBaseCouponList(query);
     }
 }

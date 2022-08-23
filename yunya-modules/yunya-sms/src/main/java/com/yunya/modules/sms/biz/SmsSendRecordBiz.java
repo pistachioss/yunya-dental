@@ -125,7 +125,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 throw new ClientServiceException("事件未关联模板", DATA_NOT_EXIST);
             }
             if (smsTemplateSetVO.getSendEnable().equals(SmsEnableEnum.DISABLE.getCode())) {
-                return null;//没有开启自动发送事件
+                throw new ClientServiceException("未开启短信自动发送事件", OPERATION_NOT_ALLOW);//没有开启自动发送事件
             }
         } else {
             smsTemplateSetVO = smsTemplateSetBiz.findSmsTemplateSetById(templateId);
@@ -148,11 +148,11 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @param smsVerifyCodeModel
      * @return
      */
-    public ResponseResult<T> sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
+    public ResponseResult sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
         Integer orgId = COMPANY_ORGID;
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(smsVerifyCodeModel.getEventCode(), null, orgId);
         if (smsTemplateSetVO == null) {
-            return ResponseUtil.success();
+            throw new ClientServiceException("短信模板暂不可用！", OPERATION_NOT_ALLOW);
         }
         String signName = smsTemplateSetVO.getSignName();
         if (StringHelper.isEmpty(signName)) {
@@ -161,7 +161,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         try {
             Integer userId = smsVerifyCodeModel.getUserId();
             String name = smsVerifyCodeModel.getName();
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS,String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
             if (surplusNum <= 0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
@@ -193,8 +193,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             try {
                 updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, Arrays.asList(recordId));
             } catch (Exception e) {
-                log.error("update bizId error",e);
-                log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
+                log.error("update bizId error", e);
+                log.error("update bizId={}, surplusNum={}, orgId={}", bizId, surplusNum, orgId);
             }
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
@@ -250,17 +250,17 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @param models
      * @return
      */
-    public ResponseResult<T> batchSend(String eventCode, Integer templateId, Integer userId, String name, Integer orgId, List<? extends SmsCommonSendRecordModel> models) {
+    public ResponseResult batchSend(String eventCode, Integer templateId, Integer userId, String name, Integer orgId, List<? extends SmsCommonSendRecordModel> models) {
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(eventCode, templateId, orgId);
         if (smsTemplateSetVO == null) {
-            return ResponseUtil.success();
+            throw new ClientServiceException("短信模板暂不可用！", OPERATION_NOT_ALLOW);
         }
         String signName = smsTemplateSetVO.getSignName();
         if (StringHelper.isEmpty(signName)) {
             throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
         try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS,String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
             if (surplusNum <= 0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
@@ -293,15 +293,15 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 templateParamJson.add(param);
                 recordIds.add(recordId);
             }
-            if (surplusNum-len <= 0) {
+            if (surplusNum - len <= 0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
             String bizId = AliyunSmsUtl.sendBatchSms(mobiles, signNames, smsTemplateSetVO.getTemplateCode(), templateParamJson);
             try {
                 updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, recordIds);
             } catch (Exception e) {
-                log.error("update bizId error",e);
-                log.error("update bizId={}, surplusNum={}, orgId={}",bizId, surplusNum,orgId);
+                log.error("update bizId error", e);
+                log.error("update bizId={}, surplusNum={}, orgId={}", bizId, surplusNum, orgId);
             }
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
@@ -352,10 +352,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      *
      * @param model 短信发送添加模型
      */
-    public ResponseResult<T> batchSend(Integer orgId, Integer userId, String name, SmsBatchSendRecordModel model) {
+    public ResponseResult batchSend(Integer orgId, Integer userId, String name, SmsBatchSendRecordModel model) {
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId(), orgId);
         if (smsTemplateSetVO == null) {
-            return ResponseUtil.success();
+            throw new ClientServiceException("短信模板暂不可用！", OPERATION_NOT_ALLOW);
         }
         String signName = smsTemplateSetVO.getSignName();
         if (StringHelper.isEmpty(signName)) {
@@ -416,10 +416,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @param model
      * @return
      */
-    public ResponseResult<T> sendRecord(Integer orgId, Integer userId, String name, SmsSendRecordModel model) {
+    public ResponseResult sendRecord(Integer orgId, Integer userId, String name, SmsSendRecordModel model) {
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId(), orgId);
         if (smsTemplateSetVO == null) {
-            return ResponseUtil.success();
+            throw new ClientServiceException("短信模板暂不可用！", OPERATION_NOT_ALLOW);
         }
         String signName = smsTemplateSetVO.getSignName();
         if (StringHelper.isEmpty(signName)) {

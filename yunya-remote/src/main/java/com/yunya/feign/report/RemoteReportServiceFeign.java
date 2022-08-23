@@ -10,6 +10,7 @@ import com.yunya.feign.report.factory.RemoteReportServiceFactory;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.domain.vo.WxAppointConfirmPushVo;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
+import com.yunya.models.report.CreditsShop;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,4 +39,7 @@ public interface RemoteReportServiceFeign {
 
     @RequestMapping(value = "/api/patient/likePatient",method = RequestMethod.POST)
     List<PatientBaseInfoVo> findPatientLikePatientInfo(@RequestBody PatientLikeFinleQueryForm form);
+
+    @RequestMapping(value = "/api/patient/{patientId}/lastPatientCredits",method = RequestMethod.GET)
+    CreditsShop lastPatientCredits(@PathVariable("patientId")Integer patiendId);
 }

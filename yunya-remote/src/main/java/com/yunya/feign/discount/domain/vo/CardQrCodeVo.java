@@ -21,4 +21,6 @@ public class CardQrCodeVo {
     private String qrCode;
     @ApiModelProperty(value = "其他错误信息")
     private String errorMsg;
+    @ApiModelProperty(value = "账单单次使用限制数量")
+    private Integer limitCount;
 }

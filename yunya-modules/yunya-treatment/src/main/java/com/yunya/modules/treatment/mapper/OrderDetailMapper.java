@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.mapper;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
+import com.yunya.feign.report.domain.vo.BillItemAmountSharedVO;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.treatment.OrderDetail;
@@ -112,5 +113,12 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    * @param payIds 不属于的收费id
    * @return
    */
-  List<OrderDetail> selectClinicOrderDetailList(@Param("query") CategoryIncomeQuery query, @Param("payIds") List<Integer> payIds);
+  List<BillItemAmountSharedVO> selectClinicOrderDetailList(@Param("query") CategoryIncomeQuery query, @Param("payIds") List<Integer> payIds);
+
+  /**
+   * 查询撤销前的免单项目的原价列表
+   * @param payIds 撤销的收费id
+   * @return
+   */
+  List<BillItemAmountSharedVO> selectClinicOrderDetailBeforeRevoke(@Param("payIds") List<Integer> payIds);
 }

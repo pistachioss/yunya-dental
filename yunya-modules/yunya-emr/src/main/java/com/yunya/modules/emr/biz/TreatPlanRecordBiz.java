@@ -785,8 +785,8 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 }
             });
             result = SortUtil.sort(result,
-                    SortUtil.comparing(TreatPlanDetailAndExecuteVO::getBillItemName)
-                    .thenComparing(TreatPlanDetailAndExecuteVO::getQuantity)
+                    SortUtil.comparing(TreatPlanDetailAndExecuteVO::getExecuteDate)
+                    .thenComparing(TreatPlanDetailAndExecuteVO::getBillItemName)
                     .reversed());
         }
         return PageUtl.doPage(query,result);

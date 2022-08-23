@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.system.mapper.ClinicLiveCodeMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.system.ClinicLiveCode" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="qrcode" property="qrcode" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!--条件查询门店店长活码列表-->
+  <select id="selectClinicLiveCodeList" resultType="com.yunya.modules.system.vo.ClinicLiveCodeVO">
+        SELECT
+            org_id AS orgId,
+            qrcode
+        FROM clinic_live_code
+        <where>
+          <if test="query.orgId != null">
+            AND org_id = #{query.orgId}
+          </if>
+        </where>
+  </select>
+</mapper>

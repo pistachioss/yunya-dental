@@ -64,4 +64,7 @@ public class MemberBaseInfoVo implements Serializable {
 
   /** 开卡日期 */
   private Date crtTime;
+
+  @ApiModelProperty("积分")
+  private Integer point;
 }

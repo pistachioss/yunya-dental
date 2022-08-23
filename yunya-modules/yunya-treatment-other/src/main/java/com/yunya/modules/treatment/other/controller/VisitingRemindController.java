@@ -1,16 +1,19 @@
 package com.yunya.modules.treatment.other.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment_other.domain.form.ResetVisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRemindModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
+import com.yunya.feign.treatment_other.domain.vo.VisitingRemindContentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingRemindDetailVO;
+import com.yunya.feign.treatment_other.domain.vo.VisitingRemindVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.other.biz.VisitingRemindBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -94,8 +97,21 @@ public class VisitingRemindController {
      */
     @ApiOperation("根据id查询随访提醒")
     @GetMapping("/find/{id}")
-    public ResponseResult findVisitingRemindById(@PathVariable("id") Integer id) {
+    public ResponseResult<VisitingRemindContentVo> findVisitingRemindById(@PathVariable("id") Integer id) {
         return visitingRemindBiz.findVisitingRemindById(id);
+    }
+
+    /**
+     * 根据id查询随访提醒详情
+     *
+     * @param id 随访提醒id
+     * @return ResponseResult
+     */
+    @ApiOperation("根据id查询随访提醒详情")
+    @GetMapping("/one/{id}")
+    public ResponseResult<VisitingRemindDetailVO> findRemindOneById(@PathVariable("id") Integer id) {
+        VisitingRemindDetailVO result = visitingRemindBiz.findRemindOneById(id);
+        return ResponseUtil.success(result);
     }
 
     /**
@@ -106,7 +122,7 @@ public class VisitingRemindController {
      */
     @ApiOperation("根据条件查询随访提醒")
     @PostMapping("/find")
-    public ResponseResult findVisitingRemindByCondition(@RequestBody @Validated VisitingRemindQuery query) {
+    public ResponseResult<PageInfo<VisitingRemindVo>> findVisitingRemindByCondition(@RequestBody @Validated VisitingRemindQuery query) {
         return visitingRemindBiz.findVisitingRemindByCondition(query);
     }
 

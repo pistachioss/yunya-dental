@@ -112,6 +112,7 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
 
             couponCommonInfo.setAvailableSaleStartDate(rechargeCardForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(rechargeCardForm.getAvailableSaleEndDate());
+            couponCommonInfo.setIsOnlineSale(rechargeCardForm.getIsOnlineSale());
             //更新基础信息
             couponCommonInfoBiz.updateById(couponCommonInfo);
             rechargeCard.setCouponId(rechargeCardForm.getId());

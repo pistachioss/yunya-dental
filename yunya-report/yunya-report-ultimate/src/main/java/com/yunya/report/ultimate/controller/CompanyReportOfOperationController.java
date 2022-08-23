@@ -7,10 +7,7 @@ import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
-import com.yunya.report.ultimate.biz.BaseTariffInfoBiz;
-import com.yunya.report.ultimate.biz.BaseUserPostBiz;
-import com.yunya.report.ultimate.biz.ClinicDataStatisticsBiz;
+import com.yunya.report.ultimate.biz.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -45,6 +42,8 @@ public class CompanyReportOfOperationController {
   @Autowired private BaseUserPostBiz userPostBiz;
   /** 门诊数据统计 */
   @Autowired private ClinicDataStatisticsBiz clinicDataStatisticsBiz;
+  /** 卡券*/
+  @Autowired private BaseCardBiz baseCardBiz;
 
   /**
    * 根据条件查询员工工作量列表
@@ -426,6 +425,21 @@ public class CompanyReportOfOperationController {
       HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
       throws Exception {
     billDetailBiz.billItemStatisticsDetailAllExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询开单数量及金额导出明细一体表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemDetailVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额导出明细一体表")
+  @PostMapping(value = "/billItem/statistics/detail/integExport", name = "开单数量及金额导出明细一体表")
+  public ResponseResult<T> billItemStatisticsDetailIntegrationExport(
+          HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
+          throws Exception {
+    billDetailBiz.billItemStatisticsDetailIntegrationExport(query, response);
     return ResponseUtil.success(null);
   }
 
@@ -844,6 +858,93 @@ public class CompanyReportOfOperationController {
           HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
           throws IOException {
     billDetailBiz.billItemReceivedStatisticsExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询365卡产品售出激活统计表
+   *
+   * @param query 查询条件
+   * @return PageInfo<Coupon365SoldActivedStatisticsVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-365卡产品售出激活统计表")
+  @PostMapping(value = "/coupon365/soldActived/statistics", name = "365卡产品售出激活统计表")
+  public ResponseResult<PageInfo<Coupon365SoldActivedStatisticsVO>> coupon365SoldActivedStatistics(
+          @RequestBody @Validated Coupon365SoldActivedStatisticsQuery query) {
+    PageInfo<Coupon365SoldActivedStatisticsVO> pageInfo = baseCardBiz.coupon365SoldActivedStatistics(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出365卡产品售出激活统计表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-365卡产品售出激活统计表导出")
+  @PostMapping(value = "/coupon365/soldActived/statistics/export", name = "根据条件导出365卡产品售出激活统计表")
+  public ResponseResult coupon365SoldActivedStatisticsExport(
+          HttpServletResponse response, @RequestBody @Validated Coupon365SoldActivedStatisticsQuery query)
+          throws IOException {
+    baseCardBiz.coupon365SoldActivedStatisticsExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询365卡产品售出明细表
+   *
+   * @param query 查询条件
+   * @return PageInfo<Coupon365SoldDetailVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-365卡产品售出明细表")
+  @PostMapping(value = "/coupon365/sold/detail", name = "365卡产品售出明细表")
+  public ResponseResult<PageInfo<Coupon365SoldDetailVO>> findCoupon365SoldDetail(
+          @RequestBody @Validated Coupon365SoldDetailQuery query) {
+    PageInfo<Coupon365SoldDetailVO> pageInfo = baseCardBiz.findCoupon365SoldDetail(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出365卡产品售出明细表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-365卡产品售出明细表导出")
+  @PostMapping(value = "/coupon365/sold/detail/export", name = "根据条件导出365卡产品售出明细表")
+  public ResponseResult findCoupon365SoldDetailExport(
+          HttpServletResponse response, @RequestBody @Validated Coupon365SoldDetailQuery query)
+          throws IOException {
+    baseCardBiz.findCoupon365SoldDetailExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询365卡产品激活明细表
+   *
+   * @param query 查询条件
+   * @return PageInfo<Coupon365SoldDetailVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-365卡产品激活明细表")
+  @PostMapping(value = "/coupon365/actived/detail", name = "365卡产品激活明细表")
+  public ResponseResult<PageInfo<Coupon365ActivedDetailVO>> findCoupon365ActivedDetail(
+          @RequestBody @Validated Coupon365ActivedDetailQuery query) {
+    PageInfo<Coupon365ActivedDetailVO> pageInfo = baseCardBiz.findCoupon365ActivedDetail(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出365卡产品激活明细表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-365卡产品激活明细表导出")
+  @PostMapping(value = "/coupon365/actived/detail/export", name = "根据条件导出365卡产品激活明细表")
+  public ResponseResult findCoupon365ActivedDetailExport(
+          HttpServletResponse response, @RequestBody @Validated Coupon365ActivedDetailQuery query)
+          throws IOException {
+    baseCardBiz.findCoupon365ActivedDetailExport(query, response);
     return ResponseUtil.success(null);
   }
 }

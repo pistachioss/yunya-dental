@@ -1,6 +1,7 @@
 package com.yunya.modules.sms.async;
 
 import com.alibaba.fastjson.JSONObject;
+import com.aliyun.oss.ServiceException;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsTemplateIdRecordModel;
 import com.yunya.feign.sms.model.SmsVerifyCodeModel;
@@ -11,6 +12,7 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.sms.biz.SmsSendRecordBiz;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +35,10 @@ import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGI
  * @Date: 2020/12/15 15:17
  * @since: 1.0.0
  */
+@Slf4j
 @Component
 @EnableScheduling
 public class SmsSendMessageScheduledAsync {
-    private Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private SmsSendRecordBiz smsSendRecordBiz;
@@ -51,35 +53,38 @@ public class SmsSendMessageScheduledAsync {
      * 每隔5秒执行一次：
      * 消费redis队列的短信数据
      */
-    @Async("customizeExecutor")
+//    @Async("customizeExecutor")
     @Scheduled(cron = "*/5 * * * * ?")
     public void smsSendMessageAsyncByEventCode() {
+        smsSendVerifyCodeAsync();
         List<OrganizationInfoDetail> orgInfos = getOrganizationList();
+//        log.info("开始处理各门诊短信队列数据：门诊：{}", JSONObject.toJSON(orgInfos));
         if (StringHelper.isEmpty(orgInfos)) {
             return;
         }
-        orgInfos.forEach(orgInfo-> threadPoolExecutor.submit(()->{
+        orgInfos.forEach(orgInfo->{
             SmsAutoEventSendRecordModel smsAutoEventSendRecordModel = redisUtils.rPop(
                     RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgInfo.getId(), SmsAutoEventSendRecordModel.class);
             if (smsAutoEventSendRecordModel == null) {
                 return;
             }
-            log.info("开始处理短信：{}", JSONObject.toJSONString(smsAutoEventSendRecordModel));
+            log.info("开始处理短信队列门诊:{}， 数据：{}", orgInfo.getId(), JSONObject.toJSONString(smsAutoEventSendRecordModel));
             try {
                 smsSendRecordBiz.batchSendByEventCode(smsAutoEventSendRecordModel);
-                log.info("处理短信完成");
             } catch (Exception e) {
-                log.error("smsSendMessageAsync error", e);
+                log.error("smsSendMessageAsync error: {}", e);
+            } finally {
+                log.info("处理短信完成");
             }
-        }));
+        });
     }
 
     /**
      * 每隔5秒执行一次：
      * 消费redis队列的短信数据
      */
-    @Async("customizeExecutor")
-    @Scheduled(cron = "*/5 * * * * ?")
+//    @Async("customizeExecutor")
+//    @Scheduled(cron = "*/5 * * * * ?")
     public void smsSendMessageAsyncByTemplateId() {
         SmsTemplateIdRecordModel smsTemplateIdRecordModel = redisUtils.rPop(
                 RedisConstants.SMS_SEND_MESSAGE_QUEUE, SmsTemplateIdRecordModel.class);
@@ -90,19 +95,17 @@ public class SmsSendMessageScheduledAsync {
         threadPoolExecutor.submit(()->{
             try {
                 smsSendRecordBiz.batchSendByTemplateId(smsTemplateIdRecordModel);
-                log.info("处理短信完成");
             } catch (Exception e) {
-                log.error("smsSendMessageAsync error", e);
+                log.error("smsSendMessageAsync error: {}", e);
+            } finally {
+                log.info("处理短信完成");
             }
         });
     }
 
     /**
-     * 每隔5秒执行一次：
      * 消费redis队列的短信验证码
      */
-    @Async("customizeExecutor")
-    @Scheduled(cron = "*/5 * * * * ?")
     public void smsSendVerifyCodeAsync() {
         SmsVerifyCodeModel smsVerifyCodeModel = redisUtils.rPop(
                 RedisConstants.SMS_SEND_VERIFYCODE_QUEUE + COMPANY_ORGID, SmsVerifyCodeModel.class);
@@ -112,9 +115,10 @@ public class SmsSendMessageScheduledAsync {
         log.info("开始处理短信验证码：{}", JSONObject.toJSONString(smsVerifyCodeModel));
         try {
             smsSendRecordBiz.sendVerifyCode(smsVerifyCodeModel);
-            log.info("处理短信验证码完成");
         } catch (Exception e) {
-            log.error("smsSendVerifyCodeAsync error", e);
+            log.error("smsSendVerifyCodeAsync error: {}", e);
+        } finally {
+            log.info("处理短信验证码完成");
         }
     }
 

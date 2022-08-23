@@ -15,6 +15,7 @@
         <result column="available_sale_start_date" property="availableSaleStartDate" jdbcType="DATE" />
         <result column="available_sale_end_date" property="availableSaleEndDate" jdbcType="DATE" />
         <result column="is_inservice" property="isInservice" jdbcType="BIT" />
+        <result column="sale" property="sale" jdbcType="BIT" />
         <result column="crt_id" property="crtId" jdbcType="INTEGER" />
         <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
         <result column="upd_id" property="updId" jdbcType="INTEGER" />
@@ -46,5 +47,32 @@
             </if>
         group by `ca`.`coupon_id`, `ca`.`crt_time`
         order by `ca`.`crt_time` desc
+    </select>
+
+    <!--条件查询卡券公用信息列表-->
+    <select id="selectCouponCommonList" resultType="com.yunya.feign.discount.domain.vo.CouponCommonInfoVO">
+        SELECT
+            cci.id,
+            cci.name,
+            cci.product_type_id AS productTypeId,
+            cci.type,
+            cci.coupon_code AS couponCode,
+            cci.is_make_physical_card AS isMakePhysicalCard,
+            cci.sold_amount AS soldAmount,
+            cci.available_sale_start_date AS availableSaleStartDate,
+            cci.available_sale_end_date AS availableSaleEndDate
+        FROM coupon_common_info cci
+        <where>
+            <if test="query.inservice != null">
+                AND is_inservice = #{query.inservice}
+            </if>
+            <if test="query.productTypeId != null">
+                AND cci.product_type_id = #{query.productTypeId}
+            </if>
+            <if test="query.type != null">
+                AND cci.type = #{query.type}
+            </if>
+        </where>
+        ORDER BY cci.type, cci.product_type_id, cci.id
     </select>
 </mapper>

@@ -4,29 +4,30 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.discount.domain.form.FreeStockForm;
+import com.yunya.feign.discount.domain.form.LockStockForm;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
+import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
+import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
-import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
+import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.Registered;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 简介: 云牙价目表、就诊服务接口调用
@@ -40,6 +41,16 @@ import java.util.Set;
     name = YunyaServiceNameConstants.YUNYA_TREATMENT_SERVICE,
     fallbackFactory = RemoteTreatmentServiceFeignFallBackFactory.class)
 public interface RemoteTreatmentServiceFeign {
+
+  /**
+   * 根据开单ID查询开单详情与账单详情信息
+   *
+   * @return List<BaseOralTariffCategory>
+   */
+  @RequestMapping(value = "/rpc/bill/detail/{orderRecordId}", method = RequestMethod.GET)
+  BillDetailGroupVO findOrderDetailAndBillDetailByOrderRecordId(
+          @PathVariable(value = "orderRecordId") Integer orderRecordId);
+
   /**
    * 根据商品分类ID查询商品分类信息
    *
@@ -455,4 +466,25 @@ public interface RemoteTreatmentServiceFeign {
    */
   @PostMapping(value = "/rpc/order/detail/ids")
   List<OrderDetailVO> findOrderDetailById(@Validated @RequestBody List<Integer> orderDetailIds);
+
+  @RequestMapping(value = "/rpc/mini/goods/page", method = RequestMethod.POST)
+  public PageInfo<GoodsVO> pageGoods(@Validated @RequestBody GoodsQuery query);
+
+  /**
+   * 根据商品ID集合查询商品集合
+   *
+   * @param ids 商品ids
+   * @return List<BaseOralTariff>
+   */
+  @RequestMapping(value = "/rpc/list/oral", method = RequestMethod.POST)
+  List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids);
+
+  @RequestMapping(value = "/rpc/goods/lock/stock", method = RequestMethod.POST)
+  void lockGoodsStock(@Valid @RequestBody List<LockStockForm> form);
+
+  @RequestMapping(value = "/rpc/goods/free/stock", method = RequestMethod.POST)
+  void freeGoodsStock(@Valid @RequestBody List<FreeStockForm> form);
+
+  @PostMapping("/rpc/goods/productType/list")
+  List<ProductTypeVO> findList(@RequestBody ProductTypeQueryForm queryForm);
 }

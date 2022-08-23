@@ -21,7 +21,7 @@ import javax.validation.constraints.NotNull;
 @ApiModel(value = "WxFansDetailForm",description = "客服中心查看详情参数模型")
 public class WxFansDetailForm {
 
-    @ApiModelProperty("openId")
-    @NotNull(message = "openId不能为空")
-    private String openId;
+    @ApiModelProperty("unionId")
+    @NotNull(message = "unionId不能为空")
+    private String unionId;
 }

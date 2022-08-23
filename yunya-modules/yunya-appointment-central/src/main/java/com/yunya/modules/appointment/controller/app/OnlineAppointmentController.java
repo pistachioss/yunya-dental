@@ -8,12 +8,14 @@ import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
 import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
 import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.app.OnlineAppointmentBiz;
 import io.swagger.annotations.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -39,6 +41,8 @@ public class OnlineAppointmentController {
 
     @Autowired
     private OnlineAppointmentBiz onlineAppointmentBiz;
+
+
 
     @ApiOperation("根据id查询线上预约申请")
     @ApiImplicitParams(
@@ -68,6 +72,12 @@ public class OnlineAppointmentController {
         return onlineAppointmentBiz.addOnlineAppointment(model);
     }
 
+    @ApiOperation("取消在线预约申请")
+    @PutMapping("/cancel/{id}")
+    public ResponseResult<T> cancelOnlineAppointment(@PathVariable("id") Integer id) {
+        return onlineAppointmentBiz.cancelOnlineAppointment(id);
+    }
+
     @ApiOperation("修改在线预约申请")
     @PutMapping
     public ResponseResult<T> updateOnlineAppointment(@RequestBody @Validated OnlineAppointmentForm form) {
@@ -92,12 +102,21 @@ public class OnlineAppointmentController {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
         List<OnlineAppointmentVo> results = onlineAppointmentBiz.findByCondition(query);
+        for(OnlineAppointmentVo appointmentVo:results){
+            if(StringUtils.isEmpty(appointmentVo.getAppointTime())){
+                if(appointmentVo.getAppointMa()==0){
+                    appointmentVo.setAppointTime("09:00");
+                }else{
+                    appointmentVo.setAppointTime("13:00");
+                }
+            }
+        }
         return ResponseUtil.success(new PageInfo<OnlineAppointmentVo>(results));
     }
 
     @ApiOperation("导出预约申请")
     @PostMapping("/export")
-    public ResponseResult<T> export(HttpServletResponse response, @Validated @RequestBody OnlineAppointmentQuery query) throws IOException {
+    public ResponseResult export(HttpServletResponse response, @Validated @RequestBody OnlineAppointmentQuery query) throws IOException {
         onlineAppointmentBiz.export(response,query);
         return ResponseUtil.success();
     }

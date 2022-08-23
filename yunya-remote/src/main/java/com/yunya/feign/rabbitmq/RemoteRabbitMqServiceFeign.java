@@ -2,12 +2,12 @@ package com.yunya.feign.rabbitmq;
 
 import com.yunya.feign.rabbitmq.factory.RabbitMqFallBackFactory;
 import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.report.domain.model.MessageOrderModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @FeignClient(
@@ -23,6 +23,15 @@ public interface RemoteRabbitMqServiceFeign {
    */
   @RequestMapping(value = "/api/direct/single", method = RequestMethod.POST)
   String sendMessage(@RequestBody MessageModel messageModel);
+
+  /**
+   * 订单支付发消息
+   *
+   * @param messageModel 消息体
+   * @return 成功返回ok
+   */
+  @RequestMapping(value = "/api/direct/order", method = RequestMethod.POST)
+  String sendOrderDirectMessage(@RequestBody MessageOrderModel messageModel);
 
   /**
    * 通过消息更新中间表

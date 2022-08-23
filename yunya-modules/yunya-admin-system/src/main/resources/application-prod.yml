@@ -27,3 +27,5 @@ logging:
     tk.mybatis: INFO
     com.yunya: INFO
     com.yunya365: INFO
+
+domainUrl: http://ivy2.yunya365.com

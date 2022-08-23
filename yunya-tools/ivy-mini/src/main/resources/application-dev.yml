@@ -1,0 +1,53 @@
+# 开发环境，nacos连215开发环境
+spring:
+  datasource:
+    host: 192.168.31.90
+    port: 3306
+    username: sa
+    password: Admin001!
+    name: dev_yunya_mall
+  rabbitmq:
+    host: 192.168.31.215
+    port: 5672
+    username: admin
+    password: admin
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.31.215:8848
+      config:
+        server-addr: 192.168.31.215:8848
+
+  redis:
+    database: 2
+    host: 192.168.31.90
+    port: 6379
+    password: foobared
+
+wx:
+  mini:
+    appId: wx9d9209edf9634d94
+    appSecret: 2cfb0904bc87f47fe73ddaaeb3d7359a
+    corpId: ww853499493423c56e
+    corpSecret: Rzu-GfUVBgsKXGyD_3Tipfq6I_usU-sodY4U8MF1Cts
+  pay:
+    appId: wx9d9209edf9634d94
+    michId: 1319671401
+    appSecret: 2cfb0904bc87f47fe73ddaaeb3d7359a
+    useSandboxEnv: false
+    notifyUrl: https://c768-115-197-169-140.ap.ngrok.io/api/ivy/mini/wx/notify
+    refundNotifyUrl: https://c768-115-197-169-140.ap.ngrok.io/api/ivy/mini/wx/refund/notify
+    keyPath: classpath:static/apiclient_cert.p12
+
+
+
+cloopen:
+  sms:
+    appId: aaf98f894fd44d15014fdfc9a7970cc3
+    accountSid: 8a48b5514fd49643014fde330538197f
+    accountToken: 7ceef6f6728e4f34b1efec64c97df79a
+    host: app.cloopen.com
+    port: 8883
+    templateId: 1091107
+    timeOut: 15

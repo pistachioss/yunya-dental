@@ -8,7 +8,10 @@ public enum BucketFolderEnum {
     PATIENT(3, "患者，比如头像、照片影像", "patient"),
     DISCOUNT(4, "优惠产品，比如设计搞、说明文档", "discount"),
     ATTENDENCE(5, "考勤，比如请假说明图片", "attendence"),
-    CASHBALANCE(6, "现金结存，比如结存凭证", "cashbalance");
+    CASHBALANCE(6, "现金结存，比如结存凭证", "cashbalance"),
+    GOODS(7, "商品，比如商品价目图片、封面图", "goods"),
+    MEMBER(8, "用户，比如头像、照片", "member"),
+    MINI(9, "小程序相关，比如文章、科普、banner配置", "mini");
 
 
     private Integer id;

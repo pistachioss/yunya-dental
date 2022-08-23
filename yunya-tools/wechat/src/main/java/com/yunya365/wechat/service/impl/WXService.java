@@ -32,10 +32,7 @@ import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
-import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
-import com.yunya.feign.wechat.domain.model.WxRegisterModel;
-import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
-import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
+import com.yunya.feign.wechat.domain.model.*;
 import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -55,6 +52,7 @@ import com.yunya365.wechat.mapper.WxTemplateMsgRecordsMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Value;
@@ -316,6 +314,14 @@ public class WXService extends AbstractWxBaseApi {
             List<WxMsgTemplates> templates = this.listTemplate(list.stream()
                     .map(obj -> obj.getTemplateEnum().getTitle()).collect(toSet()));
             this.createAndPushTemplate(list, patientWxMap, templates);
+        }
+    }
+
+    public void pushAutoReplyMsg(Object msgModel) {
+        log.info("自动回复推送消息：{}", msgModel);
+        if (msgModel != null) {
+            //推送消息
+            String msgId = super.pushAutoReply(msgModel);
         }
     }
 
@@ -725,5 +731,23 @@ public class WXService extends AbstractWxBaseApi {
         wxFans.setUnionId(userJson.getString("unionid"));
         fansSaveForm.setWxFans(wxFans);
         patientFeign.saveWx(fansSaveForm);
+    }
+
+    /**
+     * 根据用户授权code获取微信用户信息
+     *
+     * @param code
+     * @return
+     */
+    public WxUserInfoVO getAuthWxUserInfo(String code) {
+        JSONObject object = super.getAuthOpenId(code);
+        if (ObjectUtils.isEmpty(object)) {
+            return null;
+        }
+        JSONObject user = getWxApi(WX_GET_USERINFO_ACCESS_URL, object.getString("access_token"), object.get("openid"));
+        if (ObjectUtils.isEmpty(user)) {
+            return null;
+        }
+        return user.toJavaObject(WxUserInfoVO.class);
     }
 }

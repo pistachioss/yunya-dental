@@ -45,4 +45,10 @@ public class OrganizationQueryForm implements Serializable {
   /** 组织简称 */
   @ApiModelProperty("医疗机构简称")
   private String abbreviation;
+  /** 经度*/
+  @ApiModelProperty("经度")
+  private String longitude;
+  /** 纬度*/
+  @ApiModelProperty("纬度")
+  private String latitude;
 }

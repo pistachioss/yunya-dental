@@ -44,5 +44,5 @@ public class OnlineAppointItemForm {
      * 是否可用 0-不可以；1-可用
      */
     @ApiModelProperty("是否可用 0-不可以；1-可用")
-    private Boolean inservice;
+    private Boolean inservice = true;
 }

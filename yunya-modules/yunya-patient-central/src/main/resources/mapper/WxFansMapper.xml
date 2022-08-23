@@ -1,69 +1,231 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.patient_central.mapper.WxFansMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.WxFans" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="register_name" property="registerName" jdbcType="VARCHAR" />
-    <result column="register_mobile" property="registerMobile" jdbcType="VARCHAR" />
-    <result column="open_id" property="openId" jdbcType="VARCHAR" />
-    <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
-    <result column="sex" property="sex" jdbcType="SMALLINT" />
-    <result column="country" property="country" jdbcType="VARCHAR" />
-    <result column="province" property="province" jdbcType="VARCHAR" />
-    <result column="city" property="city" jdbcType="VARCHAR" />
-    <result column="language" property="language" jdbcType="VARCHAR" />
-    <result column="head_imgurl" property="headImgurl" jdbcType="VARCHAR" />
-    <result column="subscribe" property="subscribe" jdbcType="BIT" />
-    <result column="subscribe_time" property="subscribeTime" jdbcType="TIMESTAMP" />
-    <result column="union_id" property="unionId" jdbcType="VARCHAR" />
-    <result column="remark" property="remark" jdbcType="VARCHAR" />
-    <result column="group_id" property="groupId" jdbcType="VARCHAR" />
-    <result column="tagid_list" property="tagidList" jdbcType="VARCHAR" />
-    <result column="bind" property="bind" jdbcType="BIT" />
-    <result column="bind_time" property="bindTime" jdbcType="TIMESTAMP" />
-    <result column="code" property="code" jdbcType="VARCHAR" />
-    <result column="access_token" property="accessToken" jdbcType="VARCHAR" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="lastchatkf_id" property="lastchatkfId" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
-  <select id="findList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
-    select wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as openId,pbi.name,wf.register_mobile as mobile,
-    wf.remark,wf.crt_time as crtTime,wf.bind as isBind,
-    case when wf.sex = 1 then '男'
-    when wf.sex = 2 then '女'
-    else '未知'
-    end as sex,
-    case when wf.subscribe = 1 then '是'
-    else '否'
-    end as subscribe
-     from wx_fans wf
-    LEFT JOIN wx_fans_bind wfb ON wf.open_id = wfb.open_id
-    LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
-    <where>
-      <if test="startTime !=null and endTime != null">
-        and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime},'%Y-%m-%d')
-        and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(DATE_ADD(#{endTime},INTERVAL '1' DAY),'%Y-%m-%d')
-      </if>
-      <if test="isBind !=null">
-        and wf.bind = #{isBind}
-      </if>
-      AND concat(IFNULL(pbi.`name`,''),
-      IFNULL(pbi.medical_number,''),
-      IFNULL(pbi.pinyin_name,''),
-      IFNULL(wf.register_mobile,''),
-      IFNULL(wf.nick_name,''))
-      like concat(concat('%', rtrim(#{name})), '%')
-    </where>
-    GROUP BY wf.id
-    order by wf.crt_time desc
-  </select>
+<mapper namespace="com.yunya.modules.patient_central.mapper.WxFansMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.WxFans">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="register_name" property="registerName" jdbcType="VARCHAR"/>
+        <result column="register_mobile" property="registerMobile" jdbcType="VARCHAR"/>
+        <result column="open_id" property="openId" jdbcType="VARCHAR"/>
+        <result column="nick_name" property="nickName" jdbcType="VARCHAR"/>
+        <result column="sex" property="sex" jdbcType="SMALLINT"/>
+        <result column="country" property="country" jdbcType="VARCHAR"/>
+        <result column="province" property="province" jdbcType="VARCHAR"/>
+        <result column="city" property="city" jdbcType="VARCHAR"/>
+        <result column="language" property="language" jdbcType="VARCHAR"/>
+        <result column="head_imgurl" property="headImgurl" jdbcType="VARCHAR"/>
+        <result column="subscribe" property="subscribe" jdbcType="BIT"/>
+        <result column="subscribe_time" property="subscribeTime" jdbcType="TIMESTAMP"/>
+        <result column="union_id" property="unionId" jdbcType="VARCHAR"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="group_id" property="groupId" jdbcType="VARCHAR"/>
+        <result column="tagid_list" property="tagidList" jdbcType="VARCHAR"/>
+        <result column="bind" property="bind" jdbcType="BIT"/>
+        <result column="bind_time" property="bindTime" jdbcType="TIMESTAMP"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="access_token" property="accessToken" jdbcType="VARCHAR"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="lastchatkf_id" property="lastchatkfId" jdbcType="VARCHAR"/>
+        <result column="fans_status" property="fansStatus" jdbcType="INTEGER"/>
+        <result column="last_login_date" property="lastLoginDate" jdbcType="TIMESTAMP"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="last_login_address" property="lastLoginAddress" jdbcType="VARCHAR"/>
+        <result column="longitude" property="longitude" jdbcType="DOUBLE"/>
+        <result column="latitude" property="latitude" jdbcType="DOUBLE"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <resultMap id="WxWechatResultMap" type="com.yunya.feign.patient_central.domain.vo.web.WxWechatFansVo">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="openId" property="openId" jdbcType="VARCHAR"/>
+        <result column="nickName" property="nickName" jdbcType="VARCHAR"/>
+        <!--<result column="name" property="name" jdbcType="VARCHAR" />-->
+        <result column="sex" property="sex" jdbcType="SMALLINT"/>
+        <result column="mobile" property="mobile" jdbcType="VARCHAR"/>
+        <result column="crtTime" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="isBind" property="isBind" jdbcType="INTEGER"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="bindPant" property="bindPant" jdbcType="VARCHAR"/>
+        <result column="fansStatus" property="fansStatus" jdbcType="INTEGER"/>
+        <collection property="bindPantlist" resultMap="WxWechatBindResultMap"/>
+    </resultMap>
+    <resultMap id="WxWechatBindResultMap" type="com.yunya.feign.patient_central.domain.vo.web.WxWechatbindListVO">
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="dictionaryName" property="dictionaryName" jdbcType="VARCHAR"/>
+        <result column="dictionaryId" property="dictionaryId" jdbcType="INTEGER"/>
+        <result column="patientId" property="patientId" jdbcType="INTEGER"/>
+    </resultMap>
+    <select id="findWechatList" resultMap="WxWechatResultMap">
+        select wf.id,wf.nick_name as nickName,wf.open_id as openId,wf.register_mobile as mobile,
+        wf.crt_time as crtTime,wf.bind as isBind,wf.fans_status as fansStatus,wf.address,
+        wfb.patient_id as patientId,pbi.name as name,wfb.dictionary_id as dictionaryId,
+        case when wf.sex = 1 then '男'
+        when wf.sex = 2 then '女'
+        else '未知'
+        end as sex
+        from wx_fans wf
+        LEFT JOIN wx_fans_bind wfb ON wf.open_id = wfb.open_id
+        LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
+        <where>
+            <if test="startTime !=null and endTime != null">
+                and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+                and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(DATE_ADD(#{endTime},INTERVAL '1'
+                DAY),'%Y-%m-%d')
+            </if>
+            <if test="isBind !=null">
+                and wf.bind = #{isBind}
+            </if>
+            <if test="address !=null and address !=''">
+                and concat(wf.address) like concat(concat('%', rtrim(#{address})), '%')
+            </if>
+            AND concat(IFNULL(pbi.`name`,''),
+            IFNULL(pbi.medical_number,''),
+            IFNULL(pbi.pinyin_name,''),
+            IFNULL(wf.register_mobile,''),
+            IFNULL(wf.nick_name,''))
+            like concat(concat('%', rtrim(#{name})), '%')
+        </where>
+        order by wf.crt_time desc
+    </select>
+    <select id="findList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
+        select wf.last_login_address as lastLoginAddress,wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as
+        openId,wf.union_id as
+        unionId,pbi.name,wf.register_mobile as mobile,
+        wf.remark,wf.crt_time as crtTime,wf.bind as isBind,
+        case when wf.sex = 1 then '男'
+        when wf.sex = 2 then '女'
+        else '未知'
+        end as sex,
+        case when wf.subscribe = 1 then '是'
+        else '否'
+        end as subscribe
+        from wx_fans wf
+        LEFT JOIN wx_fans_bind wfb ON wf.open_id = wfb.open_id
+        LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
+        <where>
+            <if test="startTime !=null and endTime != null">
+                and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+                and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(DATE_ADD(#{endTime},INTERVAL '1'
+                DAY),'%Y-%m-%d')
+            </if>
+            <if test="isBind !=null">
+                and wf.bind = #{isBind}
+            </if>
+            AND concat(IFNULL(pbi.`name`,''),
+            IFNULL(pbi.medical_number,''),
+            IFNULL(pbi.pinyin_name,''),
+            IFNULL(wf.register_mobile,''),
+            IFNULL(wf.nick_name,''))
+            like concat(concat('%', rtrim(#{name})), '%')
+        </where>
+        GROUP BY wf.id
+        order by wf.crt_time desc
+    </select>
 
-  <select id="findDetail" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO">
+
+    <select id="findListByName" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
+        select wf.id,wf.register_name as name,wf.head_imgurl as headImgurl,wf.open_id as openId,wf.register_mobile as
+        mobile,wf.nick_name as nickName,
+        wf.remark,wf.crt_time as crtTime,wf.bind as isBind,
+        case when wf.sex = 1 then '男'
+        when wf.sex = 2 then '女'
+        else '未知'
+        end as sex,
+        case when wf.subscribe = 1 then '是'
+        else '否'
+        end as subscribe
+        from wx_fans wf
+        <where>
+            <if test="name !=null and name !=''">
+                AND concat(IFNULL(wf.nick_name,''))
+                like concat(concat('%', rtrim(#{name})), '%')
+            </if>
+        </where>
+        GROUP BY wf.id
+        order by wf.crt_time desc
+    </select>
+    <select id="findMapList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxWechatMapFansVo">
+        SELECT
+        ROUND(
+        6378.138 * 2 * ASIN(
+        SQRT(
+        POW(
+        SIN(
+        (
+        #{latitude}*PI()/180-wf.latitude*PI()/180)/2),2)+
+        COS(
+        #{latitude}*PI()/180)*COS(wf.latitude*PI()/180)*POW(SIN((#{longitude}*PI()/180-
+        wf.longitude * PI() / 180
+        ) / 2
+        ),
+        2
+        )
+        )
+        ) * 1000
+        ) AS distance,
+        wf.id as id,
+        wf.longitude,
+        wf.latitude,
+        wf.bind as isBind,
+        wf.nick_name as nickName,
+        pbi.name as name
+        FROM
+        wx_fans AS wf
+        left join patient_base_info pbi on wf.patient_id = pbi.id
+        <where>
+            <if test="isBind !=null">
+                and wf.bind = #{isBind}
+            </if>
+        </where>
+        HAVING
+        distance &lt;= #{distance}
+
+    </select>
+    <select id="findNumBind" resultType="com.yunya.feign.patient_central.domain.vo.web.WxWechatMapBindNumFansVo">
+        SELECT
+        COUNT(
+        CASE
+        WHEN bind = 1
+        THEN
+        1
+        ELSE
+        NULL
+        END
+        ) AS numBind,
+        COUNT(
+        CASE
+        WHEN bind = 0
+        THEN
+        1
+        ELSE
+        NULL
+        END
+        ) AS numNoBind
+        FROM
+        wx_fans AS wf
+        where
+        ROUND(
+        6378.138 * 2 * ASIN(
+        SQRT(
+        POW(
+        SIN(
+        (
+        #{latitude}*PI()/180-wf.latitude*PI()/180)/2),2)+
+        COS(
+        #{latitude}*PI()/180)*COS(wf.latitude*PI()/180)*POW(SIN((#{longitude}*PI()/180-
+        wf.longitude * PI() / 180
+        ) / 2
+        ),
+        2
+        )
+        )
+        ) * 1000
+        ) &lt;= #{distance}
+    </select>
+
+    <select id="findDetail" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO">
       SELECT
       pbi.id as patientId,
 	  pbi.name as patientName,
@@ -73,6 +235,6 @@
       FROM
 	  wx_fans_bind wfb
       LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
-      where wfb.open_id = #{openId}
+      where wfb.union_id = #{unionId}
   </select>
 </mapper>

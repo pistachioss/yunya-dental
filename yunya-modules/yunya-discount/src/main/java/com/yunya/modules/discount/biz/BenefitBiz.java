@@ -110,7 +110,7 @@ public class BenefitBiz {
      * @return ResponseResult
      */
     @Transactional
-    public ResponseResult<PatientOrderBenefitVo> saveCardBenefit(PatientOrderBenefitModel model) {
+    public ResponseResult saveCardBenefit(PatientOrderBenefitModel model) {
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         Integer orderId = model.getOrderId();
         try {

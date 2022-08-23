@@ -60,13 +60,19 @@
             bbd.item_type AS itemType,
             bbd.item_id AS itemId,
             bbd.executor_id AS executorId,
+            /*项目应收*/
             (bbd.quantity*bbd.price-bbd.discount_amount) AS receivableWorkload,
+            /*项目数量*/
             bbd.quantity AS quantity,
+            /*项目补入*/
             bbd.coupon_workload AS couponWorkload,
             <if test="payeeDate != null">
+            /*账单总已收*/
                 IFNULL(bbp.received_amount,0) AS totalReceivedWorkload,
             </if>
+            /*项目已收*/
             bbd.received_amount AS receivedWorkload,
+            /*账单总应收*/
             bb.actual_amount AS actualWorkload
         FROM base_bill_detail bbd
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id

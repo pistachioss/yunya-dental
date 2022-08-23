@@ -4,8 +4,9 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.middletable.service.BaseTreatmentProcessBiz;
-import com.yunya.middletable.service.StatEmpTreatBiz;
+import com.yunya.middletable.service.*;
+import com.yunya.models.report.StatEmpPrivilege;
+import com.yunya.models.report.StatEmpRefund;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
@@ -31,6 +32,10 @@ public class BaseTreatmentProcessController {
 
   @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
   @Autowired private StatEmpTreatBiz statEmpTreatBiz;
+  @Autowired private StatEmpBillBiz statEmpBillBiz;
+  @Autowired private StatEmpPayBiz statEmpPayBiz;
+  @Autowired private StatEmpPrivilegeBiz statEmpPrivilegeBiz;
+  @Autowired private StatEmpRefundBiz statEmpRefundBiz;
 
   /**
    * 根据消息操作中间表就诊流程
@@ -99,6 +104,29 @@ public class BaseTreatmentProcessController {
   public ResponseResult<T> pullTreatDateStatistics(@RequestBody PullForm form)
           throws InterruptedException {
     statEmpTreatBiz.pullTreatDateStatistics(form);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据时间段批量操作中间表一键统计：
+   *  就诊完成时统计就诊、
+   *  账单生成时统计账单、
+   *  账单收费时统计收费、
+   *  账单优惠时统计优惠、
+   *  账单退费时统计退费
+   *
+   * @param form
+   * @return
+   * @throws Exception
+   */
+  @ApiOperation("根据时间段批量操作中间表一键统计：就诊完成时统计就诊、账单生成时统计账单、账单收费时统计收费、账单优惠时统计优惠、账单退费时统计退费")
+  @PostMapping(value = "/dateRange/statistics/batch", name = "form")
+  public ResponseResult pullDateRangeStatistics(@RequestBody PullForm form) throws Exception {
+    statEmpTreatBiz.pullTreatDateStatistics(form);
+    statEmpBillBiz.pullBillDateStatistics(form);
+    statEmpPayBiz.pullPayDateStatistics(form);
+    statEmpPrivilegeBiz.pullPrivilegeDateStatistics(form);
+    statEmpRefundBiz.pullRefundDateStatistics(form);
     return ResponseUtil.success(null);
   }
 }

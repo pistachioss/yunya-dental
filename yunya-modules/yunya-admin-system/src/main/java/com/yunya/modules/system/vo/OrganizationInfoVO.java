@@ -35,6 +35,8 @@ public class OrganizationInfoVO implements Serializable {
   /** 组织类型 */
   @ApiModelProperty("组织类型")
   private String type;
+  @ApiModelProperty("门诊图片")
+  private String path;
   /** 自定义组织排序 */
   @ApiModelProperty("自定义组织排序")
   private Integer orderNum;
@@ -59,6 +61,12 @@ public class OrganizationInfoVO implements Serializable {
   /** 营业结束时间*/
   @ApiModelProperty("营业结束时间")
   private String businessEndTime;
+  /** 门诊图片完整地址 */
+  @ApiModelProperty("门诊图片完整地址")
+  private String clinicPath;
+  /** 距离门诊km */
+  @ApiModelProperty("距离门诊km")
+  private Double distance;
 
   /** 子门诊ID列表*/
   @ApiModelProperty("子门诊ID列表")

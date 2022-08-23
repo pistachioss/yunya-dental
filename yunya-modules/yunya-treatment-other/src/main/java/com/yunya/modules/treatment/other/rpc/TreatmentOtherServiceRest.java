@@ -3,11 +3,9 @@ package com.yunya.modules.treatment.other.rpc;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
-import com.yunya.feign.treatment_other.domain.vo.FindAllRemindRecordVO;
-import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
-import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
+import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
@@ -48,6 +46,20 @@ public class TreatmentOtherServiceRest {
   @Autowired private XRayFilmBiz xRayFilmBiz;
 
   @Autowired private XUploadFileBiz xUploadFileBiz;
+
+  /**
+   * 根据条件查询随访记录
+   *
+   * @param query 查询条件
+   * @return List<VisitingRecordVo>
+   */
+  @ApiOperation(value = "查询图片影像列表")
+  @RequestMapping(value = "/photo/findCycleList", method = RequestMethod.POST)
+  public List<XRayFilmVO> findPhotoListInfo(
+          @RequestBody XRayFilmQuery query) {
+    return xRayFilmBiz.findList(query).getList();
+  }
+
 
   /**
    * 插入随访记录

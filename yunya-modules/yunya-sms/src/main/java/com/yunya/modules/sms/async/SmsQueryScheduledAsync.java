@@ -54,10 +54,6 @@ public class SmsQueryScheduledAsync{
     private SmsSendRecordBiz smsSendRecordBiz;
     @Autowired
     private SmsOrgStatisticsBiz smsOrgStatisticsBiz;
-    /**
-     * 两个小时
-     */
-    private final long expireIn = 3600000 * 2;
 
     /**
      * 定时任务每天的6点、22点都执行一次：0 0 6,22 * * ?
@@ -181,41 +177,14 @@ public class SmsQueryScheduledAsync{
 //    @Scheduled(cron = "0 */1 * * * ?")
     @Scheduled(cron = "0 0 23 * * ?")
     public void wikiQueryOrderAsync() {
-        log.info("开始更新短信充值支付记录");
+        log.info("开始同步采宝-短信充值支付记录");
         SmsChargeOrderQueryForm orderQueryForm = new SmsChargeOrderQueryForm();
         orderQueryForm.setWhetherPage(false);
-        orderQueryForm.setOrderStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
+        orderQueryForm.setOrderStatus(SmsOrderStatusEnum.WAIT_PAY.getCode());
         List<SmsChargeOrderVO> smsChargeOrderVOS = smsChargeOrderBiz.findSmsChargeOrderList(orderQueryForm);
-        if (smsChargeOrderVOS!=null && !smsChargeOrderVOS.isEmpty()) {
-            Date now = new Date(System.currentTimeMillis());
-            smsChargeOrderVOS.forEach(smsChargeOrderVO -> {
-                Date crtTime = smsChargeOrderVO.getCrtTime();
-                SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
-                try {
-                    JSONObject data = WikiUtl.queryOrder(smsChargeOrderVO.getOrderNo(), smsChargeOrderVO.getCbOrderNo());
-                    String orderStatus = data.getString("order_status");
-                    byte status = SmsOrderStatusEnum.CLOSED.getCode();//关闭
-                    if (now.getTime() - crtTime.getTime() <= expireIn) {//未超时
-                        if ("PAY_SUC".equals(orderStatus)) {
-                            status = SmsOrderStatusEnum.PAY_SUC.getCode();
-                        } else if ("PAY_FAIL".equals(orderStatus)) {
-                            status = SmsOrderStatusEnum.PAY_FAIL.getCode();
-                        } else if ("PAY_WAIT".equals(orderStatus)) {
-                            status = SmsOrderStatusEnum.WAIT_PAY.getCode();
-                        }
-                    }
-                    smsChargeOrder.setId(smsChargeOrderVO.getId());
-                    smsChargeOrder.setCbOrderNo(data.getString("cb_order_no"));
-                    smsChargeOrder.setOutOrderNo(data.getString("out_order_no"));
-                    smsChargeOrder.setOrderStatus(status);
-                    smsChargeOrder.setPaymentChannel(data.getString("payment_channel"));
-                    smsChargeOrder.setUptTime(now);
-                    smsChargeOrderBiz.uptSelectiveById(smsChargeOrder);
-                } catch (Exception e) {
-                    log.error("smsQueryAsync update order error",e);
-                }
-            });
+        if (StringHelper.isNotEmpty(smsChargeOrderVOS)) {
+            smsChargeOrderBiz.syncWikiOrder(smsChargeOrderVOS);
         }
-        log.info("更新短信充值支付记录结束");
+        log.info("同步采宝-短信充值支付记录结束");
     }
 }

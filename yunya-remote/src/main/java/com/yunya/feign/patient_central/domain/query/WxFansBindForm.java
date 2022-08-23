@@ -29,6 +29,9 @@ public class WxFansBindForm {
     @ApiModelProperty("openID")
     private String openId;
 
+    @ApiModelProperty("unionId")
+    private String unionId;
+
     @ApiModelProperty("患者关系Id")
     private Integer dictionaryId;
 

@@ -29,6 +29,12 @@ public class WxFansBind {
     private String openId;
 
     /**
+     * union_id
+     */
+    @Column(name = "union_id")
+    private String unionId;
+
+    /**
      * 是否绑定
      */
     private Boolean bind;

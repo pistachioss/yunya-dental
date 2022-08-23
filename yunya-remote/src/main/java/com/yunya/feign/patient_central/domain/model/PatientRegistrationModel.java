@@ -23,6 +23,9 @@ import java.util.List;
 @ToString
 @ApiModel("患者登记添加模型")
 public class PatientRegistrationModel implements Serializable {
+    /** 患者id */
+    @ApiModelProperty(value = "患者id")
+    private Integer id;
 
     /** 门诊id */
     @ApiModelProperty(value = "门诊id", required = true)

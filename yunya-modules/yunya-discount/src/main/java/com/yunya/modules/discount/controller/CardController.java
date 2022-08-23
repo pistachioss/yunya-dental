@@ -9,19 +9,15 @@ import com.yunya.feign.discount.domain.form.OtherCardActiveForm;
 import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.discount.domain.form.UnLockForm;
 import com.yunya.feign.discount.domain.model.GenerateAllocateModel;
-import com.yunya.feign.discount.domain.query.CardActiveQuery;
-import com.yunya.feign.discount.domain.query.CardSaleQuery;
-import com.yunya.feign.discount.domain.query.CouponAllocateQuery;
-import com.yunya.feign.discount.domain.query.CouponSaleQuery;
-import com.yunya.feign.discount.domain.query.GenerateAllocateCardQuery;
-import com.yunya.feign.discount.domain.query.GenerateAllocateDetailQuery;
-import com.yunya.feign.discount.domain.query.PatientCardQuery;
+import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.discount.biz.CardBiz;
+import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
+import com.yunya.modules.discount.task.CardActivedSmsNoticeTask;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,8 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
@@ -57,6 +52,8 @@ public class CardController {
 
     @Resource
     private CardBiz cardBiz;
+    @Resource
+    private CouponCommonInfoBiz couponCommonInfoBiz;
 
     @ApiOperation(value = "产品生成分配分页查询")
     @PostMapping("/coupon/generate/allocation/page")
@@ -124,6 +121,12 @@ public class CardController {
     public ResponseResult<CardQrCodeVo> cardQrCodeCheck(@NotNull @RequestParam Integer cardId) {
         CardQrCodeVo codeVo = cardBiz.cardQrCodeCheck(cardId);
         return ResponseUtil.success(codeVo);
+    }
+
+    @ApiOperation(value = "卡券二维码页面打开(批量)")
+    @PostMapping("/coupon/card/QRCode/batch/init")
+    public List<CardQrCodeVo> batchCardQrCode(@NotEmpty @RequestBody List<Integer> cardIds) {
+        return cardBiz.batchCardQrCode(cardIds);
     }
 
     @ApiOperation(value = "取消售出")
@@ -223,5 +226,13 @@ public class CardController {
                                                                          @PathVariable(value = "couponId") Integer couponId) {
         List<PatientCardSharerVo> configuredSharer = cardBiz.getConfiguredSharer(patientId, couponId);
         return ResponseUtil.success(configuredSharer);
+    }
+
+
+    @ApiOperation("条件查询卡券公用信息列表")
+    @PostMapping("/coupon/list")
+    public ResponseResult<PageInfo<CouponCommonInfoVO>> findCouponList(@RequestBody CouponCommonInfoQuery query) {
+        PageInfo<CouponCommonInfoVO> page = couponCommonInfoBiz.findList(query);
+        return ResponseUtil.success(page);
     }
 }
