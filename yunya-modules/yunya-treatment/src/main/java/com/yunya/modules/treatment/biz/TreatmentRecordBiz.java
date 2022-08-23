@@ -42,6 +42,7 @@ import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.tariff.BaseTariff;
+import com.yunya.models.tariff.BaseTariffFellowupRelation;
 import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.XRayFilm;
@@ -114,6 +115,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Resource private RegisteredBiz registeredBiz;
 
   @Resource private RemoteReportServiceFeign remoteMiddleTableServiceFeign;
+
+  @Resource
+  private BaseTariffFellowupRelationMapper baseTariffFellowupRelationMapper;
+
 
   /**
    * 开始接诊
@@ -823,25 +828,14 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param treatmentRecordId 就诊记录ID
    * @param detail 开单详情
    */
-  public List<VisitingRecord> createOrderDetailVisitRecord(
-      Integer treatmentRecordId, OrderDetail detail) {
+  public List<VisitingRecord> createOrderDetailVisitRecord(Integer treatmentRecordId, OrderDetail detail) {
     List<VisitingRecord> visitRecordPlanList = new ArrayList<>();
-    BaseTariff baseTariff = baseTariffBiz.selectById(detail.getBillingItemId());
-    if (null != baseTariff) {
-      String fellowUp = baseTariff.getFellowUp();
-      if (StringHelper.isNotBlank(fellowUp)) {
-        String[] nums = fellowUp.replaceAll("-", "").split(",");
-        if (nums.length > 0) {
-          Arrays.stream(nums)
-              .filter(StringHelper::isNotBlank)
+    List<BaseTariffFellowupRelation> baseTariffFellowupRelationList = baseTariffFellowupRelationMapper.queryByItemId(detail.getBillingItemId());
+    if (!ObjectUtils.isEmpty(baseTariffFellowupRelationList)) {
+      baseTariffFellowupRelationList.stream()
+              .filter(b->!ObjectUtils.isEmpty(b))
               .forEach(
-                  num -> {
-                    int nn;
-                    try {
-                      nn = Integer.parseInt(num);
-                    } catch (Exception ex) {
-                      throw new ClientServiceException("价目表的随访字段有非数字！", DATA_ERROR);
-                    }
+                btfr -> {
                     VisitingRecord visitRecord = new VisitingRecord();
                     TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
                     if (null != treatmentRecord) {
@@ -859,16 +853,14 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                       visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
                       visitRecord.setTreatmentId(treatmentRecordId);
                       visitRecord.setVisitingTime("09:00");
-                      visitRecord.setReason(baseTariff.getName());
+                      visitRecord.setReason(btfr.getFellowUpCase());
                       visitRecord.setStatus(false);
                       visitRecord.setInservice(true);
                       visitRecord.setVisitingDate(
-                              DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
+                              DateUtils.addDays(new Date(System.currentTimeMillis()), btfr.getFellowUp()));
                       visitRecordPlanList.add(visitRecord);
                     }
                   });
-        }
-      }
     }
     return visitRecordPlanList;
   }
