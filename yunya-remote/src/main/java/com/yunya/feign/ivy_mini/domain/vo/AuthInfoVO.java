@@ -40,4 +40,6 @@ public class AuthInfoVO implements Serializable{
   @ApiModelProperty(value = "最近一次访问时间")
   private LocalDateTime lastEnterDate;
 
+  @ApiModelProperty(value = "头像")
+  private String headImgurl;
 }

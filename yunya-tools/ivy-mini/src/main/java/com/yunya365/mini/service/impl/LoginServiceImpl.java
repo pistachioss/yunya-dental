@@ -153,6 +153,7 @@ public class LoginServiceImpl {
         authInfoVO.setUserName(wxFans.getNickName());
         authInfoVO.setDisabled(false);
         authInfoVO.setLastEnterDate(LocalDateTime.now());
+        authInfoVO.setHeadImgurl(wxFans.getHeadImgurl());
         return authInfoVO;
     }
 

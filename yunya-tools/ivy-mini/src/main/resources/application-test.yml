@@ -47,3 +47,6 @@ cloopen:
     port: 8883
     templateId: 1091107
     timeOut: 15
+
+mp:
+  domain: test.ivy2.yunya365.com

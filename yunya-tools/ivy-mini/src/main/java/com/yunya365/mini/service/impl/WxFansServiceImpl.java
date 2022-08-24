@@ -18,6 +18,7 @@ import com.yunya365.mini.service.WxApi;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -45,6 +46,8 @@ public class WxFansServiceImpl implements IWxFansService {
     private RemotePatientCentralServiceFeign patientFeign;
     @Resource
     private RemoteOssServiceFeign ossServiceFeign;
+    @Value("${mp.domain}")
+    private String mpDomain;
 
     private static final String HEAD_PREFIX = "thirdwx.qlogo.cn";
 
@@ -107,7 +110,7 @@ public class WxFansServiceImpl implements IWxFansService {
         if (StringUtils.isNotBlank(headImgurl) && !headImgurl.contains(HEAD_PREFIX)) {
             List<String> urls = getOssUrls(Collections.singletonList(headImgurl), fans.getId());
             if (CollectionUtils.isNotEmpty(urls)) {
-                copy.setHeadImgurl(urls.get(0));
+                copy.setHeadImgurl(mpDomain + "/" + urls.get(0));
             }
         }
         copy.setPhoneNumber(fans.getRegisterMobile());
