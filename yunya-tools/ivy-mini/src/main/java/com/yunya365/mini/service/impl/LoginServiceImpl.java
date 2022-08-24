@@ -58,8 +58,10 @@ public class LoginServiceImpl {
         WxFans wxFans = wxFansService.getByOpenId(openId);
         WxUserInfoForm userInfo = form.getUserInfo();
         log.info("授权登录：{}", userInfo);
-        //保存或更新微信用户信息
-        wxFansService.saveMiniAuth(wxFans, userInfo, sessionBO);
+        if (Objects.isNull(wxFans)) {
+            //保存或更新微信用户信息
+            wxFansService.saveMiniAuth(wxFans, userInfo, sessionBO);
+        }
         //登录
         AuthInfoVO authInfoVO = login(openId, request, wxFans);
         //存储session_key
