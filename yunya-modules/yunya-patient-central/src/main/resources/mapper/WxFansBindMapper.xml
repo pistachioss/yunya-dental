@@ -68,7 +68,7 @@
         SELECT
         wfb.patient_id as patientId,
         wfb.union_id as unionId,
-        wfb.dictionary_id as dictionaryId,
+        pbi.mobile_owner as dictionaryId,
         wfb.crt_time as crtTime,
         pbi.name as name,
         pbi.mobile as mobile,

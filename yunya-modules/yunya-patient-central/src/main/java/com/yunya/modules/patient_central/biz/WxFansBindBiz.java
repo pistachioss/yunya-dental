@@ -199,7 +199,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
 
     public List<WxWechatbindAppListVO> findPatientBaseInfo(String unionId) {
         DictionaryItemModel model = new DictionaryItemModel();
-        model.setDictionaryTypeId(19);
+        model.setDictionaryTypeId(11);
         List<DictionaryItem> dLsit = remoteSystemServiceFeign.findDictionaryItemList(model);
         Map<String, DictionaryItem> dicMap = new HashMap(16);
         dLsit.forEach(z -> dicMap.put(z.getId() + "", z));
