@@ -5,22 +5,27 @@ import com.google.common.collect.Maps;
 import com.yunya.feign.ivy_mini.domain.bo.WeChatSessionBO;
 import com.yunya.feign.ivy_mini.domain.form.*;
 import com.yunya.feign.ivy_mini.domain.vo.FansDetailVO;
+import com.yunya.feign.oss.RemoteOssServiceFeign;
+import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.models.patient_central.WxFans;
 import com.yunya365.mini.service.IWxFansService;
 import com.yunya365.mini.service.WxApi;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.yunya.framework.common.constant.WxMiniUri.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
+import static java.util.stream.Collectors.*;
 
 /**
  * <p>
@@ -31,12 +36,17 @@ import static com.yunya365.mini.enums.IvyMiniError.*;
  * @since 2022-05-11
  */
 @Service
+@Slf4j
 public class WxFansServiceImpl implements IWxFansService {
 
     @Resource
     private WxApi wxApi;
     @Resource
     private RemotePatientCentralServiceFeign patientFeign;
+    @Resource
+    private RemoteOssServiceFeign ossServiceFeign;
+
+    private static final String HEAD_PREFIX = "thirdwx.qlogo.cn";
 
     @Override
     public WxFans getByOpenId(String openId) {
@@ -92,8 +102,34 @@ public class WxFansServiceImpl implements IWxFansService {
     @Override
     public FansDetailVO fansDetail(String openId) {
         WxFans fans = patientFeign.countRegister(openId);
+        String headImgurl = fans.getHeadImgurl();
         FansDetailVO copy = BeanUtil.copy(fans, FansDetailVO.class);
+        if (StringUtils.isNotBlank(headImgurl) && !headImgurl.contains(HEAD_PREFIX)) {
+            List<String> urls = getOssUrls(Collections.singletonList(headImgurl), fans.getId());
+            if (CollectionUtils.isNotEmpty(urls)) {
+                copy.setHeadImgurl(urls.get(0));
+            }
+        }
         copy.setPhoneNumber(fans.getRegisterMobile());
         return copy;
+    }
+
+    private List<String> getOssUrls(List<String> urls, Integer fansId) {
+        List<OssUrlForm> ossObs = urls.stream().map(url -> {
+            OssUrlForm ossUrlForm = new OssUrlForm();
+            ossUrlForm.setCompanyId(0);
+            ossUrlForm.setIsThumb(false);
+            ossUrlForm.setObjectId(fansId);
+            ossUrlForm.setOssCategory(8);
+            ossUrlForm.setOssFilename(url);
+            return ossUrlForm;
+        }).collect(toList());
+        try {
+            final ResponseResult url = ossServiceFeign.getUrl(ossObs);
+            return (List<String>) url.getData();
+        } catch (Exception e) {
+            log.warn("小程序获取图片异常，e", e);
+        }
+        return null;
     }
 }
