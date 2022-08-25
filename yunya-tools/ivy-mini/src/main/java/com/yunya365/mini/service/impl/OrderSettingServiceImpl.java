@@ -1,5 +1,6 @@
 package com.yunya365.mini.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderSetting;
@@ -44,6 +45,7 @@ public class OrderSettingServiceImpl extends ServiceImpl<OrderSettingMapper, Ord
                 t.setConfirmStatus(TRUE.getCode().byteValue());
                 t.setReceiveTime(new Date());
             });
+            log.info("订单确认收货：{}", JSON.toJSONString(orderInfos));
             orderInfoService.updateBatchById(orderInfos);
         }
     }

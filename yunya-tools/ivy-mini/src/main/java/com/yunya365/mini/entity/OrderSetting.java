@@ -1,8 +1,7 @@
 package com.yunya365.mini.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -15,8 +14,7 @@ import java.time.LocalDateTime;
  * @author xiangyang
  * @since 2022-06-10
  */
-@Getter
-@Setter
+@Data
 @TableName("order_setting")
 public class OrderSetting implements Serializable {
 
