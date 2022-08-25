@@ -19,6 +19,7 @@ import com.yunya.modules.discount.biz.CardBiz;
 import com.yunya.modules.discount.biz.VoucherDiscountItemBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -102,7 +103,9 @@ public class CardWxController {
 
         List<String> tids = list.stream().map(obj->{
             if(obj.getType()==0){
-                return obj.getItemId()+"";
+
+                    return obj.getItemId()+"";
+
             }
             return null;
         }
@@ -112,7 +115,7 @@ public class CardWxController {
 
         List<String> oids = list.stream().map(obj->{
                     if(obj.getType()==1){
-                        return obj.getItemId()+"";
+                            return obj.getItemId()+"";
                     }
                     return null;
                 }
@@ -122,24 +125,49 @@ public class CardWxController {
         String[] oraIds = oids.toArray(new String[oids.size()]);
 
         List<CardWxItemVO>reList = new ArrayList<>();
+        List<CardWxItemVO>oraReList = new ArrayList<>();
+        //价目
         if(tids.size()>0){
-            String tarString =  remoteTreatmentServiceFeign.findBaseTariffNamesByIds(tarIds);
-            List<String> tarList = Arrays.asList(tarString.split(","));
-            List<CardWxItemVO>tarReList = tarList.stream().map(t -> {
-                CardWxItemVO cardWxItemVO = new CardWxItemVO(t,null,null);
-                return cardWxItemVO;
-            }).collect(Collectors.toList());
+            List<CardWxItemVO>tarReList = new ArrayList<>();
+            boolean isAll = true;
+            for(VoucherDiscountItem v:list){
+                if(v.getType()==0&&v.getChoiceRangType()==0){
+                   isAll = false;
+                }
+            }
+            if(isAll){
+                String tarString =  remoteTreatmentServiceFeign.findBaseTariffNamesByIds(tarIds);
+                List<String> tarList = Arrays.asList(tarString.split(","));
+                tarReList = tarList.stream().map(t -> {
+                    CardWxItemVO cardWxItemVO = new CardWxItemVO(t,null,null);
+                    return cardWxItemVO;
+                }).collect(Collectors.toList());
+            }else{
+                CardWxItemVO cardWxItemVO = new CardWxItemVO("适用全部项目",null,null);
+                tarReList.add(cardWxItemVO);
+            }
             reList.addAll(tarReList);
         }
-        //价目
+
+        //商品
         if(oids.size()>0) {
-            //商品
+            boolean isAll = true;
+            for(VoucherDiscountItem v:list){
+                if(v.getType()==1&&v.getChoiceRangType()==0){
+                    isAll = false;
+                }
+            }
+            if(isAll){
             String oraString = remoteTreatmentServiceFeign.findBaseOralNamesByIds(oraIds);
             List<String> oraList = Arrays.asList(oraString.split(","));
-            List<CardWxItemVO>oraReList = oraList.stream().map(t -> {
+            oraReList = oraList.stream().map(t -> {
                 CardWxItemVO cardWxItemVO = new CardWxItemVO(t,null,null);
                 return cardWxItemVO;
             }).collect(Collectors.toList());
+            }else{
+                CardWxItemVO cardWxItemVO = new CardWxItemVO("适用全部商品",null,null);
+                oraReList.add(cardWxItemVO);
+            }
             reList.addAll(oraReList);
         }
         return ResponseUtil.success(reList);
