@@ -1092,6 +1092,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                     throw ClientServiceException.wrap(SEND_AMOUNT_LACK, startSendingPrice.subtract(totalAmount)
                             .stripTrailingZeros().toPlainString());
                 }
+                totalAmount = totalAmount.add(Objects.isNull(freightAmount) ? BigDecimal.ZERO : freightAmount);
                 //订单金额为0元
                 if ( totalAmount.compareTo(BigDecimal.ZERO) <= 0 ) {
                     //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
