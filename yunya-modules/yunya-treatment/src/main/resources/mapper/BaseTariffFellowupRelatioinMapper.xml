@@ -77,6 +77,12 @@
             id=#{item.id}
         </foreach>
     </update>
+    <delete id="batchDelete">
+        delete from base_tariff_fellowup_relation where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
     <select id="queryByItemId" resultMap="BaseResultMap">
         select
         <include refid="baseColumns"/>

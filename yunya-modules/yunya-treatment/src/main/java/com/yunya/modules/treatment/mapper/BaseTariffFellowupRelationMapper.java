@@ -28,4 +28,11 @@ public interface BaseTariffFellowupRelationMapper extends Mapper<BaseTariffFello
      * @return
      */
     List<BaseTariffFellowupRelation> queryByItemId(@Param("itemId") Integer itemId);
+
+    /**
+     * 批量删除
+     * @param ids
+     * @return
+     */
+    int batchDelete(@Param("ids") List<Integer> ids);
 }
