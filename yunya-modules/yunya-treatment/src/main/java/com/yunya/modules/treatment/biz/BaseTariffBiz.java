@@ -24,6 +24,7 @@ import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
 import com.yunya.feign.treatment.domain.vo.BaseTariffVO;
 import com.yunya.feign.treatment.domain.vo.ClinicItemPriceVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
@@ -33,6 +34,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.modules.treatment.mapper.*;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1353,7 +1355,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     Integer baseTariffId = resultData.getId();
     List<BaseTariffFellowupRelation> insertList = new ArrayList<>();
     List<BaseTariffFellowupRelation> updateList = new ArrayList<>();
-
+    List<BaseTariffFellowupRelation> deleteList = new ArrayList<>();
     for (FellowUpInfoForm fellowUpInfoForm : fellowUpInfoFormList) {
       BaseTariffFellowupRelation baseTariffFellowupRelation = new BaseTariffFellowupRelation();
       baseTariffFellowupRelation.setId(fellowUpInfoForm.getId());
@@ -1362,10 +1364,12 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       baseTariffFellowupRelation.setFellowUpCase(fellowUpInfoForm.getFellowUpCase());
       baseTariffFellowupRelation.setCrtId(userId);
       baseTariffFellowupRelation.setCrtName(username);
-      if (ObjectUtils.isEmpty(baseTariffFellowupRelation.getId())) {
+      if (Objects.equals(CommonConstants.INT_ONE,fellowUpInfoForm.getType())) {
         insertList.add(baseTariffFellowupRelation);
-      } else {
+      } else if (Objects.equals(CommonConstants.INT_TWO,fellowUpInfoForm.getType())) {
         updateList.add(baseTariffFellowupRelation);
+      } else if (Objects.equals(CommonConstants.INT_THREE,fellowUpInfoForm.getType())) {
+        deleteList.add(baseTariffFellowupRelation);
       }
     }
     if (!ObjectUtils.isEmpty(insertList)) {
@@ -1373,6 +1377,13 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     }
     if (!ObjectUtils.isEmpty(updateList)) {
       baseTariffFellowupMapper.batchUpdate(updateList);
+    }
+    if (!ObjectUtils.isEmpty(deleteList)) {
+      List<Integer> ids = deleteList.stream().map(BaseTariffFellowupRelation::getId)
+              .collect(Collectors.toList());
+      if (!ObjectUtils.isEmpty(ids)) {
+        baseTariffFellowupMapper.batchDelete(ids);
+      }
     }
   }
 

@@ -2,6 +2,8 @@ package com.yunya.feign.treatment.domain.form;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
@@ -35,4 +37,11 @@ public class FellowUpInfoForm implements Serializable {
     @Min(value = 0, message = "最小值为0")
     @Length(max = 300,message = "随访原因最大支持300个字符")
     private String fellowUpCase;
+
+    /** 提交类型 1-新增；2-修改；3-删除 */
+    @ApiModelProperty("提交类型 1-新增；2-修改；3-删除")
+    @NotNull(message ="提交类型不能为空")
+    @Min(value = 1)
+    @Max(value = 3)
+    private Integer type;
 }

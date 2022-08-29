@@ -46,4 +46,6 @@ public class CommonConstants {
   /** JWT中封装的 open_id */
   public static final String JWT_KEY_OPEN_ID = "open_id";
   public static final Integer INT_ONE = 1;
+  public static final Object INT_TWO = 2;
+  public static final Object INT_THREE = 3;
 }
