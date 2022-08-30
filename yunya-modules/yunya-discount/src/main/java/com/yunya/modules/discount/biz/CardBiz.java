@@ -1154,6 +1154,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             errorBo.setError(DiscountError.OTHER_CARD_NOT_ALLOW_DELETE);
             return errorBo;
         }
+        if (Objects.equals(MINI_CARD_REMARK, card.getRemark())) {
+            log.warn("【取消售卖失败】小程序卡券不可删除", card.getCardNumber());
+            throw ClientServiceException.wrap(DiscountError.MINI_CARD_DELETE_ERROR);
+        }
         int useCount = cardBenefitMapper.countCardUsed(cardId);
         if (useCount > 0) {
             errorBo.setError(DiscountError.CARD_IS_USED);
@@ -2539,6 +2543,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         baseVo.setProductTypeName(productType == null ? null : productType.getName());
         baseVo.setUseWayName(UseWayEnum.getValue(bo.getUseWay()));
         baseVo.setUseDeadline(bo.getUseDeadline() == null ? "永久有效" : bo.getUseDeadline());
+        String remark = bo.getRemark();
+        if (StringUtils.isNotBlank(remark)) {
+            baseVo.setPayChannel(Objects.equals(MINI_CARD_REMARK, remark) ? 0 : 1);
+        }
         return baseVo;
     }
 

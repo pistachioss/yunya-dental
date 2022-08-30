@@ -269,6 +269,7 @@ WHERE
 
     <select id="listPatientCardsByParam" resultType="com.yunya.feign.discount.domain.bo.PatientCardBo">
         select
+            `c`.remark,
             `c`.`id`                                   as `cardId`,
             `cci`.`id`                                 as `couponId`,
             `cci`.`name`                               as `couponName`,
