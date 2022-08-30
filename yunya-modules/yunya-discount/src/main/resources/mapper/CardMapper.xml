@@ -200,7 +200,8 @@ WHERE
             `status`,
             `is_pay`,
             `sold_way`,
-            `pay_id`
+            `pay_id`,
+            `remark`
         from `card`
         where `coupon_id` = #{couponId}
             and `org_id` = #{orgId}

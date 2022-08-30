@@ -749,6 +749,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         if (errorBo.getError() != null) {
             return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
         }
+        if (Objects.equals(MINI_CARD_REMARK, card.getRemark())) {
+            log.warn("【取消售卖失败】小程序卡券不可取消售出", card.getCardNumber());
+            throw ClientServiceException.wrap(DiscountError.MINI_CARD_CANCEL_ERROR);
+        }
         Integer couponId = card.getCouponId();
         //2. 检查优惠券
         CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
@@ -2173,6 +2177,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         vo.setPayStatus(TrueFalseEnum.getValue(card.getPay()));
         vo.setSoldWayName(SoldWayEnum.getValue(card.getSoldWay()));
         vo.setLink(serverPort + "/#/cardQrData?" + "cardId=" + card.getId());
+        String remark = card.getRemark();
+        if (StringUtils.isNotBlank(remark)) {
+            vo.setPayChannel(Objects.equals(MINI_CARD_REMARK, remark) ? 0 : 1);
+        }
         return vo;
     }
 
