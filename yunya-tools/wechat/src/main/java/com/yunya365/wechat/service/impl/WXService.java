@@ -206,7 +206,7 @@ public class WXService extends AbstractWxBaseApi {
 
     public List<WxFansDetailVO> listAccount(String openId) {
         WxFansDetailForm wxFansDetailForm = new WxFansDetailForm();
-        wxFansDetailForm.setOpenId(openId);
+        wxFansDetailForm.setUnionId(openId);
         return patientFeign.findDetail(wxFansDetailForm);
     }
 
