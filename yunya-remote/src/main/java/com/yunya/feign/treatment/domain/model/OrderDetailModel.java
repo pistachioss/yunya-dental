@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
@@ -65,8 +66,10 @@ public class OrderDetailModel implements Serializable {
   private List<Integer> planDetailIds;
 
   public void compareParams() {
-    if (executorId.equals(consulterId)) {
-      throw new ClientServiceException("执行人与咨询师不能是同一个人", PARAMETERS_IS_ILLEGAL);
+    if (Objects.nonNull(executorId) && Objects.nonNull(consulterId)) {
+      if (executorId.equals(consulterId)) {
+        throw new ClientServiceException("执行人与咨询师不能是同一个人", PARAMETERS_IS_ILLEGAL);
+      }
     }
   }
 }

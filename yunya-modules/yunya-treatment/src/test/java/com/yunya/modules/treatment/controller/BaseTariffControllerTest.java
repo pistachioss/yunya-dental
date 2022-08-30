@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.controller;
 
-import com.yunya.feign.treatment.domain.form.BaseTariffAssociationForm;
 import com.yunya.feign.treatment.domain.form.TariffUnitePriceForm;
 import com.yunya.feign.treatment.domain.model.TariffUniteModel;
 import com.yunya.framework.common.model.ResponseResult;
@@ -90,7 +89,7 @@ public class BaseTariffControllerTest {
     ResponseResult<T> result = baseTariffController.uniteTariffPrice(form);
     System.out.println(result);
   }
-
+/*
   @Test
   public void test7() {
     BaseTariffAssociationForm form = new BaseTariffAssociationForm();
@@ -98,5 +97,5 @@ public class BaseTariffControllerTest {
     form.setAttention("");
     form.setFellowUps(new String[]{""});
     baseTariffAssociationController.modifyTariffAssociation(201,form);
-  }
+  }*/
 }
