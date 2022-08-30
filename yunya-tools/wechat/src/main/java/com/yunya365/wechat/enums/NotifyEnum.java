@@ -9,7 +9,7 @@ import java.util.Objects;
  **/
 public enum NotifyEnum {
     //菜单点击事件
-    CLICK("event", "click"),
+    CLICK("event", "CLICK"),
     //关注
     SUBSCRIBE("event", "subscribe"),
     //取关
