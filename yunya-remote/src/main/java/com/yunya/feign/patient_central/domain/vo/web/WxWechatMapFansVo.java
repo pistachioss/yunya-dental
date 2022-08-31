@@ -28,5 +28,7 @@ public class WxWechatMapFansVo {
     private String nickName;
     @ApiModelProperty("患者名称")
     private String name;
+    @ApiModelProperty("绑定患者数量")
+    private Integer numBind;
 
 }
