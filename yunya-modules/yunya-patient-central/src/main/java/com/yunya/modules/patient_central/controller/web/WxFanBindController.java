@@ -3,10 +3,12 @@ package com.yunya.modules.patient_central.controller.web;
 import com.yunya.feign.patient_central.domain.query.WxFansBindForm;
 import com.yunya.feign.patient_central.domain.query.WxUserQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.system.form.DictionaryItemModel;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.biz.WxFansBindBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -86,5 +88,16 @@ public class WxFanBindController {
     @PostMapping("/bindPatientList")
     public ResponseResult<List<PatientBaseInfoVo>> wxFansBindPatientList(@RequestBody WxUserQuery query) {
         return ResponseUtil.success(wxFansBindBiz.wxFansBindPatientList(query));
+    }
+
+    /**
+     * 根据openId或患者id查询其绑定的患者列表
+     *
+     * @return
+     */
+    @ApiOperation("获取亲属关系列表")
+    @PostMapping("/item/list")
+    public ResponseResult<List<DictionaryItem>> wxFindDictionaryItemList(@RequestBody DictionaryItemModel model) {
+        return ResponseUtil.success(wxFansBindBiz.wxFindDictionaryItemList(model));
     }
 }

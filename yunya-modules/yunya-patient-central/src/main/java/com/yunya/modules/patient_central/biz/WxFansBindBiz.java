@@ -62,6 +62,10 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         return mapper.batchInsert(list);
     }
 
+    public List<DictionaryItem> wxFindDictionaryItemList(DictionaryItemModel model) {
+       return remoteSystemServiceFeign.findDictionaryItemList(model);
+    }
+
     public Integer isBind(WxFansBindForm wxFansBindForm) {
         WxFansBind wxFansBind = new WxFansBind();
         wxFansBind.setPatientId(wxFansBindForm.getPatientId());
