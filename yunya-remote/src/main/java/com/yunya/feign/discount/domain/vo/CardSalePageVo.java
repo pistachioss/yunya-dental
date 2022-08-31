@@ -32,7 +32,7 @@ public class CardSalePageVo implements Serializable {
     private String soldStatusName;
     @ApiModelProperty(value = "是否已收费")
     private String payStatus;
-    @ApiModelProperty(value = "线上/线下")
+    @ApiModelProperty(value = "售出方式（线上/线下/小程序订单）")
     private String soldWayName;
     @ApiModelProperty("卡券名称")
     private String cardName;
@@ -50,6 +50,4 @@ public class CardSalePageVo implements Serializable {
     private String orgIphone;
     @ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）")
     private Integer couponType;
-    @ApiModelProperty("售出渠道（0-艾维小程序；1-pc购买）")
-    private Integer payChannel;
 }

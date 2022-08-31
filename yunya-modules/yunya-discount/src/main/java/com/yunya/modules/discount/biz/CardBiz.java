@@ -2182,8 +2182,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         vo.setSoldWayName(SoldWayEnum.getValue(card.getSoldWay()));
         vo.setLink(serverPort + "/#/cardQrData?" + "cardId=" + card.getId());
         String remark = card.getRemark();
-        if (StringUtils.isNotBlank(remark)) {
-            vo.setPayChannel(Objects.equals(MINI_CARD_REMARK, remark) ? 0 : 1);
+        if (StringUtils.isNotBlank(remark) && Objects.equals(MINI_CARD_REMARK, remark)) {
+            vo.setSoldWayName(SoldWayEnum.MINI_ORDER.getValue());
         }
         return vo;
     }
