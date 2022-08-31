@@ -642,8 +642,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         vo = checkCouponDeadline(card.getCouponId(), couponType);
         if (QR_CODE_NORMAL.equals(vo.getCardQrCodeType())) {
             vo.setCouponName(coupon.getName());
-            vo.setQrCode(Base64.getEncoder().encodeToString(Joiner.on(":").join(new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
-                    .encode(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword())), card.getId())
+            vo.setQrCode(Base64.getEncoder().encodeToString(Joiner.on(":").join(card.getCardNumber(), card.getId())
                     .getBytes()));
         }
         return vo;
@@ -698,8 +697,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             vo = checkCouponDeadline(card.getCouponId(), couponType);
             if (QR_CODE_NORMAL.equals(vo.getCardQrCodeType())) {
                 vo.setCouponName(coupon.getName());
-                vo.setQrCode(Base64.getEncoder().encodeToString(Joiner.on(":").join(new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
-                                .encode(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword())), card.getId())
+                vo.setQrCode(Base64.getEncoder().encodeToString(Joiner.on(":").join(card.getCardNumber(), card.getId())
                         .getBytes()));
             }
             Integer limitCount = map.get(coupon.getId());
