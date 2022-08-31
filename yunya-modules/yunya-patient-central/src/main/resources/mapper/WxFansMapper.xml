@@ -170,17 +170,36 @@
         wf.latitude,
         wf.bind as isBind,
         wf.nick_name as nickName,
-        pbi.name as name
+        pbi.name as name,
+        COUNT(
+        wfb.id
+        ) AS numBind
         FROM
         wx_fans AS wf
         left join patient_base_info pbi on wf.patient_id = pbi.id
         <where>
+            ROUND(
+            6378.138 * 2 * ASIN(
+            SQRT(
+            POW(
+            SIN(
+            (
+            #{latitude}*PI()/180-wf.latitude*PI()/180)/2),2)+
+            COS(
+            #{latitude}*PI()/180)*COS(wf.latitude*PI()/180)*POW(SIN((#{longitude}*PI()/180-
+            wf.longitude * PI() / 180
+            ) / 2
+            ),
+            2
+            )
+            )
+            ) * 1000
+            ) &lt;= #{distance}
             <if test="isBind !=null">
                 and wf.bind = #{isBind}
             </if>
         </where>
-        HAVING
-        distance &lt;= #{distance}
+        GROUP BY wf.id
 
     </select>
     <select id="findNumBind" resultType="com.yunya.feign.patient_central.domain.vo.web.WxWechatMapBindNumFansVo">

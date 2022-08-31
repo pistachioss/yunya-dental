@@ -65,7 +65,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
     public Integer isBind(WxFansBindForm wxFansBindForm) {
         WxFansBind wxFansBind = new WxFansBind();
         wxFansBind.setPatientId(wxFansBindForm.getPatientId());
-        wxFansBind.setUnionId(wxFansBindForm.getUnionId());
+//        wxFansBind.setUnionId(wxFansBindForm.getUnionId());
         //判断是否已经被绑定 每名患者只能绑定一个微信号
         int a = mapper.selectCount(wxFansBind);
         if (a > 0) {
@@ -106,19 +106,19 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         wxFans.setId(wxFansBindForm.getWxId());
         wxFans.setBind(true);
         wxFans.setBindTime(date);
-//        if (BEN_REN.equals(wxFansBindForm.getDictionaryName())) {
-//            wxFansBind.setIsOwner(true);
-//            //如果是本人 则添加卡主ID
-//            WxFans op = new WxFans();
-//            op.setOpenId(wxFansBindForm.getOpenId());
-//            op = wxFansBiz.selectOne(op);
-//            if (op.getPatientId() != null) {
-//                throw new ClientServiceException("该微信号已经绑定卡主", DATA_EXIST);
-//            }
-//            wxFans.setPatientId(wxFansBindForm.getPatientId());
-//        } else {
+        if (BEN_REN.equals(wxFansBindForm.getDictionaryName())) {
+            wxFansBind.setIsOwner(true);
+            //如果是本人 则添加卡主ID
+            WxFans op = new WxFans();
+            op.setOpenId(wxFansBindForm.getOpenId());
+            op = wxFansBiz.selectOne(op);
+            if (op.getPatientId() != null) {
+                throw new ClientServiceException("该微信号已经绑定卡主", DATA_EXIST);
+            }
+            wxFans.setPatientId(wxFansBindForm.getPatientId());
+        } else {
             wxFansBind.setIsOwner(false);
-//        }
+        }
         wxFansBiz.updateSelectiveById(wxFans);
         int re = mapper.insert(wxFansBind);
 
@@ -162,12 +162,12 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         wxFansBind.setPatientId(wxFansBindForm.getPatientId());
         wxFansBind.setDictionaryId(wxFansBindForm.getDictionaryId());
         int de = mapper.delete(wxFansBind);
-//        if (de > 0) {
-//            //如果解绑的是本人 则把卡主ID设置为空
-//            if (BEN_REN.equals(wxFansBindForm.getDictionaryName())) {
-//                wxFans.setPatientId(null);
-//            }
-//        }
+        if (de > 0) {
+            //如果解绑的是本人 则把卡主ID设置为空
+            if (BEN_REN.equals(wxFansBindForm.getDictionaryName())) {
+                wxFans.setPatientId(null);
+            }
+        }
         //处理粉丝表中绑定状态，绑定时间以及卡主ID
         wxFansBiz.updateById(wxFans);
 
@@ -199,7 +199,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
 
     public List<WxWechatbindAppListVO> findPatientBaseInfo(String unionId) {
         DictionaryItemModel model = new DictionaryItemModel();
-        model.setDictionaryTypeId(11);
+        model.setDictionaryTypeId(19);
         List<DictionaryItem> dLsit = remoteSystemServiceFeign.findDictionaryItemList(model);
         Map<String, DictionaryItem> dicMap = new HashMap(16);
         dLsit.forEach(z -> dicMap.put(z.getId() + "", z));
