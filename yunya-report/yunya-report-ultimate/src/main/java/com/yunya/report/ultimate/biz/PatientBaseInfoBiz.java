@@ -158,7 +158,7 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
         vo.setFirstVisitCount(firstVisitCount);
         countMap.put(key, vo);
       });
-      countMap.forEach((key, vo)-> data.add(vo));
+      return new ArrayList<>(countMap.values());
     }
     return data;
   }
