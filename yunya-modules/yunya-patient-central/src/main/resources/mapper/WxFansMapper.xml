@@ -51,6 +51,18 @@
         <result column="fansStatus" property="fansStatus" jdbcType="INTEGER"/>
         <collection property="bindPantlist" resultMap="WxWechatBindResultMap"/>
     </resultMap>
+    <resultMap id="WxWechatAppMapLsit" type="com.yunya.feign.patient_central.domain.vo.web.WxWechatMapFansVo">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="longitude" property="longitude" jdbcType="VARCHAR"/>
+        <result column="latitude" property="latitude" jdbcType="VARCHAR"/>
+        <result column="isBind" property="isBind" jdbcType="INTEGER"/>
+        <result column="nickName" property="nickName" jdbcType="VARCHAR"/>
+        <result column="headImgurl" property="headImgurl" jdbcType="TIMESTAMP"/>
+        <result column="isBind" property="isBind" jdbcType="INTEGER"/>
+        <result column="numBind" property="numBind" jdbcType="INTEGER"/>
+        <result column="lastLoginDate" property="lastLoginDate" jdbcType="TIMESTAMP"/>
+        <collection property="bindPantlist" resultMap="WxWechatBindResultMap"/>
+    </resultMap>
     <resultMap id="WxWechatBindResultMap" type="com.yunya.feign.patient_central.domain.vo.web.WxWechatbindListVO">
         <result column="name" property="name" jdbcType="VARCHAR"/>
         <result column="dictionaryName" property="dictionaryName" jdbcType="VARCHAR"/>
@@ -146,7 +158,7 @@
         GROUP BY wf.id
         order by wf.crt_time desc
     </select>
-    <select id="findMapList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxWechatMapFansVo">
+    <select id="findMapList" resultMap="WxWechatAppMapLsit">
         SELECT
         ROUND(
         6378.138 * 2 * ASIN(
@@ -170,14 +182,16 @@
         wf.latitude,
         wf.bind as isBind,
         wf.nick_name as nickName,
-        pbi.name as name,
-        COUNT(
-        wfb.id
-        ) AS numBind
+        wf.last_login_date as lastLoginDate,
+        wf.head_imgurl as headImgurl,
+--         COUNT(
+--         wfb.id
+--         ) AS numBind,
+        wfb.patient_id as patientId,pbi.name as name,wfb.dictionary_id as dictionaryId
         FROM
         wx_fans AS wf
-        left join patient_base_info pbi on wf.patient_id = pbi.id
         left join wx_fans_bind wfb on wf.union_id = wfb.union_id
+        left join patient_base_info pbi on wfb.patient_id = pbi.id
         <where>
             ROUND(
             6378.138 * 2 * ASIN(
@@ -200,7 +214,7 @@
                 and wf.bind = #{isBind}
             </if>
         </where>
-        GROUP BY wf.id
+
 
     </select>
     <select id="findNumBind" resultType="com.yunya.feign.patient_central.domain.vo.web.WxWechatMapBindNumFansVo">
