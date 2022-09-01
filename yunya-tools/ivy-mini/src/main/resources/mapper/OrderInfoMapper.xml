@@ -299,6 +299,7 @@
     </where>
     GROUP BY
     od.id
+    order by od.crt_time desc
   </select>
   <select id="findDetail" resultMap="DetailResultMap">
     select
