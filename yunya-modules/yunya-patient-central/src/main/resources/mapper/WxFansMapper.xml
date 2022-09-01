@@ -68,6 +68,7 @@
         <result column="dictionaryName" property="dictionaryName" jdbcType="VARCHAR"/>
         <result column="dictionaryId" property="dictionaryId" jdbcType="INTEGER"/>
         <result column="patientId" property="patientId" jdbcType="INTEGER"/>
+        <result column="mobile" property="mobile" jdbcType="VARCHAR"/>
     </resultMap>
     <select id="findWechatList" resultMap="WxWechatResultMap">
         select wf.id,wf.nick_name as nickName,wf.open_id as openId,wf.register_mobile as mobile,
@@ -187,7 +188,7 @@
 --         COUNT(
 --         wfb.id
 --         ) AS numBind,
-        wfb.patient_id as patientId,pbi.name as name,wfb.dictionary_id as dictionaryId
+        wfb.patient_id as patientId,pbi.name as name,wfb.dictionary_id as dictionaryId,pbi.mobile as mobile
         FROM
         wx_fans AS wf
         left join wx_fans_bind wfb on wf.union_id = wfb.union_id
