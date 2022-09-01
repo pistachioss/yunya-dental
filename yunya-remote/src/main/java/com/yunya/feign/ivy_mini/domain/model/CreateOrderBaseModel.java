@@ -25,4 +25,6 @@ public class CreateOrderBaseModel {
     private String remark;
     @ApiModelProperty(value = "自提定位地址")
     private String locationAddress;
+    @ApiModelProperty(value = "自提门诊")
+    private String pickUpClinic;
 }

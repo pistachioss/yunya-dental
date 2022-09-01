@@ -1076,6 +1076,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setReceiverDetailAddress(address.getDetailAddress());
             if (FALSE.equals(deliveryType)) {
                 orderInfo.setReceiverDetailAddress(model.getLocationAddress());
+                orderInfo.setPickUpClinic(model.getPickUpClinic());
                 //订单金额为0元
                 if ( totalAmount.compareTo(BigDecimal.ZERO) <= 0 ) {
                     //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
