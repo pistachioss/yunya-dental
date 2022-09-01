@@ -775,23 +775,23 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     Integer patientId = billPrintInfoForm.getPatientId();
     String billNumber = billPrintInfoForm.getBillNumber();
     BillPrintInfoVO billPrintInfoVO = mapper.billPrintInfo(patientId, billNumber);
-    PatientTotalInfoVo patientTotalInfo = patientFeign.findPatientTotalInfo(patientId);
-    if (Objects.nonNull(patientTotalInfo)) {
-      billPrintInfoVO.setPatientId(patientId);
-      billPrintInfoVO.setPatientName(patientTotalInfo.getName());
-      billPrintInfoVO.setBirthday(patientTotalInfo.getBirthday());
-      billPrintInfoVO.setAge(patientTotalInfo.getAge());
-      billPrintInfoVO.setMedicalNumber(patientTotalInfo.getMedicalNumber());
-      Integer memberTypeId = patientTotalInfo.getMemberTypeId();
-      if (Objects.nonNull(memberTypeId)) {
-        billPrintInfoVO.setMemberTypeId(memberTypeId);
-        MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
-        if (Objects.nonNull(memberType)) {
-          billPrintInfoVO.setMemberTypeName(memberType.getName());
+    if (billPrintInfoVO != null) {
+      PatientTotalInfoVo patientTotalInfo = patientFeign.findPatientTotalInfo(patientId);
+      if (Objects.nonNull(patientTotalInfo)) {
+        billPrintInfoVO.setPatientId(patientId);
+        billPrintInfoVO.setPatientName(patientTotalInfo.getName());
+        billPrintInfoVO.setBirthday(patientTotalInfo.getBirthday());
+        billPrintInfoVO.setAge(patientTotalInfo.getAge());
+        billPrintInfoVO.setMedicalNumber(patientTotalInfo.getMedicalNumber());
+        Integer memberTypeId = patientTotalInfo.getMemberTypeId();
+        if (Objects.nonNull(memberTypeId)) {
+          billPrintInfoVO.setMemberTypeId(memberTypeId);
+          MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
+          if (Objects.nonNull(memberType)) {
+            billPrintInfoVO.setMemberTypeName(memberType.getName());
+          }
         }
       }
-    }
-    if (billPrintInfoVO != null) {
       Integer orderRecordId = billPrintInfoVO.getOrderRecordId();
       List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
       billPrintInfoVO
