@@ -5,6 +5,9 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.Date;
+import java.util.List;
+
 /**
  * 简介:
  *
@@ -26,9 +29,15 @@ public class WxWechatMapFansVo {
     private Integer isBind;
     @ApiModelProperty("昵称")
     private String nickName;
-    @ApiModelProperty("患者名称")
-    private String name;
+    @ApiModelProperty("头像")
+    private String headImgurl;
+//    @ApiModelProperty("患者名称")
+//    private String name;
     @ApiModelProperty("绑定患者数量")
     private Integer numBind;
+    @ApiModelProperty("定位时间")
+    private Date lastLoginDate;
+    @ApiModelProperty("患者关系列表")
+    private List<WxWechatbindListVO> bindPantlist;
 
 }

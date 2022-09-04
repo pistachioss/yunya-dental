@@ -46,4 +46,6 @@ public class PayOrderVO{
     private Date receiveTime;
     @ApiModelProperty(value = "配送费")
     private BigDecimal freightAmount;
+    @ApiModelProperty(value = "自提门诊")
+    private String pickUpClinic;
 }

@@ -126,6 +126,12 @@ public class OrderInfo {
     private Byte deleteStatus;
 
     /**
+     * 自提门诊
+     */
+    @Column(name = "pick_up_clinic")
+    private String pickUpClinic;
+
+    /**
      * 收货人姓名
      */
     @Column(name = "receiver_name")

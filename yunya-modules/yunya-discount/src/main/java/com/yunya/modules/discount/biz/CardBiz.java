@@ -2541,6 +2541,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         baseVo.setProductTypeName(productType == null ? null : productType.getName());
         baseVo.setUseWayName(UseWayEnum.getValue(bo.getUseWay()));
         baseVo.setUseDeadline(bo.getUseDeadline() == null ? "永久有效" : bo.getUseDeadline());
+        baseVo.setPayChannel(TRUE.getCode());
         String remark = bo.getRemark();
         if (StringUtils.isNotBlank(remark)) {
             baseVo.setPayChannel(Objects.equals(MINI_CARD_REMARK, remark) ? 0 : 1);

@@ -109,7 +109,20 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         return list;
     }
     public WxWechatMapAndBindFansVo findMapList(WxFansMapQueryForm wxFansMapQueryForm) {
+        DictionaryItemModel model = new DictionaryItemModel();
+        List<DictionaryItem> dicList = systemServiceFeign.findDictionaryItemList(model);
+        Map<String, DictionaryItem> dicMap = new HashMap(16);
+        dicList.forEach(z -> dicMap.put(z.getId() + "", z));
+
         List<WxWechatMapFansVo> list = mapper.findMapList(wxFansMapQueryForm);
+        for(WxWechatMapFansVo wxWechatMapFansVo:list){
+            wxWechatMapFansVo.setNumBind(wxWechatMapFansVo.getBindPantlist().size());
+            if(wxWechatMapFansVo.getBindPantlist().size()>0){
+                for(WxWechatbindListVO wb:wxWechatMapFansVo.getBindPantlist()){
+                    wb.setDictionaryName(dicMap.get(wb.getDictionaryId() + "").getName());
+                }
+            }
+        }
         WxWechatMapBindNumFansVo wxWechatMapBindNumFansVo = mapper.findNumBind(wxFansMapQueryForm);
         WxWechatMapAndBindFansVo wxWechatMapAndBindFansVo = new WxWechatMapAndBindFansVo();
         wxWechatMapAndBindFansVo.setMapFansVoList(list);

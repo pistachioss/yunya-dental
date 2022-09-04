@@ -55,11 +55,14 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
         List<AttendanceAddressSet> list = mapper.selectAll();
         List<ClinicListVO> reList = new ArrayList<>();
 
+        list = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(AttendanceAddressSet::getOrganizationName))), ArrayList::new));
+
         ArrayList<String> channelArray = new ArrayList<>();
         channelArray.add("总院");
         channelArray.add("天目山路门诊");
         channelArray.add("云牙测试门诊");
         channelArray.add("文二西路门诊");
+        channelArray.add("曙晖医疗投资管理有限公司");
         for (AttendanceAddressSet addressSet : list) {
             if(channelArray.contains(addressSet.getOrganizationName())){
                 continue;
@@ -80,6 +83,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
             clinicListVO.setDistance(distance / 1000);
             reList.add(clinicListVO);
         }
+
         List<ClinicListVO> zhenList = reList.stream().sorted(Comparator.comparing(ClinicListVO::getDistance)).collect(Collectors.toList());
         return zhenList;
     }
