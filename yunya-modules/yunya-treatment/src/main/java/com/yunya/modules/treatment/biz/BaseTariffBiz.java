@@ -1363,11 +1363,13 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       baseTariffFellowupRelation.setFellowUp(fellowUpInfoForm.getFellowUp());
       baseTariffFellowupRelation.setFellowUpCase(fellowUpInfoForm.getFellowUpCase());
       baseTariffFellowupRelation.setInservice(true);
-      baseTariffFellowupRelation.setCrtId(userId);
-      baseTariffFellowupRelation.setCrtName(username);
       if (Objects.equals(CommonConstants.INT_ONE,fellowUpInfoForm.getType())) {
+        baseTariffFellowupRelation.setCrtId(userId);
+        baseTariffFellowupRelation.setCrtName(username);
         insertList.add(baseTariffFellowupRelation);
       } else if (Objects.equals(CommonConstants.INT_TWO,fellowUpInfoForm.getType())) {
+        baseTariffFellowupRelation.setUpdId(userId);
+        baseTariffFellowupRelation.setUpdName(username);
         updateList.add(baseTariffFellowupRelation);
       } else if (Objects.equals(CommonConstants.INT_THREE,fellowUpInfoForm.getType())) {
         deleteList.add(baseTariffFellowupRelation);
@@ -1377,6 +1379,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       baseTariffFellowupMapper.batchSave(insertList);
     }
     if (!ObjectUtils.isEmpty(updateList)) {
+
       baseTariffFellowupMapper.batchUpdate(updateList);
     }
     if (!ObjectUtils.isEmpty(deleteList)) {
