@@ -21,7 +21,7 @@
     <insert id="batchSave">
         insert into base_tariff_fellowup_relation(base_tariff_id,fellow_up,fellow_up_case,crt_id,crt_name)
         values
-        <foreach collection="lists" item="item" open="(" separator=";" close=")">
+        <foreach collection="lists" item="item" separator=",">
             (#{item.baseTariffId},#{item.fellowUp},#{item.fellowUpCase},#{item.crtId},#{item.crtName})
         </foreach>
     </insert>
