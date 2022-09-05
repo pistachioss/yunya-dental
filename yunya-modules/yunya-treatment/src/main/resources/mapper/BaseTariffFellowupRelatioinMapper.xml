@@ -28,7 +28,7 @@
 
     <update id="batchUpdate">
         update base_tariff_fellowup_relation
-        <trim prefix="set" prefixOverrides=",">
+        <trim prefix="set" suffixOverrides=",">
             <trim prefix="base_tariff_id=case" suffix="end,">
                 <foreach collection="updateList" item="item" index="i">
                     <if test="item.baseTariffId != null">
