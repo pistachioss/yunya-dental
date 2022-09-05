@@ -7,6 +7,7 @@ import com.yunya.feign.ivy_mini.domain.form.*;
 import com.yunya.feign.ivy_mini.domain.vo.FansDetailVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.TrueFalseEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.models.patient_central.WxFans;
@@ -52,6 +53,7 @@ public class WxFansServiceImpl implements IWxFansService {
     public void saveMiniAuth(WxFans wxFans, WxUserInfoForm userInfo, WeChatSessionBO sessionBO) {
         WxSaveFansForm fansForm = new WxSaveFansForm();
         fansForm.setSessionBO(sessionBO);
+        userInfo.setGender(Objects.isNull(userInfo.getGender()) || Objects.equals(userInfo.getGender(), 0) ? TrueFalseEnum.TRUE.getCode() : userInfo.getGender());
         fansForm.setUserInfo(userInfo);
         fansForm.setFansId(Objects.isNull(wxFans) ? null : wxFans.getId());
         patientFeign.saveMiniAuth(fansForm);
