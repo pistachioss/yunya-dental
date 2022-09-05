@@ -1362,6 +1362,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       baseTariffFellowupRelation.setBaseTariffId(baseTariffId);
       baseTariffFellowupRelation.setFellowUp(fellowUpInfoForm.getFellowUp());
       baseTariffFellowupRelation.setFellowUpCase(fellowUpInfoForm.getFellowUpCase());
+      baseTariffFellowupRelation.setInservice(true);
       baseTariffFellowupRelation.setCrtId(userId);
       baseTariffFellowupRelation.setCrtName(username);
       if (Objects.equals(CommonConstants.INT_ONE,fellowUpInfoForm.getType())) {
