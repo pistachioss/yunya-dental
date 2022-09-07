@@ -9,7 +9,7 @@ import java.util.Objects;
  **/
 public enum NotifyEnum {
     //菜单点击事件
-    CLICK("event", "CLICK"),
+    CLICK("event", "CLICK"),    // 按照公众号文档，需此处需大写
     //关注
     SUBSCRIBE("event", "subscribe"),
     //取关
