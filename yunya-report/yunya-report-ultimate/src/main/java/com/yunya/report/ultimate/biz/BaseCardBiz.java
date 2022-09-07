@@ -41,7 +41,7 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
   /** 365卡系列*/
   private static final Byte PROD_TYPE_365 = 14;
   /** 商品：IVY365年卡*/
-  private static final List<String> IVY_365CARD = Arrays.asList("IVY365年卡","IVY 1365年卡","IVY 2365年卡");
+  private static final String IVY_365CARD = "365年卡";
   /** 产品 */
   @Autowired private BaseCouponBiz baseCouponBiz;
   /** 门诊 */
@@ -141,7 +141,7 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
    * @return
    */
   public PageInfo<Coupon365SoldActivedStatisticsVO> coupon365SoldActivedStatistics(Coupon365SoldActivedStatisticsQuery query) {
-    // 售卖量：开单时商品为IVY365年卡的售卖量 + 卡券售出产品分类id=14的卡售卖量
+    // 售卖量：开单时商品为 "Xxx365年卡"的售卖量 + 卡券售出产品分类id=14的卡售卖量
     // 激活量：第三方或自有平台激活后的数量
     query.setOralIds(findCard365OralIds(IVY_365CARD));
     query.setCouponIds(findCard365CouponIds(PROD_TYPE_365));
@@ -152,8 +152,14 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
     return new PageInfo<>(result);
   }
 
-  private List<Integer> findCard365OralIds(List<String> ivy365card) {
-    List<BaseTariffInfo> orals = baseTariffInfoBiz.findOralItemListInName(ivy365card);
+  /**
+   * 查询商品中的365年卡
+   *
+   * @param ivy365card
+   * @return
+   */
+  private List<Integer> findCard365OralIds(String ivy365card) {
+    List<BaseTariffInfo> orals = baseTariffInfoBiz.findOralItemListLikeName(ivy365card);
     return orals.stream().map(BaseTariffInfo::getItemId).collect(Collectors.toList());
   }
 

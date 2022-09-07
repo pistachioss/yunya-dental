@@ -79,8 +79,8 @@
         </where>
     </select>
 
-    <!--根据名字查询商品列表-->
-    <select id="selectOralItemListInName" resultType="com.yunya.models.report.BaseTariffInfo">
+    <!--根据名字前缀模糊匹配查询商品列表-->
+    <select id="selectOralItemListPreLikeName" resultType="com.yunya.models.report.BaseTariffInfo">
         SELECT
             item_id AS itemId,
             item_type AS itemType,
@@ -91,11 +91,8 @@
         FROM base_tariff_info
         <where>
             AND item_type = 1
-            <if test="names!=null and names.size()>0">
-                AND item_name in
-                <foreach collection="names" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
+            <if test="name!=null and name!=''">
+                AND item_name  like CONCAT('%', #{name})
             </if>
         </where>
     </select>
