@@ -41,7 +41,7 @@
     and mer.member_id = #{memberId} and mer.patient_id = #{patientId}
     )
     UNION
-    (select crt_name consumerName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+recharge_bonus) rechargePrincipal
+    (select crt_name consumerName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+ifnull(recharge_bonus,0)) rechargePrincipal
     from member_recharge_record
     where inservice = 1 and type = 0 and DATE_FORMAT(crt_time,'%Y-%m') >
     DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
@@ -65,7 +65,7 @@
     and mer.prepaid_id = #{memberId} and mer.patient_id = #{patientId}
     )
     UNION
-    (select crt_name consumerName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+recharge_bonus) rechargePrincipal
+    (select crt_name consumerName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+ifnull(recharge_bonus,0)) rechargePrincipal
     from prepaid_recharge_record
     where inservice = 1 and type = 0 and DATE_FORMAT(crt_time,'%Y-%m') >
     DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
