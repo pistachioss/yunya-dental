@@ -226,6 +226,7 @@ public class EmployeeWorkloadBiz {
           vo.setSupplementWorkload(ifAbsent(suppleMap, key));
           vo.setFreePaymentWorkload(ifAbsent(freePaymentMap, key));
           vo.setRefundWorkload(ifAbsent(refundMap, key));
+          vo.setEmployeeWorkload(computeWorkload(vo));
           EmployeeWorkloadCost employeeWorkloadCost = feeMap.get(key);
           BigDecimal baseWorkload = BigDecimal.ZERO;
           BigDecimal processingFee = BigDecimal.ZERO;
@@ -246,7 +247,21 @@ public class EmployeeWorkloadBiz {
     return result;
   }
 
-  /**
+    /**
+     * 员工工作量=实收工作量+补入工作量-退费工作量-免单支付工作量
+     *
+     * @param vo
+     * @return
+     */
+    private BigDecimal computeWorkload(ClinicEmployeeWorkloadOfOperationVO vo) {
+        BigDecimal receivedWorkload = vo.getReceivedWorkload();
+        BigDecimal supplementWorkload = vo.getSupplementWorkload();
+        BigDecimal refundWorkload = vo.getRefundWorkload();
+        BigDecimal freePaymentWorkload = vo.getFreePaymentWorkload();
+        return receivedWorkload.add(supplementWorkload).subtract(refundWorkload).subtract(freePaymentWorkload);
+    }
+
+    /**
    * 如果给定值为空或小于0，则返回默认值： 0
    *
    * @param valueMap
