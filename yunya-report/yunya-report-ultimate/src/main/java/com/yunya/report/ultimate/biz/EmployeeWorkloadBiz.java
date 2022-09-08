@@ -514,6 +514,7 @@ public class EmployeeWorkloadBiz {
     ClinicEmployeeWorkloadOfPersonnelVO result = new ClinicEmployeeWorkloadOfPersonnelVO();
     result.setEmployeeId(vo.getEmployeeId());
     result.setEmployeeName(vo.getEmployeeName());
+    result.setEmployeeWorkload(vo.getEmployeeWorkload());
     result.setOrgId(vo.getOrgId());
     result.setAbbreviation(vo.getAbbreviation());
     result.setActualWorkload(vo.getActualWorkload());
