@@ -205,6 +205,7 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 备注
      */
+    @Excel(name = "留言备注",defaultValue = "--")
     @ApiModelProperty(value = "备注")
     private String remark;
 }
