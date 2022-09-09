@@ -92,6 +92,7 @@
     <select id="selectByBaseTariffIds" resultMap="BaseResultMap">
         select
         <include refid="baseColumns"/>
+        from base_tariff_fellowup_relation
         where base_tariff_id in
         <foreach collection="baseTariffIds" item="btfId" open="(" separator="," close=")">
             #{btfId}
