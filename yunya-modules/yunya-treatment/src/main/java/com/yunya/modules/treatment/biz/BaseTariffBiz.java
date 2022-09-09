@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -1363,9 +1364,14 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
           continue;
         }
         BaseTariffFellowupRelation baseTariffFellowupRelation = new BaseTariffFellowupRelation();
+        if (Strings.isNullOrEmpty(fellowUpInfoForm.getFellowUp())) {
+          baseTariffFellowupRelation.setFellowUp(null);
+        }
+        else {
+          baseTariffFellowupRelation.setFellowUp(Integer.valueOf(fellowUpInfoForm.getFellowUp()));
+        }
         baseTariffFellowupRelation.setId(fellowUpInfoForm.getId());
         baseTariffFellowupRelation.setBaseTariffId(baseTariffId);
-        baseTariffFellowupRelation.setFellowUp(fellowUpInfoForm.getFellowUp());
         baseTariffFellowupRelation.setFellowUpCase(fellowUpInfoForm.getFellowUpCase());
         baseTariffFellowupRelation.setInservice(true);
         if (Objects.equals(CommonConstants.INT_ONE, fellowUpInfoForm.getType())) {
