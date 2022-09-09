@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.emr.RemoteEmrServiceFeign;
@@ -29,6 +30,7 @@ import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.mapper.*;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,6 +60,7 @@ import static com.yunya.framework.common.constant.RedisConstants.*;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
   /** 缓存 */
@@ -578,6 +581,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           });
     }
     int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, deletedDetailIds);
+    log.info("OrderRecordBiz.java>>>>>>>>>>>>>>>>[583]>>>>>>>>>>detailSize={}",detailSize);
+    log.info("OrderRecordBiz.java>>>>>>>>>>>>>>>>[584]>>>>>>>>>>visitingRecordList={}", JSON.toJSONString(visitingRecordList));
     if (detailSize > 0) {
       treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       // 设置分组计划
