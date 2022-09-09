@@ -858,14 +858,13 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                       visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
                       visitRecord.setTreatmentId(treatmentRecordId);
                       visitRecord.setVisitingTime("09:00");
-                      AtomicReference<String> reason = new AtomicReference<>(
-                              btfr.getFellowUpCase());
-                      if (ObjectUtils.isEmpty(reason)) {
+                      StringBuilder sb = new StringBuilder(btfr.getFellowUpCase());
+                      if (ObjectUtils.isEmpty(sb.toString())) {
                         baseTariffs.stream().filter(s->Objects.equals(s.getId(),btfr.getBaseTariffId())).findFirst().ifPresent(bt->{
-                          reason.set(bt.getName());
+                          sb.append(bt.getName());
                         });
                       }
-                      visitRecord.setReason(reason.get());
+                      visitRecord.setReason(sb.toString());
                       visitRecord.setStatus(false);
                       visitRecord.setInservice(true);
                       visitRecord.setVisitingDate(
