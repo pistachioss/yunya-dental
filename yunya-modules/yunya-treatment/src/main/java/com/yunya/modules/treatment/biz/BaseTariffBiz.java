@@ -1499,9 +1499,15 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       // 重新设置随访天数
       resultList.forEach(e->{
         StringBuilder sb = new StringBuilder();
-        baseTariffFellowupRelations.stream().filter(btf->Objects.nonNull(btf.getFellowUp()) && Objects.equals(e.getId(),btf.getBaseTariffId())).findAny().ifPresent(btfr->{
-          sb.append(btfr.getFellowUp()).append(BusinessConstants.DOT);
-        });
+        List<BaseTariffFellowupRelation> lists = baseTariffFellowupRelations.stream()
+                .filter(btf -> Objects.nonNull(btf.getFellowUp()) && Objects.equals(e.getId(),
+                        btf.getBaseTariffId())).collect(
+                        Collectors.toList());
+        if(!ObjectUtils.isEmpty(lists)) {
+          lists.forEach(b->{
+            sb.append(b.getFellowUp()).append(BusinessConstants.DOT);
+          });
+        }
         if (sb.toString().endsWith(BusinessConstants.DOT)) {
           sb.deleteCharAt(sb.length() - BusinessConstants.ONE);
         }
