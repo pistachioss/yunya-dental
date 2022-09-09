@@ -573,10 +573,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
             orderDetailBiz.insertSelective(detail);
             if (0 == detail.getType()) {
               List<VisitingRecord> orderDetailVisitRecord =
-                  treatmentRecordBiz.createOrderDetailVisitRecord(treatmentRecordId, orderDetail);
-              visitingRecordList.stream()
-                  .sequential()
-                  .collect(Collectors.toCollection(() -> orderDetailVisitRecord));
+                  treatmentRecordBiz.createOrderDetailVisitRecord(treatmentRecordId, detail);
+              log.info("orderDetailVisitRecord》》》》》》》{}",JSON.toJSONString(orderDetailVisitRecord));
+              visitingRecordList.addAll(orderDetailVisitRecord);
             }
           });
     }

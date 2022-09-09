@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -831,6 +832,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param detail 开单详情
    */
   public List<VisitingRecord> createOrderDetailVisitRecord(Integer treatmentRecordId, OrderDetail detail) {
+    log.info("createOrderDetailVisitRecord>>>>>>>>>>>>>>入参>>>>treatmentRecordId = {}>>>>>>orderDetail={}",treatmentRecordId, JSON.toJSONString(detail));
     List<VisitingRecord> visitRecordPlanList = new ArrayList<>();
     List<BaseTariffFellowupRelation> baseTariffFellowupRelationList = baseTariffFellowupRelationMapper.queryByItemId(detail.getBillingItemId());
     if (!ObjectUtils.isEmpty(baseTariffFellowupRelationList)) {
