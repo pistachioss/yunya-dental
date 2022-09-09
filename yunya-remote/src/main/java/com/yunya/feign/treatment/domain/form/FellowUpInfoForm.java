@@ -29,7 +29,7 @@ public class FellowUpInfoForm implements Serializable {
     private Integer id;
     /** 几天后随访 */
     @ApiModelProperty("几天后随访")
-    private Integer fellowUp;
+    private String fellowUp;
 
     /** 随访原因 */
     @ApiModelProperty("随访原因")
