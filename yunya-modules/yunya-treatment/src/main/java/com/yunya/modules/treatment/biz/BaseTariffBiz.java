@@ -1360,6 +1360,9 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     List<BaseTariffFellowupRelation> deleteList = new ArrayList<>();
     if (!ObjectUtils.isEmpty(fellowUpInfoFormList)) {
       for (FellowUpInfoForm fellowUpInfoForm : fellowUpInfoFormList) {
+        if (Objects.isNull(fellowUpInfoForm.getFellowUp())) {
+          continue;
+        }
         BaseTariffFellowupRelation baseTariffFellowupRelation = new BaseTariffFellowupRelation();
         if (Strings.isNullOrEmpty(fellowUpInfoForm.getFellowUp())) {
           baseTariffFellowupRelation.setFellowUp(null);
