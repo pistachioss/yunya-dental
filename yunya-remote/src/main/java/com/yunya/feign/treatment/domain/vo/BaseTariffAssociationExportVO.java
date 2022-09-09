@@ -18,6 +18,8 @@ import java.io.Serializable;
 @ToString
 public class BaseTariffAssociationExportVO implements Serializable {
 
+  private Integer id;
+
   /** 项目编码 */
   @Excel(name = "项目编号")
   private String itemNumber;

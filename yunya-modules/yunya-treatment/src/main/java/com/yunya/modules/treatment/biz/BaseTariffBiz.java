@@ -24,6 +24,7 @@ import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
 import com.yunya.feign.treatment.domain.vo.BaseTariffVO;
 import com.yunya.feign.treatment.domain.vo.ClinicItemPriceVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -1356,23 +1357,25 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     List<BaseTariffFellowupRelation> insertList = new ArrayList<>();
     List<BaseTariffFellowupRelation> updateList = new ArrayList<>();
     List<BaseTariffFellowupRelation> deleteList = new ArrayList<>();
-    for (FellowUpInfoForm fellowUpInfoForm : fellowUpInfoFormList) {
-      BaseTariffFellowupRelation baseTariffFellowupRelation = new BaseTariffFellowupRelation();
-      baseTariffFellowupRelation.setId(fellowUpInfoForm.getId());
-      baseTariffFellowupRelation.setBaseTariffId(baseTariffId);
-      baseTariffFellowupRelation.setFellowUp(fellowUpInfoForm.getFellowUp());
-      baseTariffFellowupRelation.setFellowUpCase(fellowUpInfoForm.getFellowUpCase());
-      baseTariffFellowupRelation.setInservice(true);
-      if (Objects.equals(CommonConstants.INT_ONE,fellowUpInfoForm.getType())) {
-        baseTariffFellowupRelation.setCrtId(userId);
-        baseTariffFellowupRelation.setCrtName(username);
-        insertList.add(baseTariffFellowupRelation);
-      } else if (Objects.equals(CommonConstants.INT_TWO,fellowUpInfoForm.getType())) {
-        baseTariffFellowupRelation.setUpdId(userId);
-        baseTariffFellowupRelation.setUpdName(username);
-        updateList.add(baseTariffFellowupRelation);
-      } else if (Objects.equals(CommonConstants.INT_THREE,fellowUpInfoForm.getType())) {
-        deleteList.add(baseTariffFellowupRelation);
+    if (!ObjectUtils.isEmpty(fellowUpInfoFormList)) {
+      for (FellowUpInfoForm fellowUpInfoForm : fellowUpInfoFormList) {
+        BaseTariffFellowupRelation baseTariffFellowupRelation = new BaseTariffFellowupRelation();
+        baseTariffFellowupRelation.setId(fellowUpInfoForm.getId());
+        baseTariffFellowupRelation.setBaseTariffId(baseTariffId);
+        baseTariffFellowupRelation.setFellowUp(fellowUpInfoForm.getFellowUp());
+        baseTariffFellowupRelation.setFellowUpCase(fellowUpInfoForm.getFellowUpCase());
+        baseTariffFellowupRelation.setInservice(true);
+        if (Objects.equals(CommonConstants.INT_ONE, fellowUpInfoForm.getType())) {
+          baseTariffFellowupRelation.setCrtId(userId);
+          baseTariffFellowupRelation.setCrtName(username);
+          insertList.add(baseTariffFellowupRelation);
+        } else if (Objects.equals(CommonConstants.INT_TWO, fellowUpInfoForm.getType())) {
+          baseTariffFellowupRelation.setUpdId(userId);
+          baseTariffFellowupRelation.setUpdName(username);
+          updateList.add(baseTariffFellowupRelation);
+        } else if (Objects.equals(CommonConstants.INT_THREE, fellowUpInfoForm.getType())) {
+          deleteList.add(baseTariffFellowupRelation);
+        }
       }
     }
     if (!ObjectUtils.isEmpty(insertList)) {
@@ -1467,7 +1470,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       tariffResult.setEmr(emr);
       tariffResult.setAttention(attention);
       tariffResult.setFellowUp(fellowUp);
-      mapper.updateByPrimaryKeySelective(tariffResult);
+      int count = mapper.updateByPrimaryKeySelective(tariffResult);
     }
     return successMsg
         .append("导入成功！")
@@ -1488,6 +1491,23 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       HttpServletResponse response, BaseTariffAssociationQueryForm queryForm) throws IOException {
     List<BaseTariffAssociationExportVO> resultList =
         mapper.selectExportBaseTariffAssociationList(queryForm);
+    // 过滤出价目ID
+    if (!ObjectUtils.isEmpty(resultList)) {
+      List<Integer> baseTariffIds = resultList.stream().map(BaseTariffAssociationExportVO::getId)
+              .collect(Collectors.toList());
+      List<BaseTariffFellowupRelation> baseTariffFellowupRelations =  baseTariffFellowupMapper.selectByBaseTariffIds(baseTariffIds);
+      // 重新设置随访天数
+      resultList.forEach(e->{
+        StringBuilder sb = new StringBuilder();
+        baseTariffFellowupRelations.stream().filter(btf->Objects.nonNull(btf.getFellowUp()) && Objects.equals(e.getId(),btf.getBaseTariffId())).findAny().ifPresent(btfr->{
+          sb.append(btfr.getFellowUp()).append(BusinessConstants.DOT);
+        });
+        if (sb.toString().endsWith(BusinessConstants.DOT)) {
+          sb.deleteCharAt(sb.length() - BusinessConstants.ONE);
+        }
+        e.setFellowUp(sb.toString());
+      });
+    }
     ExcelUtil<BaseTariffAssociationExportVO> excelUtil =
         new ExcelUtil<>(BaseTariffAssociationExportVO.class);
     excelUtil.exportExcel(response, resultList, "价目表开单关联信息");
@@ -1544,5 +1564,17 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     }
     List<BaseTariffVO> resultList = mapper.selectAllTariffList(queryForm);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 批量查询项目
+   * @param ids
+   * @return
+   */
+  public List<BaseTariff> selectByIds(List<Integer> ids) {
+    if (ObjectUtils.isEmpty(ids)) {
+      return new ArrayList<>();
+    }
+    return mapper.selectByIds(ids);
   }
 }
