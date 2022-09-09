@@ -30,6 +30,7 @@ import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -838,7 +839,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                       Collectors.toList());
       List<BaseTariff> baseTariffs = baseTariffBiz.selectByIds(ids);
       baseTariffFellowupRelationList.stream()
-              .filter(b->!ObjectUtils.isEmpty(b))
+              .filter(b->!ObjectUtils.isEmpty(b)&& Objects.nonNull(b.getFellowUp()) && b.getFellowUp() > ZERO)
               .forEach(
                 btfr -> {
                     VisitingRecord visitRecord = new VisitingRecord();
