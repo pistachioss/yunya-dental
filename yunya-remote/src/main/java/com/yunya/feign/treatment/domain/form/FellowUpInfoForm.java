@@ -29,7 +29,6 @@ public class FellowUpInfoForm implements Serializable {
     private Integer id;
     /** 几天后随访 */
     @ApiModelProperty("几天后随访")
-    @Min(value = 0, message = "最小值为0")
     private Integer fellowUp;
 
     /** 随访原因 */

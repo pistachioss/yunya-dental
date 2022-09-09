@@ -47,6 +47,7 @@ import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.mapper.*;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
@@ -832,6 +833,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     List<VisitingRecord> visitRecordPlanList = new ArrayList<>();
     List<BaseTariffFellowupRelation> baseTariffFellowupRelationList = baseTariffFellowupRelationMapper.queryByItemId(detail.getBillingItemId());
     if (!ObjectUtils.isEmpty(baseTariffFellowupRelationList)) {
+      List<Integer> ids = baseTariffFellowupRelationList.stream()
+              .map(BaseTariffFellowupRelation::getBaseTariffId).collect(
+                      Collectors.toList());
+      List<BaseTariff> baseTariffs = baseTariffBiz.selectByIds(ids);
       baseTariffFellowupRelationList.stream()
               .filter(b->!ObjectUtils.isEmpty(b))
               .forEach(
@@ -853,11 +858,18 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                       visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
                       visitRecord.setTreatmentId(treatmentRecordId);
                       visitRecord.setVisitingTime("09:00");
-                      visitRecord.setReason(btfr.getFellowUpCase());
+                      AtomicReference<String> reason = new AtomicReference<>(
+                              btfr.getFellowUpCase());
+                      if (ObjectUtils.isEmpty(reason)) {
+                        baseTariffs.stream().filter(s->Objects.equals(s.getId(),btfr.getBaseTariffId())).findFirst().ifPresent(bt->{
+                          reason.set(bt.getName());
+                        });
+                      }
+                      visitRecord.setReason(reason.get());
                       visitRecord.setStatus(false);
                       visitRecord.setInservice(true);
                       visitRecord.setVisitingDate(
-                              DateUtils.addDays(new Date(System.currentTimeMillis()), btfr.getFellowUp()));
+                              DateUtils.addDays(new Date(System.currentTimeMillis()), Objects.isNull(btfr.getFellowUp())?ZERO:btfr.getFellowUp()));
                       visitRecordPlanList.add(visitRecord);
                     }
                   });
