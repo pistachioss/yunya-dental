@@ -841,7 +841,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                       Collectors.toList());
       List<BaseTariff> baseTariffs = baseTariffBiz.selectByIds(ids);
       baseTariffFellowupRelationList.stream()
-              .filter(b->!ObjectUtils.isEmpty(b)&& Objects.nonNull(b.getFellowUp()) && b.getFellowUp() > ZERO)
+              .filter(b->!ObjectUtils.isEmpty(b)&& Objects.nonNull(b.getFellowUp()) && b.getFellowUp() >= ZERO)
               .forEach(
                 btfr -> {
                     VisitingRecord visitRecord = new VisitingRecord();
