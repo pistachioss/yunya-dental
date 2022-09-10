@@ -51,7 +51,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -1365,7 +1364,9 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
 //        }
         BaseTariffFellowupRelation baseTariffFellowupRelation = new BaseTariffFellowupRelation();
         if (Strings.isNullOrEmpty(fellowUpInfoForm.getFellowUp())) {
+          // 无值，空值，需删除
           baseTariffFellowupRelation.setFellowUp(null);
+          fellowUpInfoForm.setType(CommonConstants.INT_THREE);
         }
         else {
           baseTariffFellowupRelation.setFellowUp(Integer.valueOf(fellowUpInfoForm.getFellowUp()));
