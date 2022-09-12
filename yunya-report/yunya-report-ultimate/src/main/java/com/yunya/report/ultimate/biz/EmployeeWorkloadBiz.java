@@ -133,7 +133,7 @@ public class EmployeeWorkloadBiz {
   private List<ClinicEmployeeWorkloadOfOperationVO> enableFilter(
       Byte enableFilter, List<ClinicEmployeeWorkloadOfOperationVO> result) {
     if (enableFilter.intValue() == 1) { // 过滤
-      return result.stream().filter(vo -> isGreaterThanZero(vo)).collect(Collectors.toList());
+      return result.stream().filter(this::isGreaterThanZero).collect(Collectors.toList());
     }
     return result;
   }
@@ -148,7 +148,7 @@ public class EmployeeWorkloadBiz {
     BigDecimal baseWorkload = vo.getBaseWorkload();
     BigDecimal largeMaterialCost = vo.getLargeMaterialCost();
     BigDecimal orthodonticsFee = vo.getOrthodonticsFee();
-    if (actualWorkload.compareTo(BigDecimal.ZERO) > 0
+    return actualWorkload.compareTo(BigDecimal.ZERO) > 0
         || receivedWorkload.compareTo(BigDecimal.ZERO) > 0
         || freePaymentWorkload.compareTo(BigDecimal.ZERO) > 0
         || supplementWorkload.compareTo(BigDecimal.ZERO) > 0
@@ -156,10 +156,7 @@ public class EmployeeWorkloadBiz {
         || processingFee.compareTo(BigDecimal.ZERO) > 0
         || baseWorkload.compareTo(BigDecimal.ZERO) > 0
         || largeMaterialCost.compareTo(BigDecimal.ZERO) > 0
-        || orthodonticsFee.compareTo(BigDecimal.ZERO) > 0) {
-      return true;
-    }
-    return false;
+        || orthodonticsFee.compareTo(BigDecimal.ZERO) > 0;
   }
 
   /**
@@ -554,6 +551,13 @@ public class EmployeeWorkloadBiz {
     excelUtil.exportExcel(response, resultList, sheetName, fileName);
   }
 
+  /**
+   * 导出员工个人工作量列表
+   *
+   * @param response
+   * @param query
+   * @throws Exception
+   */
   public void exportEmployeeWorkloadListOfPersonnel(
       HttpServletResponse response, ClinicEmployeeWorkloadQuery query) throws Exception {
     query.setWhetherPage(false);

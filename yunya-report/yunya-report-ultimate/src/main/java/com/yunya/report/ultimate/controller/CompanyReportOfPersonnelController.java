@@ -80,8 +80,8 @@ public class CompanyReportOfPersonnelController {
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-人事报表-员工工作量-实收工作量明细")
-  @PostMapping(value = "/employee/workload/detail/list", name = "根据条件查询员工个人实收工作量明细列表")
+  @ApiOperation("公司端报表-人事报表-员工工作量-应收工作量明细")
+  @PostMapping(value = "/employee/workload/detail/list", name = "根据条件查询员工个人应收工作量明细列表")
   public ResponseResult<PageInfo<EmployeePersonalActualWorkloadDetailVO>>
       findEmployeePersonalActualWorkloadDetailList(
           @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {

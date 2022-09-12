@@ -33,6 +33,9 @@ public class EmployeeFreePaymentWorkloadDetailQuery extends PageQuery implements
   @NotNull(message = "账单收费ID不能为空！")
   private Integer billPayId;
 
+  @ApiModelProperty(value = "是否查询咨询师", required = true, notes = "默认否，查询咨询师业绩时请传 'true'")
+  private Boolean isConsulter = false;
+
   @ApiModelProperty("员工id")
   @NotNull(message = "员工id不能为空！")
   private Integer employeeId;

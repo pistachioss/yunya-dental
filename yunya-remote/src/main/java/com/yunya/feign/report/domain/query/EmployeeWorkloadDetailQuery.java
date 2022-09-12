@@ -33,4 +33,7 @@ public class EmployeeWorkloadDetailQuery extends PageQuery implements Serializab
   @ApiModelProperty(value = "员工ID")
   @NotNull(message = "员工ID不能为空！")
   private Integer employeeId;
+
+  @ApiModelProperty(value = "是否查询咨询师", required = true, notes = "默认否，查询咨询师业绩时请传 'true'")
+  private Boolean isConsulter = false;
 }
