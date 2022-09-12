@@ -247,21 +247,24 @@ public class EmployeeWorkloadBiz {
     return result;
   }
 
-    /**
-     * 员工工作量=实收工作量+补入工作量-退费工作量-免单支付工作量
-     *
-     * @param vo
-     * @return
-     */
-    private BigDecimal computeWorkload(ClinicEmployeeWorkloadOfOperationVO vo) {
-        BigDecimal receivedWorkload = vo.getReceivedWorkload();
-        BigDecimal supplementWorkload = vo.getSupplementWorkload();
-        BigDecimal refundWorkload = vo.getRefundWorkload();
-        BigDecimal freePaymentWorkload = vo.getFreePaymentWorkload();
-        return receivedWorkload.add(supplementWorkload).subtract(refundWorkload).subtract(freePaymentWorkload);
-    }
+  /**
+   * 员工工作量=实收工作量+补入工作量-退费工作量-免单支付工作量
+   *
+   * @param vo
+   * @return
+   */
+  private BigDecimal computeWorkload(ClinicEmployeeWorkloadOfOperationVO vo) {
+    BigDecimal receivedWorkload = vo.getReceivedWorkload();
+    BigDecimal supplementWorkload = vo.getSupplementWorkload();
+    BigDecimal refundWorkload = vo.getRefundWorkload();
+    BigDecimal freePaymentWorkload = vo.getFreePaymentWorkload();
+    return receivedWorkload
+        .add(supplementWorkload)
+        .subtract(refundWorkload)
+        .subtract(freePaymentWorkload);
+  }
 
-    /**
+  /**
    * 如果给定值为空或小于0，则返回默认值： 0
    *
    * @param valueMap
@@ -530,6 +533,13 @@ public class EmployeeWorkloadBiz {
     return result;
   }
 
+  /**
+   * 导出员工工作量
+   *
+   * @param response
+   * @param query
+   * @throws Exception
+   */
   public void exportEmployeeWorkloadListOfOperation(
       HttpServletResponse response, ClinicEmployeeWorkloadQuery query) throws Exception {
     query.setWhetherPage(false);
@@ -537,8 +547,11 @@ public class EmployeeWorkloadBiz {
         findEmployeeWorkloadListOfOperation(query).getList();
     ExcelUtil<ClinicEmployeeWorkloadOfOperationVO> excelUtil =
         new ExcelUtil<>(ClinicEmployeeWorkloadOfOperationVO.class);
-    String fileName = query.getStartDate() + "-" + query.getEndDate() + "员工工作量统计";
-    excelUtil.exportExcel(response, resultList, "员工工作量（运营报表）", fileName);
+    String fileName = query.getStartDate() + "-" + query.getEndDate();
+    fileName =
+        Boolean.TRUE.equals(query.getIsConsulter()) ? fileName + "咨询师工作量" : fileName + "员工工作量";
+    String sheetName = Boolean.TRUE.equals(query.getIsConsulter()) ? "咨询师工作量" : "员工工作量（运营报表）";
+    excelUtil.exportExcel(response, resultList, sheetName, fileName);
   }
 
   public void exportEmployeeWorkloadListOfPersonnel(
