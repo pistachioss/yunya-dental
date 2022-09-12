@@ -55,8 +55,8 @@ public class EmployeeReportController {
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工工作量-导出")
-  @PostMapping(value = "/operation/workload/list/export", name = "根据条件导出运营报表的员工工作量报表")
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工工作量（咨询师工作量）-导出")
+  @PostMapping(value = "/operation/workload/list/export", name = "根据条件导出运营报表的员工工作量（咨询师工作量）报表")
   public ResponseResult<T> exportEmployeeWorkloadListOfOperationVO(
       HttpServletResponse response, @RequestBody @Validated ClinicEmployeeWorkloadQuery query)
       throws Exception {
