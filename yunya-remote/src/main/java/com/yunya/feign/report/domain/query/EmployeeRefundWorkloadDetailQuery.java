@@ -28,4 +28,7 @@ public class EmployeeRefundWorkloadDetailQuery extends PageQuery implements Seri
   /** 员工ID */
   @ApiModelProperty("员工ID")
   private Integer employeeId;
+
+  @ApiModelProperty(value = "是否查询咨询师", required = true, notes = "默认否，查询咨询师业绩时请传 'true'")
+  private Boolean isConsulter = false;
 }
