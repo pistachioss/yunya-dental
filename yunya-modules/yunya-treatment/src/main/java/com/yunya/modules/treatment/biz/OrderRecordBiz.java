@@ -38,6 +38,7 @@ import org.springframework.util.ObjectUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -247,87 +248,94 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     // 校验开单参数
     TreatmentRecord treatmentRecord = checkOrderParam(treatmentRecordId);
     String orderKey = LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId;
-    redisUtils.set(orderKey, treatmentRecordId, 300);
-    List<OrderDetailModel> models = model.getOrderDetails();
-    Integer treatmentRecordOrgId = treatmentRecord.getOrgId();
-    int userId = Integer.parseInt(BaseContextHandler.getUserID());
-    String name = BaseContextHandler.getName();
-    // 将model转换成entity
-    List<OrderDetail> orderDetails =
-        orderDetailBiz.transferModelToEntity(treatmentRecordOrgId, treatmentRecordId, models);
-    // 计算开单总额
-    BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
+    try {
+      boolean orderLock =
+          redisUtils.setLock(orderKey, BaseContextHandler.getUserID(), 300, TimeUnit.SECONDS);
+      if (!orderLock) {
+        throw new ClientServiceException("当前就诊记录处于正在开单状态，请稍后再试！", SAME_DATA_EXIST);
+      }
+      List<OrderDetailModel> models = model.getOrderDetails();
+      Integer treatmentRecordOrgId = treatmentRecord.getOrgId();
+      int userId = Integer.parseInt(BaseContextHandler.getUserID());
+      String name = BaseContextHandler.getName();
+      // 将model转换成entity
+      List<OrderDetail> orderDetails =
+          orderDetailBiz.transferModelToEntity(treatmentRecordOrgId, treatmentRecordId, models);
+      // 计算开单总额
+      BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
 
-    OrderRecord orderRecord = new OrderRecord();
-    orderRecord.setTreatmentRecordId(treatmentRecordId);
-    OrderRecord orderResult = mapper.selectOne(orderRecord);
-    Integer orderRecordId;
-    int result = 0;
-    int operateType = 0;
-    List<Integer> deletedDetailIds = null;
-    if (null == orderResult) {
-      orderRecord.setOrgId(treatmentRecordOrgId);
-      String orderRecordNumber = generateOrderRecordNumber(treatmentRecordOrgId);
-      orderRecord.setOrderRecordNum(orderRecordNumber);
-      orderRecord.setPatientId(treatmentRecord.getPatientId());
-      orderRecord.setTotalAmount(totalAmount);
-      orderRecord.setCrtId(userId);
-      orderRecord.setCrtName(name);
-      result = mapper.insertSelective(orderRecord);
-      orderRecordId = orderRecord.getId();
-      if (StringHelper.isNotEmpty(orderDetails)) {
-        orderDetails.forEach(
-            detail -> {
-              detail.setOrderRecordId(orderRecordId);
-              orderDetailBiz.insertSelective(detail);
-            });
+      OrderRecord orderRecord = new OrderRecord();
+      orderRecord.setTreatmentRecordId(treatmentRecordId);
+      OrderRecord orderResult = mapper.selectOne(orderRecord);
+      Integer orderRecordId;
+      int result = 0;
+      int operateType = 0;
+      List<Integer> deletedDetailIds = null;
+      if (null == orderResult) {
+        orderRecord.setOrgId(treatmentRecordOrgId);
+        String orderRecordNumber = generateOrderRecordNumber(treatmentRecordOrgId);
+        orderRecord.setOrderRecordNum(orderRecordNumber);
+        orderRecord.setPatientId(treatmentRecord.getPatientId());
+        orderRecord.setTotalAmount(totalAmount);
+        orderRecord.setCrtId(userId);
+        orderRecord.setCrtName(name);
+        result = mapper.insertSelective(orderRecord);
+        orderRecordId = orderRecord.getId();
+        if (StringHelper.isNotEmpty(orderDetails)) {
+          orderDetails.forEach(
+              detail -> {
+                detail.setOrderRecordId(orderRecordId);
+                orderDetailBiz.insertSelective(detail);
+              });
+        }
+      } else {
+        orderResult.setTotalAmount(totalAmount);
+        orderResult.setUpdId(userId);
+        orderResult.setUpdName(name);
+        result = mapper.updateByPrimaryKeySelective(orderResult);
+        orderRecordId = orderResult.getId();
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setTreatmentRecordId(treatmentRecordId);
+        List<OrderDetail> deletedDetails = orderDetailBiz.selectList(orderDetail);
+        if (StringHelper.isNotEmpty(deletedDetails)) {
+          deletedDetailIds =
+              deletedDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
+        }
+        orderDetailBiz.delete(orderDetail);
+        if (StringHelper.isNotEmpty(orderDetails)) {
+          orderDetails.forEach(
+              detail -> {
+                detail.setOrderRecordId(orderRecordId);
+                orderDetailBiz.insertSelective(detail);
+              });
+          operateType = 1;
+        }
       }
-    } else {
-      orderResult.setTotalAmount(totalAmount);
-      orderResult.setUpdId(userId);
-      orderResult.setUpdName(name);
-      result = mapper.updateByPrimaryKeySelective(orderResult);
-      orderRecordId = orderResult.getId();
-      OrderDetail orderDetail = new OrderDetail();
-      orderDetail.setTreatmentRecordId(treatmentRecordId);
-      List<OrderDetail> deletedDetails = orderDetailBiz.selectList(orderDetail);
-      if (StringHelper.isNotEmpty(deletedDetails)) {
-        deletedDetailIds =
-            deletedDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
+      int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, deletedDetailIds);
+      if (result > 0 && detailSize > 0) {
+        rabbitMqServiceFeign.sendMessage(orderRecordId, operateType, BaseBill);
       }
-      orderDetailBiz.delete(orderDetail);
-      if (StringHelper.isNotEmpty(orderDetails)) {
-        orderDetails.forEach(
-            detail -> {
-              detail.setOrderRecordId(orderRecordId);
-              orderDetailBiz.insertSelective(detail);
-            });
-        operateType = 1;
+      Integer assistantId1 = model.getAssistantId1();
+      Integer assistantId2 = model.getAssistantId2();
+      Integer assistantId3 = model.getAssistantId3();
+      saveAssistantMatchingRecord(
+          treatmentRecordId, orderRecordId, assistantId1, assistantId2, assistantId3);
+      // 开单完成，更新就诊记录状态为已开单
+      treatmentRecord.setStatus((byte) 1);
+      treatmentRecord.setUpdId(userId);
+      treatmentRecord.setUpdName(name);
+      treatmentRecordBiz.updateSelectiveById(treatmentRecord);
+      Integer appointmentId = treatmentRecord.getAppointmentId();
+      // 发送消息更新中间表就诊流程
+      if (null != appointmentId) {
+        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      } else {
+        Integer registeredId = treatmentRecord.getRegisteredId();
+        rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
       }
+    } finally {
+      redisUtils.unlock(orderKey, BaseContextHandler.getUserID());
     }
-    int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, deletedDetailIds);
-    if (result > 0 && detailSize > 0) {
-      rabbitMqServiceFeign.sendMessage(orderRecordId, operateType, BaseBill);
-    }
-    Integer assistantId1 = model.getAssistantId1();
-    Integer assistantId2 = model.getAssistantId2();
-    Integer assistantId3 = model.getAssistantId3();
-    saveAssistantMatchingRecord(
-        treatmentRecordId, orderRecordId, assistantId1, assistantId2, assistantId3);
-    // 开单完成，更新就诊记录状态为已开单
-    treatmentRecord.setStatus((byte) 1);
-    treatmentRecord.setUpdId(userId);
-    treatmentRecord.setUpdName(name);
-    treatmentRecordBiz.updateSelectiveById(treatmentRecord);
-    Integer appointmentId = treatmentRecord.getAppointmentId();
-    // 发送消息更新中间表就诊流程
-    if (null != appointmentId) {
-      rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
-    } else {
-      Integer registeredId = treatmentRecord.getRegisteredId();
-      rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
-    }
-    redisUtils.delete(orderKey);
   }
 
   /**
@@ -388,10 +396,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (!status.equals(TREATMENT_PROCESSING_STATUS)
         && !status.equals(TREATMENT_PROCESS_ORDER_STATUS)) {
       throw new ClientServiceException("开单失败，当前就诊处于开单完成或结算状态，无法重复开单！", PARAMETERS_IS_ILLEGAL);
-    }
-    String recordId = redisUtils.get(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId);
-    if (StringHelper.isNotBlank(recordId)) {
-      throw new ClientServiceException("开单失败，当前就诊记录处于正在开单状态，无法同时开单！", SAME_DATA_EXIST);
     }
     return treatmentRecord;
   }
