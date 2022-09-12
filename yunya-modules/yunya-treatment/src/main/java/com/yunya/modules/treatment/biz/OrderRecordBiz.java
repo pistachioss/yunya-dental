@@ -257,7 +257,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       boolean orderLock =
           redisUtils.setLock(orderKey, BaseContextHandler.getUserID(), 300, TimeUnit.SECONDS);
       if (!orderLock) {
-        throw new ClientServiceException("开单失败，当前就诊记录处于正在开单状态，无法同时开单！", SAME_DATA_EXIST);
+        throw new ClientServiceException("当前就诊记录处于正在开单状态，请稍后再试！", SAME_DATA_EXIST);
       }
       List<OrderDetailModel> models = model.getOrderDetails();
       Integer treatmentRecordOrgId = treatmentRecord.getOrgId();
