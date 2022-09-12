@@ -32,6 +32,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -75,8 +76,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BaseCouponMapper baseCouponMapper;
   /** 项目信息 */
   @Autowired private BaseTariffInfoBiz baseTariffInfoBiz;
-  /** 就诊信息*/
+  /** 就诊信息 */
   @Autowired private BaseOrganizationBiz baseOrganizationBiz;
+
   @Resource(name = "customizeThreadPool")
   private ThreadPoolExecutor threadPool;
 
@@ -107,10 +109,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     String fileName = "门诊项目收入明细";
     List<Integer> orgIds = query.getOrgIds();
     if (orgIds.size() == 1) {
-        BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
-        if (null != organization) {
-            fileName = organization.getAbbreviation() + fileName;
-        }
+      BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+      if (null != organization) {
+        fileName = organization.getAbbreviation() + fileName;
+      }
     }
     List<BillTariffIncomeDetailVO> list = mapper.selectBillDetailIncomeList(query);
     ExcelUtil<BillTariffIncomeDetailVO> excelUtil = new ExcelUtil<>(BillTariffIncomeDetailVO.class);
@@ -267,7 +269,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           String key = detail.getExecutorId() + "," + detail.getOrgId();
           if (userIds.containsKey(key)) {
             Integer billId = detail.getBillId();
-            BigDecimal free = defaultFree(freePaymentMap.get(billId), detail.getItemType(), billAmountMap.get(billId));
+            BigDecimal free =
+                defaultFree(
+                    freePaymentMap.get(billId), detail.getItemType(), billAmountMap.get(billId));
             BigDecimal amount = detail.getItemFreePaymentRatio().multiply(free);
             userIds.put(key, amount.add(userIds.get(key)));
           }
@@ -548,7 +552,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
     }
-    excelUtil.exportExcel(response, resultList, "员工个人补入工作量明细列表", fileName);
+    excelUtil.exportExcel(response, resultList, "个人补入工作量明细列表", fileName);
   }
 
   /**
@@ -752,6 +756,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     workloadQuery.setStartDate(query.getStartDate());
     workloadQuery.setEndDate(query.getEndDate());
     workloadQuery.setEmployeeIds(new Integer[] {query.getEmployeeId()});
+    workloadQuery.setIsConsulter(query.getIsConsulter());
     List<BillItemAmountSharedVO> billDetails = mapper.selectBillDetailByQuery(workloadQuery);
     if (StringHelper.isEmpty(billDetails)) {
       return new PageInfo<>(new ArrayList<>());
@@ -775,7 +780,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
               .map(EmployeeFreepaymentWorkloadDetailVO::getBillId)
               .collect(Collectors.toSet());
       Set<Integer> billPayIds = billPayIdMap.keySet();
-      List<BillItemAmountSharedVO> details = mapper.selectBillDetailByBillIds(billIds);
+      List<BillItemAmountSharedVO> details =
+          mapper.selectBillDetailByBillIds(billIds, query.getIsConsulter());
       details =
           details.stream()
               .filter(vo -> vo.getItemActualAmount().compareTo(BigDecimal.ZERO) > 0)
@@ -792,7 +798,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
               list.forEach(
                   vo -> {
                     Integer billPayId = vo.getBillPayId();
-                    BigDecimal free = defaultFree(vo.getPrincipalAmount(), detail.getItemType(), billAmountMap.get(billId));
+                    BigDecimal free =
+                        defaultFree(
+                            vo.getPrincipalAmount(),
+                            detail.getItemType(),
+                            billAmountMap.get(billId));
                     BigDecimal amount = detail.getItemFreePaymentRatio().multiply(free);
                     billPayIdMap.put(billPayId, amount.add(billPayIdMap.get(billPayId)));
                   });
@@ -818,7 +828,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   private BaseBillPayDetailVO sumFreePayments(Integer billPayId) {
     List<BaseBillPayDetailVO> list =
         baseBillPayDetailMapper.sumPayDetailListByBillPayIds(
-            Arrays.asList(billPayId), FREE_PAYMENT_ID);
+                Collections.singletonList(billPayId), FREE_PAYMENT_ID);
     if (StringHelper.isEmpty(list)) {
       return null;
     }
@@ -872,13 +882,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 计算每个账单的执行实收的各项占比
-   *   免单分摊：1、实收为0的价目表项目不需要分摊免单金额；
-   *            2、免单金额超出价目表总实收的情况，免单优先分摊到价目表，剩余的才分摊到商品
-   *            3、免单金额未超出价目表项目总实收，免单则全部按照比例分摊到价目表项目
-   *     商品免单 = 免单总额 - 价目总实收
-   *     价目免单 = 价目项目应收/价目项目总应收 * 价目免单
-   *     商品免单 = 商品项目应收/商品项目总应收 * 商品免单
+   * 计算每个账单的执行实收的各项占比 免单分摊：1、实收为0的价目表项目不需要分摊免单金额； 2、免单金额超出价目表总实收的情况，免单优先分摊到价目表，剩余的才分摊到商品
+   * 3、免单金额未超出价目表项目总实收，免单则全部按照比例分摊到价目表项目 商品免单 = 免单总额 - 价目总实收 价目免单 = 价目项目应收/价目项目总应收 * 价目免单 商品免单 =
+   * 商品项目应收/商品项目总应收 * 商品免单
    *
    * @param details
    * @return
@@ -891,7 +897,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           Integer billId = detail.getBillId();
           BigDecimal[] sum = total.get(billId);
           if (sum == null) {
-            sum = new BigDecimal[] {detail.getBillActualAmount(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+            sum =
+                new BigDecimal[] {
+                  detail.getBillActualAmount(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO
+                };
           }
           Integer executorId = detail.getExecutorId();
           if (!ObjectUtils.isEmpty(executorId)) {
@@ -910,10 +919,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           Integer billId = detail.getBillId();
           BigDecimal[] sum = total.get(billId);
           BigDecimal receivedRatio = BigDecimal.ZERO;
-          boolean isOral = detail.getItemType().intValue()==1;
+          boolean isOral = detail.getItemType().intValue() == 1;
           // 实收占比 = 项目应收 / 账单应收
           if (sum[0].compareTo(BigDecimal.ZERO) != 0) {
-            receivedRatio = receivedAmount.divide(sum[0], 8, BigDecimal.ROUND_HALF_UP);
+            receivedRatio = receivedAmount.divide(sum[0], 8, RoundingMode.HALF_UP);
             if (!isOral) {
               sum[3] = sum[3].add(receivedRatio.multiply(detail.getBillReceivedAmount()));
             }
@@ -925,10 +934,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           // 免单占比 = 项目应收 / 价目or商品总应收
           BigDecimal freePaymentRatio = BigDecimal.ZERO;
           if (freeShuldTotal.compareTo(BigDecimal.ZERO) != 0) {
-            freePaymentRatio = receivedAmount.divide(freeShuldTotal,8, BigDecimal.ROUND_HALF_UP);
+            freePaymentRatio = receivedAmount.divide(freeShuldTotal, 8, RoundingMode.HALF_UP);
           }
-          detail.setItemReceivedRatio(receivedRatio);// 实收项目占比
-          detail.setItemFreePaymentRatio(freePaymentRatio);// 免单项目占比
+          detail.setItemReceivedRatio(receivedRatio); // 实收项目占比
+          detail.setItemFreePaymentRatio(freePaymentRatio); // 免单项目占比
         });
     return total;
   }
@@ -971,7 +980,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     // 免单支付
     if (StringHelper.isNotEmpty(resultList)) {
       List<BillItemAmountSharedVO> details =
-          mapper.selectBillDetailByBillIds(Arrays.asList(query.getBillId()));
+          mapper.selectBillDetailByBillIds(
+              Collections.singletonList(query.getBillId()), query.getIsConsulter());
       details =
           details.stream()
               .filter(vo -> vo.getItemActualAmount().compareTo(BigDecimal.ZERO) > 0)
@@ -984,12 +994,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         Integer itemId = detail.getItemId();
         Byte itemType = detail.getItemType();
         if (query.getEmployeeId().equals(executorId)) {
-          BigDecimal free = defaultFree(freeVO.getPrincipalAmount(), itemType, billAmountMap.get(detail.getBillId()));
-          amounts.put(
-              itemId + "," + itemType,
-              detail
-                  .getItemFreePaymentRatio()
-                  .multiply(free));
+          BigDecimal free =
+              defaultFree(
+                  freeVO.getPrincipalAmount(), itemType, billAmountMap.get(detail.getBillId()));
+          amounts.put(itemId + "," + itemType, detail.getItemFreePaymentRatio().multiply(free));
         }
       }
       resultList.forEach(
@@ -1147,7 +1155,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param billIds 订单ID列表
    * @return list
    */
-  public List<BillRecordWorkloadVO> findBillWorkloadInfoByBillIds(Collection<Integer> billIds, Boolean existsExecutor) {
+  public List<BillRecordWorkloadVO> findBillWorkloadInfoByBillIds(
+      Collection<Integer> billIds, Boolean existsExecutor) {
     return mapper.selectBillTotalWorkload(billIds, existsExecutor);
   }
 
@@ -1256,7 +1265,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> workloadCompleted(String startDate, String curDate) {
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
-    List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(new ClinicPerformanceBusinessQuery());
+    List<BaseOrganization> orgs =
+        baseOrganizationBiz.getOrganization(new ClinicPerformanceBusinessQuery());
     Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
     DataStatisticsQuery query = new DataStatisticsQuery();
     query.setDateType((byte) 0);
@@ -1462,7 +1472,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     Map<String, Map<Integer, BigDecimal>> workloadMap =
         baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query, receivedWorkload);
     Map<String, Map<Integer, BigDecimal>> nonWorkloadMap =
-            baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(receivedWorkload);
+        baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(receivedWorkload);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
     List<JSONObject> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(orgs)) {
@@ -1513,7 +1523,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         chainTotal = chainTotal.add(chainWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
         preTotal = preTotal.add(preWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
         yearTotal = yearTotal.add(yearWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
-        nonPerformTotal = nonPerformTotal.add(nonPerformWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
+        nonPerformTotal =
+            nonPerformTotal.add(nonPerformWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
       }
       map.put("total", "合计");
       actual.put("total", actualTotal);
@@ -1622,7 +1633,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return result;
   }
 
-    /**
+  /**
    * 门诊业绩导出
    *
    * @param query
@@ -1668,10 +1679,13 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       query.setOriginTypes(
           origins.stream().map(BasePatientOrigin::getOriginType).collect(Collectors.toSet()));
     }
-    List<BaseTreatmentProcessVO> firstVisitPatients = patientBaseInfoBiz.firstVisitPatientList(query);
-    List<PatientFirstVisitSourceVO> patients = findFirstVisitPatientSourceList(query, firstVisitPatients);
+    List<BaseTreatmentProcessVO> firstVisitPatients =
+        patientBaseInfoBiz.firstVisitPatientList(query);
+    List<PatientFirstVisitSourceVO> patients =
+        findFirstVisitPatientSourceList(query, firstVisitPatients);
     Map<String, Integer> originMap = new HashMap<>(16);
-    patients.forEach(vo-> originMap.put(vo.getOriginType()+","+vo.getOrgId(), vo.getFirstVisitCount()));
+    patients.forEach(
+        vo -> originMap.put(vo.getOriginType() + "," + vo.getOrgId(), vo.getFirstVisitCount()));
     List<JSONObject> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(origins)) {
       Map<String, String> map = new LinkedHashMap<>();
@@ -1690,38 +1704,42 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return pageInfo;
   }
 
-
   /**
    * 多线程查询患者初诊来源统计
    *
    * @param query
    * @return
    */
-  public List<PatientFirstVisitSourceVO> findFirstVisitPatientSourceList(ClinicPerformanceBusinessQuery query, List<BaseTreatmentProcessVO> patients) {
+  public List<PatientFirstVisitSourceVO> findFirstVisitPatientSourceList(
+      ClinicPerformanceBusinessQuery query, List<BaseTreatmentProcessVO> patients) {
     List<PatientFirstVisitSourceVO> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(patients)) {
       Map<Integer, Set<Integer>> patientMap = new HashMap<>(16);
-      patients.forEach(vo->{
-          Integer orgId = vo.getOrgId();
-          Set<Integer> patientIds = patientMap.get(orgId);
-          if (patientIds == null) {
+      patients.forEach(
+          vo -> {
+            Integer orgId = vo.getOrgId();
+            Set<Integer> patientIds = patientMap.get(orgId);
+            if (patientIds == null) {
               patientIds = new HashSet<>();
-          }
-          patientIds.add(vo.getPatientId());
-          patientMap.put(orgId, patientIds);
-      });
+            }
+            patientIds.add(vo.getPatientId());
+            patientMap.put(orgId, patientIds);
+          });
       CountDownLatch cdt = new CountDownLatch(patientMap.size());
-      patientMap.forEach((orgId, patientIds)-> threadPool.execute(() -> {
-          try {
-              List<PatientFirstVisitSourceVO> list =
-                      patientBaseInfoBiz.clinicFirstVisitSourceList(query, orgId, patientIds);
-              result.addAll(list);
-          } catch (Exception e) {
-              e.printStackTrace();
-          } finally {
-              cdt.countDown();
-          }
-      }));
+      patientMap.forEach(
+          (orgId, patientIds) ->
+              threadPool.execute(
+                  () -> {
+                    try {
+                      List<PatientFirstVisitSourceVO> list =
+                          patientBaseInfoBiz.clinicFirstVisitSourceList(query, orgId, patientIds);
+                      result.addAll(list);
+                    } catch (Exception e) {
+                      e.printStackTrace();
+                    } finally {
+                      cdt.countDown();
+                    }
+                  }));
       try {
         cdt.await();
       } catch (InterruptedException e) {
@@ -1731,7 +1749,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return result;
   }
 
-    /**
+  /**
    * 计算所有门诊的总数
    *
    * @param firstKey
@@ -1804,7 +1822,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         map.put("date", "时间");
         map.put("name", "专科项目");
         for (SpecialistProjectVO item : specialItems) {
-          JSONObject object = init(query.getStartDate(), query.getEndDate(), item.getSpecialistProjectName());
+          JSONObject object =
+              init(query.getStartDate(), query.getEndDate(), item.getSpecialistProjectName());
           Integer total = 0;
           for (BaseOrganization org : orgs) {
             Integer orgId = org.getOrgId();
@@ -2191,7 +2210,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       List<Integer> billIds = mapper.billIdByMonthFreePayment(queryFrom);
       Map<String, BigDecimal> frees = new HashMap<>(16);
       if (StringHelper.isNotEmpty(billIds)) {
-        List<BillItemAmountSharedVO> details = mapper.selectBillDetailByBillIds(billIds);
+        List<BillItemAmountSharedVO> details = mapper.selectBillDetailByBillIds(billIds, false);
         details =
             details.stream()
                 .filter(vo -> vo.getItemActualAmount().compareTo(BigDecimal.ZERO) > 0)
@@ -2208,7 +2227,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
               Byte itemType = detail.getItemType();
               String key = itemMap.get(itemType + "," + detail.getItemId());
               Integer billId = detail.getBillId();
-              BigDecimal free = defaultFree(freePaymentMap.get(billId), itemType, billAmountMap.get(billId));
+              BigDecimal free =
+                  defaultFree(freePaymentMap.get(billId), itemType, billAmountMap.get(billId));
               BigDecimal amount = detail.getItemFreePaymentRatio().multiply(free);
               BigDecimal freeAmount = frees.get(key);
               if (freeAmount == null) {
@@ -2231,40 +2251,39 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
   }
 
-    /**
-     *
-     * @param free 免单
-     * @param itemType
-     * @param billAmount
-     * @return
-     */
-    private BigDecimal defaultFree(BigDecimal free, Byte itemType, BigDecimal[] billAmount) {
-      if (ObjectUtils.isEmpty(free) || StringHelper.isEmpty(billAmount)) {
-          return BigDecimal.ZERO;
-      }
-      boolean isOral = itemType.intValue() == 1;
-      BigDecimal itemReceivedAmount = billAmount[3];
-      // 商品免单 = 总免单 - 价目总实收
-      BigDecimal oralFree = free.subtract(itemReceivedAmount);
-      if (oralFree.compareTo(BigDecimal.ZERO) <= 0 ) {
-          if (isOral) {
-            return BigDecimal.ZERO;
-          } else {
-            if (free.compareTo(billAmount[1]) >= 0) {
-              return billAmount[1];
-            }
-          }
+  /**
+   * @param free 免单
+   * @param itemType
+   * @param billAmount
+   * @return
+   */
+  private BigDecimal defaultFree(BigDecimal free, Byte itemType, BigDecimal[] billAmount) {
+    if (ObjectUtils.isEmpty(free) || StringHelper.isEmpty(billAmount)) {
+      return BigDecimal.ZERO;
+    }
+    boolean isOral = itemType.intValue() == 1;
+    BigDecimal itemReceivedAmount = billAmount[3];
+    // 商品免单 = 总免单 - 价目总实收
+    BigDecimal oralFree = free.subtract(itemReceivedAmount);
+    if (oralFree.compareTo(BigDecimal.ZERO) <= 0) {
+      if (isOral) {
+        return BigDecimal.ZERO;
       } else {
-        if (isOral) {
-          return oralFree;
-        } else {
-          return itemReceivedAmount;
+        if (free.compareTo(billAmount[1]) >= 0) {
+          return billAmount[1];
         }
       }
-      return free;
+    } else {
+      if (isOral) {
+        return oralFree;
+      } else {
+        return itemReceivedAmount;
+      }
     }
+    return free;
+  }
 
-    /**
+  /**
    * 根据条件查询非本期免单金额列表
    *
    * @param query
@@ -2325,7 +2344,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         queryForm.setEndDate(query.getQueryDate());
         queryForm.setDateType((byte) 1);
         List<EmployeeFreepaymentWorkloadDetailVO> resultList =
-            mapper.selectEmployeeFreepaymentWorkloadDetailList(queryForm, query.getOrgIds(), billIds, FREE_PAYMENT_ID);
+            mapper.selectEmployeeFreepaymentWorkloadDetailList(
+                queryForm, query.getOrgIds(), billIds, FREE_PAYMENT_ID);
         // 免单支付
         if (StringHelper.isNotEmpty(resultList)) {
           Map<Integer, EmployeeFreepaymentWorkloadDetailVO> billPayIds =
@@ -2337,7 +2357,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
               resultList.stream()
                   .map(EmployeeFreepaymentWorkloadDetailVO::getBillId)
                   .collect(Collectors.toSet());
-          List<BillItemAmountSharedVO> details = mapper.selectBillDetailByBillIds(billIds);
+          List<BillItemAmountSharedVO> details = mapper.selectBillDetailByBillIds(billIds, false);
           details =
               details.stream()
                   .filter(vo -> vo.getItemActualAmount().compareTo(BigDecimal.ZERO) > 0)
@@ -2356,7 +2376,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                   list.forEach(
                       vo -> {
                         String key = billId + "," + vo.getBillPayId() + "," + cid;
-                        BigDecimal free = defaultFree(vo.getPrincipalAmount(), itemType, billAmountMap.get(billId));
+                        BigDecimal free =
+                            defaultFree(
+                                vo.getPrincipalAmount(), itemType, billAmountMap.get(billId));
                         BigDecimal amount = detail.getItemFreePaymentRatio().multiply(free);
                         BigDecimal freeAmount = freeMap.get(key);
                         if (freeAmount == null) {
@@ -2439,19 +2461,18 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query 查询条件
    * @return void
    */
-  public void nonMonthCategoryExport(HttpServletResponse response, NonMonthCategoryIncomeQuery query)
-      throws IOException {
+  public void nonMonthCategoryExport(
+      HttpServletResponse response, NonMonthCategoryIncomeQuery query) throws IOException {
     query.setWhetherPage(false);
     List<NonMonthCategoryVO> list = nonMonthCategoryList(query).getList();
     ExcelUtil<NonMonthCategoryVO> excelUtil = new ExcelUtil<>(NonMonthCategoryVO.class);
     List<Integer> orgIds = query.getOrgIds();
-    String fileName = excelUtil.getFileName(
-            query.getQueryDate(), "", "", "非本期免单金额明细");
+    String fileName = excelUtil.getFileName(query.getQueryDate(), "", "", "非本期免单金额明细");
     if (orgIds.size() == 1) {
-        BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
-        fileName =
-                excelUtil.getFileName(
-                        query.getQueryDate(), "", organization.getAbbreviation(), "非本期免单金额明细");
+      BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+      fileName =
+          excelUtil.getFileName(
+              query.getQueryDate(), "", organization.getAbbreviation(), "非本期免单金额明细");
     }
     excelUtil.exportExcel(response, list, "非本期免单金额明细", fileName);
   }
@@ -2469,14 +2490,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<NonDiscountVO> list = nonDiscountList(query).getList();
     ExcelUtil<NonDiscountVO> excelUtil = new ExcelUtil<>(NonDiscountVO.class);
     List<Integer> orgIds = query.getOrgIds();
-    String fileName =
-              excelUtil.getFileName(
-                      query.getQueryDate(), "", "", "非本期优惠金额明细");
+    String fileName = excelUtil.getFileName(query.getQueryDate(), "", "", "非本期优惠金额明细");
     if (orgIds.size() == 1) {
-        BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
-        fileName =
-                excelUtil.getFileName(
-                        query.getQueryDate(), "", organization.getAbbreviation(), "非本期优惠金额明细");
+      BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+      fileName =
+          excelUtil.getFileName(
+              query.getQueryDate(), "", organization.getAbbreviation(), "非本期优惠金额明细");
     }
     excelUtil.exportExcel(response, list, "非本期优惠金额明细", fileName);
   }
@@ -2666,34 +2685,32 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
   }
 
-    /**
-     * 根据条件查询个人开单项目应收明细表导出
-     *
-     * @param query 查询条件
-     * @return
-     */
-    public void billItemStatisticsInfoExport(BillItemInfoQuery query, HttpServletResponse response)
-            throws IOException {
-        query.setWhetherPage(false);
-        PageInfo<BillItemStatisticsInfoVO> pageInfo = billItemStatisticsInfo(query);
-        List<Integer> orgIds = query.getOrgIds();
-        String abbreviation = "";
-        if (StringHelper.isNotEmpty(orgIds) && orgIds.size()==1) {
-            BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgIds().get(0));
-            if (!ObjectUtils.isEmpty(organization)) {
-                abbreviation = organization.getAbbreviation();
-            }
-        }
-        List<BillItemStatisticsInfoVO> resultList = pageInfo.getList();
-        ExcelUtil<BillItemStatisticsInfoVO> excelUtil = new ExcelUtil<>(BillItemStatisticsInfoVO.class);
-        String fileName =
-                excelUtil.getFileName(abbreviation,
-                        query.getStartDate(),
-                        query.getEndDate(),
-                        "",
-                        "个人开单项目应收明细表");
-        excelUtil.exportExcel(response, resultList, "个人开单项目应收明细表", fileName);
+  /**
+   * 根据条件查询个人开单项目应收明细表导出
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public void billItemStatisticsInfoExport(BillItemInfoQuery query, HttpServletResponse response)
+      throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<BillItemStatisticsInfoVO> pageInfo = billItemStatisticsInfo(query);
+    List<Integer> orgIds = query.getOrgIds();
+    String abbreviation = "";
+    if (StringHelper.isNotEmpty(orgIds) && orgIds.size() == 1) {
+      BaseOrganization organization =
+          organizationMapper.selectByPrimaryKey(query.getOrgIds().get(0));
+      if (!ObjectUtils.isEmpty(organization)) {
+        abbreviation = organization.getAbbreviation();
+      }
     }
+    List<BillItemStatisticsInfoVO> resultList = pageInfo.getList();
+    ExcelUtil<BillItemStatisticsInfoVO> excelUtil = new ExcelUtil<>(BillItemStatisticsInfoVO.class);
+    String fileName =
+        excelUtil.getFileName(
+            abbreviation, query.getStartDate(), query.getEndDate(), "", "个人开单项目应收明细表");
+    excelUtil.exportExcel(response, resultList, "个人开单项目应收明细表", fileName);
+  }
 
   /**
    * 根据条件查询个人开单项目实收金额统计明细表
@@ -2760,87 +2777,92 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     excelUtil.exportExcel(response, resultList, "个人开单项目实收明细表", fileName);
   }
 
-    public List<PersonalBillItemVO> findBillItemNumByQuery(PatientDimensionQueryForm query) {
-        return mapper.selectBillItemNumByQuery(query);
-    }
+  public List<PersonalBillItemVO> findBillItemNumByQuery(PatientDimensionQueryForm query) {
+    return mapper.selectBillItemNumByQuery(query);
+  }
 
-    public List<StatEmpBill> findBillingOralItemList(MultiClinicDateRangeQueryForm query) {
-        return mapper.selectBillingOralItemList(query);
-    }
+  public List<StatEmpBill> findBillingOralItemList(MultiClinicDateRangeQueryForm query) {
+    return mapper.selectBillingOralItemList(query);
+  }
 
-    /**
-     * 根据条件查询开单数量及金额全部明细列表导出
-     *
-     * @param query
-     * @param response
-     * @throws Exception
-     */
-    public void billItemStatisticsDetailAllExport(BillItemInfoQuery query, HttpServletResponse response) throws Exception {
-        Collection<Integer[]> items = query.getCategoryItems();
-        if (!CollectionUtils.isEmpty(items)) {
-            Set<Integer> categoryIds = new HashSet<>();
-            Set<Integer> itemIds = new HashSet<>();
-            items.forEach(
-                    vo -> {
-                        categoryIds.add(vo[0]);
-                        itemIds.add(vo[1]);
-                    });
-            query.setCategoryIds(categoryIds);
-            query.setItemIds(itemIds);
-        } else {
-            throw new ClientServiceException("请至少选择一个项目", PARAMETERS_IS_ILLEGAL);
-        }
-        List<BillItemStatisticsDetailVO> result = mapper.billItemAmountDetailList(query);
-        ExcelUtil<BillItemStatisticsDetailVO> excelUtil = new ExcelUtil<>(BillItemStatisticsDetailVO.class);
-        String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单数量及金额全部明细";
-        List<Integer> orgIds = query.getOrgIds();
-        if (StringHelper.isNotEmpty(orgIds) && orgIds.size() == 1) {
-            BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
-            if (null != organization) {
-                fileName = organization.getAbbreviation() + fileName;
-            }
-        }
-        excelUtil.exportExcel(response, result, "开单数量及金额全部明细", fileName);
+  /**
+   * 根据条件查询开单数量及金额全部明细列表导出
+   *
+   * @param query
+   * @param response
+   * @throws Exception
+   */
+  public void billItemStatisticsDetailAllExport(
+      BillItemInfoQuery query, HttpServletResponse response) throws Exception {
+    Collection<Integer[]> items = query.getCategoryItems();
+    if (!CollectionUtils.isEmpty(items)) {
+      Set<Integer> categoryIds = new HashSet<>();
+      Set<Integer> itemIds = new HashSet<>();
+      items.forEach(
+          vo -> {
+            categoryIds.add(vo[0]);
+            itemIds.add(vo[1]);
+          });
+      query.setCategoryIds(categoryIds);
+      query.setItemIds(itemIds);
+    } else {
+      throw new ClientServiceException("请至少选择一个项目", PARAMETERS_IS_ILLEGAL);
     }
+    List<BillItemStatisticsDetailVO> result = mapper.billItemAmountDetailList(query);
+    ExcelUtil<BillItemStatisticsDetailVO> excelUtil =
+        new ExcelUtil<>(BillItemStatisticsDetailVO.class);
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单数量及金额全部明细";
+    List<Integer> orgIds = query.getOrgIds();
+    if (StringHelper.isNotEmpty(orgIds) && orgIds.size() == 1) {
+      BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+      if (null != organization) {
+        fileName = organization.getAbbreviation() + fileName;
+      }
+    }
+    excelUtil.exportExcel(response, result, "开单数量及金额全部明细", fileName);
+  }
 
-    /**
-     * 根据条件查询开单数量及金额全部明细列表导出
-     *
-     * @param query
-     * @param response
-     * @throws Exception
-     */
-    public void billItemStatisticsDetailIntegrationExport(BillItemInfoQuery query, HttpServletResponse response) throws Exception {
-        Collection<Integer[]> items = query.getCategoryItems();
-        if (!CollectionUtils.isEmpty(items)) {
-            Set<Integer> categoryIds = new HashSet<>();
-            Set<Integer> itemIds = new HashSet<>();
-            items.forEach(
-                    vo -> {
-                        categoryIds.add(vo[0]);
-                        itemIds.add(vo[1]);
-                    });
-            query.setCategoryIds(categoryIds);
-            query.setItemIds(itemIds);
-        } else {
-            throw new ClientServiceException("请至少选择一个项目", PARAMETERS_IS_ILLEGAL);
-        }
-        List<BillItemStatisticsDetailVO> result = mapper.billItemAmountDetailList(query);
-        List<BillItemStatisticsDetailIntegrationVO> res = BeanCopierUtils.listGeneralCopyBean(result, BillItemStatisticsDetailIntegrationVO.class);
-        ExcelUtil<BillItemStatisticsDetailIntegrationVO> excelUtil = new ExcelUtil<>(BillItemStatisticsDetailIntegrationVO.class);
-        String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单数量及金额明细一体表";
-        List<Integer> orgIds = query.getOrgIds();
-        if (StringHelper.isNotEmpty(orgIds) && orgIds.size() == 1) {
-            BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
-            if (null != organization) {
-                fileName = organization.getAbbreviation() + fileName;
-            }
-        }
-        excelUtil.exportExcel(response, res, "开单数量及金额明细一体表", fileName);
+  /**
+   * 根据条件查询开单数量及金额全部明细列表导出
+   *
+   * @param query
+   * @param response
+   * @throws Exception
+   */
+  public void billItemStatisticsDetailIntegrationExport(
+      BillItemInfoQuery query, HttpServletResponse response) throws Exception {
+    Collection<Integer[]> items = query.getCategoryItems();
+    if (!CollectionUtils.isEmpty(items)) {
+      Set<Integer> categoryIds = new HashSet<>();
+      Set<Integer> itemIds = new HashSet<>();
+      items.forEach(
+          vo -> {
+            categoryIds.add(vo[0]);
+            itemIds.add(vo[1]);
+          });
+      query.setCategoryIds(categoryIds);
+      query.setItemIds(itemIds);
+    } else {
+      throw new ClientServiceException("请至少选择一个项目", PARAMETERS_IS_ILLEGAL);
     }
+    List<BillItemStatisticsDetailVO> result = mapper.billItemAmountDetailList(query);
+    List<BillItemStatisticsDetailIntegrationVO> res =
+        BeanCopierUtils.listGeneralCopyBean(result, BillItemStatisticsDetailIntegrationVO.class);
+    ExcelUtil<BillItemStatisticsDetailIntegrationVO> excelUtil =
+        new ExcelUtil<>(BillItemStatisticsDetailIntegrationVO.class);
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单数量及金额明细一体表";
+    List<Integer> orgIds = query.getOrgIds();
+    if (StringHelper.isNotEmpty(orgIds) && orgIds.size() == 1) {
+      BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+      if (null != organization) {
+        fileName = organization.getAbbreviation() + fileName;
+      }
+    }
+    excelUtil.exportExcel(response, res, "开单数量及金额明细一体表", fileName);
+  }
 
-    public List<BillDetailtemVO> findBillDetailItemList(ClinicPerformanceBusinessQuery query) {
-        setDistinctBillIds(query);
-        return mapper.selectBillDetailItemList(query);
-    }
+  public List<BillDetailtemVO> findBillDetailItemList(ClinicPerformanceBusinessQuery query) {
+    setDistinctBillIds(query);
+    return mapper.selectBillDetailItemList(query);
+  }
 }

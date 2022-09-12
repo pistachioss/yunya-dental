@@ -199,9 +199,11 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * 根据账单id查询账单详情列表
    *
    * @param billIds
+   * @param isConsulter
    * @return
    */
-  List<BillItemAmountSharedVO> selectBillDetailByBillIds(@Param("billIds") Collection<Integer> billIds);
+  List<BillItemAmountSharedVO> selectBillDetailByBillIds(
+      @Param("billIds") Collection<Integer> billIds, @Param("isConsulter") Boolean isConsulter);
 
   List<EmployeeFreepaymentWorkloadDetailVO> selectEmployeeFreepaymentWorkloadDetailList(
       @Param("query") EmployeePersonalWorkloadDetailQuery query,
@@ -548,7 +550,9 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<BillItemStatisticsDetailVO> billItemAmountDetailList(@Param("query") BillItemInfoQuery query);
+  List<BillItemStatisticsDetailVO> billItemAmountDetailList(
+      @Param("query") BillItemInfoQuery query);
 
-  List<BillDetailtemVO> selectBillDetailItemList(@Param("query") ClinicPerformanceBusinessQuery query);
+  List<BillDetailtemVO> selectBillDetailItemList(
+      @Param("query") ClinicPerformanceBusinessQuery query);
 }

@@ -1588,7 +1588,7 @@
                 and bbd.bill_id = #{query.billId}
             </if>
         </where>
-        ) t where t.receivedAmount>0
+        ) t where t.receivedAmount > 0
     </select>
 
     <!-- 根据条件查询员工补入工作量明细列表 -->
@@ -1625,16 +1625,19 @@
         from (
         select
         bbd.bill_id,
-        bbd.executor_id,
         sum(bbd.coupon_workload) as couponWorkload
         from base_bill_detail bbd
         <where>
             bbd.coupon_workload > 0
-            <if test="query.employeeId != null">
-                and bbd.executor_id = #{query.employeeId}
+            <if test="query.isConsulter == 0">
+                AND bbd.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND bbd.consulter_id = #{query.employeeId}
             </if>
         </where>
-        group by bbd.bill_id, bbd.executor_id) bbd
+        group by bbd.bill_id
+        ) bbd
         inner join (
         SELECT bb.bill_id,
         bb.bill_num as billNum,
@@ -1715,8 +1718,11 @@
             <if test="query.billId != null">
                 and bbd.bill_id = #{query.billId}
             </if>
-            <if test="query.employeeId != null">
-                and bbd.executor_id = #{query.employeeId}
+            <if test="query.isConsulter == 0">
+                AND bbd.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND bbd.consulter_id = #{query.employeeId}
             </if>
         </where>
         ORDER BY bbd.bill_id DESC
@@ -2378,13 +2384,18 @@
         select
         t.org_id as orgId,
         t.bill_id as billId,
-        t.executor_id as executorId,
+        if(#{query.isConsulter} = 0, t.executor_id, t.consulter_id) as executorId,
         IFNULL(t.price * t.quantity - t.discount_amount, 0) as itemReceivedAmount,
         bbd.actual_amount AS billReceivedAmount
         from base_bill_detail t
         left join base_bill bbd on t.bill_id=bbd.bill_id
         <where>
-            and t.executor_id > 0
+            <if test="query.isConsulter == 0">
+                AND t.executor_id > 0
+            </if>
+            <if test="query.isConsulter == 1">
+                AND t.consulter_id > 0
+            </if>
             <if test="query.orgId != null">
                 and t.org_id = #{query.orgId}
                 and bbd.org_id = #{query.orgId}
@@ -2425,7 +2436,7 @@
     <select id="selectBillDetailByBillIds" resultType="com.yunya.feign.report.domain.vo.BillItemAmountSharedVO">
         select
         t.bill_id as billId,
-        t.executor_id as executorId,
+        if(#{isConsulter} = 0, t.executor_id, t.consulter_id) as executorId,
         IFNULL(t.price * t.quantity - t.discount_amount, 0) as itemActualAmount,
         bb.actual_amount AS billActualAmount,
         bb.received_amount AS billReceivedAmount,
@@ -2468,7 +2479,7 @@
                 <foreach collection="payIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
-                AND bbpd.bill_pay_id=bbp.bill_pay_id
+                AND bbpd.bill_pay_id = bbp.bill_pay_id
             </where>
             )
             <if test="query.orgId != null">
