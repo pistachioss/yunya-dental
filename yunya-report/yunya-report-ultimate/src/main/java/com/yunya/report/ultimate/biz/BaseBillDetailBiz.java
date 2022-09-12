@@ -442,7 +442,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
     }
-    excelUtil.exportExcel(response, resultList, "员工个人实收工作量明细列表", fileName);
+    excelUtil.exportExcel(response, resultList, "个人实收工作量明细列表", fileName);
   }
 
   /**
@@ -496,7 +496,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeePersonalReceivedWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalReceivedWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalReceivedWorkloadDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "员工个人已收工作量明细列表", fileName);
+    excelUtil.exportExcel(response, resultList, "个人已收工作量明细列表", fileName);
   }
 
   /**

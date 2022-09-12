@@ -1249,17 +1249,24 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
-            <if test="query.employeeId != null">
+            <if test="query.isConsulter == 0">
                 AND bbd.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND bbd.consulter_id = #{query.employeeId}
             </if>
         </where>
         GROUP BY
-        bbd.bill_id,
-        bbd.executor_id
+        bbd.bill_id
+        <if test="query.isConsulter == 0">
+            , bbd.executor_id
+        </if>
+        <if test="query.isConsulter == 1">
+            , bbd.consulter_id
+        </if>
         ) bbd
         INNER JOIN (
         SELECT
@@ -1349,8 +1356,11 @@
             <if test="query.billId != null">
                 and bbd.bill_id = #{query.billId}
             </if>
-            <if test="query.employeeId != null">
-                and bbd.executor_id = #{query.employeeId}
+            <if test="query.isConsulter == 0">
+                AND bbd.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND bbd.consulter_id = #{query.employeeId}
             </if>
         </where>
     </select>
@@ -1477,12 +1487,14 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
-            <if test="query.employeeId != null">
+            <if test="query.isConsulter == 0">
                 AND bbd.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND bbd.consulter_id = #{query.employeeId}
             </if>
         </where>
         GROUP BY
@@ -1545,8 +1557,11 @@
         FROM base_bill_detail bbd
         LEFT JOIN base_tariff_info bti ON bbd.item_type = bti.item_type AND bbd.item_id = bti.item_id
         <where>
-            <if test="query.employeeId != null">
-                and bbd.executor_id = #{query.employeeId}
+            <if test="query.isConsulter == 0">
+                AND bbd.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND bbd.consulter_id = #{query.employeeId}
             </if>
         </where>
         ) bbd on bbp.billId = bbd.bill_id
@@ -5262,19 +5277,19 @@
     <select id="billItemAmountDetailList"
             resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsDetailVO">
         SELECT
-            DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
-            bb.bill_num AS billNum,
-            bbd.quantity,
-            bem.employee_name as regDentistName,
-            be.employee_name as executorName,
-            IFNULL(bbd.price*bbd.quantity - bbd.discount_amount, 0) as amount,
-            bbd.remark,
-            bti.category_name AS categoryName,
-            bti.item_name AS itemName,
-            bp.name AS patientName,
-            bp.patient_id as patientId,
-            bp.mobile,
-            bo.abbreviation
+        DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
+        bb.bill_num AS billNum,
+        bbd.quantity,
+        bem.employee_name as regDentistName,
+        be.employee_name as executorName,
+        IFNULL(bbd.price*bbd.quantity - bbd.discount_amount, 0) as amount,
+        bbd.remark,
+        bti.category_name AS categoryName,
+        bti.item_name AS itemName,
+        bp.name AS patientName,
+        bp.patient_id as patientId,
+        bp.mobile,
+        bo.abbreviation
         FROM
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
@@ -5351,12 +5366,12 @@
 
     <select id="selectBillDetailItemList" resultType="com.yunya.feign.report.domain.vo.BillDetailtemVO">
         SELECT
-            bbd.org_id AS orgId,
-            bbd.item_id AS itemId,
-            bbd.item_type AS itemType,
-            bb.patient_id AS patientId,
-            bb.order_date AS orderDate,
-            bbd.quantity AS quantity
+        bbd.org_id AS orgId,
+        bbd.item_id AS itemId,
+        bbd.item_type AS itemType,
+        bb.patient_id AS patientId,
+        bb.order_date AS orderDate,
+        bbd.quantity AS quantity
         FROM base_bill_detail bbd
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         <where>

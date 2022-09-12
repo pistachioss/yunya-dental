@@ -44,6 +44,9 @@ public class EmployeePersonalWorkloadDetailQuery extends PageQuery implements Se
   @ApiModelProperty(value = "员工ID", required = true)
   @NotNull(message = "员工ID不能为空！")
   private Integer employeeId;
+
+  @ApiModelProperty(value = "是否查询咨询师", required = true, notes = "默认否，查询咨询师业绩时请传 'true'")
+  private Boolean isConsulter = false;
   /** 患者关键字 */
   @ApiModelProperty("患者关键字：患者姓名、姓名拼音、手机号")
   private String keyword;

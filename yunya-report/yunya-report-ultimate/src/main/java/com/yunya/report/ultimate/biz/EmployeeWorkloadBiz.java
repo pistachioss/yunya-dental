@@ -532,6 +532,13 @@ public class EmployeeWorkloadBiz {
     excelUtil.exportExcel(response, resultList, sheetName, fileName);
   }
 
+  /**
+   * 导出员工个人工作量列表
+   *
+   * @param response
+   * @param query
+   * @throws Exception
+   */
   public void exportEmployeeWorkloadListOfPersonnel(
       HttpServletResponse response, ClinicEmployeeWorkloadQuery query) throws Exception {
     query.setWhetherPage(false);
