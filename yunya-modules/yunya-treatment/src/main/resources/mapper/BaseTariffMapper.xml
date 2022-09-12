@@ -164,6 +164,7 @@
     <select id="selectExportBaseTariffAssociationList"
             resultType="com.yunya.feign.treatment.domain.vo.BaseTariffAssociationExportVO">
         select
+        bt.id,
         bt.item_number as itemNumber,
         bt.`name` as name,
         btc.`name` as tariffCategoryName,
@@ -269,6 +270,13 @@
                 and bot.inservice = #{queryForm.inservice}
             </if>
         </where>
+    </select>
+    <select id="selectByIds" resultMap="BaseResultMap">
+        select * from base_tariff where
+        id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 
     <!-- 批量插入价目表 -->
