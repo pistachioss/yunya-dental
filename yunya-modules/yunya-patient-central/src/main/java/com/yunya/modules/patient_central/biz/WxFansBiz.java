@@ -161,7 +161,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public WxFans getOwnWxFans(WxUserQuery query) {
         Example example = new Example(WxFans.class);
-        example.selectProperties("registerName", "registerMobile", "headImgurl", "country", "province", "city", "patientId", "sex", "subscribe");
+        example.selectProperties("registerName", "registerMobile", "headImgurl", "country", "province", "city", "patientId", "sex", "subscribe","unionId");
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(query.getOpenId())) {
             criteria.andEqualTo("openId", query.getOpenId());
