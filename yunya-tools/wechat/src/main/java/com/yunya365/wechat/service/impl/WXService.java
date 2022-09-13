@@ -209,12 +209,13 @@ public class WXService extends AbstractWxBaseApi {
         WxUserQuery query = new WxUserQuery();
         query.setOpenId(openId);
         WxFans wxFans = patientFeign.getWxFans(query);
+        List<WxFansDetailVO>reList = new ArrayList<>();
         if(wxFans!=null){
             WxFansDetailForm wxFansDetailForm = new WxFansDetailForm();
             wxFansDetailForm.setUnionId(wxFans.getUnionId());
-            return patientFeign.findDetail(wxFansDetailForm);
+            reList = patientFeign.findDetail(wxFansDetailForm);
         }
-        return null;
+        return reList;
     }
 
     public WxPatientVo settingInfo(String openId, Integer patientId) {
