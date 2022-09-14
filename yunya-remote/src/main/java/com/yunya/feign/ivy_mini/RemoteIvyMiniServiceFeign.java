@@ -31,6 +31,6 @@ public interface RemoteIvyMiniServiceFeign {
     @GetMapping("/card/refund")
     boolean cardRefund(@RequestParam("cardId") Integer cardId);
 
-    @PostMapping("/hot/product/remove")
+    @PostMapping("/mini/hot/product/remove")
     ResponseResult<Boolean> removeHotSale(@Valid @RequestBody RemoveHotForm form);
 }
