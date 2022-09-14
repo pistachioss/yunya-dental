@@ -250,8 +250,7 @@ public class ProductServiceImpl implements IProductService {
         if (CollectionUtils.isNotEmpty(productIds)) {
             Integer type = form.getType();
             // 产品类型（0-商品 1-虚拟服务）
-            List<String> collect = productIds.stream().map(t -> type + "_" + t.toString()).collect(toList());
-            redisUtils.zRem(HOT_SALE_PRODUCT, collect);
+            redisUtils.zRem(HOT_SALE_PRODUCT, productIds.stream().map(t -> type + "_" + t.toString()).toArray());
         }
     }
 
