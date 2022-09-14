@@ -6,15 +6,10 @@ import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.BaseException;
-import com.yunya.models.discount.CouponAllocate;
-import com.yunya.models.discount.CouponCommonInfo;
-import com.yunya.models.discount.CouponFileInfo;
-import com.yunya.models.discount.DiscountCoupon;
+import com.yunya.models.discount.*;
 import com.yunya.modules.discount.enums.CouponTypeEnum;
 import com.yunya.modules.discount.form.DiscountCouponForm;
-import com.yunya.modules.discount.mapper.CouponAllocateMapper;
-import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
-import com.yunya.modules.discount.mapper.DiscountCouponMapper;
+import com.yunya.modules.discount.mapper.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +20,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCoupon;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
@@ -124,6 +119,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             couponCommonInfo.setIsOnlineSale(discountCouponForm.getIsOnlineSale());
             //更新基础信息
             couponCommonInfoBiz.updateById(couponCommonInfo);
+            couponCommonInfoBiz.removeHot(copy, discountCouponForm.getIsOnlineSale());
             discountCoupon.setCouponId(discountCouponForm.getId());
             discountCoupon = selectOne(discountCoupon);
             if (discountCoupon != null) {
@@ -159,6 +155,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             couponCommonInfo.setUpdTime(new Date());
             //基础信息表中修改数据
             couponCommonInfoBiz.updateById(couponCommonInfo);
+            couponCommonInfoBiz.removeHot(copy, discountCouponForm.getIsOnlineSale());
             discountCoupon.setCouponId(discountCouponForm.getId());
             discountCoupon = selectOne(discountCoupon);
             if (discountCoupon != null) {

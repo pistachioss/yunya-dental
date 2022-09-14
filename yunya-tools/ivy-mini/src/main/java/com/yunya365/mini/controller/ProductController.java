@@ -2,6 +2,7 @@ package com.yunya365.mini.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
+import com.yunya.feign.ivy_mini.domain.form.RemoveHotForm;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
@@ -64,5 +65,12 @@ public class ProductController extends BaseController{
     @ApiOperation("【小程序】查询商品分类或虚拟服务分类")
     public ResponseResult<List<ProductTypeVO>> cateGoryList(@PathVariable Integer type) {
         return ResponseUtil.success(productService.cateGoryList(type));
+    }
+
+    @PostMapping("/hot/product/remove")
+    @ApiOperation("【小程序】移除热销产品")
+    public ResponseResult<Boolean> removeHotSale(@Valid @RequestBody RemoveHotForm form) {
+        productService.removeHot(form);
+        return ResponseUtil.success();
     }
 }

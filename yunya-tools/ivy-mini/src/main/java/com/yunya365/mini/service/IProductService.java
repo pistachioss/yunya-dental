@@ -6,6 +6,7 @@ import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
+import com.yunya.feign.ivy_mini.domain.form.RemoveHotForm;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
@@ -85,4 +86,6 @@ public interface IProductService {
     FansAddressBO getAddress(Integer fansId, Integer addressId, Integer deliveryType);
 
     void freeStock(List<FreeStockForm> form, Integer type);
+
+    void removeHot(RemoveHotForm form);
 }

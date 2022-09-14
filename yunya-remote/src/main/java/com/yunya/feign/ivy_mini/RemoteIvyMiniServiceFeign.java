@@ -1,9 +1,11 @@
 package com.yunya.feign.ivy_mini;
 
+import com.yunya.feign.ivy_mini.domain.form.RemoveHotForm;
 import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
 import com.yunya.feign.ivy_mini.factory.RemoteIvyMiniServiceFeignFallBackFactory;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
+import com.yunya.framework.common.model.ResponseResult;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
@@ -28,4 +30,7 @@ public interface RemoteIvyMiniServiceFeign {
 
     @GetMapping("/card/refund")
     boolean cardRefund(@RequestParam("cardId") Integer cardId);
+
+    @PostMapping("/hot/product/remove")
+    ResponseResult<Boolean> removeHotSale(@Valid @RequestBody RemoveHotForm form);
 }

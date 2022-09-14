@@ -115,6 +115,7 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
             couponCommonInfo.setIsOnlineSale(rechargeCardForm.getIsOnlineSale());
             //更新基础信息
             couponCommonInfoBiz.updateById(couponCommonInfo);
+            couponCommonInfoBiz.removeHot(copy, rechargeCardForm.getIsOnlineSale());
             rechargeCard.setCouponId(rechargeCardForm.getId());
             rechargeCard = selectOne(rechargeCard);
             if(rechargeCard!=null){
@@ -146,6 +147,7 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
             couponCommonInfo.setUpdTime(new Date());
             //基础信息表中修改数据
             couponCommonInfoBiz.updateById(couponCommonInfo);
+            couponCommonInfoBiz.removeHot(copy, rechargeCardForm.getIsOnlineSale());
             rechargeCard.setCouponId(rechargeCardForm.getId());
             rechargeCard = selectOne(rechargeCard);
             if (rechargeCard != null) {

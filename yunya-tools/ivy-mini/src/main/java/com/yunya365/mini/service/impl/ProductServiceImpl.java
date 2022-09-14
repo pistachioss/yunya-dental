@@ -10,6 +10,7 @@ import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.bo.*;
+import com.yunya.feign.ivy_mini.domain.form.RemoveHotForm;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
@@ -34,6 +35,7 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Function;
 
+import static com.yunya.framework.common.constant.RedisConstants.*;
 import static com.yunya.framework.common.enums.TrueFalseEnum.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
 import static java.util.stream.Collectors.*;
@@ -242,6 +244,16 @@ public class ProductServiceImpl implements IProductService {
         }
     }
 
+    @Override
+    public void removeHot(RemoveHotForm form) {
+        Collection<Integer> productIds = form.getProductIds();
+        if (CollectionUtils.isNotEmpty(productIds)) {
+            Integer type = form.getType();
+            // 产品类型（0-商品 1-虚拟服务）
+            List<String> collect = productIds.stream().map(t -> type + "_" + t.toString()).collect(toList());
+            redisUtils.zRem(HOT_SALE_PRODUCT, collect);
+        }
+    }
 
     private List<OrderItemBO> assembleOrderItemBO(List<ProductBO> itemList) {
         return itemList.stream().map(t -> {

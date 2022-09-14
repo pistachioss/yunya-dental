@@ -9,11 +9,14 @@ import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.CouponCommonInfoVO;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
+import com.yunya.feign.ivy_mini.RemoteIvyMiniServiceFeign;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
+import com.yunya.feign.ivy_mini.domain.form.RemoveHotForm;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.TrueFalseEnum;
 import com.yunya.models.discount.*;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
@@ -52,6 +55,8 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
     private CouponAllocateMapper allocateMapper;
     @Resource
     private CardBiz cardBiz;
+    @Resource
+    private RemoteIvyMiniServiceFeign ivyMiniServiceFeign;
     /**
      * 条件查询卡券公用信息列表
      *
@@ -195,5 +200,15 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
                 .andEqualTo("orgId", COMPANY_ORGID)
                 .andEqualTo("status", 0);
         return cardBiz.selectCountByExample(example);
+    }
+
+    public void removeHot(CouponCommonInfo old, Boolean isOnlineSale) {
+        if ((Objects.nonNull(old.getIsOnlineSale()) && old.getIsOnlineSale())
+                && !isOnlineSale) {
+            RemoveHotForm removeHotForm = new RemoveHotForm();
+            removeHotForm.setProductIds(Collections.singleton(old.getId()));
+            removeHotForm.setType(TrueFalseEnum.TRUE.getCode());
+            ivyMiniServiceFeign.removeHotSale(removeHotForm);
+        }
     }
 }

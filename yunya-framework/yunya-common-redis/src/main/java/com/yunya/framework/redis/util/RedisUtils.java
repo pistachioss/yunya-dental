@@ -365,4 +365,16 @@ public class RedisUtils {
           @NonNull String key, long start, long end) {
     return zSetOps.reverseRangeWithScores(key, start, end);
   }
+
+  /**
+   * 移除有序集 key 中的一个或多个成员，不存在的成员将被忽略。 当 key 存在但不是有序集类型时，返回一个错误。
+   *
+   * @param key 一定不能为 {@literal null}.
+   * @param members 一定不能为 {@literal null}.
+   * @return 被成功移除的成员的数量，不包括被忽略的成员
+   * @see <a href="https://redis.io/commands/zrem">Redis Documentation: ZREM</a>
+   */
+  public Long zRem(@NonNull String key, Object... members) {
+    return zSetOps.remove(key, members);
+  }
 }

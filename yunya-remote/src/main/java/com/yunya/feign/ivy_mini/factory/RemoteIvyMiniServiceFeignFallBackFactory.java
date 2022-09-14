@@ -1,8 +1,10 @@
 package com.yunya.feign.ivy_mini.factory;
 
 import com.yunya.feign.ivy_mini.RemoteIvyMiniServiceFeign;
+import com.yunya.feign.ivy_mini.domain.form.RemoveHotForm;
 import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.framework.common.model.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +28,11 @@ public class RemoteIvyMiniServiceFeignFallBackFactory implements RemoteIvyMiniSe
     @Override
     public boolean cardRefund(Integer cardId) {
         return false;
+    }
+
+    @Override
+    public ResponseResult<Boolean> removeHotSale(RemoveHotForm form) {
+        return null;
     }
 
 }
