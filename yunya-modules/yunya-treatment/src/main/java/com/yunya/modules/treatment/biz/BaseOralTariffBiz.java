@@ -5,7 +5,9 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.domain.form.FreeStockForm;
 import com.yunya.feign.discount.domain.form.LockStockForm;
+import com.yunya.feign.ivy_mini.RemoteIvyMiniServiceFeign;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
+import com.yunya.feign.ivy_mini.domain.form.RemoveHotForm;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -16,27 +18,18 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.treatment.domain.form.*;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
-import com.yunya.feign.treatment.domain.vo.BaseOralTariffExportVO;
-import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
-import com.yunya.feign.treatment.domain.vo.BaseOralTariffVO;
-import com.yunya.feign.treatment.domain.vo.ClinicItemPriceVO;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.TrueFalseEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.*;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.modules.treatment.mapper.OrderDetailMapper;
-import com.yunya.models.tariff.BaseOralTariffCategory;
-import com.yunya.models.tariff.BaseOralTariffHistory;
-import com.yunya.models.tariff.ClinicOralTariff;
 import com.yunya.models.treatment.OrderDetail;
-import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
-import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
+import com.yunya.modules.treatment.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -93,7 +86,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   private ExecutorService importExcelThreadPool;
   @Resource
   private BaseOralTariffCategoryBiz baseOralTariffCategoryBiz;
-
+  @Resource
+  private RemoteIvyMiniServiceFeign ivyMiniServiceFeign;
 
   /**
    * 根据ID查询商品商品信息（包含门诊商品商品价格信息）
@@ -323,7 +317,13 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     entity.setUpdName(BaseContextHandler.getName());
     entity.setId(id);
     int i = mapper.updateByPrimaryKeySelective(entity);
-
+    if ((Objects.nonNull(resultData.getIsOnlineSale()) && resultData.getIsOnlineSale())
+            && !form.getIsOnlineSale()) {
+      RemoveHotForm removeHotForm = new RemoveHotForm();
+      removeHotForm.setProductIds(Collections.singleton(resultData.getId()));
+      removeHotForm.setType(TrueFalseEnum.TRUE.getCode());
+      ivyMiniServiceFeign.removeHotSale(removeHotForm);
+    }
     List<ClinicItemPriceForm> clinicItemPriceForms = form.getClinicItemPriceForms();
 
     // 更新门诊商品商品
