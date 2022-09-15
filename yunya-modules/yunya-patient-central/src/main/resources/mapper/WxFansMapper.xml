@@ -72,7 +72,7 @@
     </resultMap>
     <select id="findWechatList" resultMap="WxWechatResultMap">
         select wf.id,wf.nick_name as nickName,wf.open_id as openId,wf.register_mobile as mobile,
-        wf.crt_time as crtTime,wf.bind as isBind,wf.fans_status as fansStatus,wf.address,
+        wf.crt_time as crtTime,wf.source_type as sourceType,wf.source_type_name as sourceTypeName,wf.bind as isBind,wf.fans_status as fansStatus,wf.address,
         wfb.patient_id as patientId,pbi.name as name,wfb.dictionary_id as dictionaryId,
         case when wf.sex = 1 then '男'
         when wf.sex = 2 then '女'

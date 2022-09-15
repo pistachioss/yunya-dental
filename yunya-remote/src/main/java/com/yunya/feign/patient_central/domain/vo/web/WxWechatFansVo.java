@@ -42,6 +42,10 @@ public class WxWechatFansVo implements Serializable {
     private String address;
     @ApiModelProperty("绑定患者")
     private String bindPant;
+    @ApiModelProperty("用户来源")
+    private Integer sourceType;
+    @ApiModelProperty("用户来源名称")
+    private String sourceTypeName;
     @ApiModelProperty("用户状态（0-注销 1-禁用 2-正常 3-注销中）")
     private Integer fansStatus;
     @ApiModelProperty("患者关系列表，用于解绑")
