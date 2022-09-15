@@ -28,7 +28,7 @@ public class GoodsDetailVO {
     @ApiModelProperty(value = "库存")
     private Integer stock;
     @ApiModelProperty(value = "商品详情")
-    private String detailHtml;
+    private List<String> detailHtml;
     @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")
     private Integer productType;
 }

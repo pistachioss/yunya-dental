@@ -121,13 +121,15 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
             vo.setProductPrice(commonInfo.getSoldAmount());
             List<CouponFileInfo> couponFileInfos = fileInfoBiz.listByCouponIds(Lists.newArrayList(couponId), null);
             if (CollectionUtils.isNotEmpty(couponFileInfos)) {
-                Optional<CouponFileInfo> fileInfo = couponFileInfos.stream()
-                        .filter(t -> Objects.equals((byte) 2, t.getFileType())).findFirst();
+                List<String> fileInfo = couponFileInfos.stream()
+                        .filter(t -> Objects.equals((byte) 2, t.getFileType()) && StringUtils.isNotBlank(t.getPath()))
+                        .map(CouponFileInfo::getPath)
+                        .collect(toList());
                 List<String> fileInfo1 = couponFileInfos.stream()
                         .filter(t -> Objects.equals((byte) 0, t.getFileType()) && StringUtils.isNotBlank(t.getPath()))
                         .map(CouponFileInfo::getPath)
                         .collect(toList());
-                vo.setDetailHtml(fileInfo.map(CouponFileInfo::getPath).orElse(null));
+                vo.setDetailHtml(fileInfo);
                 vo.setProductPics(fileInfo1);
             }
             vo.setStock(unsold(couponId));

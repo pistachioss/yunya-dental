@@ -145,7 +145,9 @@ public class ProductServiceImpl implements IProductService {
         detailVO.setProductId(tariff.getId());
         detailVO.setProductName(tariff.getName());
         String itemPic = tariff.getItemPic();
+        String detailHtml = tariff.getDetailHtml();
         detailVO.setProductPics(StringUtils.isNotBlank(itemPic) ? Lists.newArrayList(Splitter.on(",").split(itemPic)) : null);
+        detailVO.setDetailHtml(StringUtils.isNotBlank(detailHtml) ? Lists.newArrayList(Splitter.on(",").split(detailHtml)) : null);
         detailVO.setCategoryId(tariff.getOralTariffCategoryId());
         detailVO.setProductPrice(tariff.getPrice());
         return detailVO;
