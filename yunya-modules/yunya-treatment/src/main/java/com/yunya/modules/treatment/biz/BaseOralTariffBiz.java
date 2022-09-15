@@ -21,7 +21,6 @@ import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.enums.TrueFalseEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
@@ -321,7 +320,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
             && !form.getIsOnlineSale()) {
       RemoveHotForm removeHotForm = new RemoveHotForm();
       removeHotForm.setProductIds(Collections.singleton(resultData.getId()));
-      removeHotForm.setType(TrueFalseEnum.TRUE.getCode());
+      removeHotForm.setType(FALSE.getCode());
       ivyMiniServiceFeign.removeHotSale(removeHotForm);
     }
     List<ClinicItemPriceForm> clinicItemPriceForms = form.getClinicItemPriceForms();
