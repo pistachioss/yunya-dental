@@ -15,6 +15,7 @@ import com.yunya365.mini.service.IWxFansService;
 import com.yunya365.mini.service.WxApi;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -40,7 +41,8 @@ public class WxFansServiceImpl implements IWxFansService {
     private WxApi wxApi;
     @Resource
     private RemotePatientCentralServiceFeign patientFeign;
-
+    @Value("${wx.mini.name}")
+    private String miniName;
 
     private static final String HEAD_PREFIX = "thirdwx.qlogo.cn";
 
@@ -54,6 +56,8 @@ public class WxFansServiceImpl implements IWxFansService {
         WxSaveFansForm fansForm = new WxSaveFansForm();
         fansForm.setSessionBO(sessionBO);
         userInfo.setGender(Objects.isNull(userInfo.getGender()) || Objects.equals(userInfo.getGender(), 0) ? TrueFalseEnum.TRUE.getCode() : userInfo.getGender());
+        userInfo.setSourceType(1);
+        userInfo.setSourceTypeName(miniName);
         fansForm.setUserInfo(userInfo);
         fansForm.setFansId(Objects.isNull(wxFans) ? null : wxFans.getId());
         patientFeign.saveMiniAuth(fansForm);

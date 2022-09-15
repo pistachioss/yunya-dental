@@ -25,6 +25,7 @@ wechat:
   appId: "wxe5ef531249718521"
   appSecret: "9844369cecae44acbb6da08b2c317f6e"
   encodingAESKey: "Ei3GbonFb37BVPdz3bi33oi7BpbOAogIbvGeeDb3eES"
+  name: "艾维口腔"
 
 mp:
   domain: http://ivy2.yunya365.com

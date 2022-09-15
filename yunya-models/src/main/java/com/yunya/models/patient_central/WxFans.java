@@ -142,6 +142,18 @@ public class WxFans {
     private String lastchatkfId;
 
     /**
+     * 用户来源（0-公众号 1-小程序）
+     */
+    @Column(name = "source_type")
+    private Integer sourceType;
+
+    /**
+     * 用户来源主体
+     */
+    @Column(name = "source_type_name")
+    private String sourceTypeName;
+
+    /**
      * 用户状态（0-注销 1-禁用 2-正常 3-注销中）
      */
     @Column(name = "fans_status")

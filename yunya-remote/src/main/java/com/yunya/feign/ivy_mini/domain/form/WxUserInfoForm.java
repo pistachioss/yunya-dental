@@ -32,4 +32,8 @@ public class WxUserInfoForm {
     private Double latitude;
     @ApiModelProperty(value = "最后一次登录地址")
     private String lastLoginAddress;
+    @ApiModelProperty(value = "用户来源（0-公众号 1-小程序）")
+    private Integer sourceType;
+    @ApiModelProperty(value = "用户来源主体")
+    private String sourceTypeName;
 }

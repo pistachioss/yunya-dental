@@ -31,6 +31,7 @@ wx:
     appSecret: 2cfb0904bc87f47fe73ddaaeb3d7359a
     corpId: ww853499493423c56e
     corpSecret: Rzu-GfUVBgsKXGyD_3Tipfq6I_usU-sodY4U8MF1Cts
+    name: "云牙艾维口腔"
   pay:
     appId: wx9d9209edf9634d94
     michId: 1319671401

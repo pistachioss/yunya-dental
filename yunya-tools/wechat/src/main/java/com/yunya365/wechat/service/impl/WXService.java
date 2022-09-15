@@ -102,6 +102,8 @@ public class WXService extends AbstractWxBaseApi {
     private WxMsgTemplatesMapper templatesMapper;
     @Value("${mp.domain}")
     private String mpDomain;
+    @Value("${wechat.name}")
+    private String wechatName;
     @Resource(name = "customizeThreadPool")
     private ExecutorService cardThreadPool;
     @Resource
@@ -181,6 +183,8 @@ public class WXService extends AbstractWxBaseApi {
         if (StringUtils.isNotBlank(model.getMobile()) && StringUtils.isNotBlank(model.getUserName())) {
             wxFansBinds = this.buildWxFansBind(wxFans, model);
         }
+        wxFans.setSourceType(0);
+        wxFans.setSourceTypeName(wechatName);
         fansSaveForm.setWxFans(wxFans);
         fansSaveForm.setFansBind(wxFansBinds);
         //调用患者服务的保存微信用户接口，患者绑定关系表
@@ -737,6 +741,8 @@ public class WXService extends AbstractWxBaseApi {
         wxFans.setCountry(userJson.getString("country"));
         wxFans.setHeadImgurl(userJson.getString("headimgurl"));
         wxFans.setUnionId(userJson.getString("unionid"));
+        wxFans.setSourceType(0);
+        wxFans.setSourceTypeName(wechatName);
         fansSaveForm.setWxFans(wxFans);
         patientFeign.saveWx(fansSaveForm);
     }
