@@ -2425,7 +2425,7 @@
                 </if>
             </if>
             <if test="query.employeeIds!=null and query.employeeIds.length>0">
-                and t.executor_id in
+                and if(#{query.isConsulter} = 0, t.executor_id, t.consulter_id) in
                 <foreach collection="query.employeeIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
