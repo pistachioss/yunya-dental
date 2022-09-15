@@ -1,8 +1,13 @@
 package com.yunya.models.appointment;
 
+import lombok.Data;
+
 import java.util.Date;
 import javax.persistence.*;
 
+
+@Table(name = "reservation")
+@Data
 public class Reservation {
     /**
      * 主键
