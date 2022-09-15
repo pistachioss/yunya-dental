@@ -190,10 +190,10 @@
         ) br ON brd.refund_id = br.refundId
         <where>
             <if test="query.isConsulter == 0">
-                AND brd.executor_id > 0
+                AND brd.executor_id = #{query.employeeId}
             </if>
             <if test="query.isConsulter == 1">
-                AND brd.consulter_id > 0
+                AND brd.consulter_id = #{query.employeeId}
             </if>
         </where>
         ) brd
