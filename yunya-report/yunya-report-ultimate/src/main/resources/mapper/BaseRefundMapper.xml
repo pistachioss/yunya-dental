@@ -234,24 +234,23 @@
         brd.refund_amount,
         brd.refund_id,
         brd.item_id,
-        brd.item_type,
-        if(query.query.isConsulter = 0, brd.executor_id, brd.consulter_id) as employeeId
+        brd.item_type
         FROM
         base_refund_detail brd
-        ) brd
-        LEFT JOIN base_tariff_info bti ON brd.item_type = bti.item_type
-        AND brd.item_id = bti.item_id
         <where>
             <if test="query.refundId != null">
                 and brd.refund_id = #{query.refundId}
             </if>
             <if test="query.isConsulter == 0">
-                AND brd.employeeId = #{query.employeeId}
+                AND brd.executor_id = #{query.employeeId}
             </if>
             <if test="query.isConsulter == 1">
-                AND brd.employeeId = #{query.employeeId}
+                AND brd.consulter_id = #{query.employeeId}
             </if>
         </where>
+        ) brd
+        LEFT JOIN base_tariff_info bti ON brd.item_type = bti.item_type
+        AND brd.item_id = bti.item_id
     </select>
 
     <!-- 根据条件查询助手配诊退费账单明细列表 -->
