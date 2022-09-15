@@ -51,5 +51,9 @@ public class WxFansVo implements Serializable {
     private Integer isBind;
     @ApiModelProperty("最后一次登录地址")
     private String lastLoginAddress;
+    @ApiModelProperty("用户来源")
+    private Integer sourceType;
+    @ApiModelProperty("用户来源名称")
+    private String sourceTypeName;
 }
 

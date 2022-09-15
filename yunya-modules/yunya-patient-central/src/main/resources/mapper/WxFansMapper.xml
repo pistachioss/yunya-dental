@@ -106,7 +106,8 @@
         select wf.last_login_address as lastLoginAddress,wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as
         openId,wf.union_id as
         unionId,pbi.name,wf.register_mobile as mobile,
-        wf.remark,wf.crt_time as crtTime,wf.bind as isBind,
+        wf.remark,wf.crt_time as crtTime,wf.bind as isBind
+        ,wf.source_type as sourceType,wf.source_type_name as sourceTypeName,
         case when wf.sex = 1 then '男'
         when wf.sex = 2 then '女'
         else '未知'
