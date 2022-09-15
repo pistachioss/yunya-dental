@@ -188,13 +188,14 @@
             </if>
         </where>
         ) br ON brd.refund_id = br.refundId
-        WHERE
-        <if test="query.isConsulter == 0">
-            AND brd.executor_id > 0
-        </if>
-        <if test="query.isConsulter == 1">
-            AND brd.consulter_id > 0
-        </if>
+        <where>
+            <if test="query.isConsulter == 0">
+                AND brd.executor_id > 0
+            </if>
+            <if test="query.isConsulter == 1">
+                AND brd.consulter_id > 0
+            </if>
+        </where>
         ) brd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
