@@ -246,10 +246,10 @@
                 and brd.refund_id = #{query.refundId}
             </if>
             <if test="query.isConsulter == 0">
-                AND brd.employeeId = #{employeeId}
+                AND brd.employeeId = #{query.employeeId}
             </if>
             <if test="query.isConsulter == 1">
-                AND brd.employeeId = #{employeeId}
+                AND brd.employeeId = #{query.employeeId}
             </if>
         </where>
     </select>
