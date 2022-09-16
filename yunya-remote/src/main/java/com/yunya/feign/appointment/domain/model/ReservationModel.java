@@ -14,9 +14,9 @@ import java.util.Date;
 
 /**
  * @program: yunya-dental
- * @description: 预约意向登记渠道来源申请参数
+ * @description: 预约意向登记申请参数
  **/
-@ApiModel(value = "ReservationResourceModel",description = "预约意向登记渠道来源申请参数")
+@ApiModel(value = "ReservationResourceModel",description = "预约意向登记申请参数")
 @Data
 public class ReservationModel implements Serializable {
 

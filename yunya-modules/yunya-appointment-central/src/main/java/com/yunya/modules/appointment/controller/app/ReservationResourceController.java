@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
+import com.yunya.feign.appointment.domain.model.ReservationResourceModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
 import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
 import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
@@ -47,8 +48,8 @@ public class ReservationResourceController {
 
     @ApiOperation("新增预约意向登记渠道来源")
     @PostMapping
-    public ResponseResult<T> addOnlineAppointment(@RequestBody @NotNull(message = "sourceName不能为空") String sourceName) {
-        return biz.add(sourceName);
+    public ResponseResult<T> addOnlineAppointment(@RequestBody @NotNull(message = "sourceName不能为空") ReservationResourceModel model) {
+        return biz.add(model);
     }
 
     @ApiOperation("修改预约意向登记渠道来源")
@@ -56,8 +57,8 @@ public class ReservationResourceController {
             @ApiImplicitParam(name = "id", value = "预约渠道来源ID",required = true, dataTypeClass = Integer.class)
     )
     @PutMapping(value = "/{id}")
-    public ResponseResult<T> updateOnlineAppointment(@PathVariable("id") @NotNull(message = "ID不能为空") Integer id, @RequestBody @NotNull(message = "sourceName不能为空") String sourceName) {
-        return biz.update(id, sourceName);
+    public ResponseResult<T> updateOnlineAppointment(@PathVariable("id") @NotNull(message = "ID不能为空") Integer id, @RequestBody @NotNull(message = "sourceName不能为空") ReservationResourceModel model) {
+        return biz.update(id, model);
     }
 
     @ApiOperation("删除预约意向登记渠道来源")

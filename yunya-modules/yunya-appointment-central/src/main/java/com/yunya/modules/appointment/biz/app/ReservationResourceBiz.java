@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz.app;
 
+import com.yunya.feign.appointment.domain.model.ReservationResourceModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -17,9 +18,9 @@ import java.util.Date;
 @Service
 public class ReservationResourceBiz extends BaseBiz<ReservationResourceMapper, ReservationResource> {
 
-    public ResponseResult add(String sourceName) {
+    public ResponseResult add(ReservationResourceModel entity) {
         ReservationResource model = new ReservationResource();
-        model.setSourceName(sourceName);
+        model.setSourceName(entity.getSourceName());
         model.setCrtName(BaseContextHandler.getUsername());
         int status = mapper.insertSelective(model);
         if (status <= 0) {
@@ -28,12 +29,12 @@ public class ReservationResourceBiz extends BaseBiz<ReservationResourceMapper, R
         return ResponseUtil.success(model.getId());
     }
 
-    public ResponseResult update(Integer id, String sourceName) {
+    public ResponseResult update(Integer id, ReservationResourceModel entity) {
         ReservationResource model = mapper.selectByPrimaryKey(id);
         if (model == null){
             throw new ClientServiceException("修改的数据不存在！", OperationCodeConstants.DATA_NOT_EXIST);
         }
-        model.setSourceName(sourceName);
+        model.setSourceName(entity.getSourceName());
         model.setUpdName(BaseContextHandler.getUsername());
         model.setUpdTime(new Date(System.currentTimeMillis()));
         int status = mapper.updateByPrimaryKeySelective(model);
