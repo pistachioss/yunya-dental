@@ -98,6 +98,7 @@ public interface StringPool {
 
   String TEST_TOKEN = "Bearer test";
   String TEST = "test";
+  String DEV = "dev";
   String PROD = "prod";
 
   /** 默认的根节点path */

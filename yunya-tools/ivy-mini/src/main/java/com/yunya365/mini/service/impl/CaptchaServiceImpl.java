@@ -103,7 +103,7 @@ public class CaptchaServiceImpl implements ICaptchaService {
 
     private ResponseResult sendCaptcha(String phoneNumber, String captcha) {
         ResponseResult result;
-        if (!Objects.equals(StringPool.PROD, env)) {
+        if (Objects.equals(StringPool.DEV, env)) {
             result = ResponseUtil.success();
         } else {
             SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
@@ -119,7 +119,7 @@ public class CaptchaServiceImpl implements ICaptchaService {
     private String buildSmsCaptcha() {
         String captcha;
         // 开发环境
-        if (!StringPool.PROD.equals(env)) {
+        if (StringPool.DEV.equals(env)) {
             captcha = "1234";
         }
         // 生产环境
