@@ -109,7 +109,7 @@ public class CaptchaServiceImpl implements ICaptchaService {
             SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
             smsVerifyCodeModel.setMobile(phoneNumber);
             smsVerifyCodeModel.setVerifyCode(captcha);
-            smsVerifyCodeModel.setEventCode(SmsAutosendEventEnum.FORGET_PASSWORD.getCode());
+            smsVerifyCodeModel.setEventCode(SmsAutosendEventEnum.PATIENT_BIND_INVITE.getCode());
             //调用第三方验证码接口
             result = smsServiceFeign.sendVerifyCode(smsVerifyCodeModel);
         }
