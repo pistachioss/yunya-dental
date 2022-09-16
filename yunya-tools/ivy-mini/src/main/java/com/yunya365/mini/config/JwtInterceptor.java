@@ -43,6 +43,8 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        String requestURI = request.getRequestURI();
+        log.info("请求url:{}", requestURI);
         if (!(handler instanceof HandlerMethod)) {
             return true;
         }
@@ -56,7 +58,6 @@ public class JwtInterceptor implements HandlerInterceptor {
             return true;
         }
         String token = request.getHeader(CommonConstants.TOKEN_HEADER);
-        String requestURI = request.getRequestURI();
         log.info("请求url:{}，token: {}", requestURI, token);
         if  (StringUtils.isNotBlank(requestURI) && requestURI.startsWith("/back/manager")) {
             pcInterceptor(token);
