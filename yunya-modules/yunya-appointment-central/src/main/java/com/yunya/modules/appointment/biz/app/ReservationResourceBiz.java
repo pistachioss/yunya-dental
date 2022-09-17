@@ -42,7 +42,10 @@ public class ReservationResourceBiz extends BaseBiz<ReservationResourceMapper, R
     }
 
     public ResponseResult delete(Integer id) {
-        int status = mapper.deleteByPrimaryKey(id);
+        ReservationResource model = mapper.selectByPrimaryKey(id);
+        model.setId(id);
+        model.setInservice(false);
+        int status = mapper.updateByPrimaryKeySelective(model);
         return ResponseUtil.success(status);
     }
 

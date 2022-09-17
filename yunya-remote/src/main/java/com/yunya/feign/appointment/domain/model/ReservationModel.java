@@ -31,7 +31,6 @@ public class ReservationModel implements Serializable {
      */
     @ApiModelProperty(value = "预约意向渠道ID",required = true)
     @NotNull(message = "预约意向渠道ID不能为空")
-    @NotBlank(message = "预约意向渠道ID不能为空")
     private Integer reservationSourceId;
 
     /**

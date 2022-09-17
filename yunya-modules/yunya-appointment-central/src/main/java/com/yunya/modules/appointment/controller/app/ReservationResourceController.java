@@ -48,7 +48,8 @@ public class ReservationResourceController {
 
     @ApiOperation("新增预约意向登记渠道来源")
     @PostMapping
-    public ResponseResult<T> addOnlineAppointment(@RequestBody @NotNull(message = "sourceName不能为空") ReservationResourceModel model) {
+    @CurrentUser
+    public ResponseResult<T> addOnlineAppointment(@RequestBody ReservationResourceModel model) {
         return biz.add(model);
     }
 
@@ -57,7 +58,8 @@ public class ReservationResourceController {
             @ApiImplicitParam(name = "id", value = "预约渠道来源ID",required = true, dataTypeClass = Integer.class)
     )
     @PutMapping(value = "/{id}")
-    public ResponseResult<T> updateOnlineAppointment(@PathVariable("id") @NotNull(message = "ID不能为空") Integer id, @RequestBody @NotNull(message = "sourceName不能为空") ReservationResourceModel model) {
+    @CurrentUser
+    public ResponseResult<T> updateOnlineAppointment(@PathVariable("id") @NotNull(message = "预约渠道来源ID不能为空") Integer id, @RequestBody ReservationResourceModel model) {
         return biz.update(id, model);
     }
 
@@ -67,12 +69,13 @@ public class ReservationResourceController {
     )
     @DeleteMapping("/{id}")
     @CurrentUser
-    public ResponseResult<T> deleteOnlineAppointmentById(@PathVariable("id") @NotNull(message = "预约申请ID不能为空") Integer id) {
+    public ResponseResult<T> deleteOnlineAppointmentById(@PathVariable("id") @NotNull(message = "预约渠道来源ID不能为空") Integer id) {
         return biz.delete(id);
     }
 
     @ApiOperation("获取预约意向登记渠道来源列表")
     @PostMapping("/list")
+    @CurrentUser
     public ResponseResult<ReservationResource> find() {
         return biz.list();
     }

@@ -259,7 +259,7 @@ management:
 # 忽略网关鉴权的请求路径（需要忽略的路径前缀 /white）
 gate:
   ignore:
-    startWith: /wxFansBind,/patient/wx,/discount/wx,/aliyunoss,/attendanceAddressSet/clinicList,/ivy/mini,/white,/auth/jwt,/v2/api-docs,/callback/,/central/paizhaohuidiao,/coupon/card/QRCode/init,/registration/permit/add,/registration/permit/userExistsFind,/dict/permit/item/list,/unlock,/user/authorization/code,/user/forget/password,/smsSignatureSet/signSmsReport,/smsTemplateSet/templateSmsReport,/smsSendMessage/smsReport,/smsChargeOrder/notifyUrl,/smsChargeOrder/redirectUrl,/wxVip,/duiba/shop,/appointment/online/,/wxFans/getOwnWxFans,/wxFansBind/bindPatientList,/organization/list,/apidoc,/registration/permit/adult/add,/registration/permit/children/add,/origin/originalTypeAndChildren,/user/list,/central/likePatient,/clinicLiveCode/list,/permit/registration/one,/wxUser/info,/clinicLiveCodeVisit/click
+    startWith: /wxFansBind,/patient/wx,/discount/wx,/aliyunoss,/attendanceAddressSet/clinicList,/ivy/mini,/white,/auth/jwt,/v2/api-docs,/callback/,/central/paizhaohuidiao,/coupon/card/QRCode/init,/registration/permit/add,/registration/permit/userExistsFind,/dict/permit/item/list,/unlock,/user/authorization/code,/user/forget/password,/smsSignatureSet/signSmsReport,/smsTemplateSet/templateSmsReport,/smsSendMessage/smsReport,/smsChargeOrder/notifyUrl,/smsChargeOrder/redirectUrl,/wxVip,/duiba/shop,/appointment/online/,/wxFans/getOwnWxFans,/wxFansBind/bindPatientList,/organization/list,/apidoc,/registration/permit/adult/add,/registration/permit/children/add,/origin/originalTypeAndChildren,/user/list,/central/likePatient,/clinicLiveCode/list,/permit/registration/one,/wxUser/info,/clinicLiveCodeVisit/click,/reservation
 
 auth:
   serviceId: yunya-auth
