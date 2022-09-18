@@ -83,7 +83,7 @@ public class SmsServiceRest {
      */
     @ApiOperation(value = "发送短信验证码")
     @RequestMapping(value = "/sms/sendVerifyCode", method = RequestMethod.POST)
-    public ResponseResult<T> sendVerifyCode(@RequestBody @Validated SmsVerifyCodeModel smsVerifyCodeModel) {
+    public ResponseResult sendVerifyCode(@RequestBody @Validated SmsVerifyCodeModel smsVerifyCodeModel) {
         return smsSendRecordBiz.sendVerifyCode(smsVerifyCodeModel);
     }
 

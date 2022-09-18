@@ -29,7 +29,7 @@ public class RemoteSmsServiceFallBackFactory implements RemoteSmsServiceFeign {
     }
 
     @Override
-    public ResponseResult<T> sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
+    public ResponseResult sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
         return null;
     }
 
