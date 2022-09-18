@@ -24,6 +24,10 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @Data
 @ToString
 public class ClinicEmployeeWorkloadOfOperationVO extends ClinicEmployeBonusCoefficientVO implements Serializable {
+  /** 员工工作量（元） */
+  @Excel(name = "员工工作量（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("员工工作量（元）")
+  private BigDecimal employeeWorkload;
   /** 应收工作量（元） */
   @Excel(name = "应收工作量（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("应收工作量（元）")

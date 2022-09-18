@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.mapper.BaseTariffFellowupRelationMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.tariff.BaseTariffFellowupRelation">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="base_tariff_id" property="baseTariffId" jdbcType="INTEGER"/>
+        <result column="fellow_up" property="fellowUp" jdbcType="INTEGER"/>
+        <result column="fellow_up_case" property="fellowUpCase" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="baseColumns">
+        id, base_tariff_id, fellow_up, fellow_up_case
+    </sql>
+    <insert id="batchSave">
+        insert into base_tariff_fellowup_relation(base_tariff_id,fellow_up,fellow_up_case,crt_id,crt_name)
+        values
+        <foreach collection="lists" item="item" separator=",">
+            (#{item.baseTariffId},#{item.fellowUp},#{item.fellowUpCase},#{item.crtId},#{item.crtName})
+        </foreach>
+    </insert>
+
+    <update id="batchUpdate">
+        update base_tariff_fellowup_relation
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="base_tariff_id=case" suffix="end,">
+                <foreach collection="updateList" item="item" index="i">
+                    <if test="item.baseTariffId != null">
+                        when id=#{item.id} then #{item.baseTariffId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="fellow_up=case" suffix="end,">
+                <foreach collection="updateList" item="item" index="i">
+                    <if test="item.fellowUp != null">
+                        when id=#{item.id} then #{item.fellowUp}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="fellow_up_case=case" suffix="end,">
+                <foreach collection="updateList" item="item" index="i">
+                    <if test="item.fellowUpCase != null and item.fellowUpCase != ''">
+                        when id=#{item.id} then #{item.fellowUpCase}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="inservice=case" suffix="end,">
+                <foreach collection="updateList" item="item" index="i">
+                    <if test="item.inservice != null">
+                        when id=#{item.id} then #{item.inservice}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_id=case" suffix="end,">
+                <foreach collection="updateList" item="item" index="i">
+                    <if test="item.updId!= null">
+                        when id=#{item.id} then #{item.updId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_name=case" suffix="end,">
+                <foreach collection="updateList" item="item" index="i">
+                    <if test="item.updName != null and item.updName != ''">
+                        when id=#{item.id} then #{item.updName}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="updateList" item="item" separator="or">
+            id=#{item.id}
+        </foreach>
+    </update>
+    <delete id="batchDelete">
+        delete from base_tariff_fellowup_relation where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="queryByItemId" resultMap="BaseResultMap">
+        select
+        <include refid="baseColumns"/>
+        from base_tariff_fellowup_relation
+        where base_tariff_id = #{itemId}
+    </select>
+    <select id="selectByBaseTariffIds" resultMap="BaseResultMap">
+        select
+        <include refid="baseColumns"/>
+        from base_tariff_fellowup_relation
+        where base_tariff_id in
+        <foreach collection="baseTariffIds" item="btfId" open="(" separator="," close=")">
+            #{btfId}
+        </foreach>
+    </select>
+
+</mapper>

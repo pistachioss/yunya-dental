@@ -2,6 +2,8 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.treatment.domain.form.BaseOralTariffCategoryForm;
 import com.yunya.feign.treatment.domain.model.BaseOralTariffCategoryModel;
 import com.yunya.feign.treatment.domain.query.BaseOralTariffCategoryQueryForm;
@@ -149,5 +151,9 @@ public class BaseOralTariffCategoryBiz
       throw new ClientServiceException("删除失败，ID为'" + id + "'的商品分类已被管理！", DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(id);
+  }
+
+  public List<ProductTypeVO> categortyList(ProductTypeQueryForm queryForm) {
+    return mapper.selectProductTypeList(queryForm);
   }
 }

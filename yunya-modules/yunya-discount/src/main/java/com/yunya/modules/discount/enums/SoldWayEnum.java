@@ -5,6 +5,7 @@ import java.util.*;
 public enum SoldWayEnum {
     ON_LINE(0, "线上"),
     OFF_LINE(1, "线下"),
+    MINI_ORDER(2, "小程序订单"),
     ;
 
     private Integer code;

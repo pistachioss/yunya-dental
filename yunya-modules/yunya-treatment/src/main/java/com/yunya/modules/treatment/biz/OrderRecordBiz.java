@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.emr.RemoteEmrServiceFeign;
@@ -29,6 +30,7 @@ import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.mapper.*;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,7 +38,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -57,6 +61,7 @@ import static com.yunya.framework.common.constant.RedisConstants.*;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
   /** 缓存 */
@@ -92,6 +97,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   /** 电子病历 */
   @Autowired private RemoteEmrServiceFeign remoteEmrServiceFeign;
 
+  private boolean lock;
+
   /**
    * 根据就诊ID查询开单详情信息
    *
@@ -116,6 +123,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           billRecordMapper.findOrderAndBill4App(orderRecord.getTreatmentRecordId());
       if (null != orderAndBill4App) {
         resultData.setPrivilegeAmount(orderAndBill4App.getPrivilegeAmount());
+        resultData.setReceivableAmount(orderAndBill4App.getReceivableAmount());
+        resultData.setActualReceivableAmount(orderAndBill4App.getActualReceivableAmount());
+        resultData.setReceivedAmount(orderAndBill4App.getReceivedAmount());
+        resultData.setDebtAmount(orderAndBill4App.getDebtAmount());
       }
       orderDetails = orderDetailBiz.findOrderDetailVOList(orderRecordId, (byte) 0);
     }
@@ -127,8 +138,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     // 处理门诊价目表价格
     if (StringHelper.isNotEmpty(orderDetails)) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
-      List<Integer> orderDetailIds = orderDetails.stream().map(OrderDetailVO::getOrderDetailId).collect(Collectors.toList());
-      Map<Integer, List<Integer>> planDetails = remoteEmrServiceFeign.findOrderWithPlanDetailById(orderDetailIds);
+      List<Integer> orderDetailIds =
+          orderDetails.stream().map(OrderDetailVO::getOrderDetailId).collect(Collectors.toList());
+      Map<Integer, List<Integer>> planDetails =
+          remoteEmrServiceFeign.findOrderWithPlanDetailById(orderDetailIds);
       if (StringHelper.isNotEmpty(memberTypes)) {
         orderDetails.forEach(
             tariffVO -> {
@@ -184,7 +197,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
                 .multiply(BigDecimal.valueOf(memberType.getRate()))
                 .divide(BigDecimal.valueOf(100), 2));
       }
-      memberPrices.put(memberTypeId, memberPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
+      memberPrices.put(memberTypeId, memberPrice.setScale(2, RoundingMode.HALF_UP));
     }
     tariffVO.setMemberPrices(memberPrices);
   }
@@ -213,7 +226,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
       if (null != memberPriceResult) {
         memberTypeId = memberPriceResult.getMemberTypeId();
-        memberPrice = memberPriceResult.getDiscountPrice().setScale(2, BigDecimal.ROUND_HALF_UP);
+        memberPrice = memberPriceResult.getDiscountPrice().setScale(2, RoundingMode.HALF_UP);
       } else {
         memberTypeId = memberType.getId();
         memberPrice =
@@ -221,7 +234,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
                     .getPrice()
                     .multiply(BigDecimal.valueOf(memberType.getRate()))
                     .divide(BigDecimal.valueOf(100), 2))
-                .setScale(2, BigDecimal.ROUND_HALF_UP);
+                .setScale(2, RoundingMode.HALF_UP);
       }
       memberPrices.put(memberTypeId, memberPrice);
     }
@@ -240,86 +253,94 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     // 校验开单参数
     TreatmentRecord treatmentRecord = checkOrderParam(treatmentRecordId);
     String orderKey = LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId;
-    redisUtils.set(orderKey, treatmentRecordId, 300);
-    List<OrderDetailModel> models = model.getOrderDetails();
-    Integer treatmentRecordOrgId = treatmentRecord.getOrgId();
-    int userId = Integer.parseInt(BaseContextHandler.getUserID());
-    String name = BaseContextHandler.getName();
-    // 将model转换成entity
-    List<OrderDetail> orderDetails =
-        orderDetailBiz.transferModelToEntity(treatmentRecordOrgId, treatmentRecordId, models);
-    // 计算开单总额
-    BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
+    try {
+      boolean orderLock =
+          redisUtils.setLock(orderKey, BaseContextHandler.getUserID(), 300, TimeUnit.SECONDS);
+      if (!orderLock) {
+        throw new ClientServiceException("当前就诊记录处于正在开单状态，请稍后再试！", SAME_DATA_EXIST);
+      }
+      List<OrderDetailModel> models = model.getOrderDetails();
+      Integer treatmentRecordOrgId = treatmentRecord.getOrgId();
+      int userId = Integer.parseInt(BaseContextHandler.getUserID());
+      String name = BaseContextHandler.getName();
+      // 将model转换成entity
+      List<OrderDetail> orderDetails =
+          orderDetailBiz.transferModelToEntity(treatmentRecordOrgId, treatmentRecordId, models);
+      // 计算开单总额
+      BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
 
-    OrderRecord orderRecord = new OrderRecord();
-    orderRecord.setTreatmentRecordId(treatmentRecordId);
-    OrderRecord orderResult = mapper.selectOne(orderRecord);
-    Integer orderRecordId;
-    int result = 0;
-    int operateType = 0;
-    List<Integer> deletedDetailIds = null;
-    if (null == orderResult) {
-      orderRecord.setOrgId(treatmentRecordOrgId);
-      String orderRecordNumber = generateOrderRecordNumber(treatmentRecordOrgId);
-      orderRecord.setOrderRecordNum(orderRecordNumber);
-      orderRecord.setPatientId(treatmentRecord.getPatientId());
-      orderRecord.setTotalAmount(totalAmount);
-      orderRecord.setCrtId(userId);
-      orderRecord.setCrtName(name);
-      result = mapper.insertSelective(orderRecord);
-      orderRecordId = orderRecord.getId();
-      if (StringHelper.isNotEmpty(orderDetails)) {
-        orderDetails.forEach(
-            detail -> {
-              detail.setOrderRecordId(orderRecordId);
-              orderDetailBiz.insertSelective(detail);
-            });
+      OrderRecord orderRecord = new OrderRecord();
+      orderRecord.setTreatmentRecordId(treatmentRecordId);
+      OrderRecord orderResult = mapper.selectOne(orderRecord);
+      Integer orderRecordId;
+      int result = 0;
+      int operateType = 0;
+      List<Integer> deletedDetailIds = null;
+      if (null == orderResult) {
+        orderRecord.setOrgId(treatmentRecordOrgId);
+        String orderRecordNumber = generateOrderRecordNumber(treatmentRecordOrgId);
+        orderRecord.setOrderRecordNum(orderRecordNumber);
+        orderRecord.setPatientId(treatmentRecord.getPatientId());
+        orderRecord.setTotalAmount(totalAmount);
+        orderRecord.setCrtId(userId);
+        orderRecord.setCrtName(name);
+        result = mapper.insertSelective(orderRecord);
+        orderRecordId = orderRecord.getId();
+        if (StringHelper.isNotEmpty(orderDetails)) {
+          orderDetails.forEach(
+              detail -> {
+                detail.setOrderRecordId(orderRecordId);
+                orderDetailBiz.insertSelective(detail);
+              });
+        }
+      } else {
+        orderResult.setTotalAmount(totalAmount);
+        orderResult.setUpdId(userId);
+        orderResult.setUpdName(name);
+        result = mapper.updateByPrimaryKeySelective(orderResult);
+        orderRecordId = orderResult.getId();
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setTreatmentRecordId(treatmentRecordId);
+        List<OrderDetail> deletedDetails = orderDetailBiz.selectList(orderDetail);
+        if (StringHelper.isNotEmpty(deletedDetails)) {
+          deletedDetailIds =
+              deletedDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
+        }
+        orderDetailBiz.delete(orderDetail);
+        if (StringHelper.isNotEmpty(orderDetails)) {
+          orderDetails.forEach(
+              detail -> {
+                detail.setOrderRecordId(orderRecordId);
+                orderDetailBiz.insertSelective(detail);
+              });
+          operateType = 1;
+        }
       }
-    } else {
-      orderResult.setTotalAmount(totalAmount);
-      orderResult.setUpdId(userId);
-      orderResult.setUpdName(name);
-      result = mapper.updateByPrimaryKeySelective(orderResult);
-      orderRecordId = orderResult.getId();
-      OrderDetail orderDetail = new OrderDetail();
-      orderDetail.setTreatmentRecordId(treatmentRecordId);
-      List<OrderDetail> deletedDetails = orderDetailBiz.selectList(orderDetail);
-      if (StringHelper.isNotEmpty(deletedDetails)) {
-        deletedDetailIds = deletedDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
+      int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, deletedDetailIds);
+      if (result > 0 && detailSize > 0) {
+        rabbitMqServiceFeign.sendMessage(orderRecordId, operateType, BaseBill);
       }
-      orderDetailBiz.delete(orderDetail);
-      if (StringHelper.isNotEmpty(orderDetails)) {
-        orderDetails.forEach(
-            detail -> {
-              detail.setOrderRecordId(orderRecordId);
-              orderDetailBiz.insertSelective(detail);
-            });
-        operateType = 1;
+      Integer assistantId1 = model.getAssistantId1();
+      Integer assistantId2 = model.getAssistantId2();
+      Integer assistantId3 = model.getAssistantId3();
+      saveAssistantMatchingRecord(
+          treatmentRecordId, orderRecordId, assistantId1, assistantId2, assistantId3);
+      // 开单完成，更新就诊记录状态为已开单
+      treatmentRecord.setStatus((byte) 1);
+      treatmentRecord.setUpdId(userId);
+      treatmentRecord.setUpdName(name);
+      treatmentRecordBiz.updateSelectiveById(treatmentRecord);
+      Integer appointmentId = treatmentRecord.getAppointmentId();
+      // 发送消息更新中间表就诊流程
+      if (null != appointmentId) {
+        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      } else {
+        Integer registeredId = treatmentRecord.getRegisteredId();
+        rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
       }
+    } finally {
+      redisUtils.unlock(orderKey, BaseContextHandler.getUserID());
     }
-    int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, deletedDetailIds);
-    if (result > 0 && detailSize > 0) {
-      rabbitMqServiceFeign.sendMessage(orderRecordId, operateType, BaseBill);
-    }
-    Integer assistantId1 = model.getAssistantId1();
-    Integer assistantId2 = model.getAssistantId2();
-    Integer assistantId3 = model.getAssistantId3();
-    saveAssistantMatchingRecord(
-        treatmentRecordId, orderRecordId, assistantId1, assistantId2, assistantId3);
-    // 开单完成，更新就诊记录状态为已开单
-    treatmentRecord.setStatus((byte) 1);
-    treatmentRecord.setUpdId(userId);
-    treatmentRecord.setUpdName(name);
-    treatmentRecordBiz.updateSelectiveById(treatmentRecord);
-    Integer appointmentId = treatmentRecord.getAppointmentId();
-    // 发送消息更新中间表就诊流程
-    if (null != appointmentId) {
-      rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
-    } else {
-      Integer registeredId = treatmentRecord.getRegisteredId();
-      rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
-    }
-    redisUtils.delete(orderKey);
   }
 
   /**
@@ -331,27 +352,32 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @return
    */
   private int saveTreatPlanDetailWriteoffQuanity(
-      List<OrderDetail> orderDetails, List<OrderDetailModel> models, List<Integer> deletedDetailIds) {
+      List<OrderDetail> orderDetails,
+      List<OrderDetailModel> models,
+      List<Integer> deletedDetailIds) {
     if (StringHelper.isNotEmpty(models) && StringHelper.isNotEmpty(orderDetails)) {
       TreatPlanDetailWriteoffModel model = new TreatPlanDetailWriteoffModel();
       List<TreatPlanDetailWriteoffInfoModel> list = new ArrayList<>();
-      orderDetails.forEach(detail->{
-        Integer billingItemId = detail.getBillingItemId();
-        Byte type = detail.getType();
-        models.forEach(vo->{
-          List<Integer> planDetailIds = vo.getPlanDetailIds();
-          if (!ObjectUtils.isEmpty(planDetailIds)
-                  && vo.getBillingItemId().equals(billingItemId) && vo.getType().equals(type)) {
-            TreatPlanDetailWriteoffInfoModel obj = new TreatPlanDetailWriteoffInfoModel();
-            obj.setTreatmentId(detail.getTreatmentRecordId());
-            obj.setQuantity(detail.getQuantity());
-            obj.setOrderDetailId(detail.getId());
-            obj.setPlanDetailIds(planDetailIds);
-            obj.setCrtId(detail.getCrtId());
-            list.add(obj);
-          }
-        });
-      });
+      orderDetails.forEach(
+          detail -> {
+            Integer billingItemId = detail.getBillingItemId();
+            Byte type = detail.getType();
+            models.forEach(
+                vo -> {
+                  List<Integer> planDetailIds = vo.getPlanDetailIds();
+                  if (!ObjectUtils.isEmpty(planDetailIds)
+                      && vo.getBillingItemId().equals(billingItemId)
+                      && vo.getType().equals(type)) {
+                    TreatPlanDetailWriteoffInfoModel obj = new TreatPlanDetailWriteoffInfoModel();
+                    obj.setTreatmentId(detail.getTreatmentRecordId());
+                    obj.setQuantity(detail.getQuantity());
+                    obj.setOrderDetailId(detail.getId());
+                    obj.setPlanDetailIds(planDetailIds);
+                    obj.setCrtId(detail.getCrtId());
+                    list.add(obj);
+                  }
+                });
+          });
       model.setWriteoffInfoModels(list);
       model.setDeletedOrderDetailIds(deletedDetailIds);
       remoteEmrServiceFeign.treatPlanWriteOffQunatity(model);
@@ -375,10 +401,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (!status.equals(TREATMENT_PROCESSING_STATUS)
         && !status.equals(TREATMENT_PROCESS_ORDER_STATUS)) {
       throw new ClientServiceException("开单失败，当前就诊处于开单完成或结算状态，无法重复开单！", PARAMETERS_IS_ILLEGAL);
-    }
-    String recordId = redisUtils.get(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId);
-    if (StringHelper.isNotBlank(recordId)) {
-      throw new ClientServiceException("开单失败，当前就诊记录处于正在开单状态，无法同时开单！", SAME_DATA_EXIST);
     }
     return treatmentRecord;
   }
@@ -541,7 +563,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     OrderDetail orderDetail = new OrderDetail();
     orderDetail.setOrderRecordId(orderRecordId);
     List<OrderDetail> details = orderDetailBiz.selectList(orderDetail);
-    List<Integer> deletedDetailIds = details.stream().map(OrderDetail::getId).collect(Collectors.toList());
+    List<Integer> deletedDetailIds =
+        details.stream().map(OrderDetail::getId).collect(Collectors.toList());
     orderDetailBiz.delete(orderDetail);
 
     List<OrderDetail> orderDetails =
@@ -549,21 +572,25 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     TreatmentRecord treatmentRecord = treatmentRecordBiz.selectById(treatmentRecordId);
     List<VisitingRecord> visitingRecordList = new ArrayList<>();
     if (StringHelper.isNotEmpty(orderDetails)
-            && !treatmentRecordBiz.patientHasDied(treatmentRecord.getPatientId())) {
+        && !treatmentRecordBiz.patientHasDied(treatmentRecord.getPatientId())) {
       orderDetails.forEach(
           detail -> {
             detail.setOrderRecordId(orderRecordId);
             orderDetailBiz.insertSelective(detail);
             if (0 == detail.getType()) {
               List<VisitingRecord> orderDetailVisitRecord =
-                  treatmentRecordBiz.createOrderDetailVisitRecord(treatmentRecordId, orderDetail);
-              visitingRecordList.stream()
-                  .sequential()
-                  .collect(Collectors.toCollection(() -> orderDetailVisitRecord));
+                  treatmentRecordBiz.createOrderDetailVisitRecord(treatmentRecordId, detail);
+              log.info(
+                  "orderDetailVisitRecord》》》》》》》{}", JSON.toJSONString(orderDetailVisitRecord));
+              visitingRecordList.addAll(orderDetailVisitRecord);
             }
           });
     }
     int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, deletedDetailIds);
+    log.info("OrderRecordBiz.java>>>>>>>>>>>>>>>>[583]>>>>>>>>>>detailSize={}", detailSize);
+    log.info(
+        "OrderRecordBiz.java>>>>>>>>>>>>>>>>[584]>>>>>>>>>>visitingRecordList={}",
+        JSON.toJSONString(visitingRecordList));
     if (detailSize > 0) {
       treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       // 设置分组计划
@@ -630,7 +657,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderDetail.setOrderRecordId(orderRecordId);
     orderDetail.setInservice(true);
     List<OrderDetail> orderDetailsData = orderDetailBiz.selectList(orderDetail);
-    List<Integer> deletedDetailIds = orderDetailsData.stream().map(OrderDetail::getId).collect(Collectors.toList());
+    List<Integer> deletedDetailIds =
+        orderDetailsData.stream().map(OrderDetail::getId).collect(Collectors.toList());
     // 获取调整后的开单明细，并比较是否有修改
     List<OrderDetailModel> detailModels = model.getOrderDetailModels();
     if (orderDetailsData.size() == detailModels.size()) {

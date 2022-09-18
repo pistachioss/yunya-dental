@@ -33,4 +33,6 @@ public class PatientCardBaseVo implements Serializable {
     private LocalDate activeDate;
     @ApiModelProperty(value = "产品是否停用 0-否 1-是")
     private Integer couponEnable;
+    @ApiModelProperty("售出渠道（0-艾维小程序；1-pc购买）")
+    private Integer payChannel;
 }

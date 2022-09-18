@@ -1,16 +1,39 @@
 package com.yunya.modules.discount.biz;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.yunya.feign.discount.domain.form.FreeStockForm;
+import com.yunya.feign.discount.domain.form.LockStockForm;
 import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.CouponCommonInfoVO;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
+import com.yunya.feign.ivy_mini.RemoteIvyMiniServiceFeign;
+import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
+import com.yunya.feign.ivy_mini.domain.form.RemoveHotForm;
+import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.models.discount.CouponCommonInfo;
+import com.yunya.framework.common.enums.TrueFalseEnum;
+import com.yunya.models.discount.*;
+import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
-import java.util.List;
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
+import static java.util.stream.Collectors.*;
 
 /**
  * 简介: 卡券公共信息业务层
@@ -23,6 +46,17 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponCommonInfo> {
+
+    @Resource
+    private CouponFileInfoBiz fileInfoBiz;
+    @Resource
+    private ProductTypeBiz productTypeBiz;
+    @Resource
+    private CouponAllocateMapper allocateMapper;
+    @Resource
+    private CardBiz cardBiz;
+    @Resource
+    private RemoteIvyMiniServiceFeign ivyMiniServiceFeign;
     /**
      * 条件查询卡券公用信息列表
      *
@@ -37,8 +71,146 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         return new PageInfo<>(result);
     }
 
-//  public int insertBackId(CouponCommonInfo couponCommonInfo){
-//    return mapper.insertBackId(couponCommonInfo);
-//  }
+    public PageInfo<VirtualProductVO> pageVirtual(VirtualProductQuery query) {
+        Page<CouponCommonInfo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        Example example = new Example(CouponCommonInfo.class);
+        Example.Criteria criteria = example.createCriteria().andEqualTo("isOnlineSale", true);
+        criteria.andEqualTo("isInservice", 1);
+        if (Objects.nonNull(query.getProductCategoryId())) {
+            criteria.andEqualTo("productTypeId", query.getProductCategoryId());
+        }
+        if (StringUtils.isNotBlank(query.getKeyword())) {
+            criteria.andLike("name", "%" + query.getKeyword() + "%");
+        }
+        mapper.selectByExample(example);
+        List<CouponCommonInfo> coupons = page.getResult();
+        Map<Integer, CouponFileInfo> fileInfoMap = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(coupons)) {
+            List<Integer> ids = coupons.stream().map(CouponCommonInfo::getId).collect(Collectors.toList());
+            List<CouponFileInfo> files = fileInfoBiz.listByCouponIds(ids, 0);
+            fileInfoMap = files.stream()
+                    .collect(Collectors.toMap(CouponFileInfo::getCouponId, Function.identity(), (o, n) -> n));
+        }
+        Map<Integer, CouponFileInfo> finalFileInfoMap = fileInfoMap;
+        List<VirtualProductVO> collect = coupons.stream().map(t -> {
+            CouponFileInfo couponFileInfo = finalFileInfoMap.get(t.getId());
+            String couponPic = Objects.nonNull(couponFileInfo) ? couponFileInfo.getPath() : null;
+            VirtualProductVO virtualProductVO = new VirtualProductVO();
+            virtualProductVO.setProductId(t.getId());
+            virtualProductVO.setProductName(t.getName());
+            virtualProductVO.setProductPic(couponPic);
+            virtualProductVO.setProductPrice(t.getSoldAmount());
+            virtualProductVO.setProductType(TRUE.getCode());
+            return virtualProductVO;
+        }).collect(Collectors.toList());
+        PageInfo<VirtualProductVO> pageInfo = new PageInfo<>(collect);
+        pageInfo.setTotal(page.getTotal());
+        pageInfo.setPageNum(page.getPageNum());
+        pageInfo.setHasNextPage(page.getPageNum() < page.getPages());
+        return pageInfo;
+    }
 
+    public VirtualDetailVO couponDetail(Integer couponId) {
+        VirtualDetailVO vo = new VirtualDetailVO();
+        CouponCommonInfo commonInfo = selectById(couponId);
+        vo.setProductType(TRUE.getCode());
+        if (Objects.nonNull(commonInfo)) {
+            vo.setProductId(commonInfo.getId());
+            vo.setProductName(commonInfo.getName());
+            vo.setCategoryId(commonInfo.getProductTypeId());
+            vo.setProductPrice(commonInfo.getSoldAmount());
+            List<CouponFileInfo> couponFileInfos = fileInfoBiz.listByCouponIds(Lists.newArrayList(couponId), null);
+            if (CollectionUtils.isNotEmpty(couponFileInfos)) {
+                List<String> fileInfo = couponFileInfos.stream()
+                        .filter(t -> Objects.equals((byte) 2, t.getFileType()) && StringUtils.isNotBlank(t.getPath()))
+                        .map(CouponFileInfo::getPath)
+                        .collect(toList());
+                List<String> fileInfo1 = couponFileInfos.stream()
+                        .filter(t -> Objects.equals((byte) 0, t.getFileType()) && StringUtils.isNotBlank(t.getPath()))
+                        .map(CouponFileInfo::getPath)
+                        .collect(toList());
+                vo.setDetailHtml(fileInfo);
+                vo.setProductPics(fileInfo1);
+            }
+            vo.setStock(unsold(couponId));
+        }
+        return vo;
+    }
+
+    public List<ProductBO> listOnSaleOral(Collection<Integer> ids) {
+        Example example = new Example(CouponCommonInfo.class);
+        example.selectProperties("id","type","name","couponCode","soldAmount","productTypeId");
+        example.createCriteria().andIn("id", ids)
+                .andEqualTo("isOnlineSale", true)
+                .andEqualTo("isInservice", true);
+        List<CouponCommonInfo> couponCommonInfos = mapper.selectByExample(example);
+        //产品图片
+        List<CouponFileInfo> couponFileInfos = fileInfoBiz.listByCouponIds(ids, 0);
+        //产品分类
+        ProductTypeQueryForm queryForm = new ProductTypeQueryForm();
+        queryForm.setWhetherPage(false);
+        PageInfo<ProductTypeVO> data = productTypeBiz.findList(queryForm);
+        return assembleProductBO(couponCommonInfos, couponFileInfos, data.getList());
+    }
+
+    private List<ProductBO> assembleProductBO(List<CouponCommonInfo> coupons, List<CouponFileInfo> files, List<ProductTypeVO> cateGoryList) {
+        Map<Integer, CouponFileInfo> fileInfoMap = files.stream()
+                .collect(Collectors.toMap(CouponFileInfo::getCouponId, Function.identity(), (o, n) -> n));
+        List<ProductBO> collect = coupons.stream().map(t -> {
+            CouponFileInfo couponFileInfo = fileInfoMap.get(t.getId());
+            String couponPic = Objects.nonNull(couponFileInfo) ? couponFileInfo.getPath() : null;
+            ProductBO bo = new ProductBO();
+            bo.setProductId(t.getId());
+            bo.setProductName(t.getName());
+            bo.setProductPic(couponPic);
+            bo.setProductSn(t.getCouponCode());
+            bo.setProductPrice(t.getSoldAmount());
+            bo.setProductType(TRUE.getCode());
+            bo.setProductCategoryId(t.getProductTypeId());
+            bo.setCouponType(t.getType().intValue());
+            return bo;
+        }).collect(Collectors.toList());
+        Map<Integer, ProductTypeVO> categoryMap = cateGoryList.stream().collect(toMap(ProductTypeVO::getId, Function.identity()));
+        collect.stream()
+                .filter(t -> categoryMap.containsKey(t.getProductCategoryId()))
+                .forEach(t -> {
+                    ProductTypeVO category = categoryMap.get(t.getProductCategoryId());
+                    t.setProductCategoryName(category.getName());
+                });
+        return collect;
+    }
+
+    public void lockVirtualStock(List<LockStockForm> form) {
+        for (LockStockForm lockStockForm : form) {
+            CouponCommonInfo commonInfo = mapper.selectByPrimaryKey(lockStockForm.getProductId());
+            commonInfo.setSale((Objects.isNull(commonInfo.getSale()) ? 0 : commonInfo.getSale()) + lockStockForm.getQuantity());
+            mapper.updateByPrimaryKeySelective(commonInfo);
+        }
+    }
+
+    public void freeVirtualStock(List<FreeStockForm> form) {
+        for (FreeStockForm freeStockForm : form) {
+            CouponCommonInfo commonInfo = mapper.selectByPrimaryKey(freeStockForm.getProductId());
+            commonInfo.setSale((Objects.isNull(commonInfo.getSale()) ? 0 : commonInfo.getSale()) - freeStockForm.getQuantity());
+            mapper.updateByPrimaryKeySelective(commonInfo);
+        }
+    }
+
+    private int unsold(Integer couponId) {
+        Example example = new Example(Card.class);
+        example.createCriteria().andEqualTo("couponId", couponId)
+                .andEqualTo("orgId", COMPANY_ORGID)
+                .andEqualTo("status", 0);
+        return cardBiz.selectCountByExample(example);
+    }
+
+    public void removeHot(CouponCommonInfo old, Boolean isOnlineSale) {
+        if ((Objects.nonNull(old.getIsOnlineSale()) && old.getIsOnlineSale())
+                && !isOnlineSale) {
+            RemoveHotForm removeHotForm = new RemoveHotForm();
+            removeHotForm.setProductIds(Collections.singleton(old.getId()));
+            removeHotForm.setType(TrueFalseEnum.TRUE.getCode());
+            ivyMiniServiceFeign.removeHotSale(removeHotForm);
+        }
+    }
 }

@@ -1,3 +1,8 @@
+logging:
+  level:
+    root: info
+    com.yunya: info
+    com.yunya365.mini: info
 # 开发环境，nacos连215开发环境
 spring:
   datasource:

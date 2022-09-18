@@ -49,4 +49,5 @@ public class WxUserMsgModel {// 开发者微信号
     protected String MsgType;
     protected String Event;
     protected String Status;
+    protected String EventKey;
 }

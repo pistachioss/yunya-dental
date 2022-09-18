@@ -115,8 +115,10 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
 
             couponCommonInfo.setAvailableSaleStartDate(specialPackageCouponForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(specialPackageCouponForm.getAvailableSaleEndDate());
+            couponCommonInfo.setIsOnlineSale(specialPackageCouponForm.getIsOnlineSale());
             //更新基础信息
             couponCommonInfoBiz.updateById(couponCommonInfo);
+            couponCommonInfoBiz.removeHot(copy, specialPackageCouponForm.getIsOnlineSale());
             specialPackageCoupon.setCouponId(specialPackageCouponForm.getId());
             specialPackageCoupon = selectOne(specialPackageCoupon);
             if(specialPackageCoupon!=null){
@@ -151,6 +153,7 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
             couponCommonInfo.setUpdTime(new Date());
             //基础信息表中修改数据
             couponCommonInfoBiz.updateById(couponCommonInfo);
+            couponCommonInfoBiz.removeHot(copy, specialPackageCouponForm.getIsOnlineSale());
             specialPackageCoupon.setCouponId(specialPackageCouponForm.getId());
             specialPackageCoupon = selectOne(specialPackageCoupon);
             if (specialPackageCoupon != null) {

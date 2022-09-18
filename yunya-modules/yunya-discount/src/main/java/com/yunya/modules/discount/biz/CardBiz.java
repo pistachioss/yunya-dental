@@ -1,14 +1,10 @@
 package com.yunya.modules.discount.biz;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.*;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.yunya.feign.discount.domain.bo.*;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.ClinicAllocateModel;
@@ -16,13 +12,12 @@ import com.yunya.feign.discount.domain.model.GenerateAllocateModel;
 import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
+import com.yunya.feign.ivy_mini.RemoteIvyMiniServiceFeign;
+import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
@@ -30,14 +25,10 @@ import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
-import com.yunya.feign.system.vo.OrganizationInfo;
-import com.yunya.feign.system.vo.OrganizationInfoDetail;
-import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.system.vo.*;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.constant.RedisConstants;
-import com.yunya.framework.common.constant.UserConstant;
+import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
@@ -49,10 +40,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.AccountItem;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseTariff;
-import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
-import com.yunya.models.tariff.ClinicTariffMemberPrice;
+import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.discount.enums.*;
@@ -75,10 +63,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -158,6 +143,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private RemoteRabbitMqServiceFeign mqServiceFeign;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Resource
+    private RemoteIvyMiniServiceFeign ivyMiniServiceFeign;
     @Value("${cardSold.selfChannel}")
     private String selfChannel;
     /**
@@ -177,6 +164,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             builder.append(new SecureRandom().nextInt(10));
         }
         return Base64.getEncoder().encodeToString(builder.toString().getBytes());
+    }
+
+    public List<CardWxVO> findCardWxList(Integer patientId) {
+        return mapper.findCardWxList(patientId);
+    }
+
+    public List<CardWxDetailVO> findCardWxDetail(Integer couponId) {
+        return mapper.findCardWxDetail(couponId);
     }
 
     /**
@@ -432,6 +427,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             if (cardSalePageVo.getPayId() != null) {
                 cardSalePageVo.setSoldType(AccMap.get(cardSalePageVo.getPayId() + "").getName());
             }
+            cardSalePageVo.setCouponType(couponCommonInfo.getType().intValue());
         }
         PageInfo<CardSalePageVo> pageInfo = new PageInfo<>(list);
         pageInfo.setTotal(page.getTotal());
@@ -445,14 +441,23 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param form form
      * @return res
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ResponseResult soldCard(CardSoldForm form) throws ExecutionException, InterruptedException {
-        List<Integer> cardIds = form.getCardIds();
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        return soldCard(orgId, form, loginUserId);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public ResponseResult miniSoldCard(MiniCardSoldForm form){
+        return soldCard(form.getOrgId(), form.getForm(), form.getLoginUserId());
+    }
+
+    private ResponseResult soldCard(Integer orgId, CardSoldForm form, Integer loginUserId) {
+        List<Integer> cardIds = form.getCardIds();
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        RestErrorBo errorBo;
         long start = System.currentTimeMillis();
+        RestErrorBo errorBo;
         try {
             SalesChannel salesChannel = new SalesChannel();
             salesChannel.setName(selfChannel);
@@ -508,7 +513,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                             throw (CompletionException)ex;
                         }
                         return res;
-            });
+                    });
             return ResponseUtil.success();
         } finally {
             CompletableFuture.runAsync(() -> {
@@ -637,11 +642,93 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         vo = checkCouponDeadline(card.getCouponId(), couponType);
         if (QR_CODE_NORMAL.equals(vo.getCardQrCodeType())) {
             vo.setCouponName(coupon.getName());
-            vo.setQrCode(Base64.getEncoder().encodeToString(Joiner.on(":").join(new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
-                    .encode(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword())), card.getId())
+            vo.setQrCode(Base64.getEncoder().encodeToString(Joiner.on(":").join(card.getCardNumber(), card.getId())
                     .getBytes()));
         }
         return vo;
+    }
+
+    public List<CardQrCodeVo> batchCardQrCode(List<Integer> cardIds) {
+        List<CardQrCodeVo> list = Lists.newArrayListWithCapacity(cardIds.size());
+        Example example = new Example(Card.class);
+        example.createCriteria().andIn("id", cardIds);
+        List<Card> cards = mapper.selectByExample(example);
+        Map<Integer, Card> cardMap = cards.stream().collect(toMap(Card::getId, Function.identity(), (o,n) -> n));
+        //优惠券信息
+        Set<Integer> couponIds = cards.stream().map(Card::getCouponId).collect(toSet());
+        Example example1 = new Example(CouponCommonInfo.class);
+        example1.createCriteria().andIn("id", couponIds);
+        List<CouponCommonInfo> coupons = couponMapper.selectByExample(example1);
+        Map<Integer, CouponCommonInfo> couponMap = coupons.stream()
+                .collect(toMap(CouponCommonInfo::getId, Function.identity(), (o,n) -> n));
+        Map<Integer, Integer> map = queryQrCodeLimit(coupons);
+        for (Integer cardId : cardIds) {
+            Card card = cardMap.get(cardId);
+            CardQrCodeVo vo = new CardQrCodeVo();
+            vo.setCardQrCodeType(QR_CODE_NORMAL.getCode());
+            if (card == null) {
+                vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
+                vo.setErrorMsg("卡券不存在");
+                list.add(vo);
+                continue;
+            }
+            //已失效
+            if (SALE_PENDING.equals(card.getStatus())) {
+                vo.setCardQrCodeType(QR_CODE_INVALID.getCode());
+                list.add(vo);
+                continue;
+            }
+            //已核销
+            if (ACTIVATED.equals(card.getStatus()) || PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
+                vo.setCardQrCodeType(QR_CODE_DESTROY.getCode());
+                list.add(vo);
+                continue;
+            }
+            CouponCommonInfo coupon = couponMap.get(card.getCouponId());
+            if (coupon == null) {
+                log.warn("【批量】优惠券不存在或已停用");
+                vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
+                vo.setErrorMsg("【批量】优惠券不存在或已停用");
+                list.add(vo);
+                continue;
+            }
+            int couponType = coupon.getType().intValue();
+            //查询优惠券过期信息
+            vo = checkCouponDeadline(card.getCouponId(), couponType);
+            if (QR_CODE_NORMAL.equals(vo.getCardQrCodeType())) {
+                vo.setCouponName(coupon.getName());
+                vo.setQrCode(Base64.getEncoder().encodeToString(Joiner.on(":").join(card.getCardNumber(), card.getId())
+                        .getBytes()));
+            }
+            Integer limitCount = map.get(coupon.getId());
+            vo.setLimitCount(limitCount);
+            list.add(vo);
+        }
+        return list;
+    }
+
+    private Map<Integer, Integer> queryQrCodeLimit(List<CouponCommonInfo> coupons) {
+        Map<Integer, Integer> map1 = Maps.newHashMapWithExpectedSize(coupons.size());
+        Map<Byte, Set<Integer>> map = coupons.stream()
+                .collect(groupingBy(CouponCommonInfo::getType, mapping(CouponCommonInfo::getId, toSet())));
+        Set<Integer> voucher = map.get(0);
+        Set<Integer> _package = map.get(2);
+        Set<Integer> special = map.get(3);
+        Example voucherExample = new Example(VoucheCoupon.class);
+        voucherExample.createCriteria().andIn("couponId", voucher);
+        List<VoucheCoupon> voucherCoupon = voucherMapper.selectByExample(voucherExample);
+
+        Example _packageExample = new Example(PackageCoupon.class);
+        _packageExample.createCriteria().andEqualTo("couponId", _package);
+        List<PackageCoupon>  packageCoupon = packageMapper.selectByExample(_packageExample);
+
+        Example specialExample = new Example(SpecialPackageCoupon.class);
+        specialExample.createCriteria().andEqualTo("couponId", special);
+        List<SpecialPackageCoupon> specialPackageCoupon = specialPackageMapper.selectByExample(specialExample);
+        voucherCoupon.forEach(t -> map1.put(t.getCouponId(), t.getLimitCount()));
+        packageCoupon.forEach(t -> map1.put(t.getCouponId(), t.getLimitCount()));
+        packageCoupon.forEach(t -> map1.put(t.getCouponId(), t.getLimitCount()));
+        return map1;
     }
 
     /**
@@ -660,6 +747,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         if (errorBo.getError() != null) {
             return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
         }
+        if (Objects.equals(MINI_CARD_REMARK, card.getRemark())) {
+            log.warn("【取消售卖失败】小程序卡券不可取消售出", card.getCardNumber());
+            throw ClientServiceException.wrap(DiscountError.MINI_CARD_CANCEL_ERROR);
+        }
         Integer couponId = card.getCouponId();
         //2. 检查优惠券
         CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
@@ -674,6 +765,46 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
         log.info("【取消售出卡券发送消息成功】：卡券id[{}]", couponId);
         return ResponseUtil.success();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void batchCancelCardSold(BatchCancelCardForm form) {
+        try {
+            BaseContextHandler.setUserID(String.valueOf(form.getLoginUserId()));
+            int orgId = form.getOrgId();
+            List<Integer> cardIds = form.getCardIds();
+            RestErrorBo errorBo;
+            Example example = new Example(Card.class);
+            example.createCriteria().andIn("id", cardIds);
+            List<Card> cards = mapper.selectByExample(example);
+            Map<Integer, Card> cardMap = cards.stream().collect(toMap(Card::getId, Function.identity(), (o,n) -> n));
+            //优惠券信息
+            Set<Integer> couponIds = cards.stream().map(Card::getCouponId).collect(toSet());
+            Example example1 = new Example(CouponCommonInfo.class);
+            example1.createCriteria().andIn("id", couponIds);
+            List<CouponCommonInfo> coupons = couponMapper.selectByExample(example1);
+            Map<Integer, CouponCommonInfo> couponMap = coupons.stream()
+                    .collect(toMap(CouponCommonInfo::getId, Function.identity(), (o,n) -> n));
+            for (Integer cardId : cardIds) {
+                //1. 检查卡券
+                Card card = cardMap.get(cardId);
+                errorBo = checkCardForCancelSale(cardId, card, orgId);
+                Integer couponId = card.getCouponId();
+                //2. 检查优惠券
+                CouponCommonInfo couponInfo = couponMap.get(card.getCouponId());
+                if (couponInfo == null || !couponInfo.getIsInservice()) {
+                    log.warn("【批量售卖失败】优惠券[{}]不存在", couponId);
+                }
+                //更新取消卡券售出
+                updateCardForCancel(card);
+                //取消售出增加日志记录
+                this.saveCancelCardLog(cardId);
+                mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
+                log.info("【批量取消售出卡券发送消息成功】：卡券id[{}]", couponId);
+            }
+        } finally {
+            BaseContextHandler.remove();
+        }
     }
 
     /**
@@ -770,6 +901,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             RestErrorBo errorBo;
             //3. 检查卡券
             Card card = mapper.selectByPrimaryKey(cardId);
+            if (Objects.equals(MINI_CARD_REMARK, card.getRemark())) {
+                boolean refund = ivyMiniServiceFeign.cardRefund(cardId);
+                if (refund) {
+                    return ResponseUtil.error(DiscountError.CARD_ORDER_REFUND);
+                }
+            }
             errorBo = checkCardForOwnActive(form.getPayId(), card);
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
@@ -780,7 +917,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 return ResponseUtil.error(errorBo.getError());
             }
             //4. 卡券激活
-            card = updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId());
+            card = updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId(), card);
             mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
             log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
             cardActivedSendSms(card);
@@ -1015,6 +1152,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             errorBo.setError(DiscountError.OTHER_CARD_NOT_ALLOW_DELETE);
             return errorBo;
         }
+        if (Objects.equals(MINI_CARD_REMARK, card.getRemark())) {
+            log.warn("【取消售卖失败】小程序卡券不可删除", card.getCardNumber());
+            throw ClientServiceException.wrap(DiscountError.MINI_CARD_DELETE_ERROR);
+        }
         int useCount = cardBenefitMapper.countCardUsed(cardId);
         if (useCount > 0) {
             errorBo.setError(DiscountError.CARD_IS_USED);
@@ -1024,6 +1165,16 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         mqServiceFeign.sendMessage(cardId, DELETE, BaseCardSingle);
         log.info("【卡券删除发送消息成功】：卡券id[{}]", cardId);
         return errorBo;
+    }
+
+    public void removeCardList(List<Integer> cardIds) {
+        Example example = new Example(Card.class);
+        example.createCriteria().andIn("id", cardIds);
+        mapper.deleteByExample(example);
+        for (Integer cardId : cardIds) {
+            mqServiceFeign.sendMessage(cardId, DELETE, BaseCardSingle);
+            log.info("【批量卡券删除发送消息成功】：卡券id[{}]", cardId);
+        }
     }
 
     /**
@@ -2028,6 +2179,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         vo.setPayStatus(TrueFalseEnum.getValue(card.getPay()));
         vo.setSoldWayName(SoldWayEnum.getValue(card.getSoldWay()));
         vo.setLink(serverPort + "/#/cardQrData?" + "cardId=" + card.getId());
+        String remark = card.getRemark();
+        if (StringUtils.isNotBlank(remark) && Objects.equals(MINI_CARD_REMARK, remark)) {
+            vo.setSoldWayName(SoldWayEnum.MINI_ORDER.getValue());
+        }
         return vo;
     }
 
@@ -2093,9 +2248,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param form        form
      * @param loginUserId loginUserId
      */
-    private Card updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId, Integer couponId) {
+    private Card updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId, Integer couponId, Card card) {
         Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
-        CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
+        CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(card.getCouponId());
         LocalDateTime now = LocalDateTime.now();
         Card ownActiveCard = new Card();
         ownActiveCard.setId(form.getCardId());
@@ -2115,6 +2270,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         ownActiveCard.setUpdId(loginUserId);
         ownActiveCard.setActiveDate(now);
         mapper.updateByPrimaryKeySelective(ownActiveCard);
+        //小程序激活
+        miniActive(patientId, card, now, loginUserId);
         return ownActiveCard;
     }
 
@@ -2384,6 +2541,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         baseVo.setProductTypeName(productType == null ? null : productType.getName());
         baseVo.setUseWayName(UseWayEnum.getValue(bo.getUseWay()));
         baseVo.setUseDeadline(bo.getUseDeadline() == null ? "永久有效" : bo.getUseDeadline());
+        baseVo.setPayChannel(TRUE.getCode());
+        String remark = bo.getRemark();
+        if (StringUtils.isNotBlank(remark)) {
+            baseVo.setPayChannel(Objects.equals(MINI_CARD_REMARK, remark) ? 0 : 1);
+        }
         return baseVo;
     }
 
@@ -3296,5 +3458,29 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
     public List<CardIyOr365VO> findIyOr365CardActivedList(CardIyOr365ActivedQuery query) {
         return mapper.selectIyOr365CardActivedList(query);
+    }
+
+    public boolean whetherUseCard(List<Integer> cardIds) {
+        Example example = new Example(CardBenefit.class);
+        example.createCriteria().andIn("cardId", cardIds)
+                .andEqualTo("benefitType", 1)
+                .andEqualTo("deleted", 0);
+        int useCount = cardBenefitMapper.selectCountByExample(example);
+        return useCount > 0;
+    }
+
+    private void miniActive(Integer patientId, Card card, LocalDateTime now, Integer loginUserId) {
+        if (Objects.equals("小程序虚拟服务售卖", card.getRemark())) {
+            log.info("小程序卡券激活：cardId：{}", card.getId());
+            PatientBaseInfo patientBaseInfo = patientFeign.findPatientInfoById(patientId);
+            VirtualActiveForm form = new VirtualActiveForm();
+            form.setCardId(card.getId());
+            form.setActiveDate(now);
+            form.setActiveUserId(loginUserId);
+            form.setPatientId(patientId);
+            form.setPatientMobile(patientBaseInfo.getMobile());
+            form.setPatientName(patientBaseInfo.getName());
+            ivyMiniServiceFeign.activeCard(form);
+        }
     }
 }

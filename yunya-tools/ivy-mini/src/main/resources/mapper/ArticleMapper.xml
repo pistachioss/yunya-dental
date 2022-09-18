@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya365.mini.mapper.ArticleMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.Article" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="article_url" property="articleUrl" jdbcType="VARCHAR" />
+    <result column="cover_picture" property="coverPicture" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="brand" property="brand" jdbcType="VARCHAR" />
+    <result column="sort" property="sort" jdbcType="INTEGER" />
+    <result column="reading_number" property="readingNumber" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <select id="findArticleList" resultType="com.yunya.feign.ivy_mini.domain.vo.ArticleVO">
+    SELECT
+    id,
+    name,
+    article_url as articleUrl,
+    cover_picture as coverPicture,
+    type as type,
+    sort as isSort,
+    reading_number as readingNumber,
+    status as status,
+    crt_time as crtTime,
+    upd_time as updTime
+    FROM article
+    <where>
+      <if test="name!=null and name!=''">
+        AND name like CONCAT(CONCAT('%',#{name}),'%')
+      </if>
+      <if test="status != null">
+        AND status = #{status}
+      </if>
+      <if test="type!=null and type!=''">
+        AND type = #{type}
+      </if>
+    </where>
+    order by
+     <if test="orderByColumn != null and orderByColumn!=''">
+       ${orderByColumn} ${isAsc} ,sort desc
+      </if>
+    <if test="orderByColumn == null or orderByColumn==''">
+      sort desc ,crt_time desc
+    </if>
+  </select>
+  <select id="findArticleAppList" resultType="com.yunya.feign.ivy_mini.domain.vo.ArticleVO">
+    SELECT
+    id,
+    name,
+    article_url as articleUrl,
+    cover_picture as coverPicture,
+    type as type,
+    sort as isSort,
+    reading_number as readingNumber,
+    status as status,
+    crt_time as crtTime,
+    upd_time as updTime
+    FROM article
+    <where>
+      <if test="name!=null and name!=''">
+        AND name like CONCAT(CONCAT('%',#{name}),'%')
+      </if>
+      <if test="status != null">
+        AND status = #{status}
+      </if>
+      <if test="type!=null and type!=''">
+        AND type = #{type}
+      </if>
+    </where>
+    order by  sort desc
+    <if test="orderByColumn != null and orderByColumn!=''">
+      , ${orderByColumn} ${isAsc}
+    </if>
+
+  </select>
+  <update id="updateSortById" parameterType="com.yunya365.mini.entity.Article" >
+    update article
+    set sort = #{sort}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <!--根据sort查询上一条记录主键-->
+  <select id="selectPreviousId" resultType="java.lang.Integer" parameterType="com.yunya365.mini.entity.Article">
+    SELECT IFNULL(
+    (SELECT id FROM article WHERE sort &lt; #{sort} and type = #{type}
+    ORDER BY  sort DESC LIMIT 0,1),0
+    ) AS preTypeId
+  </select>
+  <!--根据sort查询下一条记录主键-->
+  <select id="selectNextId" resultType="java.lang.Integer" parameterType="com.yunya365.mini.entity.Article">
+    SELECT IFNULL(
+    (SELECT id FROM article WHERE sort &gt; #{sort} and type = #{type}
+    ORDER BY  sort asc LIMIT 0,1),0
+    ) AS nextTypeId
+  </select>
+
+</mapper>

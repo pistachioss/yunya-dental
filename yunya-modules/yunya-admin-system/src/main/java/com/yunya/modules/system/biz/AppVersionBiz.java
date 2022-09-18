@@ -30,7 +30,7 @@ public class AppVersionBiz extends BaseBiz<AppVersionMapper, AppVersion> {
      * @param form 新增表单信息
      * @return ResponseResult
      */
-    public ResponseResult<AppVersionAddForm> addAppVersion(AppVersionAddForm form) {
+    public ResponseResult addAppVersion(AppVersionAddForm form) {
         int i = this.mapper.addAppVersion(form);
         if (i > 0) {
             return ResponseUtil.success();
@@ -43,7 +43,7 @@ public class AppVersionBiz extends BaseBiz<AppVersionMapper, AppVersion> {
      * @param form 参数表单
      * @return 版本信息
      */
-    public ResponseResult<AppVersionVO> checkUpdate(AppVersionCheckForm form) {
+    public ResponseResult checkUpdate(AppVersionCheckForm form) {
         AppVersionVO appVersionVO = this.mapper.lastReleaseApp(form);
         if (appVersionVO != null) {
             String applicationVersion = form.getApplicationVersion();
@@ -65,7 +65,7 @@ public class AppVersionBiz extends BaseBiz<AppVersionMapper, AppVersion> {
      * @param osName 系统名称
      * @return 信息列表
      */
-    public ResponseResult<List<AppVersion>> findVersionList(String osName) {
+    public ResponseResult findVersionList(String osName) {
         if (StringHelper.isNotBlank(osName)) {
             AppVersion query = new AppVersion();
             query.setOsName(osName);

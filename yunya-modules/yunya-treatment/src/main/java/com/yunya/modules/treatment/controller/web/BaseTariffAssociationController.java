@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.BaseTariffAssociationForm;
 import com.yunya.feign.treatment.domain.query.BaseTariffAssociationQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseTariffAssociationVO;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BaseTariffBiz;
@@ -58,6 +59,7 @@ public class BaseTariffAssociationController {
    */
   @ApiOperation("修改价目表开单关联信息")
   @PutMapping("/modify/{id}")
+  @CurrentUser
   public ResponseResult<T> modifyTariffAssociation(
       @PathVariable(value = "id") Integer id, @RequestBody BaseTariffAssociationForm form) {
     baseTariffBiz.modifyTariffAssociation(id, form);

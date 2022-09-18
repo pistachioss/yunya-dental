@@ -19,10 +19,16 @@ import com.yunya.modules.treatment.biz.OrderDetailBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -83,7 +89,7 @@ public class OrderDetailController {
   @CurrentUser
   @ApiOperation("添加商品（收费界面用）")
   @PostMapping("/add/goods")
-  public ResponseResult<T> addGoods(@RequestBody @Validated GoodsDetailModel model) {
+  public ResponseResult addGoods(@RequestBody @Validated GoodsDetailModel model) {
     orderDetailBiz.addAndUpdGoodDetail(model);
     return ResponseUtil.success(null);
   }
@@ -97,7 +103,7 @@ public class OrderDetailController {
   @CurrentUser
   @ApiOperation("根据开单明细ID删除开单明细")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
+  public ResponseResult delete(@PathVariable(value = "id") Integer id) {
     orderDetailBiz.deleteOrderDetailById(id);
     return ResponseUtil.success(null);
   }
@@ -111,7 +117,7 @@ public class OrderDetailController {
   @ApiOperation("修改执行人（患者档案）")
   @PutMapping("/modification/executor")
   @CurrentUser
-  public ResponseResult<T> modificationExecutor(
+  public ResponseResult modificationExecutor(
       @RequestBody @Validated List<ModificationExecutorForm> form) {
     orderDetailBiz.modificationExecutor(form);
     return ResponseUtil.success(null);
@@ -195,7 +201,7 @@ public class OrderDetailController {
    */
   @ApiOperation("公司端报表-财务报表-分类收入汇总-导出")
   @PostMapping(value = "/category/income/export", name = "根据条件导出项目分类收入汇总列表")
-  public ResponseResult<T> exportCategoryIncome(
+  public ResponseResult exportCategoryIncome(
           HttpServletResponse response, @RequestBody @Validated CategoryIncomeQuery query)
           throws Exception {
     orderDetailBiz.exportCategoryIncome(response, query);

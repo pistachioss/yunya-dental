@@ -80,8 +80,8 @@ public class CompanyReportOfPersonnelController {
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-人事报表-员工工作量-实收工作量明细")
-  @PostMapping(value = "/employee/workload/detail/list", name = "根据条件查询员工个人实收工作量明细列表")
+  @ApiOperation("公司端报表-人事报表-员工工作量-应收工作量明细")
+  @PostMapping(value = "/employee/workload/detail/list", name = "根据条件查询员工个人应收工作量明细列表")
   public ResponseResult<PageInfo<EmployeePersonalActualWorkloadDetailVO>>
       findEmployeePersonalActualWorkloadDetailList(
           @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
@@ -285,7 +285,7 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("手动触发配诊定时任务")
   @GetMapping(value = "/matching/statistics/list/dingshi", name = "手动触发配诊定时任务")
-  public ResponseResult<T> treatMatchingStatisticsList() throws InterruptedException, ExecutionException{
+  public ResponseResult treatMatchingStatisticsList() throws InterruptedException, ExecutionException{
             baseUserPostBiz.dingshi();
     return ResponseUtil.success();
   }

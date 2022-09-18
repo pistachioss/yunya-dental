@@ -22,7 +22,8 @@ public enum SmsAutosendEventEnum {
     SP_COUPON_ACTIVED(2, "365卡or艾芽卡券激活", "sp_coupon_actived"),
     COUPON_SOLD(0, "卡券售出", "coupon_sold"),
     FORGET_PASSWORD(1, "找回密码", "forget_password"),
-    ATTENDANCE_DEVICE_BINDING(1, "考勤设备绑定", "attendance_device_binding");
+    ATTENDANCE_DEVICE_BINDING(1, "考勤设备绑定", "attendance_device_binding"),
+    PATIENT_BIND_INVITE(1, "患者绑定邀请", "patient_bind_invite");
 
     /*类型：0-公共，1-公司，2-门诊*/
     private final Integer type;

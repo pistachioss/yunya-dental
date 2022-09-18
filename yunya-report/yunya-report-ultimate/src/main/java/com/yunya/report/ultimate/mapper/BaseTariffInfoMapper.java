@@ -47,5 +47,11 @@ public interface BaseTariffInfoMapper extends Mapper<BaseTariffInfo> {
 
   List<ItemCategoryVO> selectItemCategoryListByCategoryId(@Param("itemType")Integer itemType, @Param("categoryId") Integer categoryId);
 
-  List<BaseTariffInfo> selectOralItemListByName(@Param("name") String name);
+  /**
+   * 根据名字前缀模糊匹配查询商品列表
+   *
+   * @param name
+   * @return
+   */
+  List<BaseTariffInfo> selectOralItemListPreLikeName(@Param("name") String name);
 }

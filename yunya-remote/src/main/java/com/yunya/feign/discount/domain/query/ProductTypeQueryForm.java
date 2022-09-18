@@ -42,4 +42,7 @@ public class ProductTypeQueryForm implements Serializable {
 
   @ApiModelProperty("产品类型")
   private Integer type;
+
+  @ApiModelProperty("是否线上售卖(0:否 1:是)")
+  private Boolean isOnlineSale;
 }

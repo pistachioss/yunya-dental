@@ -4,7 +4,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -23,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
@@ -43,7 +41,7 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
   /** 365卡系列*/
   private static final Byte PROD_TYPE_365 = 14;
   /** 商品：IVY365年卡*/
-  private static final String IVY_365CARD = "IVY365年卡";
+  private static final String IVY_365CARD = "365年卡";
   /** 产品 */
   @Autowired private BaseCouponBiz baseCouponBiz;
   /** 门诊 */
@@ -143,7 +141,7 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
    * @return
    */
   public PageInfo<Coupon365SoldActivedStatisticsVO> coupon365SoldActivedStatistics(Coupon365SoldActivedStatisticsQuery query) {
-    // 售卖量：开单时商品为IVY365年卡的售卖量 + 卡券售出产品分类id=14的卡售卖量
+    // 售卖量：开单时商品为 "Xxx365年卡"的售卖量 + 卡券售出产品分类id=14的卡售卖量
     // 激活量：第三方或自有平台激活后的数量
     query.setOralIds(findCard365OralIds(IVY_365CARD));
     query.setCouponIds(findCard365CouponIds(PROD_TYPE_365));
@@ -154,8 +152,14 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
     return new PageInfo<>(result);
   }
 
+  /**
+   * 查询商品中的365年卡
+   *
+   * @param ivy365card
+   * @return
+   */
   private List<Integer> findCard365OralIds(String ivy365card) {
-    List<BaseTariffInfo> orals = baseTariffInfoBiz.findOralItemListByName(ivy365card);
+    List<BaseTariffInfo> orals = baseTariffInfoBiz.findOralItemListLikeName(ivy365card);
     return orals.stream().map(BaseTariffInfo::getItemId).collect(Collectors.toList());
   }
 

@@ -61,6 +61,10 @@ public class VisitFinishedListVO implements Serializable {
     @ApiModelProperty(value = "实际随访时间")
     private Date executeDateTime;
 
+    /** 随访原因 */
+    @ApiModelProperty(value = "随访原因")
+    private String reason;
+
     /******************************* 患者信息 ********************************/
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名")

@@ -86,8 +86,9 @@ public class BusinessConstants {
   public static final Long MEDICAL_APPLY_LOCK_SEC = 600L;
   /** 免单项目ID */
   public static final Integer FREE_TARIFF_ITEM_ID = 679;
+  public static final String DOT = ",";
 
-  /** 电子待审批状态 */
+    /** 电子待审批状态 */
   public static Integer MEDICAL_AUDIT_PENDING_STATUS = 1;
   /** 电子待主治医生提交状态 */
   public static Integer NORMAL_MEDICAL_STATUS = 0;
@@ -136,4 +137,9 @@ public class BusinessConstants {
   public static final String CN_EN_NAME_REGEXP = "^[\\u4E00-\\u9FA5A-Za-z0-9_]+$";
   /** 拼音名字正则表达式 */
   public static final String PINYIN_REGEXP = "^[A-Za-z]+$";
+  /** mini token 前缀 */
+  public static final String MINI_TOKEN_PREFIX = "mini ";
+
+  /********************************mini wechat*****************************/
+  public static final String MINI_CARD_REMARK = "小程序虚拟服务售卖";
 }

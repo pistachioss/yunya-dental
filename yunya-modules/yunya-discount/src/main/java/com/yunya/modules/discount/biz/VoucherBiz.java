@@ -128,8 +128,10 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
 
             couponCommonInfo.setAvailableSaleStartDate(discountUpdateForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(discountUpdateForm.getAvailableSaleEndDate());
+            couponCommonInfo.setIsOnlineSale(discountUpdateForm.getIsOnlineSale());
             //更新基础信息
             couponCommonInfoBiz.updateById(couponCommonInfo);
+            couponCommonInfoBiz.removeHot(copy, discountUpdateForm.getIsOnlineSale());
             voucheCoupon.setCouponId(discountUpdateForm.getId());
             voucheCoupon = selectOne(voucheCoupon);
             if (voucheCoupon != null) {
@@ -164,6 +166,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
             couponCommonInfo.setUpdTime(new Date());
             //基础信息表中修改数据
             couponCommonInfoBiz.updateById(couponCommonInfo);
+            couponCommonInfoBiz.removeHot(copy, discountUpdateForm.getIsOnlineSale());
             voucheCoupon.setCouponId(discountUpdateForm.getId());
             voucheCoupon = selectOne(voucheCoupon);
             if (voucheCoupon != null) {

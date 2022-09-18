@@ -2,6 +2,7 @@ package com.yunya.modules.employeeattend.mapper;
 
 
 
+import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 
@@ -18,6 +19,8 @@ import java.util.Date;
 import java.util.List;
 
 public interface EmployeeScheduleMapper extends Mapper<EmployeeSchedule> {
+
+  List<AttendanceAddressSet> findAddress();
 
   /**
    * 按照时间范围获取排班表

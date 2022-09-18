@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -19,8 +20,8 @@ import java.util.List;
 @ToString
 @ApiModel("返回会员绑定关系模型")
 public class MemberRelationVo implements Serializable {
-
+    @ApiModelProperty("副卡人")
     private  List<PatientMemberRelationVo> MemberRelationList;
-
+    @ApiModelProperty("余额共享人")
     private  List<PatientMemberRelationVo> MemberBalanceRelationList;
 }

@@ -43,4 +43,9 @@ public class CommonConstants {
   public static final String CONTEXT_KEY_USER_NAME = "currentUser";
   /** 当前用户token */
   public static final String CONTEXT_KEY_USER_TOKEN = "currentUserToken";
+  /** JWT中封装的 open_id */
+  public static final String JWT_KEY_OPEN_ID = "open_id";
+  public static final Integer INT_ONE = 1;
+  public static final Integer INT_TWO = 2;
+  public static final Integer INT_THREE = 3;
 }

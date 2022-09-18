@@ -3,9 +3,7 @@ package com.yunya.models.patient_central;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 @Table(name = "wx_fans")
@@ -37,6 +35,11 @@ public class WxFans {
      */
     @Column(name = "nick_name")
     private String nickName;
+
+    /**
+     * 生日
+     */
+    private Date birthday;
 
     /**
      * 性别：1男性，2女性，0未知
@@ -139,6 +142,51 @@ public class WxFans {
     private String lastchatkfId;
 
     /**
+     * 用户来源（0-公众号 1-小程序）
+     */
+    @Column(name = "source_type")
+    private Integer sourceType;
+
+    /**
+     * 用户来源主体
+     */
+    @Column(name = "source_type_name")
+    private String sourceTypeName;
+
+    /**
+     * 用户状态（0-注销 1-禁用 2-正常 3-注销中）
+     */
+    @Column(name = "fans_status")
+    private Integer fansStatus;
+
+    /**
+     * 上次登录时间
+     */
+    @Column(name = "last_login_date")
+    private Date lastLoginDate;
+
+    /**
+     * 常驻地址
+     */
+    private String address;
+
+    /**
+     * 最后一次登录地址
+     */
+    @Column(name = "last_login_address")
+    private String lastLoginAddress;
+
+    /**
+     * 经度
+     */
+    private Double longitude;
+
+    /**
+     * 纬度
+     */
+    private Double latitude;
+
+    /**
      * 创建时间
      */
     @Column(name = "crt_time")
@@ -149,4 +197,7 @@ public class WxFans {
      */
     @Column(name = "upd_time")
     private Date updTime;
+
+    @Column(name = "update_by")
+    private Integer updateBy;
 }

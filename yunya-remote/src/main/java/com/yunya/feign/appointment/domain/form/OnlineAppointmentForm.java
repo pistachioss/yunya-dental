@@ -79,7 +79,6 @@ public class OnlineAppointmentForm implements Serializable {
      * 预约时间
      */
     @ApiModelProperty(value = "预约时间",required = true)
-    @NotNull(message = "预约时间不能为空")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
     private Date appointTime;
 
@@ -110,4 +109,32 @@ public class OnlineAppointmentForm implements Serializable {
      */
     @ApiModelProperty("预约申请状态 0-申请中；1-通过；2-取消")
     private Byte status;
+
+    /**
+     * 微信唯一标识openId,唯一标识
+     */
+    @ApiModelProperty(value = "union_id,唯一标识",required = true)
+    @NotNull(message = "unionId不能为空")
+    @NotBlank(message = "unionId不能为空")
+    private String unionId;
+
+    /**
+     * 意向预约来源 0公众号 1小程序
+     */
+    @ApiModelProperty(value = "意向预约来源 0公众号 1小程序",required = true)
+    @NotNull(message = "意向预约来源不能为空")
+    private Integer wxType;
+
+    /**
+     * 预约时间 0上午 1下午
+     */
+    @ApiModelProperty(value = "预约时间 0上午 1下午",required = true)
+    @NotNull(message = "预约时间不能为空")
+    private Integer appointMa;
+
+    /**
+     * 备注
+     */
+    @ApiModelProperty(value = "备注")
+    private String remark;
 }

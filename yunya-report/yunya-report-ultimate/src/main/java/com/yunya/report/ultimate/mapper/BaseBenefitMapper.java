@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.CardConsumeQuery;
 import com.yunya.feign.report.domain.query.CardUsedDetailQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBenefit;
@@ -53,4 +54,12 @@ public interface BaseBenefitMapper extends Mapper<BaseBenefit> {
 	 * 查询患者所有卡券项目的使用详情
 	 */
 	List<BenefitItemVo> listAllItemUse(@Param("cardIds") List<Integer> cardIds);
+
+	/**
+	 * 查询卡券使用记录
+	 *
+	 * @param query
+	 * @return
+	 */
+    List<CardConsumeRecordVO> selectCardUseRecord(@Param("query") CardConsumeQuery query);
 }

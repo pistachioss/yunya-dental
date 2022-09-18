@@ -102,6 +102,8 @@ public class WXService extends AbstractWxBaseApi {
     private WxMsgTemplatesMapper templatesMapper;
     @Value("${mp.domain}")
     private String mpDomain;
+    @Value("${wechat.name}")
+    private String wechatName;
     @Resource(name = "customizeThreadPool")
     private ExecutorService cardThreadPool;
     @Resource
@@ -181,6 +183,8 @@ public class WXService extends AbstractWxBaseApi {
         if (StringUtils.isNotBlank(model.getMobile()) && StringUtils.isNotBlank(model.getUserName())) {
             wxFansBinds = this.buildWxFansBind(wxFans, model);
         }
+        wxFans.setSourceType(0);
+        wxFans.setSourceTypeName(wechatName);
         fansSaveForm.setWxFans(wxFans);
         fansSaveForm.setFansBind(wxFansBinds);
         //调用患者服务的保存微信用户接口，患者绑定关系表
@@ -205,9 +209,17 @@ public class WXService extends AbstractWxBaseApi {
     }
 
     public List<WxFansDetailVO> listAccount(String openId) {
-        WxFansDetailForm wxFansDetailForm = new WxFansDetailForm();
-        wxFansDetailForm.setOpenId(openId);
-        return patientFeign.findDetail(wxFansDetailForm);
+
+        WxUserQuery query = new WxUserQuery();
+        query.setOpenId(openId);
+        WxFans wxFans = patientFeign.getWxFans(query);
+        List<WxFansDetailVO>reList = new ArrayList<>();
+        if(wxFans!=null){
+            WxFansDetailForm wxFansDetailForm = new WxFansDetailForm();
+            wxFansDetailForm.setUnionId(wxFans.getUnionId());
+            reList = patientFeign.findDetail(wxFansDetailForm);
+        }
+        return reList;
     }
 
     public WxPatientVo settingInfo(String openId, Integer patientId) {
@@ -729,6 +741,8 @@ public class WXService extends AbstractWxBaseApi {
         wxFans.setCountry(userJson.getString("country"));
         wxFans.setHeadImgurl(userJson.getString("headimgurl"));
         wxFans.setUnionId(userJson.getString("unionid"));
+        wxFans.setSourceType(0);
+        wxFans.setSourceTypeName(wechatName);
         fansSaveForm.setWxFans(wxFans);
         patientFeign.saveWx(fansSaveForm);
     }

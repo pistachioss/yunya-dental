@@ -46,6 +46,9 @@
         <if test="queryForm.type != null">
             type = #{queryForm.type}
         </if>
+        <if test="queryForm.isOnlineSale != null">
+            and is_online_sale = #{queryForm.isOnlineSale}
+        </if>
         </where>
            GROUP BY product_type_id) ci
         on ci.id = pt.id

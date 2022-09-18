@@ -113,7 +113,7 @@ public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAuto
      * @param events 自动发送事件枚举列表
      * @return
      */
-    public ResponseResult<T> initAutoSendEvent(Integer orgId, Collection<SmsAutosendEventEnum> events) {
+    public ResponseResult initAutoSendEvent(Integer orgId, Collection<SmsAutosendEventEnum> events) {
         String userId = BaseContextHandler.getUserID();
         if (StringHelper.isNotEmpty(userId)) {// 创建门诊时
             events.forEach(event -> {

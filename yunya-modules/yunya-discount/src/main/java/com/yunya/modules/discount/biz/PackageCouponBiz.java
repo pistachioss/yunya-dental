@@ -109,8 +109,10 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
 
             couponCommonInfo.setAvailableSaleStartDate(packageCouponForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(packageCouponForm.getAvailableSaleEndDate());
+            couponCommonInfo.setIsOnlineSale(packageCouponForm.getIsOnlineSale());
             //更新基础信息
             couponCommonInfoBiz.updateById(couponCommonInfo);
+            couponCommonInfoBiz.removeHot(copy, packageCouponForm.getIsOnlineSale());
             packageCoupon.setCouponId(packageCouponForm.getId());
             packageCoupon = selectOne(packageCoupon);
             if(packageCoupon!=null){
@@ -145,6 +147,7 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
             couponCommonInfo.setUpdTime(new Date());
             //基础信息表中修改数据
             couponCommonInfoBiz.updateById(couponCommonInfo);
+            couponCommonInfoBiz.removeHot(copy, packageCouponForm.getIsOnlineSale());
             packageCoupon.setCouponId(packageCouponForm.getId());
             packageCoupon = selectOne(packageCoupon);
             if (packageCoupon != null) {

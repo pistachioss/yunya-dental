@@ -14,12 +14,12 @@
         <result column="refund_operator_id" property="refundOperatorId" jdbcType="INTEGER"/>
         <result column="refund_date" property="refundDate" jdbcType="TIMESTAMP"/>
         <result column="refund_reason" property="refundReason" jdbcType="VARCHAR"/>
-        <result column="bill_num" property="billNum" jdbcType="VARCHAR" />
-        <result column="bill_date" property="billDate" jdbcType="TIMESTAMP" />
-        <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
-        <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
-        <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
-        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+        <result column="bill_num" property="billNum" jdbcType="VARCHAR"/>
+        <result column="bill_date" property="billDate" jdbcType="TIMESTAMP"/>
+        <result column="order_amount" property="orderAmount" jdbcType="DECIMAL"/>
+        <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
+        <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL"/>
+        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
     </resultMap>
 
     <!-- 根据条件查询账单退费记录列表 -->
@@ -139,7 +139,7 @@
         br.patientName,
         br.pinyinName,
         br.mobile,
-        brd.executor_id AS employeeId
+        if(#{query.isConsulter} = 0, brd.executor_id, brd.consulter_id) AS employeeId
         FROM
         base_refund_detail brd
         INNER JOIN (
@@ -188,10 +188,14 @@
             </if>
         </where>
         ) br ON brd.refund_id = br.refundId
-        WHERE
-        <if test="query.employeeId != null">
-            brd.executor_id = #{query.employeeId}
-        </if>
+        <where>
+            <if test="query.isConsulter == 0">
+                AND brd.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND brd.consulter_id = #{query.employeeId}
+            </if>
+        </where>
         ) brd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
@@ -230,21 +234,23 @@
         brd.refund_amount,
         brd.refund_id,
         brd.item_id,
-        brd.item_type,
-        brd.executor_id
+        brd.item_type
         FROM
         base_refund_detail brd
-        ) brd
-        LEFT JOIN base_tariff_info bti ON brd.item_type = bti.item_type
-        AND brd.item_id = bti.item_id
         <where>
             <if test="query.refundId != null">
                 and brd.refund_id = #{query.refundId}
             </if>
-            <if test="query.employeeId != null">
-                and brd.executor_id = #{query.employeeId}
+            <if test="query.isConsulter == 0">
+                AND brd.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND brd.consulter_id = #{query.employeeId}
             </if>
         </where>
+        ) brd
+        LEFT JOIN base_tariff_info bti ON brd.item_type = bti.item_type
+        AND brd.item_id = bti.item_id
     </select>
 
     <!-- 根据条件查询助手配诊退费账单明细列表 -->
@@ -669,26 +675,26 @@
     <!-- 根据推荐人id和退费时间查询患者退款总金额 -->
     <select id="findRefundAmount" resultType="java.math.BigDecimal">
         SELECT TRUNCATE
-            ( sum( refund_amount ), 2 )
+        ( sum( refund_amount ), 2 )
         FROM
-            base_refund br
-            JOIN (
-                SELECT DISTINCT
-                    log.patient_id
-                FROM
-                    base_patient_origin_log log
-                    JOIN base_bill bb ON log.patient_id = bb.patient_id
-                    JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
-                WHERE
-                    log.origin_id = #{originId}
-                    AND log.origin_type = #{originType}
-                    AND log.inservice = 1
-            ) t ON br.patient_id = t.patient_id
+        base_refund br
+        JOIN (
+        SELECT DISTINCT
+        log.patient_id
+        FROM
+        base_patient_origin_log log
+        JOIN base_bill bb ON log.patient_id = bb.patient_id
+        JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
+        WHERE
+        log.origin_id = #{originId}
+        AND log.origin_type = #{originType}
+        AND log.inservice = 1
+        ) t ON br.patient_id = t.patient_id
         <if test="startDate != null">
             and DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="endDate != null" >
+        <if test="endDate != null">
             and DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{endDate}, '%Y-%m-%d' )
         </if>
 
@@ -744,26 +750,27 @@
     <!-- 根据推荐人id 和 退费时间查询 退费id -->
     <select id="selectFundBillIdList" resultType="java.lang.Integer">
         select br.refund_id from base_refund br join (
-            SELECT DISTINCT
-            log.patient_id
-            FROM
-                base_patient_origin_log log
-                JOIN base_bill bb ON log.patient_id = bb.patient_id
-                JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
-                JOIN base_patient bp ON bp.patient_id = log.patient_id
-            WHERE
-                log.origin_id = #{query.originId}
-                <if test="query.condition != null">
-                    and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
-                </if>
-                AND log.inservice = 1
-		) t  on br.patient_id = t.patient_id
+        SELECT DISTINCT
+        log.patient_id
+        FROM
+        base_patient_origin_log log
+        JOIN base_bill bb ON log.patient_id = bb.patient_id
+        JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
+        JOIN base_patient bp ON bp.patient_id = log.patient_id
+        WHERE
+        log.origin_id = #{query.originId}
+        <if test="query.condition != null">
+            and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition}
+            ), '%' )
+        </if>
+        AND log.inservice = 1
+        ) t on br.patient_id = t.patient_id
         where 1 = 1
         <if test="query.startDate != null">
             and DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null">
             and DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
@@ -772,20 +779,24 @@
     <!-- 查询退费项目明细 -->
     <select id="selectRefundDetail"
             resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo">
-        SELECT
-                distinct
-				bb.bill_id billId,
-				bb.patient_id patientId,
-				DATE_FORMAT( log.crt_time, '%Y-%m-%d %H:%i') relatedTime,
-				bp.`name`,
-				bp.mobile,
-				(select DATE_FORMAT(min(treat_start_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id = bb.patient_id and treat_start_time IS NOT NULL) firstVisitDate,
-				(select DATE_FORMAT(max(treat_end_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id = bb.patient_id and treat_start_time IS NOT NULL) lastVisitDate ,
-				DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
-				bo.abbreviation abbreviation,
-				be.employee_name employeeName,
-				bti.item_name itemName,
-				TRUNCATE(brd.refund_amount,2) as workload
+        SELECT distinct bb.bill_id                                   billId,
+                        bb.patient_id                                patientId,
+                        DATE_FORMAT(log.crt_time, '%Y-%m-%d %H:%i')  relatedTime,
+                        bp.`name`,
+                        bp.mobile,
+                        (select DATE_FORMAT(min(treat_start_time), '%Y-%m-%d %H:%i')
+                         from base_treatment_process
+                         where patient_id = bb.patient_id
+                           and treat_start_time IS NOT NULL)         firstVisitDate,
+                        (select DATE_FORMAT(max(treat_end_time), '%Y-%m-%d %H:%i')
+                         from base_treatment_process
+                         where patient_id = bb.patient_id
+                           and treat_start_time IS NOT NULL)         lastVisitDate,
+                        DATE_FORMAT(bb.order_date, '%Y-%m-%d %H:%i') orderDate,
+                        bo.abbreviation                              abbreviation,
+                        be.employee_name                             employeeName,
+                        bti.item_name                                itemName,
+                        TRUNCATE(brd.refund_amount, 2) as            workload
         from base_refund_detail brd
                  left join base_bill bb on bb.bill_id = bbd.bill_id
                  left join base_patient bp on bp.patient_id = bb.patient_id
@@ -794,12 +805,11 @@
                  left join base_treatment_process btp on btp.treatment_id = bb.treatment_id
                  left join base_employee be on be.user_id = btp.registered_dentist_id
                  left join base_tariff_info bti ON bti.item_id = brd.item_id
-        where
-              log.inservice = 1
-              and brd.refund_id = #{refundId}
-              and log.origin_id = #{originId}
-              and log.origin_type = #{originType}
-              and bti.item_type = brd.item_type
+        where log.inservice = 1
+          and brd.refund_id = #{refundId}
+          and log.origin_id = #{originId}
+          and log.origin_type = #{originType}
+          and bti.item_type = brd.item_type
     </select>
 
     <!-- 根据条件查询退费工作量 -->
@@ -847,7 +857,8 @@
     </select>
 
     <!-- 根据条件按月份分组求退费工作量 -->
-    <select id="selectTotalRefundWorkloadGroupByMonth" resultType="com.yunya.feign.report.domain.vo.BillOfRefundWorkloadVO">
+    <select id="selectTotalRefundWorkloadGroupByMonth"
+            resultType="com.yunya.feign.report.domain.vo.BillOfRefundWorkloadVO">
         SELECT
         SUM(IFNULL(brd.refund_amount,0)) AS totalRefundWorkload,
         br.org_id AS orgId,

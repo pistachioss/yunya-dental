@@ -28,6 +28,8 @@ public class WxFansVo implements Serializable {
     private Integer id;
     @ApiModelProperty("openID")
     private String openId;
+    @ApiModelProperty("unionId")
+    private String unionId;
     @ApiModelProperty("性别")
     private String sex;
     @ApiModelProperty("是否关注")
@@ -45,7 +47,13 @@ public class WxFansVo implements Serializable {
     @ApiModelProperty("注册日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date crtTime;
-    @ApiModelProperty("绑定状态0:已绑定患者 1:未绑定患者")
+    @ApiModelProperty("绑定状态0:未绑定患者 1:已绑定患者")
     private Integer isBind;
+    @ApiModelProperty("最后一次登录地址")
+    private String lastLoginAddress;
+    @ApiModelProperty("用户来源")
+    private Integer sourceType;
+    @ApiModelProperty("用户来源名称")
+    private String sourceTypeName;
 }
 

@@ -70,7 +70,7 @@ public class OnlineAppointItemBiz extends BaseBiz<OnlineAppointItemMapper, Onlin
      * @param model 新增数据
      * @return 新增结果
      */
-    public ResponseResult<T> addItem(OnlineAppointItemModel model) {
+    public ResponseResult addItem(OnlineAppointItemModel model) {
         OnlineAppointItem example = new OnlineAppointItem();
         example.setName(model.getName());
         int count = mapper.selectCount(example);
@@ -94,7 +94,7 @@ public class OnlineAppointItemBiz extends BaseBiz<OnlineAppointItemMapper, Onlin
      * @param itemId itemId
      * @return 删除结果
      */
-    public ResponseResult<T> deleteItemById(Integer itemId) {
+    public ResponseResult deleteItemById(Integer itemId) {
         OnlineAppointItem onlineAppointItem = mapper.selectByPrimaryKey(itemId);
         if (onlineAppointItem == null) {
             return ResponseUtil.fail(AppointmentError.APPOINTMENT_ITEM_EDIT_NOT_EXIST.getCode(),
@@ -117,7 +117,7 @@ public class OnlineAppointItemBiz extends BaseBiz<OnlineAppointItemMapper, Onlin
      * @param form 修改数据
      * @return 修改结果
      */
-    public ResponseResult<T> updateItem(OnlineAppointItemForm form) {
+    public ResponseResult updateItem(OnlineAppointItemForm form) {
         OnlineAppointItem onlineAppointItem = mapper.selectByPrimaryKey(form.getItemId());
         if (onlineAppointItem == null) {
             return ResponseUtil.fail(AppointmentError.APPOINTMENT_ITEM_EDIT_NOT_EXIST.getCode(),

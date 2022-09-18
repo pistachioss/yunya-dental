@@ -5,9 +5,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简介: 开单关联修改参数封装模型
@@ -31,8 +32,8 @@ public class BaseTariffAssociationForm implements Serializable {
   @Size(max = 300, message = "'注意事项'不能超出300个字符！")
   private String attention;
 
-  /** 几天后随访 */
-  @ApiModelProperty("几天后随访")
-  @Min(value = 0, message = "最小值为0")
-  private String[] fellowUps;
+  /** 随访信息 */
+  @ApiModelProperty("随访信息")
+  @NotEmpty(message = "随访信息不能为空")
+  private List<FellowUpInfoForm> fellowUpInfoForm;
 }

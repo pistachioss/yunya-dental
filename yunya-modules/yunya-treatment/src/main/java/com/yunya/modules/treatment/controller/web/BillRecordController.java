@@ -17,10 +17,14 @@ import com.yunya.modules.treatment.biz.BillRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -71,7 +75,7 @@ public class BillRecordController {
   @ApiOperation("患者档案-账单详情-编辑备注提交")
   @PostMapping(value = "/edit/remarks",name = "患者档案-账单详情-编辑备注提交")
   @CurrentUser
-  public ResponseResult<T> editRemarks(@RequestBody List<OrderDetailChargeVO> orderDetails) {
+  public ResponseResult editRemarks(@RequestBody List<OrderDetailChargeVO> orderDetails) {
     return billRecordBiz.editRemarks(orderDetails);
   }
 
@@ -88,7 +92,7 @@ public class BillRecordController {
   @CurrentUser
   @ApiOperation("账单退费")
   @PostMapping(value = "/refund", name = "账单退费")
-  public ResponseResult<T> billRefund(@RequestBody @Validated BillRefundModel model) {
+  public ResponseResult billRefund(@RequestBody @Validated BillRefundModel model) {
     billRecordBiz.refund(model);
     return ResponseUtil.success(null);
   }
@@ -149,7 +153,7 @@ public class BillRecordController {
    */
   @ApiOperation("公司端报表-财务报表-应收款余额表导出")
   @PostMapping(value = "/debt/list/export", name = "公司端报表-财务报表-应收款余额表导出")
-  public ResponseResult<T> exportDebtList(HttpServletResponse response,
+  public ResponseResult exportDebtList(HttpServletResponse response,
                                           @RequestBody @Validated BillOfReceivableQuery query) throws IOException {
     billRecordBiz.exportDebtList(query, response);
     return ResponseUtil.success(null);

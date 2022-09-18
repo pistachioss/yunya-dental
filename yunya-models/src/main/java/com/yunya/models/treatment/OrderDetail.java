@@ -78,6 +78,10 @@ public class OrderDetail {
     @Column(name = "executor_id")
     private Integer executorId;
 
+    /** 咨询师ID */
+    @Column(name = "consulter_id")
+    private Integer consulterId;
+
     /**
      * 添加来源（0-开单；1-收费）
      */
@@ -326,6 +330,14 @@ public class OrderDetail {
      */
     public void setExecutorId(Integer executorId) {
         this.executorId = executorId;
+    }
+
+    public Integer getConsulterId() {
+        return consulterId;
+    }
+
+    public void setConsulterId(Integer consulterId) {
+        this.consulterId = consulterId;
     }
 
     /**

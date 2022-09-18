@@ -37,4 +37,10 @@ public class OnlineAppointItemModel {
     @NotNull(message = "预约时长(单位: 分钟)不能为空")
     @Range(min = 15,max = 480,message = "预约时长(单位: 分钟)应该大于15且小于480")
     private Integer duration;
+
+    /**
+     * 是否可用 0-不可以；1-可用
+     */
+    @ApiModelProperty("是否可用 0-不可以；1-可用")
+    private Boolean inservice = true;
 }

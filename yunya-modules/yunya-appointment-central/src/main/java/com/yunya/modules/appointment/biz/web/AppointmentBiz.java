@@ -166,7 +166,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return ResponseResult
      * @throws ParseException 日期转换异常
      */
-    public ResponseResult<T> addAppointment(AppointmentBaseModel form) throws ParseException {
+    public ResponseResult addAppointment(AppointmentBaseModel form) throws ParseException {
         // 检查预约当天预约的医生是否排班
         ResponseResult dentistSchedulingConflict = this.checkScheduling(form);
         if (null != dentistSchedulingConflict){

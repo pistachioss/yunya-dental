@@ -70,6 +70,9 @@ public enum DiscountError implements RestError {
     OTHER_CARD_IS_ACTIVATED(60, "第三方平台卡券已激活"),
     OTHER_CARD_NOT_ALLOW_DELETE(61, "患者不允许删除共有产品"),
     CARD_IS_USED(62, "该卡券已被使用，不允许删除"),
+    CARD_ORDER_REFUND(63, "该卡券的订单正在退款中"),
+    MINI_CARD_CANCEL_ERROR(64, "小程序卡券不可取消售出"),
+    MINI_CARD_DELETE_ERROR(65, "小程序卡券不可删除"),
     ;
     private Integer code;
     private String value;

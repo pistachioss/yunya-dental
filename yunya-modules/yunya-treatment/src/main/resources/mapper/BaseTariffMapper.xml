@@ -139,11 +139,12 @@
         bt.english_name as englishName,
         ifnull( bt.emr, '' ) as emr,
         ifnull( bt.attention, '' ) as attention,
-        ifnull( bt.fellow_up, '' ) as fellowUp,
+        ifnull( group_concat(btfr.fellow_up), '' ) as fellowUp,
         bt.inservice
         from
         base_tariff bt
         left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        left join base_tariff_fellowup_relation btfr on btfr.base_tariff_id = bt.id
         <where>
             <if test="queryForm.tariffCategoryId != null">
                 and bt.tariff_category_id = #{queryForm.tariffCategoryId}
@@ -157,11 +158,13 @@
                 and bt.inservice = #{queryForm.inservice}
             </if>
         </where>
+        group by bt.id
     </select>
     <!-- 根据条件查询价目表导出开单关联信息列表 -->
     <select id="selectExportBaseTariffAssociationList"
             resultType="com.yunya.feign.treatment.domain.vo.BaseTariffAssociationExportVO">
         select
+        bt.id,
         bt.item_number as itemNumber,
         bt.`name` as name,
         btc.`name` as tariffCategoryName,
@@ -267,6 +270,13 @@
                 and bot.inservice = #{queryForm.inservice}
             </if>
         </where>
+    </select>
+    <select id="selectByIds" resultMap="BaseResultMap">
+        select * from base_tariff where
+        id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 
     <!-- 批量插入价目表 -->

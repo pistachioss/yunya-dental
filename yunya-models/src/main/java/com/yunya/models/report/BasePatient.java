@@ -4,6 +4,7 @@ package com.yunya.models.report;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "base_patient")
@@ -105,13 +106,13 @@ public class BasePatient {
      * 累计消费
      */
     @Column(name = "cumulative_consumption")
-    private Integer cumulativeConsumption;
+    private BigDecimal cumulativeConsumption;
 
     /**
      * 欠费总额
      */
     @Column(name = "total_arrears")
-    private Integer totalArrears;
+    private BigDecimal totalArrears;
 
     /**
      * 就诊次数
@@ -512,7 +513,7 @@ public class BasePatient {
      *
      * @return cumulative_consumption - 累计消费
      */
-    public Integer getCumulativeConsumption() {
+    public BigDecimal getCumulativeConsumption() {
         return cumulativeConsumption;
     }
 
@@ -521,7 +522,7 @@ public class BasePatient {
      *
      * @param cumulativeConsumption 累计消费
      */
-    public void setCumulativeConsumption(Integer cumulativeConsumption) {
+    public void setCumulativeConsumption(BigDecimal cumulativeConsumption) {
         this.cumulativeConsumption = cumulativeConsumption;
     }
 
@@ -530,7 +531,7 @@ public class BasePatient {
      *
      * @return total_arrears - 欠费总额
      */
-    public Integer getTotalArrears() {
+    public BigDecimal getTotalArrears() {
         return totalArrears;
     }
 
@@ -539,7 +540,7 @@ public class BasePatient {
      *
      * @param totalArrears 欠费总额
      */
-    public void setTotalArrears(Integer totalArrears) {
+    public void setTotalArrears(BigDecimal totalArrears) {
         this.totalArrears = totalArrears;
     }
 

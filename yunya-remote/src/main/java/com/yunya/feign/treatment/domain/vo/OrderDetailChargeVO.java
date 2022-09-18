@@ -73,6 +73,13 @@ public class OrderDetailChargeVO implements Serializable {
   /** 执行人姓名 */
   @ApiModelProperty("执行人姓名")
   private String executorName;
+
+  @ApiModelProperty("咨询师ID")
+  private Integer consulterId;
+
+  @ApiModelProperty("咨询师姓名")
+  private String consulterName;
+
   /** 备注 */
   @ApiModelProperty("备注")
   private String remarks;

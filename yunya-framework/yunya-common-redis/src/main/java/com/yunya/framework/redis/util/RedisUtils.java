@@ -5,11 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.connection.ReturnType;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.core.types.Expiration;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -36,6 +35,13 @@ public class RedisUtils {
 
   @Resource(name = "stringRedisTemplate")
   private ValueOperations<String, String> valueOperations;
+  private final ZSetOperations<String, String> zSetOps;
+  private final GeoOperations<String, String> opsForGeo;
+
+  public RedisUtils(RedisTemplate<String, String> redisTemplate) {
+    zSetOps = redisTemplate.opsForZSet();
+    opsForGeo = redisTemplate.opsForGeo();
+  }
 
   /** 默认过期时长(24h)，单位：秒 */
   public static final long DEFAULT_EXPIRE = 60 * 60 * 24;
@@ -129,6 +135,13 @@ public class RedisUtils {
   public <T> T get(String key, Class<T> clazz) {
     String value = valueOperations.get(key);
     return value == null ? null : fromJson(value, clazz);
+  }
+
+  /**
+   * 按delta递增
+   */
+  public Long incr(String key, long delta) {
+    return valueOperations.increment(key, delta);
   }
 
 
@@ -287,5 +300,81 @@ public class RedisUtils {
   public <T> T rPop(String key, Class<T> clazz) {
     String value = (String) redisTemplate.opsForList().rightPop(key);
     return value == null ? null : fromJson(value, clazz);
+  }
+
+  // ---------------------------- zSet start ----------------------------
+  /**
+   * 将一个或多个 member 元素及其 score 值加入到有序集 key 当中。 如果某个 member 已经是有序集的成员，那么更新这个 member 的 score
+   * 值，并通过重新插入这个 member 元素，来保证该 member 在正确的位置上。 score 值可以是整数值或双精度浮点数。 如果 key 不存在，则创建一个空的有序集并执行 ZADD
+   * 操作。 当 key 存在但不是有序集类型时，返回一个错误。
+   *
+   * @param key 一定不能为 {@literal null}.
+   * @param score 得分
+   * @param member 值
+   * @return 是否成功
+   * @see <a href="https://redis.io/commands/zadd">Redis Documentation: ZADD</a>
+   */
+  public Boolean zAdd(@NonNull String key, String member, double score) {
+    return zSetOps.add(key, member, score);
+  }
+
+  /**
+   * 为有序集 key 的成员 member 的 score 值加上增量 increment 。 可以通过传递一个负数值 increment ，让 score 减去相应的值，比如 ZINCRBY
+   * key -5 member ，就是让 member 的 score 值减去 5 。 当 key 不存在，或 member 不是 key 的成员时， ZINCRBY key increment
+   * member 等同于 ZADD key increment member 。 当 key 不是有序集类型时，返回一个错误。 score 值可以是整数值或双精度浮点数。
+   *
+   * @param key 一定不能为 {@literal null}.
+   * @param score 得分
+   * @param member the value.
+   * @return member 成员的新 score 值
+   * @see <a href="https://redis.io/commands/zincrby">Redis Documentation: ZINCRBY</a>
+   */
+  public Double zIncrBy(@NonNull String key, String member, double score) {
+    return zSetOps.incrementScore(key, member, score);
+  }
+
+  /**
+   * 返回有序集 key 中，指定区间内的成员。 其中成员的位置按 score 值递减(从大到小)来排列。 具有相同 score 值的成员按字典序的逆序(reverse
+   * lexicographical order)排列。 除了成员按 score 值递减的次序排列这一点外， ZREVRANGE 命令的其他方面和 ZRANGE key start stop
+   * [WITHSCORES] 命令一样。
+   *
+   * @param key 一定不能为 {@literal null}.
+   * @param start 索引
+   * @param end 索引
+   * @return 指定区间内，不带有 score 值(可选)的有序集成员的列表。
+   * @see <a href="https://redis.io/commands/zrevrange">Redis Documentation: ZREVRANGE</a>
+   */
+  @Nullable
+  public Set<String> zRevrange(@NonNull String key, long start, long end) {
+    return zSetOps.reverseRange(key, start, end);
+  }
+
+  /**
+   * 返回有序集 key 中，指定区间内的成员。 其中成员的位置按 score 值递减(从大到小)来排列。 具有相同 score 值的成员按字典序的逆序(reverse
+   * lexicographical order)排列。 除了成员按 score 值递减的次序排列这一点外， ZREVRANGE 命令的其他方面和 ZRANGE key start stop
+   * [WITHSCORES] 命令一样。
+   *
+   * @param key 一定不能为 {@literal null}.
+   * @param start 索引
+   * @param end 索引
+   * @return 指定区间内，不带有 score 值(可选)的有序集成员的列表。
+   * @see <a href="https://redis.io/commands/zrevrange">Redis Documentation: ZREVRANGE</a>
+   */
+  @Nullable
+  public Set<ZSetOperations.TypedTuple<String>> zRevrangeWithScores(
+          @NonNull String key, long start, long end) {
+    return zSetOps.reverseRangeWithScores(key, start, end);
+  }
+
+  /**
+   * 移除有序集 key 中的一个或多个成员，不存在的成员将被忽略。 当 key 存在但不是有序集类型时，返回一个错误。
+   *
+   * @param key 一定不能为 {@literal null}.
+   * @param members 一定不能为 {@literal null}.
+   * @return 被成功移除的成员的数量，不包括被忽略的成员
+   * @see <a href="https://redis.io/commands/zrem">Redis Documentation: ZREM</a>
+   */
+  public Long zRem(@NonNull String key, Object... members) {
+    return zSetOps.remove(key, members);
   }
 }

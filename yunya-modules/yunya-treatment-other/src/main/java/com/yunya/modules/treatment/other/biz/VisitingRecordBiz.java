@@ -949,6 +949,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 visitFinishedListVO.setOrgId(vo.getOrgId());
                 visitFinishedListVO.setPatientId(vo.getPatientId());
                 visitFinishedListVO.setDentistId(vo.getDentistId());
+                visitFinishedListVO.setReason(vo.getReason());
                 visitFinishedListVO.setVisitingContent(vo.getVisitingContent());
                 visitFinishedListVO.setExecutorName(vo.getExecutorName());
                 visitFinishedListVO.setExecuteDateTime(vo.getExecuteDate());

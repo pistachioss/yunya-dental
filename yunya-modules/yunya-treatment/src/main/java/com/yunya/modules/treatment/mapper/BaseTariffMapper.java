@@ -103,4 +103,11 @@ public interface BaseTariffMapper extends Mapper<BaseTariff> {
    * @return
    */
   List<BaseTariffVO> selectAllTariffList(@Param("queryForm") BaseTariffQueryForm queryForm);
+
+  /**
+   * 批量查询项目
+   * @param ids
+   * @return
+   */
+    List<BaseTariff> selectByIds(@Param("ids") List<Integer> ids);
 }

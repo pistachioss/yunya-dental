@@ -124,7 +124,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
       fileName = excelUtil.getFileName(orderDate,null,abbreviation, "退费工作量统计明细表");
     }
 
-    excelUtil.exportExcel(response, list, "员工账单退费明细表", fileName);
+    excelUtil.exportExcel(response, list, "个人账单退费明细表", fileName);
   }
 
   /**

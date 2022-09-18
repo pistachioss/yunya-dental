@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -30,6 +31,7 @@ import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -42,10 +44,12 @@ import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.tariff.BaseTariff;
+import com.yunya.models.tariff.BaseTariffFellowupRelation;
 import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.mapper.*;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
@@ -114,6 +118,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Resource private RegisteredBiz registeredBiz;
 
   @Resource private RemoteReportServiceFeign remoteMiddleTableServiceFeign;
+
+  @Resource
+  private BaseTariffFellowupRelationMapper baseTariffFellowupRelationMapper;
+
 
   /**
    * 开始接诊
@@ -823,25 +831,19 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param treatmentRecordId 就诊记录ID
    * @param detail 开单详情
    */
-  public List<VisitingRecord> createOrderDetailVisitRecord(
-      Integer treatmentRecordId, OrderDetail detail) {
+  public List<VisitingRecord> createOrderDetailVisitRecord(Integer treatmentRecordId, OrderDetail detail) {
+    log.info("createOrderDetailVisitRecord>>>>>>>>>>>>>>入参>>>>treatmentRecordId = {}>>>>>>orderDetail={}",treatmentRecordId, JSON.toJSONString(detail));
     List<VisitingRecord> visitRecordPlanList = new ArrayList<>();
-    BaseTariff baseTariff = baseTariffBiz.selectById(detail.getBillingItemId());
-    if (null != baseTariff) {
-      String fellowUp = baseTariff.getFellowUp();
-      if (StringHelper.isNotBlank(fellowUp)) {
-        String[] nums = fellowUp.replaceAll("-", "").split(",");
-        if (nums.length > 0) {
-          Arrays.stream(nums)
-              .filter(StringHelper::isNotBlank)
+    List<BaseTariffFellowupRelation> baseTariffFellowupRelationList = baseTariffFellowupRelationMapper.queryByItemId(detail.getBillingItemId());
+    if (!ObjectUtils.isEmpty(baseTariffFellowupRelationList)) {
+      List<Integer> ids = baseTariffFellowupRelationList.stream()
+              .map(BaseTariffFellowupRelation::getBaseTariffId).collect(
+                      Collectors.toList());
+      List<BaseTariff> baseTariffs = baseTariffBiz.selectByIds(ids);
+      baseTariffFellowupRelationList.stream()
+              .filter(b->!ObjectUtils.isEmpty(b)&& Objects.nonNull(b.getFellowUp()) && b.getFellowUp() >= ZERO)
               .forEach(
-                  num -> {
-                    int nn;
-                    try {
-                      nn = Integer.parseInt(num);
-                    } catch (Exception ex) {
-                      throw new ClientServiceException("价目表的随访字段有非数字！", DATA_ERROR);
-                    }
+                btfr -> {
                     VisitingRecord visitRecord = new VisitingRecord();
                     TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
                     if (null != treatmentRecord) {
@@ -859,16 +861,20 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                       visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
                       visitRecord.setTreatmentId(treatmentRecordId);
                       visitRecord.setVisitingTime("09:00");
-                      visitRecord.setReason(baseTariff.getName());
+                      StringBuilder sb = new StringBuilder(btfr.getFellowUpCase());
+                      if (ObjectUtils.isEmpty(sb.toString())) {
+                        baseTariffs.stream().filter(s->Objects.equals(s.getId(),btfr.getBaseTariffId())).findFirst().ifPresent(bt->{
+                          sb.append(bt.getName());
+                        });
+                      }
+                      visitRecord.setReason(sb.toString());
                       visitRecord.setStatus(false);
                       visitRecord.setInservice(true);
                       visitRecord.setVisitingDate(
-                              DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
+                              DateUtils.addDays(new Date(System.currentTimeMillis()), Objects.isNull(btfr.getFellowUp())?ZERO:btfr.getFellowUp()));
                       visitRecordPlanList.add(visitRecord);
                     }
                   });
-        }
-      }
     }
     return visitRecordPlanList;
   }

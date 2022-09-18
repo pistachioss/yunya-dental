@@ -10,10 +10,9 @@ import com.yunya.modules.discount.mapper.CouponFileInfoMapper;
 import com.yunya.modules.discount.form.FileForm;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author 杨柳絮
@@ -36,12 +35,16 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
         //清除之前的图片
         CouponFileInfo couponFiledelete = new CouponFileInfo();
         couponFiledelete.setCouponId(fileForm.getId());
-        couponFiledelete.setFileType(new Byte("0"));
+//        couponFiledelete.setFileType(new Byte("0"));
         mapper.delete(couponFiledelete);
-        //清除之前的文档
-        couponFiledelete.setCouponId(fileForm.getId());
-        couponFiledelete.setFileType(new Byte("1"));
-        mapper.delete(couponFiledelete);
+//        //清除之前的文档
+//        couponFiledelete.setCouponId(fileForm.getId());
+//        couponFiledelete.setFileType(new Byte("1"));
+//        mapper.delete(couponFiledelete);
+//        //清除之前的产品介绍图
+//        couponFiledelete.setCouponId(fileForm.getId());
+//        couponFiledelete.setFileType(new Byte("2"));
+//        mapper.delete(couponFiledelete);
         //图片信息
         if (fileForm.getPaths() != null && fileForm.getPaths().size() > 0) {
             for (FileInfo fileInfo : fileForm.getPaths()) {
@@ -71,6 +74,21 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
                 list.add(couponFileInfo);
             }
         }
+        //产品图片信息
+        if (fileForm.getProPaths() != null && fileForm.getProPaths().size() > 0) {
+            for (FileInfo fileInfo : fileForm.getProPaths()) {
+                CouponFileInfo couponFileInfo = new CouponFileInfo();
+                couponFileInfo.setFileName(fileInfo.getFileName());
+                couponFileInfo.setCouponId(fileForm.getId());
+                couponFileInfo.setInservice(true);
+                couponFileInfo.setRemark(fileInfo.getMark());
+                couponFileInfo.setFileType(new Byte("2"));
+                couponFileInfo.setPath(fileInfo.getPath());
+                couponFileInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                couponFileInfo.setCrtTime(new Date());
+                list.add(couponFileInfo);
+            }
+        }
         if (list.size() > 0) {
             //插入文件信息
             return mapper.insertAll(list);
@@ -88,6 +106,16 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
         CouponFileInfo couponFileInfo = new CouponFileInfo();
         couponFileInfo.setCouponId(fileForm.getId());
         return mapper.select(couponFileInfo);
+    }
+
+    public List<CouponFileInfo> listByCouponIds(Collection<Integer> ids, Integer type) {
+        Example example = new Example(CouponFileInfo.class);
+        Example.Criteria criteria = example.createCriteria().andIn("couponId", ids)
+                .andEqualTo("inservice", true);
+        if (Objects.nonNull(type)) {
+            criteria.andEqualTo("fileType", type);
+        }
+        return mapper.selectByExample(example);
     }
 
 }

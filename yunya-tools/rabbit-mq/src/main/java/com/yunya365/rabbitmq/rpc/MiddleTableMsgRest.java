@@ -1,14 +1,13 @@
 package com.yunya365.rabbitmq.rpc;
 
 import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.report.domain.model.MessageOrderModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
@@ -30,9 +29,27 @@ public class MiddleTableMsgRest {
         return "ok";
     }
 
+    private String sendOrderMessage(MessageOrderModel messageModel) {
+        String messageId = String.valueOf(UUID.randomUUID());
+        messageModel.setMsgID(messageId);
+        // 将消息携带绑定键值：DirectExchange_MiddleSingle 发送到交换机：DirectRouting_Order
+        rabbitTemplate.convertAndSend(
+                "DirectExchange_MiddleSingle", "DirectRouting_Order", messageModel, message -> {
+                    // 设置超时时间  15min = 15 * 60 * 1000 = 900000
+                    message.getMessageProperties().setExpiration("900000");
+                    return message;
+                });
+        return "ok";
+    }
+
     @PostMapping("direct/single")
     public String sendDirectMessage(@RequestBody MessageModel messageModel) {
         return sendMessageTemp(messageModel);
+    }
+
+    @PostMapping("direct/order")
+    public String sendOrderDirectMessage(@RequestBody MessageOrderModel messageModel) {
+        return sendOrderMessage(messageModel);
     }
 
     @PostMapping("/direct/single1")

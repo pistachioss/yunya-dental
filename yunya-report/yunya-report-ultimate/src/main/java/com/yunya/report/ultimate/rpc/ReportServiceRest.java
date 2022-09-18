@@ -4,8 +4,10 @@ import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.models.report.CreditsShop;
 import com.yunya.report.ultimate.biz.BaseTreatmentProcessBiz;
 import com.yunya.report.ultimate.biz.DiscountBiz;
+import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +22,8 @@ public class ReportServiceRest {
     private DiscountBiz discountBiz;
     @Resource
     private BaseTreatmentProcessBiz baseTreatmentProcessBiz;
+    @Resource
+    private PatientBaseInfoBiz patientBaseInfoBiz;
 
     @PostMapping("/card/{cardId}/item/usage")
     public List<BenefitItemVo> listWxCouponsUseItem(@PathVariable(value = "cardId") Integer cardId) {
@@ -39,5 +43,10 @@ public class ReportServiceRest {
     @RequestMapping(value = "/patient/likePatient",method = RequestMethod.POST)
     List<PatientBaseInfoVo> findPatientLikePatientInfo(@RequestBody PatientLikeFinleQueryForm form) {
         return baseTreatmentProcessBiz.findPatientLikePatientInfo(form);
+    }
+
+    @GetMapping("/patient/{patientId}/lastPatientCredits")
+    CreditsShop lastPatientCredits(@PathVariable("patientId") Integer patiendId) {
+        return patientBaseInfoBiz.lastPatientCredits(patiendId);
     }
 }
