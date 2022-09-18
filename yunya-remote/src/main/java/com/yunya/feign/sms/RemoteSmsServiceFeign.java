@@ -43,7 +43,7 @@ public interface RemoteSmsServiceFeign {
      * @param smsVerifyCodeModel
      */
     @RequestMapping(value = "/api/sms/sendVerifyCode", method = RequestMethod.POST)
-    ResponseResult<T> sendVerifyCode(@RequestBody SmsVerifyCodeModel smsVerifyCodeModel);
+    ResponseResult sendVerifyCode(@RequestBody SmsVerifyCodeModel smsVerifyCodeModel);
 
     /**
      * 根据主键id查询关联的模板信息

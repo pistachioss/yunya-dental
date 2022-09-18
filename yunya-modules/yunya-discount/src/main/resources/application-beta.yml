@@ -21,4 +21,4 @@ spring:
     password: foobared
 
 codeUrl:
-  url: test.ivy2.yunya365.com
+  url: test.ivy2.yunya365.com/mobile

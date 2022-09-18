@@ -29,4 +29,4 @@ logging:
     com.yunya365: INFO
 
 codeUrl:
-  url: ivy2.yunya365.com
+  url: http://ivy2.yunya365.com/mobile
