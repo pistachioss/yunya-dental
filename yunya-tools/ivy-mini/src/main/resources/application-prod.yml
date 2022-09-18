@@ -1,24 +1,24 @@
 # 测试环境
 spring:
   datasource:
-    host: community.yunya365.com
+    host: rm-bp18uejcrk63u04c9.mysql.rds.aliyuncs.com
     port: 3306
     username: sa
     password: Admin001!
-    name: test_yunya_mall
+    name: yunya_mall
   cloud:
     nacos:
       discovery:
-        server-addr: 172.16.17.177:8848
+        server-addr: 192.168.100.80:8848
       config:
-        server-addr: 172.16.17.177:8848
+        server-addr: 192.168.100.80:8848
   redis:
     database: 2
-    host: 172.16.17.177
+    host: 192.168.100.79
     port: 6379
     password: foobared
   rabbitmq:
-    host: 172.16.17.177
+    host: 192.168.100.79
     port: 5672
     username: admin
     password: admin
@@ -35,8 +35,8 @@ wx:
     michId: 1319671401
     appSecret: 2cfb0904bc87f47fe73ddaaeb3d7359a
     useSandboxEnv: false
-    notifyUrl: http://test.ivy2.yunya365.com/api/ivy/mini/wx/notify
-    refundNotifyUrl: http://test.ivy2.yunya365.com/api/ivy/mini/wx/refund/notify
+    notifyUrl: http://ivy2.yunya365.com/api/ivy/mini/wx/notify
+    refundNotifyUrl: http://ivy2.yunya365.com/api/ivy/mini/wx/refund/notify
     keyPath: classpath:static/apiclient_cert.p12
 
 cloopen:
@@ -50,4 +50,4 @@ cloopen:
     timeOut: 15
 
 mp:
-  domain: test.ivy2.yunya365.com/mobile
+  domain: ivy2.yunya365.com/mobile
