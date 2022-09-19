@@ -68,4 +68,16 @@ public class ReservationModel implements Serializable {
      */
     @ApiModelProperty(value = "就诊人性别",required = true)
     private Byte patientGender;
+
+    /**
+     * 预约登记状态 0-新建；1-已预约；2-已挂号
+     */
+    @ApiModelProperty("预约登记状态 0-新建；1-已预约；2-已挂号")
+    private Byte status;
+
+    /**
+     * 是否有效，是否删除(默认有效) 1-有效；0删除
+     */
+    @ApiModelProperty(value = "是否有效，是否删除(默认有效) 1-有效；0删除")
+    private Boolean inservice;
 }
