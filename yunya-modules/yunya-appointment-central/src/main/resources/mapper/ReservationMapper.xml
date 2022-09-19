@@ -21,9 +21,10 @@
   </resultMap>
 
   <!-- 根据条件批量查询预约申请 -->
-  <select id="findByCondition" resultType="com.yunya.models.appointment.Reservation">
-    select *
+  <select id="findByCondition" resultType="com.yunya.feign.appointment.vo.ReservationVo">
+    select oa.*, rr.source_name as 'reservatonResourceName'
     from reservation oa
+    left join reservation_resource rr on oa.reservaton_resource_id = rr.id
     <where>
       <if test="query.orgId != null">
         and oa.org_id = #{query.orgId}

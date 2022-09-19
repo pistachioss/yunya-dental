@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.model.ReservationModel;
 import com.yunya.feign.appointment.domain.query.ReservationQuery;
+import com.yunya.feign.appointment.vo.ReservationVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -60,11 +61,11 @@ public class ReservationController {
 
     @ApiOperation("获取预约意向登记列表")
     @PostMapping("/list")
-    public ResponseResult<PageInfo<Reservation>> find(@RequestBody @Validated ReservationQuery query) {
+    public ResponseResult<PageInfo<ReservationVo>> find(@RequestBody @Validated ReservationQuery query) {
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
-        List<Reservation> results = biz.list(query);
-        return ResponseUtil.success(new PageInfo<Reservation>(results));
+        List<ReservationVo> results = biz.list(query);
+        return ResponseUtil.success(new PageInfo<ReservationVo>(results));
     }
 }
