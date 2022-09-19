@@ -52,26 +52,27 @@ public class ReservationVo implements Serializable {
     /**
      * 就诊人名字
      */
-    @Column(name = "patient_name")
     private String patientName;
 
     /**
      * 就诊人手机号
      */
-    @Column(name = "patient_phone")
     private String patientPhone;
 
     /**
      * 就诊人性别
      */
-    @Column(name = "patient_gender")
     private Byte patientGender;
 
     /**
      * 登记状态(0：新增；1：已预约；2：已放弃)
      */
-    @Column(name = "status")
     private Byte status;
+
+    /**
+     * 备注
+     */
+    private String remarks;
 
     /**
      * 是否有效，是否删除(默认有效) 1-有效；0删除
