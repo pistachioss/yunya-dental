@@ -32,7 +32,7 @@ public class ReservationVo implements Serializable {
     /**
      * 预约意向渠道ID
      */
-    private Integer reservationSourceName;
+    private String reservationSourceName;
 
     /**
      * 预约项目

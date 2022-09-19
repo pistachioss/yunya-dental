@@ -22,7 +22,20 @@
 
   <!-- 根据条件批量查询预约申请 -->
   <select id="findByCondition" resultType="com.yunya.feign.appointment.vo.ReservationVo">
-    select oa.*, rr.source_name as 'reservatonResourceName'
+    select oa.id
+      , oa.org_id as 'orgId'
+      , oa.reservation_source_id as 'reservationSourceId'
+      , rr.source_name as 'reservatonResourceName'
+      , oa.appoint_item_name as 'appointItemName'
+      , oa.patient_name as 'patientName'
+      , oa.patient_phone as 'patientPhone'
+      , oa.patient_gender as 'patientGender'
+      , oa.status
+      , oa.inservice
+      , oa.crt_name as 'crtName'
+      , oa.crt_time as 'crtTime'
+      , oa.upd_name as 'updName'
+      , oa.upd_time as 'updTime'
     from reservation oa
     left join reservation_resource rr on oa.reservation_source_id = rr.id
     <where>
