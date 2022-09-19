@@ -1,6 +1,7 @@
 package com.yunya.modules.appointment.biz.app;
 
 import com.yunya.feign.appointment.domain.model.ReservationModel;
+import com.yunya.feign.appointment.domain.query.ReservationQuery;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -15,6 +16,7 @@ import com.yunya.modules.appointment.mapper.ReservationMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
@@ -46,7 +48,8 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
         return ResponseUtil.success(status);
     }
 
-    public ResponseResult list() {
-        return ResponseUtil.success(mapper.selectAll());
+    public List<Reservation> list(ReservationQuery query) {
+        List<Reservation> results = mapper.findByCondition(query);
+        return results;
     }
 }

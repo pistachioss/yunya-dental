@@ -19,4 +19,34 @@
     <result column="upd_name" jdbcType="VARCHAR" property="updName" />
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
+
+  <!-- 根据条件批量查询预约申请 -->
+  <select id="findByCondition" resultType="com.yunya.models.appointment.Reservation">
+    select *
+    from reservation oa
+    <where>
+      <if test="query.orgId != null">
+        and oa.org_id = #{query.orgId}
+      </if>
+      <if test="query.reservationSourceId != null">
+        and oa.reservation_source_id = #{query.reservationSourceId}
+      </if>
+      <if test="query.appointItemName != null and query.appointItemName != ''">
+        and oa.appoint_item_name like concat('%',#{query.appointItemName},'%')
+      </if>
+      <if test="query.patientName != null and query.patientName != ''">
+        and oa.patient_name = #{query.patientName}
+      </if>
+      <if test="query.patientPhone != null and query.patientPhone != ''">
+        and oa.patient_phone = #{query.patientPhone}
+      </if>
+      <if test="query.status != null">
+        and oa.status = #{query.status}
+      </if>
+      <if test="query.inservice != null">
+        and oa.inservice = #{query.inservice}
+      </if>
+    </where>
+    order by oa.crt_time DESC
+  </select>
 </mapper>
