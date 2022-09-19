@@ -45,7 +45,7 @@ public class ReservationController {
             @ApiImplicitParam(name = "id", value = "预约意向登记ID",required = true, dataTypeClass = Integer.class)
     )
     @PutMapping(value = "/{id}")
-    public ResponseResult<T> updateOnlineAppointment(@RequestBody @Validated ReservationModel model) {
+    public ResponseResult<T> updateOnlineAppointment(@RequestBody ReservationModel model) {
         return biz.update(model);
     }
 

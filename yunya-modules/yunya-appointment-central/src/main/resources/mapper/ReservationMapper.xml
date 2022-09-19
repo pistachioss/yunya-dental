@@ -25,7 +25,7 @@
     select oa.id
       , oa.org_id as 'orgId'
       , oa.reservation_source_id as 'reservationSourceId'
-      , rr.source_name as 'reservatonResourceName'
+      , rr.source_name as 'reservationSourceName'
       , oa.appoint_item_name as 'appointItemName'
       , oa.patient_name as 'patientName'
       , oa.patient_phone as 'patientPhone'
@@ -49,10 +49,10 @@
         and oa.appoint_item_name like concat('%',#{query.appointItemName},'%')
       </if>
       <if test="query.patientName != null and query.patientName != ''">
-        and oa.patient_name = #{query.patientName}
+        and oa.patient_name like concat('%',#{query.patientName},'%')
       </if>
       <if test="query.patientPhone != null and query.patientPhone != ''">
-        and oa.patient_phone = #{query.patientPhone}
+        and oa.patient_phone like concat('%',#{query.patientPhone},'%')
       </if>
       <if test="query.status != null">
         and oa.status = #{query.status}
