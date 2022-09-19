@@ -80,4 +80,10 @@ public class ReservationModel implements Serializable {
      */
     @ApiModelProperty(value = "是否有效，是否删除(默认有效) 1-有效；0删除")
     private Boolean inservice;
+
+    /**
+     * 就诊人手机号
+     */
+    @ApiModelProperty(value = "备注")
+    private String remarks;
 }

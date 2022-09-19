@@ -13,6 +13,7 @@
     <result column="patient_phone" jdbcType="VARCHAR" property="patientPhone" />
     <result column="patient_gender" jdbcType="TINYINT" property="patientGender" />
     <result column="status" jdbcType="TINYINT" property="status" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
     <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
     <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
@@ -31,6 +32,7 @@
       , oa.patient_phone as 'patientPhone'
       , oa.patient_gender as 'patientGender'
       , oa.status
+      , oa.remarks
       , oa.inservice
       , oa.crt_name as 'crtName'
       , oa.crt_time as 'crtTime'

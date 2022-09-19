@@ -57,6 +57,28 @@ public class Reservation {
     @Column(name = "status")
     private Byte status;
 
+    public Byte getStatus() {
+        return status;
+    }
+
+    public void setStatus(Byte status) {
+        this.status = status;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    /**
+     * 备注
+     */
+    @Column(name = "remarks")
+    private String remarks;
+
     /**
      * 是否有效，是否删除(默认有效) 1-有效；0删除
      */
