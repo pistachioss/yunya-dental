@@ -24,7 +24,7 @@
   <select id="findByCondition" resultType="com.yunya.feign.appointment.vo.ReservationVo">
     select oa.*, rr.source_name as 'reservatonResourceName'
     from reservation oa
-    left join reservation_resource rr on oa.reservaton_resource_id = rr.id
+    left join reservation_resource rr on oa.reservation_source_id = rr.id
     <where>
       <if test="query.orgId != null">
         and oa.org_id = #{query.orgId}
