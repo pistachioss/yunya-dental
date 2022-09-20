@@ -276,8 +276,9 @@
     `order_info`  od
     LEFT JOIN order_item oi ON od.id = oi.order_id
     <where>
-      <if test="crtTime != null and crtTime != ''">
-        and DATE_FORMAT(od.crt_time, "%Y-%m-%d" ) = DATE_FORMAT( #{crtTime}, "%Y-%m-%d" )
+      <if test="startTime != null and endTime != null">
+        and (DATE_FORMAT(od.crt_time,'%Y-%m-%d') between DATE_FORMAT(#{startTime},'%Y-%m-%d') and
+        DATE_FORMAT(#{endTime},'%Y-%m-%d'))
       </if>
       <if test="nameList != null and nameList.size > 0">
         and od.fans_id in
