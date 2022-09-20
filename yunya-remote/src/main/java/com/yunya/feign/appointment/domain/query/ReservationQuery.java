@@ -68,4 +68,18 @@ public class ReservationQuery implements Serializable {
      */
     @ApiModelProperty(value = "是否有效，是否删除(默认有效) 1-有效；0删除",required = true)
     private Boolean inservice;
+
+    /**
+     * 预约开始日期
+     */
+    @ApiModelProperty(value = "预约开始日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private String appointStartDate;
+
+    /**
+     * 预约结束日期
+     */
+    @ApiModelProperty(value = "预约结束日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private String appointEndDate;
 }

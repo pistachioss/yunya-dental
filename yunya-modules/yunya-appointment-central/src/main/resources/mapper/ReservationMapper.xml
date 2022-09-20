@@ -62,6 +62,12 @@
       <if test="query.inservice != null">
         and oa.inservice = #{query.inservice}
       </if>
+      <if test="query.appointStartDate != null and query.appointStartDate != null">
+        and date_format(oa.crt_name,'%Y-%m-%d') &gt;= #{query.appointStartDate}
+      </if>
+      <if test="query.appointEndDate != null and query.appointEndDate != ''">
+        and date_format(oa.crt_name,'%Y-%m-%d') &lt;= #{query.appointEndDate}
+      </if>
     </where>
     order by oa.crt_time DESC
   </select>
