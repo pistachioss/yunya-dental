@@ -25,15 +25,15 @@ spring:
 
 wx:
   mini:
-    appId: wx9d9209edf9634d94
-    appSecret: 2cfb0904bc87f47fe73ddaaeb3d7359a
+    appId: wxb0616466dce8bd5b
+    appSecret: 64da90b96969b100260e27b47d64d3ee
     corpId: ww853499493423c56e
     corpSecret: Rzu-GfUVBgsKXGyD_3Tipfq6I_usU-sodY4U8MF1Cts
     name: "云牙艾维口腔"
   pay:
-    appId: wx9d9209edf9634d94
+    appId: wxb0616466dce8bd5b
     michId: 1319671401
-    appSecret: 2cfb0904bc87f47fe73ddaaeb3d7359a
+    appSecret: 64da90b96969b100260e27b47d64d3ee
     useSandboxEnv: false
     notifyUrl: http://ivy2.yunya365.com/api/ivy/mini/wx/notify
     refundNotifyUrl: http://ivy2.yunya365.com/api/ivy/mini/wx/refund/notify
