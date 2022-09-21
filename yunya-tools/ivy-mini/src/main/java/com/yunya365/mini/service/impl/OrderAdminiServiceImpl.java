@@ -46,26 +46,9 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-
-        List<OrderVO> result = new ArrayList<>();
-//        if (!StringUtils.isEmpty(form.getName())) {
-//            wxFanByNameForm.setName(form.getName());
-//            List<WxFansVo> fansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
-//            List<Integer> collect = fansVoList.stream().map(WxFansVo::getId).collect(Collectors.toList());
-//            form.setNameList(collect);
-//            if(collect.size()>0){
-                result  = mapper.findOrderList(form);
-//            }else{
-//                return new PageInfo<>(result);
-//            }
-//        }else{
-//            result  = mapper.findOrderList(form);
-//        }
-
+        List<OrderVO> result = mapper.findOrderList(form);
         for (OrderVO a : result) {
-//            WxFansVo copy = clinicMap.get(a.getFansId() + "");
             a.setReceivingInformation(a.getReceiverName() + " " + a.getReceiverPhone() + " " + a.getAddress());
-//            a.setOpenId(copy.getOpenId());
         }
         return new PageInfo<>(result);
     }
