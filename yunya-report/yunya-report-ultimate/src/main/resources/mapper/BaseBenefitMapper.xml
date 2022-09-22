@@ -365,7 +365,7 @@
         bcd.sale_channel_id as saleChannelId,
         bcd.sale_channel_name as saleChannelName,
         date_format(bcd.active_date, '%Y-%m-%d') as activationDate,
-        date_format(bb.cardUseDate, '%Y-%m-%d %H:%i:%s') AS cardUseDate,
+        date_format(bb.cardUseDate, '%Y-%m-%d') AS cardUseDate,
         bb.cardUseOrgId,
         bon.abbreviation as cardUseOrgName,
         bbl.order_amount as orderAmount,
