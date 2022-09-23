@@ -93,6 +93,9 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
 
     public QztDoctorDetailVO detail(Integer userId) {
         QztDoctor doctor = mapper.selectByUserId(userId);
+        if (Objects.isNull(doctor)) {
+            return null;
+        }
         QztDoctorDetailVO detailVO = BeanCopierUtils.generalCopyBean(doctor, QztDoctorDetailVO.class);
         String practiceClinic = doctor.getPracticeClinic();
         List<Integer> clinicIds = Lists.newArrayList(Splitter.on(",").split(practiceClinic)).stream().map(Integer::valueOf).collect(Collectors.toList());
