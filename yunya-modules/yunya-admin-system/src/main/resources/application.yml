@@ -69,6 +69,11 @@ mybatis:
   basepackage: com.yunya.modules.system.mapper
   xmlLocation: classpath:mapper/**/*.xml
   mapper-locations: "classpath*:mapper/*.xml"
+  type-aliases-package: com.yunya.models.system
+  configuration:
+    #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启驼峰命名
+    map-underscore-to-camel-case: true
 
 server:
   port: 8102
