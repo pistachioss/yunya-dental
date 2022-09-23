@@ -20,6 +20,7 @@
     <result column="anesthetic_authority" jdbcType="VARCHAR" property="anestheticAuthority" />
     <result column="pharmacist" jdbcType="VARCHAR" property="pharmacist" />
     <result column="practice_clinic" jdbcType="VARCHAR" property="practiceClinic" />
+    <result column="relate_user_ids" jdbcType="VARCHAR" property="relateUserIds" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />
     <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
     <result column="upd_id" jdbcType="INTEGER" property="updId" />

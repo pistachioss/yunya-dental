@@ -102,5 +102,9 @@ public class QztAddDoctorModel {
     @ApiModelProperty(value = "执业门诊(多选逗号)", required = true)
     private String practiceClinic;
 
-
+    /**
+     * 用户id
+     */
+    @ApiModelProperty(value = "用户id", required = true)
+    private Integer userId;
 }

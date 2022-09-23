@@ -94,6 +94,12 @@ public class QztDoctor {
     private String practiceClinic;
 
     /**
+     * 医生用户关联ids（逗号分隔）
+     */
+    @Column(name = "relate_user_ids")
+    private String relateUserIds;
+
+    /**
      * 创建人ID
      */
     @Column(name = "crt_id")

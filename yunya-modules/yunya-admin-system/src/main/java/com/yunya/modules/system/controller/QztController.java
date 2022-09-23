@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 @Api(value = "全诊通")
 @RestController
@@ -19,16 +20,15 @@ public class QztController {
 
     @ApiOperation("新增认证医生")
     @PostMapping("/qzt/doctor")
-    public ResponseResult add(@RequestBody QztAddDoctorModel model) {
+    public ResponseResult<Boolean> add(@RequestBody QztAddDoctorModel model) {
         doctorBiz.add(model);
         return ResponseUtil.success();
     }
 
     @ApiOperation("全诊通下拉选项")
     @GetMapping("/qzt/select")
-    public ResponseResult select() {
-        doctorBiz.select();
-        return ResponseUtil.success();
+    public ResponseResult<Map<String, Map<String, String>>> select() {
+        return ResponseUtil.success(doctorBiz.select());
     }
 
 
