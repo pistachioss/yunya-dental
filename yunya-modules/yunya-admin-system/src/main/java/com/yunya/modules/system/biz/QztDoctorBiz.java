@@ -12,12 +12,16 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.models.system.QztDoctor;
 import com.yunya.modules.system.domain.model.QztAddDoctorModel;
 import com.yunya.modules.system.mapper.QztDoctorMapper;
+import com.yunya.modules.system.vo.OrganizationInfoVO;
+import com.yunya.modules.system.vo.QztDoctorDetailVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @description: 全诊通
@@ -25,6 +29,9 @@ import java.util.*;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
+
+    @Resource
+    private OrganizationBiz organizationBiz;
 
     public static final Map<String, Map<String, String>> qztSelect = Maps.newHashMap();
 
@@ -82,5 +89,16 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
 
     public Map<String, Map<String, String>> select() {
         return qztSelect;
+    }
+
+    public QztDoctorDetailVO detail(Integer userId) {
+        QztDoctor doctor = mapper.selectByUserId(userId);
+        QztDoctorDetailVO detailVO = BeanCopierUtils.generalCopyBean(doctor, QztDoctorDetailVO.class);
+        String practiceClinic = doctor.getPracticeClinic();
+        List<Integer> clinicIds = Lists.newArrayList(Splitter.on(",").split(practiceClinic)).stream().map(Integer::valueOf).collect(Collectors.toList());
+        List<OrganizationInfoVO> orgInfoInIds = organizationBiz.findOrgInfoInIds(clinicIds);
+//        orgInfoInIds.stream().reduce("", (u, t) -> u, )
+//        detailVO.setPracticeClinic();
+        return detailVO;
     }
 }

@@ -5,6 +5,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.QztDoctorBiz;
 import com.yunya.modules.system.domain.model.QztAddDoctorModel;
+import com.yunya.modules.system.vo.QztDoctorDetailVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,12 @@ public class QztController {
     @GetMapping("/qzt/select")
     public ResponseResult<Map<String, Map<String, String>>> select() {
         return ResponseUtil.success(doctorBiz.select());
+    }
+
+    @ApiOperation(value = "认证医生详情")
+    @GetMapping("/qzt/doctor/{userId}")
+    public ResponseResult<QztDoctorDetailVO> certDetail(@PathVariable Integer userId) {
+        return ResponseUtil.success(doctorBiz.detail(userId));
     }
 
 

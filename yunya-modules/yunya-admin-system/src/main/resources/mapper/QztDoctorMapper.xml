@@ -25,5 +25,8 @@
     <result column="upd_id" jdbcType="INTEGER" property="updId" />
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
+  <select id="selectByUserId" resultType="com.yunya.models.system.QztDoctor">
+    select * from qzt_doctor where FIND_IN_SET(#{userId},relate_user_ids);
+  </select>
 
 </mapper>
