@@ -1,5 +1,6 @@
 package com.yunya.modules.system.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.QztDoctorBiz;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.Map;
 
-@Api(value = "全诊通")
+@Api(tags = "全诊通-用户")
 @RestController
 public class QztController {
 
@@ -20,12 +21,13 @@ public class QztController {
 
     @ApiOperation("新增认证医生")
     @PostMapping("/qzt/doctor")
+    @CurrentUser
     public ResponseResult<Boolean> add(@RequestBody QztAddDoctorModel model) {
         doctorBiz.add(model);
         return ResponseUtil.success();
     }
 
-    @ApiOperation("全诊通下拉选项")
+    @ApiOperation(value = "全诊通下拉选项，Map<k ,Map<k,v>>", notes = "返回key：technicalTitle-职称，scopePractice-职业范围，antibiosisAuthority-抗菌药物处方权")
     @GetMapping("/qzt/select")
     public ResponseResult<Map<String, Map<String, String>>> select() {
         return ResponseUtil.success(doctorBiz.select());

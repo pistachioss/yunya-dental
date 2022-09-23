@@ -83,11 +83,6 @@ public class QztDoctor {
     private String anestheticAuthority;
 
     /**
-     * 是否是药师（0：否 1：是）
-     */
-    private String pharmacist;
-
-    /**
      * 执业门诊(多选逗号)
      */
     @Column(name = "practice_clinic")

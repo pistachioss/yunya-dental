@@ -18,7 +18,6 @@
     <result column="scope_practice" jdbcType="VARCHAR" property="scopePractice" />
     <result column="antibiosis_authority" jdbcType="VARCHAR" property="antibiosisAuthority" />
     <result column="anesthetic_authority" jdbcType="VARCHAR" property="anestheticAuthority" />
-    <result column="pharmacist" jdbcType="VARCHAR" property="pharmacist" />
     <result column="practice_clinic" jdbcType="VARCHAR" property="practiceClinic" />
     <result column="relate_user_ids" jdbcType="VARCHAR" property="relateUserIds" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />

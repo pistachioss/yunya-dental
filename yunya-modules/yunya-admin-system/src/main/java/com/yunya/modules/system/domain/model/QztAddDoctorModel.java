@@ -91,12 +91,6 @@ public class QztAddDoctorModel {
     private String anestheticAuthority;
 
     /**
-     * 是否是药师（0：否 1：是）
-     */
-    @ApiModelProperty(value = "是否是药师（0：否 1：是）", required = true)
-    private String pharmacist;
-
-    /**
      * 执业门诊(多选逗号)
      */
     @ApiModelProperty(value = "执业门诊(多选逗号)", required = true)
