@@ -50,7 +50,7 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         qztSelect.put("antibiosisAuthority", antibiosisAuthority);
     }
 
-    public void add(QztAddDoctorModel model) {
+    public void complete(QztAddDoctorModel model) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         String idCard = model.getIdCard();
         //医生资格证号

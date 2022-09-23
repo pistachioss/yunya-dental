@@ -19,11 +19,11 @@ public class QztController {
     @Resource
     private QztDoctorBiz doctorBiz;
 
-    @ApiOperation("新增认证医生")
+    @ApiOperation("完善医生认证信息")
     @PostMapping("/qzt/doctor")
     @CurrentUser
-    public ResponseResult<Boolean> add(@RequestBody QztAddDoctorModel model) {
-        doctorBiz.add(model);
+    public ResponseResult<Boolean> complete(@RequestBody QztAddDoctorModel model) {
+        doctorBiz.complete(model);
         return ResponseUtil.success();
     }
 
