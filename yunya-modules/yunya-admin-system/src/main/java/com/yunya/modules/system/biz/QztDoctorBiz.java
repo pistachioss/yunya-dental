@@ -97,8 +97,11 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         String practiceClinic = doctor.getPracticeClinic();
         List<Integer> clinicIds = Lists.newArrayList(Splitter.on(",").split(practiceClinic)).stream().map(Integer::valueOf).collect(Collectors.toList());
         List<OrganizationInfoVO> orgInfoInIds = organizationBiz.findOrgInfoInIds(clinicIds);
-//        orgInfoInIds.stream().reduce("", (u, t) -> u, )
-//        detailVO.setPracticeClinic();
+        String clinicStr = orgInfoInIds.stream().reduce("", (u, t) -> {
+            u = Joiner.on(",").join(u, t.getName());
+            return u;
+        }, (u, t) -> u);
+        detailVO.setPracticeClinic(clinicStr);
         return detailVO;
     }
 }
