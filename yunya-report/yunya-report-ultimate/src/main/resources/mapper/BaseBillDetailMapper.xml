@@ -11,6 +11,7 @@
         <result column="discount_amount" property="discountAmount" jdbcType="DECIMAL"/>
         <result column="coupon_workload" property="couponWorkload" jdbcType="DECIMAL"/>
         <result column="executor_id" property="executorId" jdbcType="INTEGER"/>
+        <result column="consulter_id" property="consulterId" jdbcType="INTEGER"/>
         <result column="item_id" property="itemId" jdbcType="INTEGER"/>
         <result column="item_type" property="itemType" jdbcType="TINYINT"/>
         <result column="source_type" property="sourceType" jdbcType="TINYINT"/>
