@@ -31,7 +31,7 @@ public class ReservationCodeController {
     private ReservationCodeBiz biz;
 
     @ApiOperation("预约意向登记号码验证")
-    @PostMapping("/validate")
+    @PostMapping("/valid")
     @CurrentUser
     public ResponseResult find(@RequestBody ReservationCodeQuery model) {
         return ResponseUtil.success(biz.find(model));
