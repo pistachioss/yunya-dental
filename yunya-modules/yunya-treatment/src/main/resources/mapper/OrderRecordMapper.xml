@@ -109,4 +109,54 @@
             #{item}
         </foreach>
     </select>
+
+    <select id="selectLastTimeTreatOrderRecord"
+            resultType="com.yunya.feign.treatment.domain.vo.TreatmentOrderDetailVO">
+        SELECT
+            t.id AS treatmentId,
+            t.patient_id AS patientId,
+            r.crt_time AS orderDate,
+            t.registered_id AS dentistId
+        FROM order_record r
+        INNER JOIN treatment_record t ON t.id = r.treatment_record_id
+        LEFT JOIN order_detail d ON r.id = d.order_record_id
+        <where>
+            t.inservice = true
+            AND r.inservice = true
+            <if test="query.itemType != null">
+                AND d.type = #{query.itemType}
+            </if>
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                AND d.billing_item_id IN
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.combination != null and query.combination != ''">
+                and concat(IFNULL(bp.name,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
+                concat(concat('%',#{combination}),'%')
+            </if>
+            <if test="query.treatTypes != null and query.treatTypes.size > 0">
+                AND t.treatType IN
+                <foreach collection="query.treatTypes" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="days != null and days > 0">
+                <if test="dayOps == 0">
+                    AND DATEDIFF(DATE_FORMAT(now(),'%Y-%m-%d' ), DATE_FORMAT(r.crt_time,'%Y-%m-%d')) &lt;= #{days}
+                </if>
+                <if test="dayOps == 1">
+                    AND DATEDIFF(DATE_FORMAT(now(),'%Y-%m-%d' ), DATE_FORMAT(r.crt_time,'%Y-%m-%d')) &gt; #{days}
+                </if>
+            </if>
+            <if test="query.dentistIds != null and query.dentistIds.size > 0">
+                AND t.registered_id IN
+                <foreach collection="query.dentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY r.crt_time DESC
+    </select>
 </mapper>

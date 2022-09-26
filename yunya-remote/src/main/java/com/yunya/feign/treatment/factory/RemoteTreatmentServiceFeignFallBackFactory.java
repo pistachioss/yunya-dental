@@ -17,6 +17,7 @@ import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment_other.domain.query.ReturnVisitQuery;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.*;
 import lombok.extern.slf4j.Slf4j;
@@ -290,4 +291,9 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
     public List<ProductTypeVO> findList(ProductTypeQueryForm queryForm) {
         return null;
     }
+
+  @Override
+  public List<TreatmentOrderDetailVO> findLastTreatOrderRecord(ReturnVisitQuery query) {
+    return null;
+  }
 }

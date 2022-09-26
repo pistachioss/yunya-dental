@@ -16,6 +16,7 @@ import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment_other.domain.query.ReturnVisitQuery;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.*;
@@ -639,5 +640,10 @@ public class TreatmentServiceRest {
   @PostMapping("/goods/productType/list")
   List<ProductTypeVO> findList(@RequestBody ProductTypeQueryForm queryForm){
     return baseOralTariffCategoryBiz.categortyList(queryForm);
+  }
+
+  @PostMapping("/rpc/treat/order/last")
+  public List<TreatmentOrderDetailVO> findLastTreatOrderRecord(ReturnVisitQuery query) {
+    return orderRecordBiz.findLastTreatOrderRecord(query);
   }
 }

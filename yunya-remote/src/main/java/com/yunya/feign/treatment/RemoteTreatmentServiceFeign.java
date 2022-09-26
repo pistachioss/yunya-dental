@@ -17,6 +17,7 @@ import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
+import com.yunya.feign.treatment_other.domain.query.ReturnVisitQuery;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.*;
@@ -487,4 +488,7 @@ public interface RemoteTreatmentServiceFeign {
 
   @PostMapping("/rpc/goods/productType/list")
   List<ProductTypeVO> findList(@RequestBody ProductTypeQueryForm queryForm);
+
+  @PostMapping("/rpc/treat/order/last")
+  List<TreatmentOrderDetailVO> findLastTreatOrderRecord(ReturnVisitQuery query);
 }

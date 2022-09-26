@@ -1,6 +1,8 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.treatment.domain.vo.OrderProcessVO;
+import com.yunya.feign.treatment.domain.vo.TreatmentOrderDetailVO;
+import com.yunya.feign.treatment_other.domain.query.ReturnVisitQuery;
 import com.yunya.models.treatment.OrderRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -54,4 +56,6 @@ public interface OrderRecordMapper extends Mapper<OrderRecord> {
    */
   List<OrderRecord> selectAllUnCheckedOrderRecords(
       @Param("treatmentRecordIds") List<Integer> treatmentRecordIds);
+
+  List<TreatmentOrderDetailVO> selectLastTimeTreatOrderRecord(@Param("query") ReturnVisitQuery query);
 }
