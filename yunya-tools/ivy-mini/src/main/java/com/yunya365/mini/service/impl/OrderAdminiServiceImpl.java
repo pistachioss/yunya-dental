@@ -46,6 +46,9 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
+        if(form.getStatus()==7){
+            form.setActiveStatus(new Byte("0"));
+        }
         List<OrderVO> result = mapper.findOrderList(form);
         for (OrderVO a : result) {
             a.setReceivingInformation(a.getReceiverName() + " " + a.getReceiverPhone() + " " + a.getAddress());
