@@ -58,6 +58,12 @@ public class PatientServiceRest {
 
   @Autowired private WxFansBiz wxFansBiz;
 
+  @ApiOperation("同步老数据UnionId")
+  @RequestMapping(value = "/syncUnionId", method = RequestMethod.POST)
+  public Integer syncUnionId(@RequestBody @Validated SyncUnionIdForm form) {
+   return wxFansBiz.syncUnionId(form);
+  }
+
   @ApiOperation("保存公众号粉丝绑定")
   @RequestMapping(value = "/saveWxAndFansBind", method = RequestMethod.POST)
   public Integer saveWx(@RequestBody @Validated WxFansSaveForm wxFansSaveForm) {
