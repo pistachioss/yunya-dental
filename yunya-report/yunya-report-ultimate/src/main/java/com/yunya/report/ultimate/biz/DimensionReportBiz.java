@@ -436,7 +436,7 @@ public class DimensionReportBiz {
      * @return
      */
     public DynamicHeaderPageInfo<JSONObject> clinicDimensionStatistics(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) throws Exception {
-        filterDentistPost(query);
+//        filterDentistPost(query);
         Boolean whetherPage = query.getWhetherPage();
         query.setWhetherPage(false);
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(query, groupByOrgId);
