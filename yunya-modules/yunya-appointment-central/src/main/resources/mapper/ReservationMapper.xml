@@ -25,6 +25,7 @@
   <select id="findByCondition" resultType="com.yunya.feign.appointment.vo.ReservationVo">
     select oa.id
       , oa.org_id as 'orgId'
+      , oa.org_name as 'orgName'
       , oa.reservation_source_id as 'reservationSourceId'
       , rr.source_name as 'reservationSourceName'
       , oa.appoint_item_name as 'appointItemName'

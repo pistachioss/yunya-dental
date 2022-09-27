@@ -67,9 +67,9 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
 
     public List<ReservationVo> list(ReservationQuery query) {
         List<ReservationVo> results = mapper.findByCondition(query);
-        if (StringHelper.isNotEmpty(results)) {
-            setOrgInfo(results);
-        }
+//        if (StringHelper.isNotEmpty(results)) {
+//            setOrgInfo(results);
+//        }
         return results;
     }
     private void setOrgInfo(List<ReservationVo> results) {
