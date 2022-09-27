@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz.app;
 
+import com.google.common.base.Strings;
 import com.yunya.feign.appointment.domain.query.ReservationCodeQuery;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -19,6 +20,9 @@ import java.util.Date;
 public class ReservationCodeBiz extends BaseBiz<ReservationCodeMapper, ReservationCode> {
 
   public boolean find(ReservationCodeQuery query) {
+    if ( Strings.isNullOrEmpty(query.getCode())) {
+      return false;
+    }
     Example example = new Example(ReservationCode.class);
     Example.Criteria criteria = example.createCriteria();
     criteria.andEqualTo("code", query.getCode());

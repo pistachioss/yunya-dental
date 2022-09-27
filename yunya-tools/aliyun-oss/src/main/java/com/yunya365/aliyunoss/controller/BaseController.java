@@ -126,7 +126,7 @@ public class BaseController {
     public ResponseResult getUrl(@RequestBody final OssUrlForm ossUrlForm) throws Exception {
 
         final String objectName = this.makeObjectFullName(ossUrlForm);
-        final String url = OssUtil.getSignatureUrl(objectName, ossUrlForm.getIsThumb());
+        final String url = OssUtil.getSignatureUrl(objectName, ossUrlForm);
         return ResponseUtil.success(url);
     }
 
@@ -137,7 +137,7 @@ public class BaseController {
         final List<String> urls = new ArrayList<>();
         ossUrlForms.forEach(ossUrlForm -> {
             final String objectName = this.makeObjectFullName(ossUrlForm);
-            final String url = OssUtil.getSignatureUrl(objectName, ossUrlForm.getIsThumb());
+            final String url = OssUtil.getSignatureUrl(objectName, ossUrlForm);
             urls.add(url);
         });
 
@@ -151,7 +151,7 @@ public class BaseController {
         Map<String, String> result = new HashMap<>(16);
         ossUrlForms.forEach(ossUrlForm -> {
             final String objectName = this.makeObjectFullName(ossUrlForm);
-            final String url = OssUtil.getSignatureUrl(objectName, ossUrlForm.getIsThumb());
+            final String url = OssUtil.getSignatureUrl(objectName, ossUrlForm);
             result.put(ossUrlForm.getOssFilename(), url);
         });
         return ResponseUtil.success(result);
