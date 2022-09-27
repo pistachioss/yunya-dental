@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment_other.domain.query;
+package com.yunya.feign.report.domain.query;
 
 import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;
@@ -18,11 +18,15 @@ import java.util.List;
 @Data
 @ToString
 @ApiModel("回访查询模型")
-public class ReturnVisitQuery extends PageQuery implements Serializable {
+public class BaseReturnVisitQuery extends PageQuery implements Serializable {
 
     /** 距离末次开单时长 */
     @ApiModelProperty("距离末次开单时长")
     private Integer days;
+
+    /** 门诊id列表 */
+    @ApiModelProperty("门诊id列表")
+    private List<Integer> orgIds;
 
     /** 距离末次开单的查询方式：0-在范围之内，1-在范围之外*/
     @ApiModelProperty(value = "距离末次开单的查询方式：0-在范围之内，1-在范围之外", required = true)

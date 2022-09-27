@@ -1,11 +1,10 @@
 package com.yunya.modules.treatment.other.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
-import com.yunya.feign.treatment_other.domain.form.ReturnVisitingRecordForm;
-import com.yunya.feign.treatment_other.domain.query.ReturnVisitQuery;
-import com.yunya.feign.treatment_other.domain.vo.ReturnVisitVO;
+import com.yunya.feign.treatment_other.domain.query.PatientReturnVisitQuery;
+import com.yunya.feign.treatment_other.domain.form.ReturnVisitRecordForm;
 import com.yunya.feign.treatment_other.domain.vo.ReturnVisitRecordVO;
+import com.yunya.feign.treatment_other.domain.vo.ReturnVisitVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -13,10 +12,7 @@ import com.yunya.modules.treatment.other.biz.ReturnVisitRecordBiz;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author: chenlin
@@ -32,30 +28,30 @@ public class ReturnVisitRecordController {
     private ReturnVisitRecordBiz returnVisitRecordBiz;
 
     /**
-     * 根据条件查询回访管理列表
+     * 根据条件查询回访记录列表
      *
      * @return
      */
-    @ApiOperation("根据条件查询回访管理列表")
-    @PostMapping("/list")
-    public ResponseResult<PageInfo<ReturnVisitVO>> findReturnVisitList(@RequestBody @Validated ReturnVisitQuery query) {
-        PageInfo<ReturnVisitVO> page = returnVisitRecordBiz.findReturnVisitList(query);
-        return ResponseUtil.success(page);
+    @ApiOperation("根据条件查询回访记录列表")
+    @PutMapping("/save")
+    @CurrentUser
+    public ResponseResult save(@RequestBody @Validated ReturnVisitRecordForm form) {
+        returnVisitRecordBiz.save(form);
+        return ResponseUtil.success(null);
     }
 
     /**
-     * 保存回访
-     * @param form 保存回访
+     * 根据就诊id获取回访明细
+     *
+     * @param treatmentId
      * @return
      */
-    @ApiOperation("保存回访")
-    @PostMapping("/save")
-    @CurrentUser
-    public ResponseResult save(@RequestBody @Validated ReturnVisitingRecordForm form){
-        returnVisitRecordBiz.save(form);
-        return ResponseUtil.success();
+    @ApiOperation("根据就诊id获取回访明细")
+    @GetMapping("/list/{treatmentId}")
+    public ResponseResult<ReturnVisitVO> findListByTreatmentId(@PathVariable(value = "treatmentId") Integer treatmentId){
+        ReturnVisitVO result = returnVisitRecordBiz.findListByTreatmentId(treatmentId);
+        return ResponseUtil.success(result);
     }
-
 
     /**
      * 根据条件查询回访记录列表
@@ -64,7 +60,7 @@ public class ReturnVisitRecordController {
      */
     @ApiOperation("根据条件查询回访记录列表")
     @PostMapping("/find")
-    public ResponseResult<PageInfo<ReturnVisitRecordVO>> findReturnVisitRecordList(@RequestBody @Validated MultiClinicDateRangeQueryForm query) {
+    public ResponseResult<PageInfo<ReturnVisitRecordVO>> findReturnVisitRecordList(@RequestBody @Validated PatientReturnVisitQuery query) {
         PageInfo<ReturnVisitRecordVO> page = returnVisitRecordBiz.findReturnVisitRecordList(query);
         return ResponseUtil.success(page);
     }

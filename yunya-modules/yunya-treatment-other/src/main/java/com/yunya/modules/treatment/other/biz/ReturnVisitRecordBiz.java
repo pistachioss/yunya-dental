@@ -2,21 +2,23 @@ package com.yunya.modules.treatment.other.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
-import com.yunya.feign.treatment.domain.vo.TreatmentOrderDetailVO;
-import com.yunya.feign.treatment_other.domain.form.ReturnVisitingContentForm;
-import com.yunya.feign.treatment_other.domain.form.ReturnVisitingRecordForm;
-import com.yunya.feign.treatment_other.domain.query.ReturnVisitQuery;
+import com.yunya.feign.treatment.domain.vo.TreatmentOrderVO;
+import com.yunya.feign.treatment_other.domain.form.ReturnVisitContentForm;
+import com.yunya.feign.treatment_other.domain.form.ReturnVisitRecordForm;
+import com.yunya.feign.treatment_other.domain.query.PatientReturnVisitQuery;
+import com.yunya.feign.treatment_other.domain.vo.ReturnVisitContentVO;
 import com.yunya.feign.treatment_other.domain.vo.ReturnVisitRecordVO;
 import com.yunya.feign.treatment_other.domain.vo.ReturnVisitVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment_other.ReturnVisitRecord;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -48,50 +51,17 @@ public class ReturnVisitRecordBiz extends BaseBiz<ReturnVisitRecordMapper, Retur
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
-
-    /**
-     * 根据条件查询回访管理列表
-     *
-     * @param query
-     * @return
-     */
-    public PageInfo<ReturnVisitVO> findReturnVisitList(ReturnVisitQuery query) {
-        List<TreatmentOrderDetailVO> result = remoteTreatmentServiceFeign.findLastTreatOrderRecord(query);
-        return fillLastestReturnVisit(query, result);
-    }
-
-    /**
-     * 填充最近一次回访记录
-     *
-     * @param query
-     * @param list
-     * @return
-     */
-    private PageInfo<ReturnVisitVO> fillLastestReturnVisit(ReturnVisitQuery query, List<TreatmentOrderDetailVO> list) {
-        List<ReturnVisitVO> result = new ArrayList<>();
-        if (StringHelper.isNotEmpty(list)) {
-            list.forEach(data->{
-                ReturnVisitVO vo = new ReturnVisitVO();
-                BeanUtil.copyProperties(data, vo);
-                Integer treatmentId = data.getTreatmentId();
-                ReturnVisitRecord record = mapper.selectLastestReturnVisitByTreatmentId(treatmentId);
-                if (StringHelper.isNotNull(record)) {
-                    BeanUtil.copyProperties(record, vo);
-                }
-                result.add(vo);
-            });
-        }
-        return PageUtl.doPage(query, result);
-    }
+    @Autowired
+    private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
     @Transactional(rollbackFor = Exception.class)
-    public void save(ReturnVisitingRecordForm form) {
+    public void save(ReturnVisitRecordForm form) {
         String optName = BaseContextHandler.getName();
         Integer optId = Integer.parseInt(BaseContextHandler.getUserID());
         Integer treatmentId = form.getTreatmentId();
         List<ReturnVisitRecord> datas = findReturnVisitListByTreatmentId(treatmentId);
         Map<Integer, ReturnVisitRecord> olds = datas.stream().collect(toMap(ReturnVisitRecord::getId, Function.identity()));
-        List<ReturnVisitingContentForm> visits = form.getVisitingContents();
+        List<ReturnVisitContentForm> visits = form.getVisitingContents();
         Date now = DateUtil.getCurrentDate();
         visits.forEach(visit->{
             Integer id = visit.getId();
@@ -105,7 +75,7 @@ public class ReturnVisitRecordBiz extends BaseBiz<ReturnVisitRecordMapper, Retur
             }
             if (StringHelper.isNotNull(old)) {
                 entity.setId(id);
-                mapper.updateByPrimaryKey(entity);
+                mapper.updateByPrimaryKeySelective(entity);
                 olds.remove(id);
             } else {
                 entity.setCrtId(optId);
@@ -113,10 +83,12 @@ public class ReturnVisitRecordBiz extends BaseBiz<ReturnVisitRecordMapper, Retur
                 entity.setInservice(true);
                 mapper.insertSelective(entity);
             }
+            remoteRabbitMqServiceFeign.sendMessage(entity.getId(),0,0, MsgCategoryEnum.BaseReturnVisit);
         });
         if (StringHelper.isNotEmpty(olds)) {
             olds.forEach((id, entity)->{
                 tombstone(entity);
+                remoteRabbitMqServiceFeign.sendMessage(entity.getId(),0,2, MsgCategoryEnum.BaseReturnVisit);
             });
         }
     }
@@ -128,7 +100,7 @@ public class ReturnVisitRecordBiz extends BaseBiz<ReturnVisitRecordMapper, Retur
      */
     private void tombstone(ReturnVisitRecord entity) {
         entity.setInservice(false);
-        mapper.updateByPrimaryKey(entity);
+        mapper.updateByPrimaryKeySelective(entity);
     }
 
     /**
@@ -165,9 +137,14 @@ public class ReturnVisitRecordBiz extends BaseBiz<ReturnVisitRecordMapper, Retur
         return mapper.selectByExample(example);
     }
 
-    private void convertReturnVisit(ReturnVisitingContentForm visit, Integer optId, Date now, ReturnVisitRecord entity) {
+    private void convertReturnVisit(ReturnVisitContentForm visit, Integer optId, Date now, ReturnVisitRecord entity) {
         entity.setReturnDate(DateUtil.parse2Date(visit.getReturnDate()));
-        entity.setReturnTime(DateUtil.parse2Date(visit.getReturnTime()));
+        try {
+            entity.setReturnTime(DateUtil.parse(visit.getReturnTime(), "HH:mm"));
+        } catch (Exception e) {
+            log.error("convertReturnVisit error: {}", e);
+            throw new ClientServiceException("日期转换错误", DATA_TRANSFORMATION_EXIST);
+        }
         entity.setReturnReason(visit.getReturnReason());
         entity.setReturnContent(visit.getReturnContent());
         entity.setUpdId(optId);
@@ -180,14 +157,14 @@ public class ReturnVisitRecordBiz extends BaseBiz<ReturnVisitRecordMapper, Retur
      * @param form
      * @param entity
      */
-    private void convertTreatment(ReturnVisitingRecordForm form, ReturnVisitRecord entity) {
+    private void convertTreatment(ReturnVisitRecordForm form, ReturnVisitRecord entity) {
         entity.setTreatmentId(form.getTreatmentId());
         entity.setPatientId(form.getPatientId());
         entity.setDentistId(form.getDentistId());
         entity.setOrgId(form.getOrgId());
     }
 
-    public PageInfo<ReturnVisitRecordVO> findReturnVisitRecordList(MultiClinicDateRangeQueryForm query) {
+    public PageInfo<ReturnVisitRecordVO> findReturnVisitRecordList(PatientReturnVisitQuery query) {
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
@@ -214,5 +191,35 @@ public class ReturnVisitRecordBiz extends BaseBiz<ReturnVisitRecordMapper, Retur
                 vo.setDentistName(dentist.getName());
             }
         });
+    }
+
+    /**
+     * 根据就诊id获取回访明细
+     *
+     * @param treatmentId
+     * @return
+     */
+    public ReturnVisitVO findListByTreatmentId(Integer treatmentId) {
+        TreatmentOrderVO treatmentOrderVO = remoteTreatmentServiceFeign.findTreatmentOrderByTreatmentId(treatmentId);
+        if (StringHelper.isNotNull(treatmentOrderVO)) {
+            ReturnVisitVO result = new ReturnVisitVO();
+            BeanUtil.copyProperties(treatmentOrderVO, result);
+            List<ReturnVisitRecord> visits = mapper.selectReturnVisitByTreatmentId(treatmentId);
+            List<ReturnVisitContentVO> data = new ArrayList<>();
+            if (StringHelper.isNotEmpty(visits)) {
+                visits.forEach(visit->{
+                    ReturnVisitContentVO content = new ReturnVisitContentVO();
+                    content.setId(visit.getId());
+                    content.setReturnDate(visit.getReturnDate());
+                    content.setReturnTime(visit.getReturnTime());
+                    content.setReturnReason(visit.getReturnReason());
+                    content.setReturnContent(visit.getReturnContent());
+                    data.add(content);
+                });
+            }
+            result.setVisitingContents(data);
+            return result;
+        }
+        return null;
     }
 }

@@ -1,6 +1,6 @@
 package com.yunya.modules.treatment.other.mapper;
 
-import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.treatment_other.domain.query.PatientReturnVisitQuery;
 import com.yunya.feign.treatment_other.domain.vo.ReturnVisitRecordVO;
 import com.yunya.models.treatment_other.ReturnVisitRecord;
 import org.apache.ibatis.annotations.Param;
@@ -15,7 +15,7 @@ public interface ReturnVisitRecordMapper extends Mapper<ReturnVisitRecord> {
      * @param treatmentId
      * @return
      */
-    ReturnVisitRecord selectLastestReturnVisitByTreatmentId(@Param("treatmentId") Integer treatmentId);
+    List<ReturnVisitRecord> selectReturnVisitByTreatmentId(@Param("treatmentId") Integer treatmentId);
 
     /**
      * 根据条件查询回访记录列表
@@ -23,5 +23,5 @@ public interface ReturnVisitRecordMapper extends Mapper<ReturnVisitRecord> {
      * @param query
      * @return
      */
-    List<ReturnVisitRecordVO> selectReturnVisitRecordList(@Param("query") MultiClinicDateRangeQueryForm query);
+    List<ReturnVisitRecordVO> selectReturnVisitRecordList(@Param("query") PatientReturnVisitQuery query);
 }

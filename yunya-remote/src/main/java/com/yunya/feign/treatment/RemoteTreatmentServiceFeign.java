@@ -14,13 +14,18 @@ import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.query.*;
+import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
+import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
+import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
-import com.yunya.feign.treatment_other.domain.query.ReturnVisitQuery;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.*;
+import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.treatment.OrderRecord;
+import com.yunya.models.treatment.Registered;
+import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +33,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 简介: 云牙价目表、就诊服务接口调用
@@ -489,6 +496,12 @@ public interface RemoteTreatmentServiceFeign {
   @PostMapping("/rpc/goods/productType/list")
   List<ProductTypeVO> findList(@RequestBody ProductTypeQueryForm queryForm);
 
-  @PostMapping("/rpc/treat/order/last")
-  List<TreatmentOrderDetailVO> findLastTreatOrderRecord(ReturnVisitQuery query);
+  /**
+   * 根据就诊id获取就诊和开单信息
+   *
+   * @param treatmentId
+   * @return
+   */
+  @GetMapping("/rpc/treatmentOrder/{treatmentRecordId}")
+  TreatmentOrderVO findTreatmentOrderByTreatmentId(@PathVariable(value = "treatmentRecordId") Integer treatmentId);
 }

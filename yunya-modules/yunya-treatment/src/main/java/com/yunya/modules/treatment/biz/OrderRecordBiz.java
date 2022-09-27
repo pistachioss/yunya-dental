@@ -17,7 +17,6 @@ import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.query.OrderProcessQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
-import com.yunya.feign.treatment_other.domain.query.ReturnVisitQuery;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -26,7 +25,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.MemberType;
-import com.yunya.models.system.SysEmployee;
 import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.models.treatment.*;
@@ -896,86 +894,5 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       rabbitMqServiceFeign.sendMessage(order.getId(), 0, BaseBill);
     }
     return order;
-  }
-
-  public List<TreatmentOrderDetailVO> findLastTreatOrderRecord(ReturnVisitQuery query) {
-    List<TreatmentOrderDetailVO> result = mapper.selectLastTimeTreatOrderRecord(query);
-    if (StringHelper.isNotEmpty(result)) {
-      fillPatientInfo(result);
-      result = filterPatientInfo(query.getCombination(), result);
-      fillDentistName(result);
-      fillOrderItemNames(result);
-    }
-    return result;
-  }
-
-  /**
-   * 填充项目名称列表
-   *
-   * @param result
-   */
-  private void fillOrderItemNames(List<TreatmentOrderDetailVO> result) {
-    result.forEach(vo->{
-      Integer orderRecordId = vo.getOrderRecordId();
-      List<OrderDetailVO> details = orderDetailBiz.findOrderDetailList(orderRecordId, null);
-      StringBuilder builder = new StringBuilder();
-      details.forEach(detail->{
-        if (builder.length() > 0) {
-          builder.append("、");
-        }
-        builder.append(detail.getBillingItemName());
-      });
-      vo.setItemNames(builder.toString());
-    });
-  }
-
-  /**
-   * 填充医生姓名
-   *
-   * @param result
-   */
-  private void fillDentistName(List<TreatmentOrderDetailVO> result) {
-    result.forEach(vo->{
-      SysEmployee dentist = systemServiceFeign.findSysEmployeeById(vo.getDentistId());
-      if (StringHelper.isNotNull(dentist)) {
-        vo.setDentistName(dentist.getName());
-      }
-    });
-  }
-
-  /**
-   * 根据患者信息过滤
-   *
-   * @param combination
-   * @param result
-   * @return
-   */
-  private List<TreatmentOrderDetailVO> filterPatientInfo(String combination, List<TreatmentOrderDetailVO> result) {
-    if (StringHelper.isEmpty(combination)) {
-      return result;
-    }
-    return result.stream().filter(vo->{
-      String mobile = vo.getMobile();
-      String patientName = vo.getPatientName();
-      String pinyinName = vo.getPinyinName();
-      return mobile.contains(combination) || pinyinName.contains(combination) || patientName.contains(combination);
-    }).collect(Collectors.toList());
-  }
-
-  /**
-   * 填充患者信息
-   *
-   * @param result
-   */
-  private void fillPatientInfo(List<TreatmentOrderDetailVO> result) {
-    result.forEach(vo -> {
-      PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(vo.getPatientId());
-      if (StringHelper.isNotNull(patient)) {
-        vo.setPatientName(patient.getName());
-        vo.setMobile(patient.getMobile());
-        vo.setPinyinName(patient.getPinyinName());
-        vo.setMedicalNumber(patient.getMedicalNumber());
-      }
-    });
   }
 }

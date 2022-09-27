@@ -23,20 +23,17 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
   </resultMap>
 
-  <select id="selectLastestReturnVisitByTreatmentId"
+  <select id="selectReturnVisitByTreatmentId"
           resultType="com.yunya.models.treatment_other.ReturnVisitRecord">
     SELECT
         id,
-        treatment_id AS treatmentId,
         return_date AS returnDate,
         return_time AS returnTime,
         return_reason AS returnReason,
-        return_content AS returnContent,
-        register_name AS registerName
+        return_content AS returnContent
     FROM return_visit_record
     WHERE treatment_id = #{treatmentId}
     ORDER BY crt_time DESC
-    LIMIT 1
   </select>
 
   <select id="selectReturnVisitRecordList"
@@ -52,6 +49,9 @@
     FROM return_visit_record
     <where>
         inservice = true
+        <if test="query.patientId != null">
+            AND patient_id = #{query.patientId}
+        </if>
         <if test="query.orgIds!=null and query.orgIds.size()>0">
             AND org_id IN
             <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">

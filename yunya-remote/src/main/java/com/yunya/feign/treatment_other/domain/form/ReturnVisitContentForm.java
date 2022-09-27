@@ -1,14 +1,14 @@
 package com.yunya.feign.treatment_other.domain.form;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * @program: yunya-dental
@@ -19,7 +19,7 @@ import java.util.Date;
 @ApiModel(value = "回访内容保存模型")
 @Data
 @ToString
-public class ReturnVisitingContentForm implements Serializable {
+public class ReturnVisitContentForm implements Serializable {
 
     /** 回访记录id */
     @ApiModelProperty("回访记录id，编辑时非空")

@@ -19,7 +19,7 @@ import java.util.List;
 @ApiModel(value = "回访记录保存模型")
 @Data
 @ToString
-public class ReturnVisitingRecordForm implements Serializable {
+public class ReturnVisitRecordForm implements Serializable {
     /**
      * 诊所ID
      */
@@ -50,5 +50,5 @@ public class ReturnVisitingRecordForm implements Serializable {
     /** 回访内容 */
     @ApiModelProperty(value = "回访内容列表",required = true)
     @NotEmpty(message = "回访内容列表不能为空!")
-    private List<ReturnVisitingContentForm> visitingContents;
+    private List<ReturnVisitContentForm> visitingContents;
 }

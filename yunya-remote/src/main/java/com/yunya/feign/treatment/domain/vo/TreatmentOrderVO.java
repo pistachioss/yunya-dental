@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment_other.domain.vo;
+package com.yunya.feign.treatment.domain.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -8,18 +8,18 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
- * @program: yunya-dental
- * @description: 回访记录数据模型
- * @author: LHB
- * @create: 2022-09-21 17:13
- **/
-@ApiModel(value = "回访记录数据模型")
+ * @author: chenlin
+ * @date: 2022/9/27 13:03
+ * @description: 就诊开单信息数据模型
+ * @since: 1.0.0
+ */
 @Data
 @ToString
-public class ReturnVisitVO implements Serializable {
+@ApiModel("就诊开单信息数据模型")
+public class TreatmentOrderVO implements Serializable {
+
     /**
      * 诊所ID
      */
@@ -74,8 +74,4 @@ public class ReturnVisitVO implements Serializable {
     @ApiModelProperty(value = "开单日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date orderDate;
-
-    /** 回访内容列表 */
-    @ApiModelProperty(value = "回访内容列表")
-    private List<ReturnVisitContentVO> visitingContents;
 }

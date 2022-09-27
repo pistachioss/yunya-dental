@@ -1,18 +1,16 @@
-package com.yunya.models.treatment_other;
+package com.yunya.models.report;
 
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
-@Table(name = "return_visit_record")
-public class ReturnVisitRecord {
+@Table(name = "base_return_visit")
+public class BaseReturnVisit {
     /**
      * 回访id
      */
     @Id
-    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
@@ -74,11 +72,6 @@ public class ReturnVisitRecord {
      */
     @Column(name = "register_name")
     private String registerName;
-
-    /**
-     * 是否启用
-     */
-    private Boolean inservice;
 
     /**
      * 创建时间
@@ -264,24 +257,6 @@ public class ReturnVisitRecord {
      */
     public void setReturnContent(String returnContent) {
         this.returnContent = returnContent;
-    }
-
-    /**
-     * 获取是否启用
-     *
-     * @return inservice - 是否启用
-     */
-    public Boolean getInservice() {
-        return inservice;
-    }
-
-    /**
-     * 设置是否启用
-     *
-     * @param inservice 是否启用
-     */
-    public void setInservice(Boolean inservice) {
-        this.inservice = inservice;
     }
 
     /**
