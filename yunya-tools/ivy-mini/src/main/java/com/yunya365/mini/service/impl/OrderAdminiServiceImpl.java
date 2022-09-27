@@ -37,7 +37,9 @@ import java.util.*;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> {
+
     public static final Byte STATUS = 7;
+
     @Autowired
     private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
     @Autowired
