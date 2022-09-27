@@ -38,6 +38,8 @@ import java.util.*;
 @Transactional(rollbackFor = Exception.class)
 public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> {
 
+    public static final Byte STATUS = 7;
+
     @Autowired
     private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
     @Autowired
@@ -45,6 +47,9 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
     public PageInfo<OrderVO> findList(OrderForm form) {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
+        }
+        if(STATUS.equals( form.getStatus())){
+            form.setActiveStatus(new Byte("0"));
         }
         List<OrderVO> result = mapper.findOrderList(form);
         for (OrderVO a : result) {

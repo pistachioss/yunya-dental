@@ -15,4 +15,10 @@ public class OssUrlForm extends OssFolderForm implements Serializable {
 
     @ApiModelProperty(value = "是否缩略图", dataType = "Boolean")
     private Boolean isThumb;
+
+    @ApiModelProperty(value = "缩略图尺寸宽度，默认100", dataType = "Integer")
+    private Integer thumbWidth;
+
+    @ApiModelProperty(value = "缩略图尺寸高度，默认100", dataType = "Integer")
+    private Integer thumbHeight;
 }
