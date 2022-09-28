@@ -129,17 +129,14 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
 
     /**
      * 同步全诊通
-     * @param type: 0-增量 1-全量
      */
-    public void sync(Integer type) {
+    public void sync() {
         String preDay = LocalDate.now().minusDays(1).toString();
         QztSyncDoctor preTask = preTask(0);
         Example example = new Example(QztDoctor.class);
         Example.Criteria criteria = example.createCriteria().andEqualTo("enableCert", true);
-        if (Objects.equals(0, type)) {
-            if (Objects.nonNull(preTask)) {
-                criteria.andGreaterThan("id", preTask.getLastId());
-            }
+        if (Objects.nonNull(preTask)) {
+            criteria.andGreaterThan("id", preTask.getLastId());
         }
         example.orderBy("id").asc();
         List<QztDoctor> doctors = mapper.selectByExample(example);
@@ -155,7 +152,7 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
             doctorVO.setName(t.getDoctorName());
             return doctorVO;
         }).collect(Collectors.toList());
-        log.info("全诊通医生数据同步开始type：{}，同步数量：{}", type, syncDoctorVOS.size());
+        log.info("全诊通医生数据同步开始，同步数量：{}", syncDoctorVOS.size());
         JSONObject jsonObject = qztRestTemplateApi.postObject(String.format(qztPrefix + DOCTOR_URL, shortToken), syncDoctorVOS);
         log.info("全诊通医生数据同步完成：{}", jsonObject);
         updateTask(doctors.get(doctors.size() - 1).getId(),0);
@@ -167,7 +164,8 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         return syncDoctorMapper.selectOneByExample(example);
     }
 
-    private void updateTask(Integer id, Integer type) {
+    public void updateTask(Integer id, Integer type) {
+        log.info("同步任务类型：{}，id：{}", type, id);
         Example example = new Example(QztSyncDoctor.class);
         example.createCriteria().andEqualTo("type", type);
         QztSyncDoctor qztSyncDoctor = syncDoctorMapper.selectOneByExample(example);

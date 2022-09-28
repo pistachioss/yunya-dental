@@ -18,7 +18,7 @@ import javax.annotation.Resource;
 @EnableScheduling
 @Slf4j
 @RestController
-public class WxTask {
+public class Task {
 
     @Resource
     private QztDoctorBiz qztDoctorBiz;
@@ -26,7 +26,7 @@ public class WxTask {
     @Scheduled(cron = "${corn.qzt-doctor}")
     @RequestMapping("/white/qztDocter/sync")
     public void syncDoctor() {
-        qztDoctorBiz.sync(1);
+        qztDoctorBiz.sync();
     }
 
 }

@@ -301,4 +301,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public OrganizationInfo findRecentlyOrDefaulOrg(Integer defaultOrgId) {
     return null;
   }
+
+  @Override
+  public void syncTask(Integer id, Integer type) {
+
+  }
 }
