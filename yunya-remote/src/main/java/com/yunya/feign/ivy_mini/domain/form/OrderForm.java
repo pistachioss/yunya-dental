@@ -31,6 +31,9 @@ public class OrderForm extends PageQuery implements Serializable {
     @ApiModelProperty(value = "核销状态 后台使用")
     private Byte activeStatus;
 
+    @ApiModelProperty(value = "商品类型：0->商品 1->虚拟服务 后台使用")
+    private Byte productType;
+
     /**
      * 订单类型：0->正常订单；1->秒杀订单；2-拼团订单
      */
