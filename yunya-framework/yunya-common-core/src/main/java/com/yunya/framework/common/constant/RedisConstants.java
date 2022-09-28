@@ -162,6 +162,9 @@ public class RedisConstants implements Serializable {
   /** 小程序验证码 */
   public static final String MINI_CAPTCHA =  "mini:captcha";
 
+  /** ---------------------------全诊通----------------------------------------------- */
+  public static final String QZT_TOKEN =  "qzt:token";
+
   /**
    * 设置key中的占位符
    *

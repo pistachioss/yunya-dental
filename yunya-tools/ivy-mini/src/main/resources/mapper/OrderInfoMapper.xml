@@ -292,6 +292,9 @@
       <if test="activeStatus != null" >
         and od.active_status =  #{activeStatus}
       </if>
+      <if test="productType != null" >
+        and od.product_type =  #{productType}
+      </if>
       <if test="orderType != null and orderType != ''">
         and order_type =  #{orderType}
       </if>

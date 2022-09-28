@@ -50,6 +50,7 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         }
         if(STATUS.equals( form.getStatus())){
             form.setActiveStatus(new Byte("0"));
+            form.setProductType(new Byte("1"));
         }
         List<OrderVO> result = mapper.findOrderList(form);
         for (OrderVO a : result) {
