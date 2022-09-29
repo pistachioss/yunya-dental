@@ -9,7 +9,6 @@ import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.service.QztRestTemplateApi;
-import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.models.system.QztSyncDoctor;
@@ -22,8 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -68,46 +67,31 @@ public class QztMedicalBiz {
         Set<Integer> treatIds = medicalCommonRecords.stream().map(MedicalCommonRecord::getTreatmentId).collect(Collectors.toSet());
         List<TreatmentRecordExtendVO> treatmentRecords = treatmentServiceFeign.findTreatmentRecordByIds(treatIds);
         List<OrganizationInfoDetail> infos = systemServiceFeign.findOrgInfoInIds(treatmentRecords.stream().map(TreatmentRecordExtendVO::getOrgId).collect(Collectors.toList()));
-        infos.stream().collect(Collectors.toMap(t -> t.getId(), ))
-        List<MedicalCommonRecord> commonRecords = medicalCommonRecords.stream().map(t -> {
+        Map<Integer, OrganizationInfoDetail> orgMap = infos.stream().collect(Collectors.toMap(t -> t.getId(), Function.identity()));
+        List<QztSyncMedicalVO> commonRecords = medicalCommonRecords.stream().map(t -> {
             QztSyncMedicalVO medicalVO = new QztSyncMedicalVO();
             medicalVO.setEntid(t.getId());
-            medicalVO.setInstitutionId(t.getDepartId());
-            medicalVO.setInstitutionName(t.getDepartId());
-            medicalVO.setDepartmentName(t.getDepartName());
-            medicalVO.setDoctorId(t.getDepartId());
-            medicalVO.setDoctorName(t.getDepartId());
-            medicalVO.setUid(t.getDepartId());
-            medicalVO.setName(t.getDepartId());
-            medicalVO.setGender(t.getDepartId());
-            medicalVO.setAge(t.getDepartId());
-            medicalVO.setVisitDate(t.getDepartId());
-            medicalVO.setComplain(t.getDepartId());
-            medicalVO.setDiagnosis(t.getDepartId());
-            medicalVO.setDiagnosisIcd10(t.getDepartId());
-            medicalVO.setUpdateTm(t.getDepartId());
-            medicalVO.setCreateTm(t.getDepartId());
+//            medicalVO.setInstitutionId(t.getDepartId());
+//            medicalVO.setInstitutionName(t.getDepartId());
+//            medicalVO.setDepartmentName(t.getDepartName());
+//            medicalVO.setDoctorId(t.getDepartId());
+//            medicalVO.setDoctorName(t.getDepartId());
+//            medicalVO.setUid(t.getDepartId());
+//            medicalVO.setName(t.getDepartId());
+//            medicalVO.setGender(t.getDepartId());
+//            medicalVO.setAge(t.getDepartId());
+//            medicalVO.setVisitDate(t.getDepartId());
+//            medicalVO.setComplain(t.getDepartId());
+//            medicalVO.setDiagnosis(t.getDepartId());
+//            medicalVO.setDiagnosisIcd10(t.getDepartId());
+//            medicalVO.setUpdateTm(t.getDepartId());
+//            medicalVO.setCreateTm(t.getDepartId());
             return medicalVO;
         }).collect(Collectors.toList());
-        log.info("全诊通医生数据同步开始，同步数量：{}", syncDoctorVOS.size());
-        JSONObject jsonObject = qztRestTemplateApi.postObject(String.format(qztPrefix + DOCTOR_URL, shortToken), syncDoctorVOS);
+        log.info("全诊通医生数据同步开始，同步数量：{}", commonRecords.size());
+        JSONObject jsonObject = qztRestTemplateApi.postObject(String.format(qztPrefix + DOCTOR_URL, shortToken), commonRecords);
         log.info("全诊通医生数据同步完成：{}", jsonObject);
-        updateTask(doctors.get(doctors.size() - 1).getId(), 0);
+        systemServiceFeign.syncTask(medicalCommonRecords.get(medicalCommonRecords.size() - 1).getId(), 0);
     }
 
-    public void updateTask(Integer id, Integer type) {
-        log.info("同步任务类型：{}，id：{}", type, id);
-        Example example = new Example(QztSyncDoctor.class);
-        example.createCriteria().andEqualTo("type", type);
-        QztSyncDoctor qztSyncDoctor = syncDoctorMapper.selectOneByExample(example);
-        if (Objects.isNull(qztSyncDoctor)) {
-            QztSyncDoctor syncDoctor = new QztSyncDoctor();
-            syncDoctor.setType(type);
-            syncDoctor.setLastId(id);
-            syncDoctorMapper.insertSelective(syncDoctor);
-        } else {
-            qztSyncDoctor.setLastId(id);
-            syncDoctorMapper.updateByPrimaryKeySelective(qztSyncDoctor);
-        }
-    }
 }
