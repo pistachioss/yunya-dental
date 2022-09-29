@@ -46,7 +46,7 @@ swagger:
   base-package: com.yunya.modules.treatment.other
   title: yunya_treatment_other
   version: 1.0.0.SNAPSHOT
-  description: 就诊拓展服务 (网关地址：/api/treatment/other/**)
+  description: 就诊拓展服务 (网关地址：/api/treatment-other/**)
   contact:
     name: yunya-treatment-other
 
