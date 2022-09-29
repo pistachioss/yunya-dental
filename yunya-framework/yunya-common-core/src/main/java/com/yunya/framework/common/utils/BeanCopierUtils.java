@@ -51,7 +51,7 @@ public class BeanCopierUtils {
             copier.copy(source, t, converter);
             return t;
         } catch (Exception e) {
-            throw new ClientServiceException("对象属性转换异常", OperationCodeConstants.BEAN_CONVERT_ERROR);
+            throw new ClientServiceException(OperationCodeConstants.BEAN_CONVERT_ERROR, "对象属性转换异常", e);
         }
     }
 

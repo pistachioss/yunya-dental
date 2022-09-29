@@ -1,6 +1,11 @@
 package com.yunya.modules.appointment.biz.app;
 
 import com.yunya.feign.appointment.domain.model.ReservationModel;
+import com.yunya.feign.appointment.domain.query.ReservationCodeQuery;
+import com.yunya.feign.appointment.domain.query.ReservationQuery;
+import com.yunya.feign.appointment.vo.ReservationVo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -8,18 +13,32 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.appointment.OnlineAppointment;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Reservation;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.ReservationMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
 
+    @Autowired
+    private RemoteSystemServiceFeign systemServiceFeign;
+
+    @Autowired
+    private ReservationCodeBiz reservationCodeBiz;
+
     public ResponseResult add(ReservationModel model) {
+        ReservationCodeQuery query = new ReservationCodeQuery();
+        query.setCode(model.getCode());
+        if (!reservationCodeBiz.find(query)) {
+            ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
+        }
         Reservation build = EntityUtils.build(model, Reservation.class);
         build.setCrtName(BaseContextHandler.getUsername());
         int status = mapper.insertSelective(build);
@@ -46,7 +65,21 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
         return ResponseUtil.success(status);
     }
 
-    public ResponseResult list() {
-        return ResponseUtil.success(mapper.selectAll());
+    public List<ReservationVo> list(ReservationQuery query) {
+        List<ReservationVo> results = mapper.findByCondition(query);
+//        if (StringHelper.isNotEmpty(results)) {
+//            setOrgInfo(results);
+//        }
+        return results;
+    }
+    private void setOrgInfo(List<ReservationVo> results) {
+        List<Integer> orgIds = results.stream().mapToInt(ReservationVo::getOrgId).boxed().collect(Collectors.toList());
+        List<OrganizationInfoDetail> orgInfos = systemServiceFeign.findOrgInfoInIds(orgIds);
+        if (StringHelper.isNotEmpty(orgInfos)) {
+            results.stream().forEach(ReservationVo -> {
+                OrganizationInfoDetail orgInfo = orgInfos.stream().filter(e -> e.getId().equals(ReservationVo.getOrgId())).findFirst().get();
+                ReservationVo.setOrgName(orgInfo.getBrandName() + "(" + orgInfo.getAbbreviation() + ")");
+            });
+        }
     }
 }

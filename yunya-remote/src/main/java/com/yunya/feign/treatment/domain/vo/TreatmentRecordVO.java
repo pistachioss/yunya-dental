@@ -34,6 +34,9 @@ public class TreatmentRecordVO implements Serializable {
   /** 患者名称 */
   @ApiModelProperty("患者名称")
   private String patientName;
+  /** 患者手机号 */
+  @ApiModelProperty("患者手机号")
+  private String mobile;
   /** 患者预约id */
   @ApiModelProperty("患者预约id")
   private Integer appointmentId;

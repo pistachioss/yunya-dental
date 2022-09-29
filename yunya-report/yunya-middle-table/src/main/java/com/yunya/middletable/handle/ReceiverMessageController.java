@@ -6,6 +6,7 @@ import com.yunya.middletable.service.*;
 import com.yunya.middletable.service.emr.TreatPlanDetailBiz;
 import com.yunya.middletable.service.patient.*;
 import com.yunya.middletable.service.treatment_other.BaseEmployeeScheduleBiz;
+import com.yunya.middletable.service.treatment_other.BaseReturnVisitBiz;
 import com.yunya.middletable.service.treatment_other.BaseVisitRemindBiz;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -56,6 +57,8 @@ public class ReceiverMessageController {
   @Autowired private BasePatientMemberOccurLogBiz basePatientMemberOccurLogBiz;
 
   @Autowired private BaseVisitRemindBiz baseVisitRemindBiz;
+
+  @Autowired private BaseReturnVisitBiz baseReturnVisitBiz;
 
   @Autowired private BaseEmployeeScheduleBiz baseEmployeeScheduleBiz;
 
@@ -136,6 +139,9 @@ public class ReceiverMessageController {
           break;
         case BaseVisitRemind:
           baseVisitRemindBiz.operate(messageModel);
+          break;
+        case BaseReturnVisit:
+          baseReturnVisitBiz.operate(messageModel);
           break;
         case BaseEmployeeSchedule:
           baseEmployeeScheduleBiz.operateEmployeeSchedule(messageModel);

@@ -365,7 +365,7 @@
         bcd.sale_channel_id as saleChannelId,
         bcd.sale_channel_name as saleChannelName,
         date_format(bcd.active_date, '%Y-%m-%d') as activationDate,
-        bb.cardUseDate,
+        date_format(bb.cardUseDate, '%Y-%m-%d') AS cardUseDate,
         bb.cardUseOrgId,
         bon.abbreviation as cardUseOrgName,
         bbl.order_amount as orderAmount,
@@ -382,6 +382,7 @@
         bpt.origin_type as patientOriginTypeId,
         bpt.origin_type_name as patientOriginTypeName,
         bpt.origin_id as patientOriginId,
+        bpt.origin_name as patientOriginName,
         bpt.first_visit_outpatient as firstVisitOrgId,
         bpt.firstVisitOrgName,
         bpt.first_visit_doctors as firstVisitDentistId,
@@ -415,6 +416,7 @@
         bp.origin_type,
         bp.origin_type_name,
         bp.origin_id,
+        bpo.name AS origin_name,
         bp.first_visit_outpatient,
         bo.abbreviation as firstVisitOrgName,
         date_format(bp.first_visit_date, '%Y-%m-%d') as firstVisitDate,
@@ -423,6 +425,7 @@
         from base_patient bp
         left join base_organization bo on bp.first_visit_outpatient = bo.org_id
         left join base_employee be on bp.first_visit_doctors = be.user_id
+        left join base_patient_origin bpo on bp.origin_id = bpo.id
         ) bpt on bb.patientId = bpt.patient_id
         left join (
         select patient_id,

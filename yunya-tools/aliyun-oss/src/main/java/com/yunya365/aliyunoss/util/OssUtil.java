@@ -5,6 +5,7 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.utils.BinaryUtil;
 import com.aliyun.oss.model.*;
+import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya365.aliyunoss.property.AliyunOssProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,7 +73,7 @@ public class OssUtil {
         return result;
     }
 
-    public static String getSignatureUrl(String fullPathName, Boolean isThumb) {
+    public static String getSignatureUrl(String fullPathName, OssUrlForm ossUrlForm) {
         if (ossClient == null) {
             initOSSClient();
         }
@@ -81,8 +82,25 @@ public class OssUtil {
         GeneratePresignedUrlRequest req = new GeneratePresignedUrlRequest(bucket, fullPathName, HttpMethod.GET);
         Date expiration = new Date(new Date().getTime() + 3600 * 1000);
         req.setExpiration(expiration);
-        if (isThumb) {
-            String style = "image/resize,m_lfit,h_100,w_100";
+        if (ossUrlForm.getIsThumb()) {
+            int w = 100, h = 100;
+            if (ossUrlForm.getThumbWidth() != null) {
+                if (ossUrlForm.getThumbWidth() > 100) {
+                    w = ossUrlForm.getThumbWidth();
+                }
+                else if (ossUrlForm.getThumbWidth() > 300) {
+                    w = 300;
+                }
+            }
+            if (ossUrlForm.getThumbHeight() != null) {
+                if (ossUrlForm.getThumbHeight() > 100) {
+                    h = ossUrlForm.getThumbHeight();
+                }
+                else if (ossUrlForm.getThumbHeight() > 300) {
+                    h = 300;
+                }
+            }
+            String style = String.format("image/resize,m_lfit,h_%d,w_%d", w, h);
             req.setProcess(style);
         }
         URL result = ossClient.generatePresignedUrl(req);

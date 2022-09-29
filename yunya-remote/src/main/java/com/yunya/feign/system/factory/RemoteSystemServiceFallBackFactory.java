@@ -301,4 +301,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public OrganizationInfo findRecentlyOrDefaulOrg(Integer defaultOrgId) {
     return null;
   }
+
+  @Override
+  public List<QztDoctor> certDoctors() {
+    return null;
+  }
 }

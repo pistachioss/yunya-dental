@@ -34,6 +34,12 @@ public class Reservation {
     private Integer orgId;
 
     /**
+     * 预约意向门诊名称
+     */
+    @Column(name = "org_name")
+    private String orgName;
+
+    /**
      * 就诊人名字
      */
     @Column(name = "patient_name")
@@ -56,6 +62,18 @@ public class Reservation {
      */
     @Column(name = "status")
     private Byte status;
+
+    /**
+     * 备注
+     */
+    @Column(name = "remarks")
+    private String remarks;
+
+    /**
+     * 号码
+     */
+    @Column(name = "code")
+    private String code;
 
     /**
      * 是否有效，是否删除(默认有效) 1-有效；0删除
@@ -210,6 +228,38 @@ public class Reservation {
      */
     public void setPatientGender(Byte patientGender) {
         this.patientGender = patientGender;
+    }
+
+    public Byte getStatus() {
+        return status;
+    }
+
+    public void setStatus(Byte status) {
+        this.status = status;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    public String getOrgName() {
+        return orgName;
+    }
+
+    public void setOrgName(String orgName) {
+        this.orgName = orgName;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     /**

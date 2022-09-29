@@ -200,7 +200,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return List<OrderDetailVO>
    */
   public List<OrderDetailVO> findOrderDetailVOList(Integer orderRecordId, Byte sourceType) {
-    List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, sourceType);
+    List<OrderDetailVO> resultList = findOrderDetailList(orderRecordId, sourceType);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
@@ -261,6 +261,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       resultList = new ArrayList<>();
     }
     return resultList;
+  }
+
+  public List<OrderDetailVO> findOrderDetailList(Integer orderRecordId, Byte sourceType) {
+    return mapper.selectOrderDetailVOList(orderRecordId, sourceType);
   }
 
   /**

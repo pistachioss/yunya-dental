@@ -8,10 +8,12 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.AppointItem;
+import com.yunya.models.appointment.OnlineAppointment;
 import com.yunya.models.appointment.ReservationResource;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.ReservationResourceMapper;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
 
@@ -19,6 +21,13 @@ import java.util.Date;
 public class ReservationResourceBiz extends BaseBiz<ReservationResourceMapper, ReservationResource> {
 
     public ResponseResult add(ReservationResourceModel entity) {
+        Example example = new Example(ReservationResource.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("sourceName",entity.getSourceName());
+        int count = mapper.selectCountByExample(example);
+        if (count > 0) {
+            return ResponseUtil.fail(AppointmentError.RESOURCE_EXIST.getCode(),AppointmentError.RESOURCE_EXIST.getMessage(),null);
+        }
         ReservationResource model = new ReservationResource();
         model.setSourceName(entity.getSourceName());
         model.setCrtName(BaseContextHandler.getUsername());
@@ -33,6 +42,15 @@ public class ReservationResourceBiz extends BaseBiz<ReservationResourceMapper, R
         ReservationResource model = mapper.selectByPrimaryKey(id);
         if (model == null){
             throw new ClientServiceException("修改的数据不存在！", OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        if (!model.getSourceName().equals(entity.getSourceName())){
+            Example example = new Example(ReservationResource.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("sourceName",entity.getSourceName());
+            int count = mapper.selectCountByExample(example);
+            if (count > 0) {
+                return ResponseUtil.fail(AppointmentError.RESOURCE_EXIST.getCode(),AppointmentError.RESOURCE_EXIST.getMessage(),null);
+            }
         }
         model.setSourceName(entity.getSourceName());
         model.setUpdName(BaseContextHandler.getUsername());

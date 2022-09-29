@@ -1,6 +1,7 @@
 package com.yunya365.aliyunoss.controller;
 
 import com.aliyun.oss.model.PutObjectResult;
+import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.aliyunoss.enums.BucketFolderEnum;
@@ -75,11 +76,13 @@ public class BaseTmpController {
     })
     public ResponseResult getClinicUrl(@PathVariable("ossCategory") Integer oss_category,
                                             @PathVariable("id") Integer id,
-                                            @RequestParam(value = "oss  _filename") String filename,
+                                            @RequestParam(value = "oss_filename") String filename,
                                             @RequestParam(value = "is_Thumb") Boolean isThumb) throws Exception {
 
         String objectName = makeObjectFullName(oss_category, id, filename);
-        String url = OssUtil.getSignatureUrl(objectName, isThumb);
+        OssUrlForm ossUrlForm = new OssUrlForm();
+        ossUrlForm.setIsThumb(isThumb);
+        String url = OssUtil.getSignatureUrl(objectName, ossUrlForm);
         return ResponseUtil.success(url);
     }
 }
