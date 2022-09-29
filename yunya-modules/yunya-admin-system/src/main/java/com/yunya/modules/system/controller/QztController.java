@@ -3,6 +3,7 @@ package com.yunya.modules.system.controller;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.system.QztSyncDoctor;
 import com.yunya.modules.system.biz.QztDoctorBiz;
 import com.yunya.modules.system.domain.model.QztAddDoctorModel;
 import com.yunya.modules.system.vo.QztDoctorDetailVO;
@@ -43,6 +44,11 @@ public class QztController {
     @PostMapping("/qzt/task")
     public void syncTask(@RequestParam Integer id, @RequestParam Integer type) {
         doctorBiz.updateTask(id, type);
+    }
+
+    @GetMapping("/qzt/task")
+    public QztSyncDoctor getPreTask(@RequestParam Integer type) {
+        return doctorBiz.preTask(type);
     }
 
 }

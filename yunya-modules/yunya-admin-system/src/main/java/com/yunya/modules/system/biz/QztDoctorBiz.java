@@ -89,10 +89,13 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         QztDoctor qztDoctor = mapper.selectOneByExample(example);
         QztDoctor doctor = BeanCopierUtils.generalCopyBean(model, QztDoctor.class);
         doctor.setUpdId(userId);
+        doctor.setInstitutionId("00025526");
         String userId1 = model.getUserId().toString();
         if (Objects.isNull(qztDoctor)) {
             doctor.setCrtId(userId);
             doctor.setRelateUserIds(userId1);
+            //todo 先写死
+            doctor.setInstitutionId("00025526");
             mapper.insertSelective(doctor);
             return;
         }
@@ -157,7 +160,7 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         updateTask(doctors.get(doctors.size() - 1).getId(),0);
     }
 
-    private QztSyncDoctor preTask(Integer type) {
+    public QztSyncDoctor preTask(Integer type) {
         Example example = new Example(QztSyncDoctor.class);
         example.createCriteria().andEqualTo("type", type);
         return syncDoctorMapper.selectOneByExample(example);
