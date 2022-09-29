@@ -290,7 +290,7 @@
         and od.status =  #{status}
       </if>
       <if test="activeStatus != null" >
-        and od.active_status =  #{activeStatus}
+        and od.active_status =  #{activeStatus} and od.status = 3
       </if>
       <if test="productType != null" >
         and od.product_type =  #{productType}

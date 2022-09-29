@@ -40,5 +40,9 @@ public class QztController {
         return ResponseUtil.success(doctorBiz.detail(userId));
     }
 
+    @PostMapping("/qzt/task")
+    public void syncTask(@RequestParam Integer id, @RequestParam Integer type) {
+        doctorBiz.updateTask(id, type);
+    }
 
 }

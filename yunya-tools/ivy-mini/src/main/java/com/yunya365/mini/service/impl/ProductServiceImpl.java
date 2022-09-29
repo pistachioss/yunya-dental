@@ -106,8 +106,9 @@ public class ProductServiceImpl implements IProductService {
                 } else {
                     oralTariff = finalCouponMap.get(id);
                 }
-                HotSaleVO vo = new HotSaleVO();
+                HotSaleVO vo = null;
                 if (Objects.nonNull(oralTariff)) {
+                    vo =  new HotSaleVO();
                     String itemPic = oralTariff.getProductPic();
                     vo.setProductId(id);
                     vo.setProductName(oralTariff.getProductName());
@@ -117,6 +118,9 @@ public class ProductServiceImpl implements IProductService {
                     vo.setSoldQuantity(oralTariff.getSoldQuantity());
                     vo.setProductType(aProductType);
                     vo.setSoldQuantity(Objects.requireNonNull(score).intValue());
+                } else {
+                    //商品或卡券被停用或下架，移除热销
+                    redisUtils.zRem(RedisConstants.HOT_SALE_PRODUCT, value);
                 }
                 return vo;
             }).collect(toList());
