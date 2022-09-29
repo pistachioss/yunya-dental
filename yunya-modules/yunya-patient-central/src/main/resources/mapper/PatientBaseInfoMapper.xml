@@ -113,7 +113,7 @@
             IFNULL(pbi.mobile,''))
             like concat(concat('%', rtrim(#{form.condition})), '%')
             AND pbi.has_died = false
-            AND pbi.inservice = true
+            AND pbi.inservice = 1
         ORDER BY
         ABS(
         LENGTH( pbi.`name` ) - LENGTH( #{form.condition} ))
