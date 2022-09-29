@@ -15,7 +15,6 @@ import com.yunya.framework.common.service.QztRestTemplateApi;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.QztDoctor;
-import com.yunya.models.system.QztSyncDoctor;
 import com.yunya.modules.system.domain.model.QztAddDoctorModel;
 import com.yunya.modules.system.mapper.QztDoctorMapper;
 import com.yunya.modules.system.mapper.QztSyncDoctorMapper;
@@ -107,6 +106,10 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         if (!contains) {
             doctor.setRelateUserIds(Joiner.on(",").join(qztDoctor.getRelateUserIds(), userId1));
         }
+        List<String> existClinic = Lists.newArrayList(Splitter.on(",").split(qztDoctor.getPracticeClinic()));
+        //医生选择门诊
+        List<String> selectClinic = Lists.newArrayList(Splitter.on(",").split(model.getPracticeClinic()));
+        doctor.setPracticeClinic(String.join(",", CollectionUtils.union(existClinic, selectClinic)));
         doctor.setId(qztDoctor.getId());
         mapper.updateByPrimaryKeySelective(doctor);
     }
@@ -134,12 +137,9 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
      */
     public void sync() {
         String preDay = LocalDate.now().minusDays(1).toString();
-        QztSyncDoctor preTask = preTask(0);
         Example example = new Example(QztDoctor.class);
-        Example.Criteria criteria = example.createCriteria().andEqualTo("enableCert", true);
-        if (Objects.nonNull(preTask)) {
-            criteria.andGreaterThan("id", preTask.getLastId());
-        }
+        example.createCriteria()
+                .andEqualTo("enableCert", true).andGreaterThanOrEqualTo("updTime", preDay);
         example.orderBy("id").asc();
         List<QztDoctor> doctors = mapper.selectByExample(example);
         String shortToken = redisUtils.get(RedisConstants.QZT_TOKEN);
@@ -157,28 +157,13 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         log.info("全诊通医生数据同步开始，同步数量：{}", syncDoctorVOS.size());
         JSONObject jsonObject = qztRestTemplateApi.postObject(String.format(qztPrefix + DOCTOR_URL, shortToken), syncDoctorVOS);
         log.info("全诊通医生数据同步完成：{}", jsonObject);
-        updateTask(doctors.get(doctors.size() - 1).getId(),0);
     }
 
-    public QztSyncDoctor preTask(Integer type) {
-        Example example = new Example(QztSyncDoctor.class);
-        example.createCriteria().andEqualTo("type", type);
-        return syncDoctorMapper.selectOneByExample(example);
-    }
-
-    public void updateTask(Integer id, Integer type) {
-        log.info("同步任务类型：{}，id：{}", type, id);
-        Example example = new Example(QztSyncDoctor.class);
-        example.createCriteria().andEqualTo("type", type);
-        QztSyncDoctor qztSyncDoctor = syncDoctorMapper.selectOneByExample(example);
-        if (Objects.isNull(qztSyncDoctor)) {
-            QztSyncDoctor syncDoctor = new QztSyncDoctor();
-            syncDoctor.setType(type);
-            syncDoctor.setLastId(id);
-            syncDoctorMapper.insertSelective(syncDoctor);
-        } else {
-            qztSyncDoctor.setLastId(id);
-            syncDoctorMapper.updateByPrimaryKeySelective(qztSyncDoctor);
-        }
+    public List<QztDoctor> certDoctors() {
+        Example example = new Example(QztDoctor.class);
+        example.createCriteria()
+                .andEqualTo("enableCert", true);
+        example.selectProperties("practiceClinic", "relateUserIds");
+        return mapper.selectByExample(example);
     }
 }

@@ -468,9 +468,6 @@ public interface RemoteSystemServiceFeign {
   @GetMapping(value = "/api/organization/recentlyOrDefault/{defaultOrgId}")
   OrganizationInfo findRecentlyOrDefaulOrg(@PathVariable(value = "defaultOrgId") Integer defaultOrgId);
 
-  @PostMapping("/qzt/task")
-  void syncTask(@RequestParam Integer id, @RequestParam Integer type);
-
-  @GetMapping("/qzt/task")
-  QztSyncDoctor getPreTask(@RequestParam Integer type);
+  @GetMapping("/qzt/doctor/list")
+  List<QztDoctor> certDoctors();
 }

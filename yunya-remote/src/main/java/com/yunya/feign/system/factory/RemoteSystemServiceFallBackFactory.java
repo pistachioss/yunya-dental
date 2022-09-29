@@ -303,12 +303,7 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   }
 
   @Override
-  public void syncTask(Integer id, Integer type) {
-
-  }
-
-  @Override
-  public QztSyncDoctor getPreTask(Integer type) {
+  public List<QztDoctor> certDoctors() {
     return null;
   }
 }

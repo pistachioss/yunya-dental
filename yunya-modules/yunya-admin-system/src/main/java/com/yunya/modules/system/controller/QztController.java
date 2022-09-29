@@ -3,7 +3,7 @@ package com.yunya.modules.system.controller;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.system.QztSyncDoctor;
+import com.yunya.models.system.QztDoctor;
 import com.yunya.modules.system.biz.QztDoctorBiz;
 import com.yunya.modules.system.domain.model.QztAddDoctorModel;
 import com.yunya.modules.system.vo.QztDoctorDetailVO;
@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 @Api(tags = "全诊通-用户")
@@ -41,14 +42,8 @@ public class QztController {
         return ResponseUtil.success(doctorBiz.detail(userId));
     }
 
-    @PostMapping("/qzt/task")
-    public void syncTask(@RequestParam Integer id, @RequestParam Integer type) {
-        doctorBiz.updateTask(id, type);
+    @GetMapping("/qzt/doctor/list")
+    public List<QztDoctor> certDoctors() {
+        return doctorBiz.certDoctors();
     }
-
-    @GetMapping("/qzt/task")
-    public QztSyncDoctor getPreTask(@RequestParam Integer type) {
-        return doctorBiz.preTask(type);
-    }
-
 }
