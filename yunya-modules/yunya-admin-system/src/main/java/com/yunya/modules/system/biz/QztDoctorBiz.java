@@ -19,7 +19,6 @@ import com.yunya.models.system.QztSyncDoctor;
 import com.yunya.modules.system.domain.model.QztAddDoctorModel;
 import com.yunya.modules.system.mapper.QztDoctorMapper;
 import com.yunya.modules.system.mapper.QztSyncDoctorMapper;
-import com.yunya.modules.system.vo.OrganizationInfoVO;
 import com.yunya.modules.system.vo.QztDoctorDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -120,10 +119,10 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         }
         QztDoctorDetailVO detailVO = BeanCopierUtils.generalCopyBean(doctor, QztDoctorDetailVO.class);
         String practiceClinic = doctor.getPracticeClinic();
-        List<Integer> clinicIds = Lists.newArrayList(Splitter.on(",").split(practiceClinic)).stream().map(Integer::valueOf).collect(Collectors.toList());
-        List<OrganizationInfoVO> orgInfoInIds = organizationBiz.findOrgInfoInIds(clinicIds);
-        String collect = orgInfoInIds.stream().map(OrganizationInfoVO::getName).collect(Collectors.joining(","));
-        detailVO.setPracticeClinic(collect);
+//        List<Integer> clinicIds = Lists.newArrayList(Splitter.on(",").split(practiceClinic)).stream().map(Integer::valueOf).collect(Collectors.toList());
+//        List<OrganizationInfoVO> orgInfoInIds = organizationBiz.findOrgInfoInIds(clinicIds);
+//        String collect = orgInfoInIds.stream().map(OrganizationInfoVO::getName).collect(Collectors.joining(","));
+        detailVO.setPracticeClinic(practiceClinic);
         return detailVO;
     }
 
