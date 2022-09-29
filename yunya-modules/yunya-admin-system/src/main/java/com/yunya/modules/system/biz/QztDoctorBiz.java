@@ -17,7 +17,6 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.QztDoctor;
 import com.yunya.modules.system.domain.model.QztAddDoctorModel;
 import com.yunya.modules.system.mapper.QztDoctorMapper;
-import com.yunya.modules.system.mapper.QztSyncDoctorMapper;
 import com.yunya.modules.system.vo.QztDoctorDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -43,8 +42,6 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
 
     @Resource
     private OrganizationBiz organizationBiz;
-    @Resource
-    private QztSyncDoctorMapper syncDoctorMapper;
     @Resource
     private QztRestTemplateApi qztRestTemplateApi;
     @Resource
