@@ -36,6 +36,10 @@ public class BaseReturnVisitVO implements Serializable {
     @ApiModelProperty("门诊id")
     private Integer orgId;
 
+    /** 挂号医生Id */
+    @ApiModelProperty("挂号医生Id")
+    private Integer dentistId;
+
     /** 患者姓名 */
     @Excel(name = "患者姓名")
     @ApiModelProperty("患者姓名")

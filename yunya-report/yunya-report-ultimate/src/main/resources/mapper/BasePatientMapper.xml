@@ -1017,6 +1017,7 @@
     <select id="selectReturnVisitRecordList" resultType="com.yunya.feign.report.domain.vo.BaseReturnVisitVO">
         SELECT
             btp.treatment_id AS treatmentId,
+            btp.registered_dentist_id AS dentistId,
             bb.bill_id AS billId,
             btp.org_id AS orgId,
             bo.abbreviation,
