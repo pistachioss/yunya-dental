@@ -62,7 +62,7 @@ public class ReturnVisitRecordBiz extends BaseBiz<ReturnVisitRecordMapper, Retur
         List<ReturnVisitRecord> datas = findReturnVisitListByTreatmentId(treatmentId);
         Map<Integer, ReturnVisitRecord> olds = datas.stream().collect(toMap(ReturnVisitRecord::getId, Function.identity()));
         List<ReturnVisitContentForm> visits = form.getVisitingContents();
-        Date now = DateUtil.getCurrentDate();
+        Date now = new Date(System.currentTimeMillis());
         visits.forEach(visit->{
             Integer id = visit.getId();
             ReturnVisitRecord entity = new ReturnVisitRecord();
