@@ -752,18 +752,21 @@ public class DiscountBiz {
     if (CollectionUtils.isNotEmpty(cardConsumeRecords)) {
       cardConsumeRecords.forEach(
           record -> {
-            if (record.getPatientOriginTypeId() == 1) {
-              Integer originId = record.getPatientOriginId();
-              BaseEmployee baseEmployee = employeeMapper.selectByPrimaryKey(originId);
-              if (Objects.nonNull(baseEmployee)) {
-                record.setPatientOriginName(baseEmployee.getEmployeeName());
+            Integer patientOriginTypeId = record.getPatientOriginTypeId();
+            if (StringHelper.isNotNull(patientOriginTypeId)) {
+              if (patientOriginTypeId == 1) {
+                Integer originId = record.getPatientOriginId();
+                BaseEmployee baseEmployee = employeeMapper.selectByPrimaryKey(originId);
+                if (Objects.nonNull(baseEmployee)) {
+                  record.setPatientOriginName(baseEmployee.getEmployeeName());
+                }
               }
-            }
-            if (record.getPatientOriginTypeId() == 2) {
-              Integer originId = record.getPatientOriginId();
-              BasePatient basePatient = patientMapper.selectByPrimaryKey(originId);
-              if (Objects.nonNull(basePatient)) {
-                record.setPatientOriginName(basePatient.getName());
+              if (record.getPatientOriginTypeId() == 2) {
+                Integer originId = record.getPatientOriginId();
+                BasePatient basePatient = patientMapper.selectByPrimaryKey(originId);
+                if (Objects.nonNull(basePatient)) {
+                  record.setPatientOriginName(basePatient.getName());
+                }
               }
             }
           });
