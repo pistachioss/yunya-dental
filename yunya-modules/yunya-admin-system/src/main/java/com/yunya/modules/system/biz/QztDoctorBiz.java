@@ -160,7 +160,7 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         Example example = new Example(QztDoctor.class);
         example.createCriteria()
                 .andEqualTo("enableCert", true);
-        example.selectProperties("practiceClinic", "relateUserIds");
+        example.selectProperties("id", "doctorName","practiceClinic", "relateUserIds");
         return mapper.selectByExample(example);
     }
 }

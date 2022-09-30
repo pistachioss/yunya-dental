@@ -5,12 +5,14 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.emr.domain.vo.QztSyncMedicalVO;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.service.QztRestTemplateApi;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.models.system.QztDoctor;
@@ -48,8 +50,10 @@ public class QztMedicalBiz {
     private RemoteSystemServiceFeign systemServiceFeign;
     @Resource
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
+    @Resource
+    private RemotePatientCentralServiceFeign patientCentralServiceFeign;
 
-    public static final String DOCTOR_URL = "/docking/api/medical/addMedical?short-access-token=%s";
+    public static final String MEDICAL_URL = "/docking/api/medical/addMedical?short-access-token=%s";
 
     /**
      * 同步全诊通
@@ -58,12 +62,12 @@ public class QztMedicalBiz {
         //查询已认证的医生
         List<QztDoctor> qztDoctors = systemServiceFeign.certDoctors();
         //过滤的医生ids
-        Map<Integer, Integer> doctorMap = certDoctorIds(qztDoctors);
+        Map<Integer, QztDoctor> doctorMap = certDoctorIds(qztDoctors);
         List<Integer> certClinicIds = certClinicIds(qztDoctors);
         String preDay = LocalDate.now().minusDays(1).toString();
         Example example = new Example(MedicalCommonRecord.class);
         if (Objects.isNull(doctorMap) || doctorMap.isEmpty() || CollectionUtils.isEmpty(certClinicIds)) {
-            log.info("不存在认证医生:{}", doctorMap);
+            log.info("不存在认证医生:{}", qztDoctors);
             return;
         }
         example.createCriteria().andIn("status", Lists.newArrayList(0, 2))
@@ -78,43 +82,60 @@ public class QztMedicalBiz {
         }
         Set<Integer> treatIds = medicalCommonRecords.stream().map(MedicalCommonRecord::getTreatmentId).collect(Collectors.toSet());
         List<TreatmentRecordExtendVO> treatmentRecords = treatmentServiceFeign.findTreatmentRecordByIds(treatIds);
-        List<OrganizationInfoDetail> infos = systemServiceFeign.findOrgInfoInIds(treatmentRecords.stream().map(TreatmentRecordExtendVO::getOrgId).collect(Collectors.toList()));
-        Map<Integer, OrganizationInfoDetail> orgMap = infos.stream().collect(Collectors.toMap(t -> t.getId(), Function.identity()));
-        List<QztSyncMedicalVO> commonRecords = medicalCommonRecords.stream().map(t -> {
-            QztSyncMedicalVO medicalVO = new QztSyncMedicalVO();
-            medicalVO.setEntid(t.getId());
-            //todo 先写死
-            medicalVO.setInstitutionId("00025526");
-            medicalVO.setInstitutionName("古墩路口腔门诊部");
-            medicalVO.setDepartmentName("口腔科");
-//            medicalVO.setDoctorId();
-//            medicalVO.setDoctorName(t.getDepartId());
-//            medicalVO.setUid(t.getDepartId());
-//            medicalVO.setName(t.getDepartId());
-//            medicalVO.setGender(t.getDepartId());
-//            medicalVO.setAge(t.getDepartId());
-//            medicalVO.setVisitDate(t.getDepartId());
-//            medicalVO.setComplain(t.getDepartId());
-//            medicalVO.setDiagnosis(t.getDepartId());
-//            medicalVO.setDiagnosisIcd10(t.getDepartId());
-//            medicalVO.setUpdateTm(t.getDepartId());
-//            medicalVO.setCreateTm(t.getDepartId());
-            return medicalVO;
-        }).collect(Collectors.toList());
-        log.info("全诊通医生数据同步开始，同步数量：{}", commonRecords.size());
-        JSONObject jsonObject = qztRestTemplateApi.postObject(String.format(qztPrefix + DOCTOR_URL, shortToken), commonRecords);
-        log.info("全诊通医生数据同步完成：{}", jsonObject);
-//        systemServiceFeign.syncTask(medicalCommonRecords.get(medicalCommonRecords.size() - 1).getId(), 0);
+        Map<Integer, TreatmentRecordExtendVO> treatOrgMap = treatmentRecords.stream()
+                .collect(Collectors.toMap(TreatmentRecordExtendVO::getId, Function.identity(), (o, v) -> o));
+        //过滤未认证门诊
+        filterClinic(medicalCommonRecords, treatOrgMap, certClinicIds);
+//        List<OrganizationInfoDetail> infos = systemServiceFeign.findOrgInfoInIds(treatmentRecords.stream().map(TreatmentRecordExtendVO::getOrgId).collect(Collectors.toList()));
+        List<PatientBaseInfoVo> patients = patientCentralServiceFeign.findPatientInfoByIds(medicalCommonRecords.stream().map(MedicalCommonRecord::getPatientId).collect(Collectors.toList()));
+        Map<Integer, PatientBaseInfoVo> patientMap = patients.stream().collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
+        List<QztSyncMedicalVO> commonRecords = medicalCommonRecords.stream().
+                filter(t -> {
+                    QztDoctor doctor = doctorMap.get(t.getMajorDentistId());
+                    PatientBaseInfoVo patientBaseInfoVo = patientMap.get(t.getPatientId());
+                    TreatmentRecordExtendVO treatmentRecordExtendVO = treatOrgMap.get(t.getTreatmentId());
+                    if (Objects.isNull(patientBaseInfoVo) || Objects.isNull(doctor) || Objects.isNull(treatmentRecordExtendVO)) {
+                        log.info("全诊通病例同步数据异常：{}", JSONObject.toJSONString(treatmentRecordExtendVO));
+                        return false;
+                    }
+                    return true;
+                }).map(t -> {
+                    QztDoctor doctor = doctorMap.get(t.getMajorDentistId());
+                    PatientBaseInfoVo patientBaseInfoVo = patientMap.get(t.getPatientId());
+                    TreatmentRecordExtendVO treatmentRecordExtendVO = treatOrgMap.get(t.getTreatmentId());
+                    QztSyncMedicalVO medicalVO = new QztSyncMedicalVO();
+                    medicalVO.setEntid(t.getId());
+                    //todo 先写死
+                    medicalVO.setInstitutionId("00025526");
+                    medicalVO.setInstitutionName("古墩路口腔门诊部");
+                    medicalVO.setDepartmentName("口腔科");
+                    medicalVO.setDoctorId(doctor.getId().toString());
+                    medicalVO.setDoctorName(doctor.getDoctorName());
+                    medicalVO.setUid(patientBaseInfoVo.getId().toString());
+                    medicalVO.setName(patientBaseInfoVo.getName());
+                    medicalVO.setGender(getGender(patientBaseInfoVo.getGender()));
+                    medicalVO.setAge(Objects.isNull(patientBaseInfoVo.getAge()) ? 0 : patientBaseInfoVo.getAge());
+                    medicalVO.setVisitDate(DateUtil.format(treatmentRecordExtendVO.getTreatStartTime()));
+                    medicalVO.setComplain(t.getChiefComplaint());
+                    medicalVO.setDiagnosis(t.getDiagnosis());
+                    medicalVO.setDiagnosisIcd10("Z01.251");
+                    medicalVO.setUpdateTm(DateUtil.format(t.getCrtTime(), "yyyy-MM-dd HH:mm:ss"));
+                    medicalVO.setCreateTm(DateUtil.format(t.getCrtTime(), "yyyy-MM-dd HH:mm:ss"));
+                    return medicalVO;
+                }).collect(Collectors.toList());
+        log.info("全诊通病例数据同步开始，同步数量：{}", commonRecords.size());
+        JSONObject jsonObject = qztRestTemplateApi.postObject(String.format(qztPrefix + MEDICAL_URL, shortToken), commonRecords);
+        log.info("全诊通病例数据同步完成：{}", jsonObject);
     }
 
-    private Map<Integer, Integer> certDoctorIds(List<QztDoctor> qztDoctors) {
+    private Map<Integer, QztDoctor> certDoctorIds(List<QztDoctor> qztDoctors) {
         return qztDoctors.stream()
                 .reduce(Maps.newHashMap()
                         , (u, t) -> {
                             Set<Integer> userIds = Lists.newArrayList(Splitter.on(",").split(t.getRelateUserIds()))
                                     .stream()
                                     .map(Integer::valueOf).collect(Collectors.toSet());
-                            u.putAll(userIds.stream().collect(Collectors.toMap(Function.identity(), a -> t.getId(), (o, n) -> o)));
+                            u.putAll(userIds.stream().collect(Collectors.toMap(Function.identity(), a -> t, (o, n) -> o)));
                             return u;
                         }
                         , (u, t) -> u);
@@ -126,8 +147,30 @@ public class QztMedicalBiz {
                         , (u, t) -> {
                             u.addAll(Lists.newArrayList(Splitter.on(",").split(t.getPracticeClinic())).stream().map(Integer::valueOf).collect(Collectors.toSet()));
                             return u;
-                        }
-                        , (u, t) -> u);
+                        }, (u, t) -> u);
+    }
+
+    private void filterClinic(List<MedicalCommonRecord> medicalCommonRecords, Map<Integer, TreatmentRecordExtendVO> treatOrgMap
+            , List<Integer> certClinicIds) {
+        medicalCommonRecords.removeIf(t -> {
+            TreatmentRecordExtendVO treatmentRecordExtendVO = treatOrgMap.get(t.getTreatmentId());
+            boolean b = Objects.isNull(treatmentRecordExtendVO) || !certClinicIds.contains(treatmentRecordExtendVO.getOrgId());
+            if (b) {
+                log.info("该门诊未开启同步：{}", t);
+                return true;
+            } else {
+                return false;
+            }
+        });
+    }
+
+    private Integer getGender(Byte gender) {
+        int qztGender = 1;
+        //0-男；1-女；2-未知
+        if (Objects.equals(1, gender.intValue())) {
+            qztGender = 2;
+        }
+        return qztGender;
     }
 
 }
