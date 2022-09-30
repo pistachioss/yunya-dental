@@ -1417,7 +1417,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       return ResponseUtil.fail(
               OperationCodeConstants.RETURN_MOBILE_ISNULL, "该手机号已存在", patientBaseInfoVoList);
     }
-    return ResponseUtil.success();
+    return ResponseUtil.success("", patientBaseInfoVoList);
   }
 
   /**
