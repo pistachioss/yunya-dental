@@ -9,6 +9,12 @@
         <result column="refund_id" property="refundId" jdbcType="INTEGER"/>
         <result column="bill_detail_id" property="billDetailId" jdbcType="INTEGER"/>
         <result column="refund_amount" property="refundAmount" jdbcType="DECIMAL"/>
+        <result column="executor_id" property="executorId" jdbcType="INTEGER"/>
+        <result column="consulter_id" property="consulterId" jdbcType="INTEGER"/>
+        <result column="item_id" property="itemId" jdbcType="INTEGER"/>
+        <result column="item_name" property="itemName" jdbcType="VARCHAR"/>
+        <result column="item_type" property="itemType" jdbcType="TINYINT"/>
+
     </resultMap>
     <!-- 退费工作量总和 -->
     <select id="selectTotalRefundWorkload" resultType="java.math.BigDecimal">
