@@ -42,7 +42,7 @@
         VALUES
         <foreach collection="baseBillDetails" item="item" separator=",">
             (#{item.billDetailId}, #{item.orgId}, #{item.billId},
-            #{item.discountAmount}, #{item.couponWorkload}, #{item.executorId}, #{item.consulter_id},
+            #{item.discountAmount}, #{item.couponWorkload}, #{item.executorId}, #{item.consulterId},
             #{item.itemId}, #{item.itemType}, #{item.sourceType},
             #{item.quantity}, #{item.price}, #{item.receivedAmount},
             #{item.remark})
