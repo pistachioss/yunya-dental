@@ -30,6 +30,7 @@ public enum MsgCategoryEnum {
     BasePatientOriginLog,
     BaseRefund,
     BaseVisitRemind,
+    BaseReturnVisit,
     BaseAppointmentModify,
     TreatPlanDetail,
 }

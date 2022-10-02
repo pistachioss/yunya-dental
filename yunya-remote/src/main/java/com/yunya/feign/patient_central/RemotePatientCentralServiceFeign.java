@@ -25,6 +25,14 @@ import java.util.*;
     public interface RemotePatientCentralServiceFeign {
 
   /**
+   * 同步老数据UnionId
+   *
+   */
+  @RequestMapping(value = "/api/syncUnionId", method = RequestMethod.POST)
+  void syncUnionId(
+          @RequestBody SyncUnionIdForm form);
+
+  /**
    * 患者信息模糊查询暴露接口
    *
    * @param patientBaseInfoQueryForm 参数封装

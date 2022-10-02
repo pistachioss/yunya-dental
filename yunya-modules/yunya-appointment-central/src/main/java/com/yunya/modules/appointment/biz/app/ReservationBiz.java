@@ -1,6 +1,7 @@
 package com.yunya.modules.appointment.biz.app;
 
 import com.yunya.feign.appointment.domain.model.ReservationModel;
+import com.yunya.feign.appointment.domain.query.ReservationCodeQuery;
 import com.yunya.feign.appointment.domain.query.ReservationQuery;
 import com.yunya.feign.appointment.vo.ReservationVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -29,7 +30,15 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
     @Autowired
     private RemoteSystemServiceFeign systemServiceFeign;
 
+    @Autowired
+    private ReservationCodeBiz reservationCodeBiz;
+
     public ResponseResult add(ReservationModel model) {
+        ReservationCodeQuery query = new ReservationCodeQuery();
+        query.setCode(model.getCode());
+        if (!reservationCodeBiz.find(query)) {
+            ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
+        }
         Reservation build = EntityUtils.build(model, Reservation.class);
         build.setCrtName(BaseContextHandler.getUsername());
         int status = mapper.insertSelective(build);
@@ -58,9 +67,9 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
 
     public List<ReservationVo> list(ReservationQuery query) {
         List<ReservationVo> results = mapper.findByCondition(query);
-        if (StringHelper.isNotEmpty(results)) {
-            setOrgInfo(results);
-        }
+//        if (StringHelper.isNotEmpty(results)) {
+//            setOrgInfo(results);
+//        }
         return results;
     }
     private void setOrgInfo(List<ReservationVo> results) {

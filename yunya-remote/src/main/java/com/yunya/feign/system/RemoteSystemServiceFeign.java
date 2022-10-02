@@ -467,4 +467,7 @@ public interface RemoteSystemServiceFeign {
 
   @GetMapping(value = "/api/organization/recentlyOrDefault/{defaultOrgId}")
   OrganizationInfo findRecentlyOrDefaulOrg(@PathVariable(value = "defaultOrgId") Integer defaultOrgId);
+
+  @GetMapping("/qzt/doctor/list")
+  List<QztDoctor> certDoctors();
 }

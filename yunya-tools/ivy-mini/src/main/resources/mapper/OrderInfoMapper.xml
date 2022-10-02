@@ -286,8 +286,14 @@
           #{item}
         </foreach>
       </if>
-      <if test="status != null">
+      <if test="status != null and activeStatus == null" >
         and od.status =  #{status}
+      </if>
+      <if test="activeStatus != null" >
+        and od.active_status =  #{activeStatus} and od.status = 3
+      </if>
+      <if test="productType != null" >
+        and od.product_type =  #{productType}
       </if>
       <if test="orderType != null and orderType != ''">
         and order_type =  #{orderType}

@@ -23,10 +23,16 @@ public class OrderForm extends PageQuery implements Serializable {
     @ApiModelProperty(value = "后端使用")
     private List<Integer> nameList;
     /**
-     * 订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款
+     * 订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款；6-退款成功
      */
-    @ApiModelProperty(value = "单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款")
+    @ApiModelProperty(value = "0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款；6-退款成功；7-待使用")
     private Byte status;
+
+    @ApiModelProperty(value = "核销状态 后台使用")
+    private Byte activeStatus;
+
+    @ApiModelProperty(value = "商品类型：0->商品 1->虚拟服务 后台使用")
+    private Byte productType;
 
     /**
      * 订单类型：0->正常订单；1->秒杀订单；2-拼团订单

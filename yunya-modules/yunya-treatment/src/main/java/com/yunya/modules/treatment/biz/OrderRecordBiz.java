@@ -96,6 +96,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   @Autowired private ClinicOralTariffMemberPriceBiz clinicOralTariffMemberPriceBiz;
   /** 电子病历 */
   @Autowired private RemoteEmrServiceFeign remoteEmrServiceFeign;
+  /** 患者服务 */
+  @Autowired private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
 
   private boolean lock;
 

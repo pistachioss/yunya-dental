@@ -1,25 +1,34 @@
 package com.yunya.modules.system.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.yunya.feign.system.vo.QztSyncDoctorVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.*;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.service.QztRestTemplateApi;
 import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.QztDoctor;
 import com.yunya.modules.system.domain.model.QztAddDoctorModel;
 import com.yunya.modules.system.mapper.QztDoctorMapper;
-import com.yunya.modules.system.vo.OrganizationInfoVO;
 import com.yunya.modules.system.vo.QztDoctorDetailVO;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,12 +37,20 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
 
     @Resource
     private OrganizationBiz organizationBiz;
+    @Resource
+    private QztRestTemplateApi qztRestTemplateApi;
+    @Resource
+    private RedisUtils redisUtils;
+    @Value("${qzt.prefix}")
+    private String qztPrefix;
 
     public static final Map<String, Map<String, String>> qztSelect = Maps.newHashMap();
+    public static final String DOCTOR_URL = "/docking/api/doctor/addDoctor?short-access-token=%s";
 
     @PostConstruct
     public void init() {
@@ -68,10 +85,13 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         QztDoctor qztDoctor = mapper.selectOneByExample(example);
         QztDoctor doctor = BeanCopierUtils.generalCopyBean(model, QztDoctor.class);
         doctor.setUpdId(userId);
+        doctor.setInstitutionId("00025526");
         String userId1 = model.getUserId().toString();
         if (Objects.isNull(qztDoctor)) {
             doctor.setCrtId(userId);
             doctor.setRelateUserIds(userId1);
+            //todo 先写死
+            doctor.setInstitutionId("00025526");
             mapper.insertSelective(doctor);
             return;
         }
@@ -83,6 +103,10 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         if (!contains) {
             doctor.setRelateUserIds(Joiner.on(",").join(qztDoctor.getRelateUserIds(), userId1));
         }
+        List<String> existClinic = Lists.newArrayList(Splitter.on(",").split(qztDoctor.getPracticeClinic()));
+        //医生选择门诊
+        List<String> selectClinic = Lists.newArrayList(Splitter.on(",").split(model.getPracticeClinic()));
+        doctor.setPracticeClinic(String.join(",", CollectionUtils.union(existClinic, selectClinic)));
         doctor.setId(qztDoctor.getId());
         mapper.updateByPrimaryKeySelective(doctor);
     }
@@ -98,10 +122,45 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         }
         QztDoctorDetailVO detailVO = BeanCopierUtils.generalCopyBean(doctor, QztDoctorDetailVO.class);
         String practiceClinic = doctor.getPracticeClinic();
-        List<Integer> clinicIds = Lists.newArrayList(Splitter.on(",").split(practiceClinic)).stream().map(Integer::valueOf).collect(Collectors.toList());
-        List<OrganizationInfoVO> orgInfoInIds = organizationBiz.findOrgInfoInIds(clinicIds);
-        String collect = orgInfoInIds.stream().map(OrganizationInfoVO::getName).collect(Collectors.joining(","));
-        detailVO.setPracticeClinic(collect);
+//        List<Integer> clinicIds = Lists.newArrayList(Splitter.on(",").split(practiceClinic)).stream().map(Integer::valueOf).collect(Collectors.toList());
+//        List<OrganizationInfoVO> orgInfoInIds = organizationBiz.findOrgInfoInIds(clinicIds);
+//        String collect = orgInfoInIds.stream().map(OrganizationInfoVO::getName).collect(Collectors.joining(","));
+        detailVO.setPracticeClinic(practiceClinic);
         return detailVO;
+    }
+
+    /**
+     * 同步全诊通
+     */
+    public void sync() {
+        String preDay = LocalDate.now().minusDays(1).toString();
+        Example example = new Example(QztDoctor.class);
+        example.createCriteria()
+                .andEqualTo("enableCert", true).andGreaterThanOrEqualTo("updTime", preDay);
+        example.orderBy("id").asc();
+        List<QztDoctor> doctors = mapper.selectByExample(example);
+        String shortToken = redisUtils.get(RedisConstants.QZT_TOKEN);
+        if (CollectionUtils.isEmpty(doctors) && StringUtils.isBlank(shortToken)) {
+            return;
+        }
+        List<QztSyncDoctorVO> syncDoctorVOS = doctors.stream().map(t -> {
+            QztSyncDoctorVO doctorVO = BeanCopierUtils.generalCopyBean(t, QztSyncDoctorVO.class);
+            doctorVO.setEntid(t.getId());
+            doctorVO.setDepartmentId(t.getDepartId());
+            doctorVO.setDepartmentName(t.getDepartName());
+            doctorVO.setName(t.getDoctorName());
+            return doctorVO;
+        }).collect(Collectors.toList());
+        log.info("全诊通医生数据同步开始，同步数量：{}", syncDoctorVOS.size());
+        JSONObject jsonObject = qztRestTemplateApi.postObject(String.format(qztPrefix + DOCTOR_URL, shortToken), syncDoctorVOS);
+        log.info("全诊通医生数据同步完成：{}", jsonObject);
+    }
+
+    public List<QztDoctor> certDoctors() {
+        Example example = new Example(QztDoctor.class);
+        example.createCriteria()
+                .andEqualTo("enableCert", true);
+        example.selectProperties("id", "doctorName","practiceClinic", "relateUserIds");
+        return mapper.selectByExample(example);
     }
 }

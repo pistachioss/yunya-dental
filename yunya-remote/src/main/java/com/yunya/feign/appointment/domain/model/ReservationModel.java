@@ -48,6 +48,18 @@ public class ReservationModel implements Serializable {
     private Integer orgId;
 
     /**
+     * 预约意向门诊Name
+     */
+    @ApiModelProperty(value = "预约意向门诊Name")
+    private String orgName;
+
+    /**
+     * 预约意向code
+     */
+    @ApiModelProperty(value = "预约意向code")
+    private String code;
+
+    /**
      * 就诊人名字
      */
     @ApiModelProperty(value = "就诊人名字",required = true)

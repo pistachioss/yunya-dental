@@ -14,11 +14,17 @@ import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.query.*;
+import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
+import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
+import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.*;
+import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.treatment.OrderRecord;
+import com.yunya.models.treatment.Registered;
+import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.biz.*;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +35,10 @@ import tk.mybatis.mapper.entity.Example;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 简介: 价目表、诊疗服务接口暴露
@@ -639,5 +648,16 @@ public class TreatmentServiceRest {
   @PostMapping("/goods/productType/list")
   List<ProductTypeVO> findList(@RequestBody ProductTypeQueryForm queryForm){
     return baseOralTariffCategoryBiz.categortyList(queryForm);
+  }
+
+  /**
+   * 根据就诊id获取就诊和开单信息
+   *
+   * @param treatmentId
+   * @return
+   */
+  @GetMapping("/treatmentOrder/{treatmentRecordId}")
+  public TreatmentOrderVO findTreatmentOrderByTreatmentId(@PathVariable(value = "treatmentRecordId") Integer treatmentId) {
+    return treatmentRecordBiz.findTreatmentOrderByTreatmentId(treatmentId);
   }
 }

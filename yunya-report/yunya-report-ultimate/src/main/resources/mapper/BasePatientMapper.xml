@@ -1012,4 +1012,92 @@
             </if>
         </where>
     </select>
+
+    <!--根据条件查询老客回访列表-->
+    <select id="selectReturnVisitRecordList" resultType="com.yunya.feign.report.domain.vo.BaseReturnVisitVO">
+        SELECT
+            btp.treatment_id AS treatmentId,
+            btp.registered_dentist_id AS dentistId,
+            bb.bill_id AS billId,
+            btp.org_id AS orgId,
+            bo.abbreviation,
+            bb.order_date AS orderDate,
+            btp.registered_dentist_id AS dentistId,
+            be.employee_name AS dentistName,
+            btp.patient_id AS patientId,
+            btp.treat_type AS treatType,
+            bp.name AS patientName,
+            bp.medical_number AS medicalNumber,
+            bp.mobile AS mobile,
+            brv.return_date AS returnDate,
+            brv.return_reason AS returnReason,
+            brv.return_content AS returnContent,
+            brv.register_name AS registerName
+        FROM (select MAX(treatment_id) AS treatment_id from base_treatment_process WHERE treatment_id > 0 GROUP BY patient_id) btm
+        LEFT JOIN base_treatment_process btp ON btp.treatment_id = btm.treatment_id
+        LEFT JOIN (
+            SELECT
+                bb.bill_id,
+                bb.treatment_id,
+                bb.order_date
+            FROM base_bill bb
+            <where>
+                <if test="query.itemType != null">
+                    AND EXISTS (
+                        SELECT bbd.bill_detail_id FROM base_bill_detail bbd
+                        WHERE
+                        bb.bill_id = bbd.bill_id
+                        AND bbd.item_type = #{query.itemType}
+                        <if test="query.itemIds!=null and query.itemIds.size()>0">
+                            AND bbd.item_id IN
+                            <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                                #{item}
+                            </foreach>
+                        </if>
+                    )
+                </if>
+            </where>
+        ) bb ON bb.treatment_id = btm.treatment_id
+        LEFT JOIN base_patient bp ON bp.patient_id = btp.patient_id
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+        LEFT JOIN (
+            SELECT brv.* FROM (SELECT MAX(id) AS id FROM base_return_visit GROUP BY treatment_id) tmp
+            LEFT JOIN base_return_visit brv ON brv.id = tmp.id
+        ) brv ON brv.treatment_id = btp.treatment_id
+        <where>
+            bp.last_visit_doctors is not NULL
+            <if test="query.combination != null and query.combination != ''">
+                and concat(IFNULL(bp.name,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
+                concat(concat('%',#{query.combination}),'%')
+            </if>
+            <if test="query.days != null and query.days > 0">
+                <if test="query.dayOps == 0">
+                    AND DATEDIFF(DATE_FORMAT(now(),'%Y-%m-%d'), DATE_FORMAT(bb.order_date,'%Y-%m-%d')) &lt;= #{query.days}
+                </if>
+                <if test="query.dayOps == 1">
+                    AND DATEDIFF(DATE_FORMAT(now(),'%Y-%m-%d'), DATE_FORMAT(bb.order_date,'%Y-%m-%d')) &gt; #{query.days}
+                </if>
+            </if>
+            <if test="query.treatTypes != null and query.treatTypes.size > 0">
+                AND btp.treat_type IN
+                <foreach collection="query.treatTypes" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dentistIds != null and query.dentistIds.size > 0">
+                AND btp.registered_id IN
+                <foreach collection="query.dentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.orgIds != null and query.orgIds.size > 0">
+                AND btp.org_id IN
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY bb.order_date DESC
+    </select>
 </mapper>

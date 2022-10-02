@@ -47,13 +47,6 @@ public class QztAddDoctorModel {
      */
     @ApiModelProperty(value = "科室名称", required = true)
     private String departName;
-
-    /**
-     * 医疗机构ID （全诊医学提供）
-     */
-    @ApiModelProperty(value = "医疗机构ID （全诊医学提供）", required = true)
-    private String institutionId;
-
     /**
      * 医生资格证号
      */

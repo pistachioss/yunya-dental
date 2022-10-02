@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.mapper;
 
+import com.yunya.feign.patient_central.domain.query.SyncUnionIdForm;
 import com.yunya.feign.patient_central.domain.query.WxUserQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.WxWechatbindAppListVO;
@@ -19,4 +20,6 @@ public interface WxFansBindMapper extends Mapper<WxFansBind> {
     List<PatientBaseInfoVo> wxFansBindPatientList(@Param("query") WxUserQuery query);
 
     List<WxWechatbindAppListVO> findPatientBaseInfo(@Param("unionId") String unionId);
+
+    Integer syncUnionId(SyncUnionIdForm form);
 }

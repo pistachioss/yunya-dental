@@ -3,6 +3,9 @@ logging:
     com.yunya: DEBUG
     com.yunya365: DEBUG
 
+corn:
+  qzt-doctor: 00 30 00 * * ?
+
 spring:
   application:
     name: yunya-system

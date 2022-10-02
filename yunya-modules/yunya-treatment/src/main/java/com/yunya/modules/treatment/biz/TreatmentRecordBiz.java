@@ -31,7 +31,6 @@ import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -49,7 +48,6 @@ import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.mapper.*;
-import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
@@ -267,6 +265,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       PatientBaseInfo patientBaseInfo = patientServiceFeign.findPatientInfoById(patientId);
       if (null != patientBaseInfo) {
         resultData.setPatientName(patientBaseInfo.getName());
+        resultData.setMobile(patientBaseInfo.getMobile());
       }
       Integer dentistId = resultData.getDentistId();
       // 从缓存中查询员工
@@ -1751,5 +1750,33 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     patientIds.add(patientId);
     List<PatientBaseInfoVo> patients = patientServiceFeign.findPatientInfoByIds(patientIds, true);
     return StringHelper.isNotEmpty(patients);
+  }
+
+  /**
+   * 根据就诊id获取就诊和开单信息
+   *
+   * @param treatmentId
+   * @return
+   */
+  public TreatmentOrderVO findTreatmentOrderByTreatmentId(Integer treatmentId) {
+    TreatmentRecordVO treatment = findTreatmentInfoById(treatmentId);
+    if (StringHelper.isNotNull(treatment)) {
+      TreatmentOrderVO result = new TreatmentOrderVO();
+      result.setDentistId(treatment.getDentistId());
+      result.setDentistName(treatment.getDentistName());
+      result.setOrgId(treatment.getOrgId());
+      result.setTreatType(treatment.getFirstVisit().intValue());
+      result.setTreatmentId(treatmentId);
+      result.setPatientId(treatment.getPatientId());
+      result.setPatientName(treatment.getPatientName());
+      result.setMobile(treatment.getMobile());
+      OrderRecord query = new OrderRecord();
+      query.setTreatmentRecordId(treatmentId);
+      query.setInservice(true);
+      OrderRecord orderRecord = orderRecordMapper.selectOne(query);
+      result.setOrderDate(orderRecord.getCrtTime());
+      return result;
+    }
+    return null;
   }
 }

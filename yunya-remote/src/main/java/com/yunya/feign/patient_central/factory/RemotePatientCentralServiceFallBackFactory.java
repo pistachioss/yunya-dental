@@ -28,6 +28,11 @@ import java.util.List;
 public class RemotePatientCentralServiceFallBackFactory implements RemotePatientCentralServiceFeign {
 
     @Override
+    public void syncUnionId(SyncUnionIdForm form) {
+
+    }
+
+    @Override
     public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm patientBaseInfoQueryForm) {
         return null;
     }

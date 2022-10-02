@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PatientNotSeenForm;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
+import com.yunya.feign.report.domain.query.BaseReturnVisitQuery;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.query.base.FuchaForm;
@@ -46,6 +47,9 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
   /** 订单mapper */
   @Resource private BaseBillMapper baseBillMapper;
+
+  /** 订单mapper */
+  @Resource private BaseBillDetailBiz baseBillDetailBiz;
 
   @Resource private BaseOrganizationMapper baseOrganizationMapper;
 
@@ -296,5 +300,58 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     analysisPatientAgeVoList.add(oldPeopleList);
     analysisVo.setAnalysisPatientAgeVoList(analysisPatientAgeVoList);
     return analysisVo;
+  }
+
+
+  /**
+   * 根据条件查询回访管理列表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<BaseReturnVisitVO> findReturnVisitList(BaseReturnVisitQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BaseReturnVisitVO> result = mapper.selectReturnVisitRecordList(query);
+    fillOrderDetailItemName(result);
+    return new PageInfo<>(result);
+  }
+
+  /**
+   * 填充开单项目名称列表
+   *
+   * @param result
+   */
+  private void fillOrderDetailItemName(List<BaseReturnVisitVO> result) {
+    if (StringHelper.isNotEmpty(result)) {
+      result.forEach(vo->{
+        List<BaseBillDetailVO> details = baseBillDetailBiz.selectBillDetailByBillId(vo.getBillId());
+        StringBuilder builder = new StringBuilder();
+        if (StringHelper.isNotEmpty(details)) {
+          details.forEach(detail->{
+            if (builder.length() > 0) {
+              builder.append("，");
+            }
+            builder.append(detail.getItemName());
+          });
+        }
+        vo.setItemNames(builder.toString());
+      });
+    }
+  }
+
+  /**
+   * 根据条件导出老客回访列表
+   *
+   * @param query
+   * @param response
+   * @throws IOException
+   */
+  public void exportReturnVisitList(BaseReturnVisitQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<BaseReturnVisitVO> data = findReturnVisitList(query).getList();
+    ExcelUtil<BaseReturnVisitVO> excelUtil = new ExcelUtil<>(BaseReturnVisitVO.class);
+    excelUtil.exportExcel(response, data, "老客回访列表", "老客回访列表");
   }
 }

@@ -69,6 +69,10 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
     @Resource
     private WxFansBindMapper wxFansBindMapper;
 
+    public Integer syncUnionId(SyncUnionIdForm form){
+       return wxFansBindMapper.syncUnionId(form);
+    }
+
     public PageInfo<WxWechatFansVo> findWechatList(WxFansWechatQueryForm wxFansQueryForm) {
         if (wxFansQueryForm.getWhetherPage()) {
             PageHelper.startPage(wxFansQueryForm.getPageNum(), wxFansQueryForm.getPageSize());

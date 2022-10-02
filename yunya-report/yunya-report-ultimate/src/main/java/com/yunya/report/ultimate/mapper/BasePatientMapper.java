@@ -194,4 +194,12 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    * @return
    */
   List<PatientOriginConsumptionVO> selectPatientOriginConsumption(@Param("query") PatientOriginConsumptionQuery query);
+
+  /**
+   * 根据条件查询老客回访列表
+   *
+   * @param query
+   * @return
+   */
+  List<BaseReturnVisitVO> selectReturnVisitRecordList(@Param("query") BaseReturnVisitQuery query);
 }

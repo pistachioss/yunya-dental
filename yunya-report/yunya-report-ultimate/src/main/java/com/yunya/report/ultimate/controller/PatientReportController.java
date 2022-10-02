@@ -10,6 +10,8 @@ import com.yunya.feign.report.domain.vo.AnalysisVo;
 import com.yunya.feign.report.domain.vo.ArrearsStatisticsVo;
 import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
 import com.yunya.feign.report.domain.vo.FuchaVO;
+import com.yunya.feign.report.domain.query.BaseReturnVisitQuery;
+import com.yunya.feign.report.domain.vo.BaseReturnVisitVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.report.BaseEmployee;
@@ -166,5 +168,29 @@ public class PatientReportController {
   public ResponseResult<AnalysisVo> analysis(
       @RequestBody PatientAnalysisQueryForm patientAnalysisQueryForm) {
     return ResponseUtil.success(patientReportBiz.analysis(patientAnalysisQueryForm));
+  }
+
+  /**
+   * 根据条件查询老客回访列表
+   *
+   * @return
+   */
+  @ApiOperation("根据条件查询老客回访列表")
+  @PostMapping("/returnVisit/list")
+  public ResponseResult<PageInfo<BaseReturnVisitVO>> findReturnVisitList(@RequestBody @Validated BaseReturnVisitQuery query) {
+    PageInfo<BaseReturnVisitVO> page = patientReportBiz.findReturnVisitList(query);
+    return ResponseUtil.success(page);
+  }
+
+  /**
+   * 根据条件导出老客回访列表
+   *
+   * @return
+   */
+  @ApiOperation("根据条件导出老客回访列表")
+  @PostMapping("/returnVisit/export")
+  public ResponseResult exportReturnVisitList(@RequestBody @Validated BaseReturnVisitQuery query, HttpServletResponse response) throws IOException {
+    patientReportBiz.exportReturnVisitList(query, response);
+    return ResponseUtil.success(null);
   }
 }
