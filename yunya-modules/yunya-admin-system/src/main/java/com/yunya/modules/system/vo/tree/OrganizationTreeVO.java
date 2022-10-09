@@ -2,6 +2,7 @@ package com.yunya.modules.system.vo.tree;
 
 
 import com.yunya.framework.common.model.TreeNode;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * 简单介绍:</br> 组织树
@@ -24,6 +25,10 @@ public class OrganizationTreeVO extends TreeNode {
   private String abbreviation;
   /** 组织品牌 */
   private String brandName;
+  @ApiModelProperty("是否开启全诊通同步")
+  private Boolean enableQztSync;
+  @ApiModelProperty("全诊通医疗机构编码")
+  private String qztInstitutionCode;
 
   public OrganizationTreeVO() {
   }
@@ -74,6 +79,22 @@ public class OrganizationTreeVO extends TreeNode {
 
   public void setBrandName(String brandName) {
     this.brandName = brandName;
+  }
+
+  public Boolean getEnableQztSync() {
+    return enableQztSync;
+  }
+
+  public void setEnableQztSync(Boolean enableQztSync) {
+    this.enableQztSync = enableQztSync;
+  }
+
+  public String getQztInstitutionCode() {
+    return qztInstitutionCode;
+  }
+
+  public void setQztInstitutionCode(String qztInstitutionCode) {
+    this.qztInstitutionCode = qztInstitutionCode;
   }
 
   @Override

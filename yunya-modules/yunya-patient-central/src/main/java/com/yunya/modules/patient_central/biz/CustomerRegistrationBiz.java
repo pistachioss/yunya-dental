@@ -103,6 +103,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 设置患者登记默认的门诊为总院
         patientBaseInfo.setOrgId(findRecentlyOrgId(39));
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
+        patientBaseInfo.setInservice(true);
         patientBaseInfo.setCrtId(1);
         patientBaseInfo.setCrtName("客户登记");
         mapper.insertPatientInfo(patientBaseInfo);

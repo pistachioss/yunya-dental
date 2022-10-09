@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 @Slf4j
-public class QztMedicalBiz {
+public class QztItemBiz {
 
     @Resource
     private MedicalCommonRecordBiz medicalCommonRecordBiz;
@@ -53,7 +53,7 @@ public class QztMedicalBiz {
     @Resource
     private RemotePatientCentralServiceFeign patientCentralServiceFeign;
 
-    public static final String MEDICAL_URL = "/docking/api/medical/addMedical?short-access-token=%s";
+    public static final String TREATMENT_URL = "/docking/api/treatment/addTreatment?short-access-token=%s";
 
     /**
      * 同步全诊通
@@ -124,7 +124,7 @@ public class QztMedicalBiz {
                     return medicalVO;
                 }).collect(Collectors.toList());
         log.info("全诊通病例数据同步开始，同步数量：{}", commonRecords.size());
-        JSONObject jsonObject = qztRestTemplateApi.postObject(String.format(qztPrefix + MEDICAL_URL, shortToken), commonRecords);
+        JSONObject jsonObject = qztRestTemplateApi.postObject(String.format(qztPrefix + TREATMENT_URL, shortToken), commonRecords);
         log.info("全诊通病例数据同步完成：{}", jsonObject);
     }
 
