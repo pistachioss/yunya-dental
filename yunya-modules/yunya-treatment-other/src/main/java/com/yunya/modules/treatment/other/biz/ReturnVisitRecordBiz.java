@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
@@ -90,6 +91,11 @@ public class ReturnVisitRecordBiz extends BaseBiz<ReturnVisitRecordMapper, Retur
                 tombstone(entity);
                 remoteRabbitMqServiceFeign.sendMessage(entity.getId(),0,2, MsgCategoryEnum.BaseReturnVisit);
             });
+        }
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            log.error("保存回访失败：{}", e);
         }
     }
 
