@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.QztOrgVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -11,9 +12,7 @@ import com.yunya.modules.system.domain.form.OrganizationForm;
 import com.yunya.modules.system.domain.query.OrganizationQueryForm;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import com.yunya.modules.system.vo.tree.OrganizationTreeVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -133,5 +132,12 @@ public class OrganizationController {
   public ResponseResult<T> deleteOrganization(@PathVariable(value = "id") Integer id) {
     organizationBiz.deleteOrganization(id);
     return ResponseUtil.success(null);
+  }
+
+  @ApiOperation("查询已开启全诊通认证门诊列表")
+  @GetMapping("/qzt/list")
+  public ResponseResult<List<QztOrgVO>> qzOrgList() {
+    List<QztOrgVO> resultList = organizationBiz.qzOrgList();
+    return ResponseUtil.success(resultList);
   }
 }
