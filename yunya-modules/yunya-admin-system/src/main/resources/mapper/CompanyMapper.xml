@@ -119,6 +119,8 @@
         ccb.address,
         ccb.clinicPath,
         ccb.businessStartTime,
+        ccb.enableQztSync,
+        ccb.qztInstitutionCode,
         ccb.businessEndTime
         FROM
         (
