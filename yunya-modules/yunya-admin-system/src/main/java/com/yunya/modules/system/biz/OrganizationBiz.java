@@ -314,6 +314,8 @@ public class OrganizationBiz {
     company.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     company.setUpdName(BaseContextHandler.getName());
     company.setUpdTime(new Date(System.currentTimeMillis()));
+    company.setEnableQztSync(resource.getEnableQztSync());
+    company.setQztInstitutionCode(resource.getQztInstitutionCode());
     int i = companyMapper.updateByPrimaryKeySelective(company);
     redisUtils.delete(REDIS_KEY_ORG_LIST);
     redisUtils.delete(REDIS_KEY_ORG_ID + id);
