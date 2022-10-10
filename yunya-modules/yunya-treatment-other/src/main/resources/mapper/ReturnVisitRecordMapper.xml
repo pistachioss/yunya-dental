@@ -33,6 +33,7 @@
         return_content AS returnContent
     FROM return_visit_record
     WHERE treatment_id = #{treatmentId}
+    AND inservice = true
     ORDER BY crt_time DESC
   </select>
 
