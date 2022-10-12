@@ -406,6 +406,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         PayReceiveAddressVO addressVO = BeanCopierUtils.generalCopyBean(orderInfo, PayReceiveAddressVO.class);
         addressVO.setDetailAddress(orderInfo.getReceiverDetailAddress());
         addressVO.setDeliveryType(orderInfo.getDeliveryType());
+        addressVO.setDeliveryCompany(orderInfo.getDeliveryCompany());
+        addressVO.setDeliverySn(orderInfo.getDeliverySn());
         vo.setAddressVO(addressVO);
         return vo;
     }
