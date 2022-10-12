@@ -89,7 +89,8 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         String userId1 = model.getUserId().toString();
         QztDoctor primary = getByUserId(model.getUserId());
         //医生选择门诊
-        List<String> selectClinic = Lists.newArrayList(Splitter.on(",").split(model.getPracticeClinic()));
+        String practiceClinic = model.getPracticeClinic();
+        List<String> selectClinic = Lists.newArrayList(Splitter.on(",").split(practiceClinic));
         if (Objects.isNull(primary)) {
             if (Objects.nonNull(qztDoctor)) {
                 if (!Objects.equals(idCard, qztDoctor.getIdCard())) {
@@ -110,8 +111,7 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         if (Objects.nonNull(qztDoctor)) {
             boolean contains = Lists.newArrayList(Splitter.on(",").split(qztDoctor.getRelateUserIds())).contains(userId1);
             if (contains) {
-                List<String> existClinic = Lists.newArrayList(Splitter.on(",").split(primary.getPracticeClinic()));
-                doctor.setPracticeClinic(String.join(",", CollectionUtils.union(existClinic, selectClinic)));
+                doctor.setPracticeClinic(practiceClinic);
                 doctor.setId(primary.getId());
                 mapper.updateByPrimaryKeySelective(doctor);
             } else {
@@ -121,8 +121,7 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
                 rebuild(qztDoctor, doctor, userId1, selectClinic);
             }
         } else {
-            List<String> existClinic = Lists.newArrayList(Splitter.on(",").split(primary.getPracticeClinic()));
-            doctor.setPracticeClinic(String.join(",", CollectionUtils.union(existClinic, selectClinic)));
+            doctor.setPracticeClinic(practiceClinic);
             doctor.setId(primary.getId());
             mapper.updateByPrimaryKeySelective(doctor);
         }
