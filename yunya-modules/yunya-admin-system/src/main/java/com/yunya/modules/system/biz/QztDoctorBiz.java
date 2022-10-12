@@ -212,4 +212,12 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         }
         mapper.updateByPrimaryKeySelective(doctor);
     }
+
+    public List<Company> certCompanys() {
+        Example example = new Example(Company.class);
+        example.createCriteria()
+                .andEqualTo("enableQztSync", true);
+        example.selectProperties("id", "name", "qztInstitutionCode");
+        return companyMapper.selectByExample(example);
+    }
 }

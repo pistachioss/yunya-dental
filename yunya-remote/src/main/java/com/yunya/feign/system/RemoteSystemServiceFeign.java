@@ -470,4 +470,7 @@ public interface RemoteSystemServiceFeign {
 
   @GetMapping("/qzt/doctor/list")
   List<QztDoctor> certDoctors();
+
+  @GetMapping("/qzt/company/list")
+  List<Company> certCompanys();
 }
