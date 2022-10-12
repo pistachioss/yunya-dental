@@ -43,7 +43,8 @@ public class ArticleVO implements Serializable {
     @ApiModelProperty(value = "分类 1：艾维动态 2口腔科普")
     private Integer type;
 
-
+    @ApiModelProperty(value = "分类Id")
+    private Integer typeId;
 
     /**
      * 是否置顶 0否 1是'

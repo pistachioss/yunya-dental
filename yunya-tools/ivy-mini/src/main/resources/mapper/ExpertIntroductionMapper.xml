@@ -21,6 +21,7 @@
     SELECT
     id,
     name,
+    type_id as typeId,
     appellation as appellation,
     honor as honor,
     expertise as expertise,
@@ -36,6 +37,9 @@
       </if>
       <if test="status != null">
         AND status = #{status}
+      </if>
+      <if test="typeId != null">
+        AND type_id = #{typeId}
       </if>
     </where>
     order by is_sort ${isSort} ,

@@ -32,6 +32,8 @@ public class ExpertIntroductionAddAndUpdateForm {
     private Integer status;
     @ApiModelProperty(value = " 是否置顶 0否 1是")
     private Integer isSort;
+    @ApiModelProperty(value = "分类Id")
+    private Integer typeId;
 
 
 }

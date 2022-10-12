@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya365.mini.mapper.ArticleTypeMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.ArticleType" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <select id="findArticleTypeList" resultType="com.yunya.feign.ivy_mini.domain.vo.ArticleTypeVO">
+        select id, name ,type from article_type
+        <where>
+          <if test="id != null">
+            and id = #{id}
+          </if>
+          <if test="name != null and name != ''">
+            and name like CONCAT(CONCAT('%',#{name}),'%')
+          </if>
+          <if test="type != null">
+            and type = #{type}
+          </if>
+        </where>
+        order by crt_time DESC
+  </select>
+</mapper>

@@ -24,6 +24,7 @@
     article_url as articleUrl,
     cover_picture as coverPicture,
     type as type,
+    type_id as typeId,
     sort as isSort,
     reading_number as readingNumber,
     status as status,
@@ -39,6 +40,9 @@
       </if>
       <if test="type!=null and type!=''">
         AND type = #{type}
+      </if>
+      <if test="typeId != null">
+        AND type_id = #{typeId}
       </if>
     </where>
     order by

@@ -25,7 +25,8 @@ public class ExpertIntroductionVO {
     private String name;
     @ApiModelProperty(value = "称谓")
     private String appellation;
-
+    @ApiModelProperty(value = "分类Id")
+    private Integer typeId;
     /**
      * 资质荣誉
      */

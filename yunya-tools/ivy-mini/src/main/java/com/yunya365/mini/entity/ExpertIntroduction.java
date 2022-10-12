@@ -10,6 +10,14 @@ public class ExpertIntroduction {
     @Id
     private Integer id;
 
+    public Integer getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(Integer typeId) {
+        this.typeId = typeId;
+    }
+
     /**
      * 专家名称
      */
@@ -41,7 +49,11 @@ public class ExpertIntroduction {
      */
     @Column(name = "is_sort")
     private Integer isSort;
-
+    /**
+     * 分类Id
+     */
+    @Column(name = "type_id")
+    private Integer typeId;
     /**
      * 发布状态 0否1是
      */

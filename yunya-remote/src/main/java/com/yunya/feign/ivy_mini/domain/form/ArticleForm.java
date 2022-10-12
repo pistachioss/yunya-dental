@@ -27,7 +27,8 @@ public class ArticleForm extends PageQuery implements Serializable {
      */
     @ApiModelProperty(value = "分类 1：艾维动态 2口腔科普")
     private Integer type;
-
+    @ApiModelProperty(value = "分类Id")
+    private Integer typeId;
     /**
      * 发布状态 0否1是
      */

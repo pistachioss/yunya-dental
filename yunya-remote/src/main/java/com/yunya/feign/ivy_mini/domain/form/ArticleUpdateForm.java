@@ -30,5 +30,7 @@ public class ArticleUpdateForm {
     private Integer status;
     @ApiModelProperty(value = " 是否置顶 0否1是")
     private Integer isSort;
+    @ApiModelProperty(value = "分类Id")
+    private Integer typeId;
 
 }
