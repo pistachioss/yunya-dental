@@ -2,6 +2,7 @@ package com.yunya365.mini.controller;
 
 import com.yunya.feign.ivy_mini.domain.form.ArticleTypeForm;
 import com.yunya.feign.ivy_mini.domain.vo.ArticleTypeVO;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.impl.ArticleTypeServiceImpl;
@@ -31,6 +32,7 @@ public class ArticleTypeAppController extends BaseController{
 
     @PostMapping("/articleType/findlist")
     @ApiOperation("小程序-艾维动态/口腔科普/专家介绍-分类-列表")
+    @IgnoreUserToken
     public ResponseResult<List<ArticleTypeVO>> findList(@RequestBody @Valid ArticleTypeForm form) {
         return ResponseUtil.success(articleTypeService.findList(form));
     }
