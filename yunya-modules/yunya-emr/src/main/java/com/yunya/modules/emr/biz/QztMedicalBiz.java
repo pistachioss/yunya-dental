@@ -203,7 +203,7 @@ public class QztMedicalBiz {
     private Integer getGender(Byte gender) {
         int qztGender = 1;
         //0-男；1-女；2-未知
-        if (Objects.equals(1, gender.intValue())) {
+        if (Objects.isNull(gender) || Objects.equals(1, gender.intValue())) {
             qztGender = 2;
         }
         return qztGender;

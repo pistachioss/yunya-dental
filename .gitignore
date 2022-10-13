@@ -84,3 +84,4 @@ yunya-remote/target/maven-status/
 /yunya-modules/clinic-discount/.mvn/wrapper/MavenWrapperDownloader.java
 /yunya-modules/clinic-discount/.mvn/wrapper/maven-wrapper.jar
 /yunya-modules/clinic-discount/.mvn/wrapper/maven-wrapper.jar
+*-local.yml
