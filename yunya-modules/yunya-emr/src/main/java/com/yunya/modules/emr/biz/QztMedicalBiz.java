@@ -1,6 +1,6 @@
 package com.yunya.modules.emr.biz;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.*;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -137,16 +137,24 @@ public class QztMedicalBiz {
         }
 
         //同步诊疗项目
-        List<QztSyncItemVO> itemList = commonRecords.stream().map(t -> {
+        List<QztSyncItemVO> itemList = Lists.newArrayListWithCapacity(commonRecords.size());
+        for (QztSyncMedicalVO commonRecord : commonRecords) {
+            List<QztSyncItemDetailVO> treatmentList = JSONArray.parseArray(commonRecord.getTreatment()).stream().map(tt -> {
+                String describe = ((JSONObject) tt).getString("describe");
+                return StringUtils.substring(describe,0, 100);
+            }).filter(StringUtils::isNotBlank).map(QztSyncItemDetailVO::new).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(treatmentList)) {
+                continue;
+            }
             QztSyncItemVO qztSyncItemVO = new QztSyncItemVO();
-            qztSyncItemVO.setEntid(t.getEntid());
-            qztSyncItemVO.setMedicalId(t.getEntid());
-            qztSyncItemVO.setUid(t.getUid());
-            qztSyncItemVO.setUserName(t.getName());
-            qztSyncItemVO.setInstitutionId(t.getInstitutionId());
-            qztSyncItemVO.setTreatmentItem(Lists.newArrayList(new QztSyncItemDetailVO(t.getTreatment())));
-            return qztSyncItemVO;
-        }).collect(Collectors.toList());
+            qztSyncItemVO.setEntid(commonRecord.getEntid());
+            qztSyncItemVO.setMedicalId(commonRecord.getEntid());
+            qztSyncItemVO.setUid(commonRecord.getUid());
+            qztSyncItemVO.setUserName(commonRecord.getName());
+            qztSyncItemVO.setInstitutionId(commonRecord.getInstitutionId());
+            qztSyncItemVO.setTreatmentItem(treatmentList);
+            itemList.add(qztSyncItemVO);
+        }
         log.info("全诊通诊疗项目数据同步开始，同步数量：{}", itemList.size());
         List<List<QztSyncItemVO>> itemSync = Lists.partition(itemList, 500);
         for (int i = 0; i < itemSync.size(); i++) {
