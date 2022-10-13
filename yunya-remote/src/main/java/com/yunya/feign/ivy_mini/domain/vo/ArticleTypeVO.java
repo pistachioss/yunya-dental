@@ -22,4 +22,6 @@ public class ArticleTypeVO {
     private Integer type;
     @ApiModelProperty(value = "分类名称")
     private String name;
+    @ApiModelProperty(value = "是否默认 0否 1是")
+    private Integer acquiesce;
 }

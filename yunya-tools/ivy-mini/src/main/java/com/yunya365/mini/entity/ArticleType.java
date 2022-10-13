@@ -17,6 +17,10 @@ public class ArticleType {
      * 分类归属 1：艾维动态 2口腔科普 3.专家介绍
      */
     private Integer type;
+    /**
+     * 是否为默认
+     */
+    private Integer acquiesce;
 
     /**
      * 创建人id
@@ -162,5 +166,13 @@ public class ArticleType {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    public Integer getAcquiesce() {
+        return acquiesce;
+    }
+
+    public void setAcquiesce(Integer acquiesce) {
+        this.acquiesce = acquiesce;
     }
 }
