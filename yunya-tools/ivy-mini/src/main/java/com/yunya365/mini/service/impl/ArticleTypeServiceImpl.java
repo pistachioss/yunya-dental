@@ -43,7 +43,13 @@ public class ArticleTypeServiceImpl extends BaseBiz<ArticleTypeMapper, ArticleTy
         List<ArticleTypeVO> result = mapper.findArticleTypeList(form);
         return result;
     }
-    public void add(ArticleTypeForm form) {
+    public ResponseResult add(ArticleTypeForm form) {
+        ArticleTypeForm findName = new ArticleTypeForm();
+        findName.setName(form.getName());
+        List<ArticleTypeVO> resuname = mapper.findArticleTypeList(findName);
+        if(resuname.size()>0){
+            return ResponseUtil.success("名称已存在！");
+        }
         ArticleTypeForm findform = new ArticleTypeForm();
         findform.setType(form.getType());
         ArticleType entity = new ArticleType();
@@ -59,6 +65,7 @@ public class ArticleTypeServiceImpl extends BaseBiz<ArticleTypeMapper, ArticleTy
         entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         entity.setCrtTime(new Date(System.currentTimeMillis()));
         mapper.insertSelective(entity);
+        return ResponseUtil.success();
     }
 
     public ResponseResult update(ArticleTypeForm form) {

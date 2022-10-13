@@ -27,7 +27,6 @@ import java.util.List;
  */
 @RestController
 @Api(tags = "后台-文章分类管理")
-@IgnoreUserToken
 public class ArticleTypePcController extends PcBaseController{
 
     @Resource
@@ -44,8 +43,7 @@ public class ArticleTypePcController extends PcBaseController{
     @RepeatSubmit
     @CurrentUser
     public ResponseResult add(@RequestBody @Valid ArticleTypeForm form) {
-        articleTypeService.add(form);
-        return ResponseUtil.success(null);
+        return ResponseUtil.success(articleTypeService.add(form));
     }
 
     /**

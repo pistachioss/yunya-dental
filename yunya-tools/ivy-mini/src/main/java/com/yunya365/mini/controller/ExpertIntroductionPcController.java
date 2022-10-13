@@ -27,7 +27,6 @@ import javax.validation.Valid;
  */
 @RestController
 @Api(tags = "后台-专家介绍")
-@IgnoreUserToken
 public class ExpertIntroductionPcController extends PcBaseController{
 
     @Resource
