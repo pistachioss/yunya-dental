@@ -9,14 +9,17 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.entity.ArticleType;
+import com.yunya365.mini.entity.ExpertType;
 import com.yunya365.mini.mapper.ArticleMapper;
 import com.yunya365.mini.mapper.ArticleTypeMapper;
+import com.yunya365.mini.mapper.ExpertTypeMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +36,8 @@ import java.util.List;
 public class ArticleTypeServiceImpl extends BaseBiz<ArticleTypeMapper, ArticleType> {
     @Resource
     private ArticleMapper articleMapper;
+    @Resource
+    private ExpertTypeMapper expertTypeMapper;
 
     public List<ArticleTypeVO> findList(ArticleTypeForm form) {
         List<ArticleTypeVO> result = mapper.findArticleTypeList(form);
@@ -100,7 +105,24 @@ public class ArticleTypeServiceImpl extends BaseBiz<ArticleTypeMapper, ArticleTy
             });
             articleMapper.updateBatch(list);
         }else{
+            List<ExpertType>insertlist = new ArrayList<>();
 
+            ExpertType expertType = new ExpertType();
+            expertType.setTypeId(id);
+            List<ExpertType>list = expertTypeMapper.select(expertType);
+            expertTypeMapper.delete(expertType);
+            for(ExpertType ext:list){
+                ExpertType findall = new ExpertType();
+                findall.setExpertId(ext.getExpertId());
+                int a = expertTypeMapper.selectCount(findall);
+                if(a==0){
+                    findall.setTypeId(findformId);
+                    insertlist.add(findall);
+                }
+            }
+            if(insertlist.size()>0){
+                expertTypeMapper.BatchInsert(insertlist);
+            }
         }
 
         return ResponseUtil.success();

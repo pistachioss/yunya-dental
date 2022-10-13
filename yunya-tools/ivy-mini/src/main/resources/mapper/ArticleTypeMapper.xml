@@ -26,6 +26,6 @@
             and type = #{type}
           </if>
         </where>
-        order by crt_time DESC
+        order by crt_time
   </select>
 </mapper>

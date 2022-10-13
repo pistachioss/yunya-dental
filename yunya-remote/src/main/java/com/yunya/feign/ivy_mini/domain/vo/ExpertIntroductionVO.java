@@ -25,8 +25,7 @@ public class ExpertIntroductionVO {
     private String name;
     @ApiModelProperty(value = "称谓")
     private String appellation;
-    @ApiModelProperty(value = "分类Id")
-    private Integer typeId;
+
     /**
      * 资质荣誉
      */
@@ -45,6 +44,19 @@ public class ExpertIntroductionVO {
     @ApiModelProperty(value = "家形象图片地址")
     private String pictureAddress;
 
+    @ApiModelProperty(value = "出诊门诊数组")
+    private String[] visitClinicIds;
+    @ApiModelProperty(value = "出诊门诊")
+    private String visitClinic;
+    @ApiModelProperty(value = "出诊时间")
+    private String visitTime;
+
+    @ApiModelProperty(value = "科室Id数组")
+    private String[] typeIds;
+    @ApiModelProperty(value = "科室id（后端使用）")
+    private String typeId;
+    @ApiModelProperty(value = "科室名称 逗号隔开")
+    private String typeName;
     /**
      * 是否置顶 0否 1是
      */

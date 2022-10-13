@@ -32,8 +32,15 @@ public class ExpertIntroductionAddAndUpdateForm {
     private Integer status;
     @ApiModelProperty(value = " 是否置顶 0否 1是")
     private Integer isSort;
-    @ApiModelProperty(value = "分类Id")
-    private Integer typeId;
+
+    @ApiModelProperty(value = "出诊门诊")
+    private Integer[] visitClinic;
+    @ApiModelProperty(value = "出诊时间")
+    private String visitTime;
+    @ApiModelProperty(value = "科室")
+    @NotNull(message = "科室不能为空")
+    private Integer[] typeIds;
+
 
 
 }

@@ -8,15 +8,10 @@ import javax.persistence.*;
 @Table(name = "expert_introduction")
 public class ExpertIntroduction {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
-    public Integer getTypeId() {
-        return typeId;
-    }
 
-    public void setTypeId(Integer typeId) {
-        this.typeId = typeId;
-    }
 
     /**
      * 专家名称
@@ -43,17 +38,17 @@ public class ExpertIntroduction {
      */
     @Column(name = "picture_address")
     private String pictureAddress;
+    @Column(name = "visit_clinic")
+    private String visitClinic;
+    @Column(name = "visit_time")
+    private String visitTime;
 
     /**
      * 是否置顶 0否 1是
      */
     @Column(name = "is_sort")
     private Integer isSort;
-    /**
-     * 分类Id
-     */
-    @Column(name = "type_id")
-    private Integer typeId;
+
     /**
      * 发布状态 0否1是
      */

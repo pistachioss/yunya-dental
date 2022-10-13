@@ -3,6 +3,7 @@ package com.yunya365.mini.controller;
 import com.yunya.feign.ivy_mini.domain.form.ArticleTypeForm;
 import com.yunya.feign.ivy_mini.domain.vo.ArticleTypeVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -26,6 +27,7 @@ import java.util.List;
  */
 @RestController
 @Api(tags = "后台-文章分类管理")
+@IgnoreUserToken
 public class ArticleTypePcController extends PcBaseController{
 
     @Resource
