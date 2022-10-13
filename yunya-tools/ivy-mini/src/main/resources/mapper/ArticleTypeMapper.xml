@@ -14,7 +14,7 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <select id="findArticleTypeList" resultType="com.yunya.feign.ivy_mini.domain.vo.ArticleTypeVO">
-        select id, name ,type from article_type
+        select id, name ,type,acquiesce from article_type
         <where>
           <if test="id != null">
             and id = #{id}
