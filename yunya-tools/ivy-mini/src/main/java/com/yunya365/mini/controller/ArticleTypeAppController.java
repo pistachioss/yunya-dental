@@ -34,6 +34,11 @@ public class ArticleTypeAppController extends BaseController{
     @ApiOperation("小程序-艾维动态/口腔科普/专家介绍-分类-列表")
     @IgnoreUserToken
     public ResponseResult<List<ArticleTypeVO>> findList(@RequestBody @Valid ArticleTypeForm form) {
-        return ResponseUtil.success(articleTypeService.findList(form));
+        List<ArticleTypeVO> list = articleTypeService.findList(form);
+        ArticleTypeVO vo = new ArticleTypeVO();
+        vo.setName("全部");
+        vo.setType(form.getType());
+        list.add(0,vo);
+        return ResponseUtil.success(list);
     }
 }
