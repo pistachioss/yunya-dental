@@ -32,12 +32,12 @@ wx:
     name: "云牙艾维口腔"
   pay:
     appId: wxb0616466dce8bd5b
-    michId: 1319671401
+    michId: 1633172042
     appSecret: 64da90b96969b100260e27b47d64d3ee
     useSandboxEnv: false
     notifyUrl: http://ivy2.yunya365.com/api/ivy/mini/wx/notify
     refundNotifyUrl: http://ivy2.yunya365.com/api/ivy/mini/wx/refund/notify
-    keyPath: classpath:static/apiclient_cert.p12
+    keyPath: classpath:static/prod/apiclient_cert.p12
 
 cloopen:
   sms:
