@@ -100,7 +100,11 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
             result.setVisitClinicIds(clinicIdsint);
             if(clinicIds.length>0){
                 for (String clinicId:clinicIds){
-                    clinicName = clinicName.append(clinicMap.get(clinicId).getAbbreviation()+",");
+                    if(StringUtils.isEmpty(clinicName)){
+                        clinicName = clinicName.append(clinicMap.get(clinicId).getAbbreviation());
+                    }else{
+                        clinicName = clinicName.append(","+clinicMap.get(clinicId).getAbbreviation());
+                    }
                 }
             }
         }
