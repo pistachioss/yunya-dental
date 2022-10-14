@@ -63,7 +63,11 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
                 expertIntroductionVO.setVisitClinicIds(clinicIdsint);
                 if(clinicIds.length>0){
                     for (String clinicId:clinicIds){
-                        clinicName = clinicName.append(clinicMap.get(clinicId).getAbbreviation()+",");
+                        if(StringUtils.isEmpty(clinicName)){
+                            clinicName = clinicName.append(clinicMap.get(clinicId).getAbbreviation());
+                        }else{
+                            clinicName = clinicName.append(","+clinicMap.get(clinicId).getAbbreviation());
+                        }
                     }
                 }
             }
@@ -107,7 +111,7 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
     public void add(ExpertIntroductionAddAndUpdateForm form) {
         ExpertIntroduction entity = new ExpertIntroduction();
         BeanUtils.copyProperties(form, entity);
-        String str= StringUtils.join(form.getVisitClinic(),",");
+        String str= StringUtils.join(form.getVisitClinicIds(),",");
         entity.setVisitClinic(str);
         //测试用，发布切换
 //        entity.setCrtId(1);
@@ -135,7 +139,7 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
 
         BeanUtils.copyProperties(form, expertIntroduction);
 
-        String str= StringUtils.join(form.getVisitClinic(),",");
+        String str= StringUtils.join(form.getVisitClinicIds(),",");
         expertIntroduction.setVisitClinic(str);
 //        expertIntroduction.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         //测试用，发布切换
