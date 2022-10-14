@@ -44,11 +44,11 @@ public class ArticleTypeServiceImpl extends BaseBiz<ArticleTypeMapper, ArticleTy
         return result;
     }
     public ResponseResult add(ArticleTypeForm form) {
-        ArticleTypeForm findName = new ArticleTypeForm();
+        ArticleType findName = new ArticleType();
         findName.setName(form.getName());
-        List<ArticleTypeVO> resuname = mapper.findArticleTypeList(findName);
-        if(resuname.size()>0){
-            return ResponseUtil.success("名称已存在！");
+        int count = mapper.selectCount(findName);
+        if(count>0){
+            return ResponseUtil.error(30006,"名称已存在！");
         }
         ArticleTypeForm findform = new ArticleTypeForm();
         findform.setType(form.getType());
@@ -69,6 +69,12 @@ public class ArticleTypeServiceImpl extends BaseBiz<ArticleTypeMapper, ArticleTy
     }
 
     public ResponseResult update(ArticleTypeForm form) {
+        ArticleType findName = new ArticleType();
+        findName.setName(form.getName());
+        int count = mapper.selectCount(findName);
+        if(count>0){
+            return ResponseUtil.error(30006,"名称已存在！");
+        }
         Integer id = form.getId();
         ArticleType article = mapper.selectByPrimaryKey(id);
         if (article == null) {
