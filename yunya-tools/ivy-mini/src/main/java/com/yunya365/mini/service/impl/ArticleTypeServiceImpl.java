@@ -106,14 +106,16 @@ public class ArticleTypeServiceImpl extends BaseBiz<ArticleTypeMapper, ArticleTy
         if(type<3){
             ArticleForm articleForm = new ArticleForm();
             articleForm.setType(type);
+            articleForm.setTypeId(id);
             List<ArticleVO>list = articleMapper.findArticleList(articleForm);
-            list.forEach(t->{
-                t.setTypeId(findformId);
-            });
-            articleMapper.updateBatch(list);
+                list.forEach(t->{
+                    t.setTypeId(findformId);
+                });
+            if(list.size()>0){
+                articleMapper.updateBatch(list);
+            }
         }else{
             List<ExpertType>insertlist = new ArrayList<>();
-
             ExpertType expertType = new ExpertType();
             expertType.setTypeId(id);
             List<ExpertType>list = expertTypeMapper.select(expertType);
