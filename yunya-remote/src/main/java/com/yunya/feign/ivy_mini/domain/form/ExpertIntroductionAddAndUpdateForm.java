@@ -33,7 +33,7 @@ public class ExpertIntroductionAddAndUpdateForm {
     @ApiModelProperty(value = " 是否置顶 0否 1是")
     private Integer isSort;
 
-    @ApiModelProperty(value = "出诊门诊")
+    @ApiModelProperty(value = "出诊门诊id数组")
     private Integer[] visitClinic;
     @ApiModelProperty(value = "出诊时间")
     private String visitTime;
