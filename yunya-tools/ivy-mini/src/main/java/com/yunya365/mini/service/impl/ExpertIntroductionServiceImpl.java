@@ -1,6 +1,7 @@
 package com.yunya365.mini.service.impl;
 
 
+import cn.hutool.core.convert.Convert;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.form.ExpertIntroductionAddAndUpdateForm;
@@ -58,7 +59,8 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
             StringBuffer clinicName  = new StringBuffer();
             if(!StringUtils.isEmpty(expertIntroductionVO.getVisitClinic())){
                 String[]clinicIds = expertIntroductionVO.getVisitClinic().split(",");
-                expertIntroductionVO.setVisitClinicIds(clinicIds);
+                Integer[]clinicIdsint = Convert.toIntArray(clinicIds);
+                expertIntroductionVO.setVisitClinicIds(clinicIdsint);
                 if(clinicIds.length>0){
                     for (String clinicId:clinicIds){
                         clinicName = clinicName.append(clinicMap.get(clinicId).getAbbreviation()+",");
@@ -67,7 +69,8 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
             }
             if(!StringUtils.isEmpty(expertIntroductionVO.getTypeId())){
                 String[]typeIds = expertIntroductionVO.getTypeId().split(",");
-                expertIntroductionVO.setTypeIds(typeIds);
+                Integer[]typeIdsint = Convert.toIntArray(typeIds);
+                expertIntroductionVO.setTypeIds(typeIdsint);
             }
             expertIntroductionVO.setVisitClinic(clinicName.toString());
         }
@@ -89,7 +92,8 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
         StringBuffer clinicName  = new StringBuffer();
         if(!StringUtils.isEmpty(result.getVisitClinic())){
             String[]clinicIds = result.getVisitClinic().split(",");
-            result.setVisitClinicIds(clinicIds);
+            Integer[]clinicIdsint = Convert.toIntArray(clinicIds);
+            result.setVisitClinicIds(clinicIdsint);
             if(clinicIds.length>0){
                 for (String clinicId:clinicIds){
                     clinicName = clinicName.append(clinicMap.get(clinicId).getAbbreviation()+",");
