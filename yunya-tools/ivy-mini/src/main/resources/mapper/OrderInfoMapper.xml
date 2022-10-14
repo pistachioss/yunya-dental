@@ -271,7 +271,9 @@
     GROUP_CONCAT(oi.product_name ) as topGradeList,
     od.receiver_detail_address as address,
     od.receiver_name as receiverName,
-    od.receiver_phone as receiverPhone
+    od.receiver_phone as receiverPhone,
+      od.product_type as productType ,
+     od.active_status as activeStatus
     FROM
     `order_info`  od
     LEFT JOIN order_item oi ON od.id = oi.order_id
