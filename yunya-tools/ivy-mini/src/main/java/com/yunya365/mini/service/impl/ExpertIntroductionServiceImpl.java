@@ -78,6 +78,25 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
         ExpertIntroductionVO result = new ExpertIntroductionVO();
         ExpertIntroduction expertIntroduction = mapper.selectByPrimaryKey(id);
         BeanUtils.copyProperties(expertIntroduction,result);
+
+        //获取门诊信息
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        Map<String, OrganizationInfoDetail> clinicMap = new HashMap(16);
+        clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
+
+        StringBuffer clinicName  = new StringBuffer();
+        if(!StringUtils.isEmpty(result.getVisitClinic())){
+            String[]clinicIds = result.getVisitClinic().split(",");
+            result.setVisitClinicIds(clinicIds);
+            if(clinicIds.length>0){
+                for (String clinicId:clinicIds){
+                    clinicName = clinicName.append(clinicMap.get(clinicId).getAbbreviation()+",");
+                }
+            }
+        }
+        result.setVisitClinic(clinicName.toString());
         return result;
     }
 
