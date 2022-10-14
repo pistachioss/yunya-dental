@@ -55,6 +55,9 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         List<OrderVO> result = mapper.findOrderList(form);
         for (OrderVO a : result) {
             a.setReceivingInformation(a.getReceiverName() + " " + a.getReceiverPhone() + " " + a.getAddress());
+            if(STATUS.equals( form.getStatus())){
+                a.setStatus(new Byte("7"));
+            }
         }
         return new PageInfo<>(result);
     }
