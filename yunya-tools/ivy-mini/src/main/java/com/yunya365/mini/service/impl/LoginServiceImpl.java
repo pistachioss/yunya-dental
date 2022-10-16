@@ -91,6 +91,7 @@ public class LoginServiceImpl {
         if (authVO != null) {
             //已登录，刷新时间
             authVO.setLastEnterDate(LocalDateTime.now());
+            log.info("重复登录信息：{}", authVO);
         } else {
             //生成token等相关信息
             authVO = this.createAuthInfo(wxFans, TOKEN_EXPIRE);

@@ -3,6 +3,7 @@ package com.yunya.modules.system.controller;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.system.Company;
 import com.yunya.models.system.QztDoctor;
 import com.yunya.modules.system.biz.QztDoctorBiz;
 import com.yunya.modules.system.domain.model.QztAddDoctorModel;
@@ -45,5 +46,10 @@ public class QztController {
     @GetMapping("/qzt/doctor/list")
     public List<QztDoctor> certDoctors() {
         return doctorBiz.certDoctors();
+    }
+
+    @GetMapping("/qzt/company/list")
+    public List<Company> certCompanys() {
+        return doctorBiz.certCompanys();
     }
 }

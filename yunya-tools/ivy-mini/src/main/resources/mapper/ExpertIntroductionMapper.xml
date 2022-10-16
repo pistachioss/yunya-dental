@@ -19,26 +19,39 @@
 
   <select id="findExpertIntroductionList" resultType="com.yunya.feign.ivy_mini.domain.vo.ExpertIntroductionVO">
     SELECT
-    id,
-    name,
-    appellation as appellation,
-    honor as honor,
-    expertise as expertise,
-    picture_address as pictureAddress,
-    is_sort as isSort,
-    status as status,
-    crt_time as crtTime,
-    upd_time as updTime
-    FROM expert_introduction
+    ei.id,
+    ei.name,
+    ei.appellation as appellation,
+    ei.visit_clinic as visitClinic,
+    ei.visit_time as visitTime,
+    GROUP_CONCAT(at.`name`) as typeName,
+    GROUP_CONCAT(at.`id`) as typeId,
+    ei.honor as honor,
+    ei.expertise as expertise,
+    ei.picture_address as pictureAddress,
+    ei.is_sort as isSort,
+    ei.status as status,
+    ei.crt_time as crtTime,
+    ei.upd_time as updTime
+    FROM expert_introduction ei
+    LEFT JOIN expert_type et on ei.id = et.expert_id
+    LEFT JOIN article_type at on at.id = et.type_id
     <where>
       <if test="name!=null and name!=''">
-        AND name like CONCAT(CONCAT('%',#{name}),'%')
+        AND ei.name like CONCAT(CONCAT('%',#{name}),'%')
       </if>
       <if test="status != null">
-        AND status = #{status}
+        AND ei.status = #{status}
+      </if>
+      <if test="typeIds != null and typeIds.length > 0">
+        and et.type_id in
+        <foreach collection="typeIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
       </if>
     </where>
-    order by is_sort ${isSort} ,
-    crt_time desc
+    group BY ei.id
+    order by ei.is_sort ${isSort} ,
+    ei.crt_time desc
   </select>
 </mapper>

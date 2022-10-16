@@ -83,6 +83,8 @@ feign:
       default:
         loggerLevel: basic
         requestInterceptors: com.yunya.framework.common.interceptor.FeignBasicAuthRequestInterceptor
+        connect-timeout: 500000
+        read-timeout: 500000
 
 # 负载均衡
 ribbon:

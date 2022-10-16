@@ -44,6 +44,19 @@ public class ExpertIntroductionVO {
     @ApiModelProperty(value = "家形象图片地址")
     private String pictureAddress;
 
+    @ApiModelProperty(value = "出诊门诊数组")
+    private Integer[] visitClinicIds;
+    @ApiModelProperty(value = "出诊门诊")
+    private String visitClinic;
+    @ApiModelProperty(value = "出诊时间")
+    private String visitTime;
+
+    @ApiModelProperty(value = "科室Id数组")
+    private Integer[] typeIds;
+    @ApiModelProperty(value = "科室id（后端使用）")
+    private String typeId;
+    @ApiModelProperty(value = "科室名称 逗号隔开")
+    private String typeName;
     /**
      * 是否置顶 0否 1是
      */

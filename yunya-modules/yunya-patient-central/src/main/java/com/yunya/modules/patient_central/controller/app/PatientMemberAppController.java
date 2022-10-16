@@ -132,7 +132,7 @@ public class PatientMemberAppController {
         //会员卡记录
         MemberExpendRecordQueryForm recordQueryForm = new MemberExpendRecordQueryForm();
         recordQueryForm.setMemberId(from.getCardNumber());
-        recordQueryForm.setPatientId(from.getPatientId());
+//        recordQueryForm.setPatientId(from.getPatientId());
         List<MasertMemberRechargeRecordDetailVo>list = patientMemberInfoBiz.findMemberRechargeRecordInfo(recordQueryForm);
         //预付款记录
         recordQueryForm.setMemberId(from.getPrepaymentNumber());

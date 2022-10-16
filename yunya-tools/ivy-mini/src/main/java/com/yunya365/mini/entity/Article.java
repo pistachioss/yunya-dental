@@ -29,6 +29,20 @@ public class Article {
      */
     private Integer type;
 
+    public Integer getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(Integer typeId) {
+        this.typeId = typeId;
+    }
+
+    /**
+     * 分类Id
+     */
+    @Column(name = "type_id")
+    private Integer typeId;
+
     /**
      * 品牌
      */

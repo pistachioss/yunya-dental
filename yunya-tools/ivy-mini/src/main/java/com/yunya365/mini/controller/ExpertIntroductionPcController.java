@@ -5,6 +5,7 @@ import com.yunya.feign.ivy_mini.domain.form.ExpertIntroductionAddAndUpdateForm;
 import com.yunya.feign.ivy_mini.domain.form.ExpertIntroductionForm;
 import com.yunya.feign.ivy_mini.domain.vo.ExpertIntroductionVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -26,6 +27,7 @@ import javax.validation.Valid;
  */
 @RestController
 @Api(tags = "后台-专家介绍")
+@IgnoreUserToken
 public class ExpertIntroductionPcController extends PcBaseController{
 
     @Resource

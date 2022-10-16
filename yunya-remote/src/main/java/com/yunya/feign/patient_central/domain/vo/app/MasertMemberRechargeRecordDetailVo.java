@@ -37,8 +37,11 @@ public class MasertMemberRechargeRecordDetailVo {
     @ApiModelProperty("种类 0:充值  1:消费  2:退费")
     private Integer type;
 
-    @ApiModelProperty("患者")
+    @ApiModelProperty("操作人")
     private String consumerName;
+
+    @ApiModelProperty("消费人")
+    private String patientName;
 
 
 

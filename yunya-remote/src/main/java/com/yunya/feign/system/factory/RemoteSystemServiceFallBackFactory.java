@@ -306,4 +306,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public List<QztDoctor> certDoctors() {
     return null;
   }
+
+  @Override
+  public List<Company> certCompanys() {
+    return null;
+  }
 }

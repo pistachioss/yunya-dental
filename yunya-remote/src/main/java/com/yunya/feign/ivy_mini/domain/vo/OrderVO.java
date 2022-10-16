@@ -81,6 +81,10 @@ public class OrderVO {
     private Date crtTIme;
     @ApiModelProperty(value = "收货信息")
     private String receivingInformation;
+    @ApiModelProperty(value = "核销状态 后台使用")
+    private Byte activeStatus;
+    @ApiModelProperty(value = "商品类型：0->商品 1->虚拟服务 后台使用")
+    private Byte productType;
 
 
 }

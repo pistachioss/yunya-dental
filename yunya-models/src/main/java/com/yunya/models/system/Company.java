@@ -43,6 +43,12 @@ public class Company {
   @ApiModelProperty(value = "自定义排序", required = true)
   private Integer orderNum;
 
+  @Column(name = "enable_qzt_sync")
+  private Boolean enableQztSync;
+
+  @Column(name = "qzt_institution_code")
+  private String qztInstitutionCode;
+
   /** 是否启用 */
   @ApiModelProperty("是否启用")
   private Boolean inservice;
@@ -301,5 +307,21 @@ public class Company {
    */
   public void setUpdName(String updName) {
     this.updName = updName;
+  }
+
+  public Boolean getEnableQztSync() {
+    return enableQztSync;
+  }
+
+  public void setEnableQztSync(Boolean enableQztSync) {
+    this.enableQztSync = enableQztSync;
+  }
+
+  public String getQztInstitutionCode() {
+    return qztInstitutionCode;
+  }
+
+  public void setQztInstitutionCode(String qztInstitutionCode) {
+    this.qztInstitutionCode = qztInstitutionCode;
   }
 }

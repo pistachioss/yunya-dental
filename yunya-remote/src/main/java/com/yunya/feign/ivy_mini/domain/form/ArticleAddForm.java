@@ -26,5 +26,8 @@ public class ArticleAddForm {
     @ApiModelProperty(value = "分类 1：艾维动态 2口腔科普")
     @NotNull(message = "分类不能为空")
     private Integer type;
+    @NotNull(message = "分类Id不能为空")
+    @ApiModelProperty(value = "分类Id")
+    private Integer typeId;
 
 }

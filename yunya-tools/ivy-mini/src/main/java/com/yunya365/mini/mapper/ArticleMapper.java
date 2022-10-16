@@ -19,6 +19,8 @@ public interface ArticleMapper extends Mapper<Article> {
 
    void updateSortById(Article article);
 
+   void updateBatch(List<ArticleVO>list);
+
 
 
 }

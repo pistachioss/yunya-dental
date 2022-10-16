@@ -24,6 +24,7 @@
     article_url as articleUrl,
     cover_picture as coverPicture,
     type as type,
+    type_id as typeId,
     sort as isSort,
     reading_number as readingNumber,
     status as status,
@@ -39,6 +40,9 @@
       </if>
       <if test="type!=null and type!=''">
         AND type = #{type}
+      </if>
+      <if test="typeId != null">
+        AND type_id = #{typeId}
       </if>
     </where>
     order by
@@ -72,6 +76,9 @@
       <if test="type!=null and type!=''">
         AND type = #{type}
       </if>
+      <if test="typeId != null">
+        AND type_id = #{typeId}
+      </if>
     </where>
     order by  sort desc
     <if test="orderByColumn != null and orderByColumn!=''">
@@ -98,5 +105,21 @@
     ORDER BY  sort asc LIMIT 0,1),0
     ) AS nextTypeId
   </select>
+  <update id="updateBatch">
+    update article
+    <trim prefix="set" suffixOverrides=",">
+      <trim prefix="type_id=case" suffix="end,">
+        <foreach collection="list" item="item" index="i">
+          <if test="item.typeId != null">
+            when id=#{item.id} then #{item.typeId}
+          </if>
+        </foreach>
+      </trim>
+    </trim>
+    where
+    <foreach collection="list" item="item" separator="or">
+      id=#{item.id}
+    </foreach>
+  </update>
 
 </mapper>

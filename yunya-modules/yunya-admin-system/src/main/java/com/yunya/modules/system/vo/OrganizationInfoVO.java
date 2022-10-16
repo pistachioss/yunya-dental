@@ -71,4 +71,6 @@ public class OrganizationInfoVO implements Serializable {
   /** 子门诊ID列表*/
   @ApiModelProperty("子门诊ID列表")
   private List<Integer> orgIds;
+  private Boolean enableQztSync;
+  private String qztInstitutionCode;
 }

@@ -33,51 +33,63 @@
       pmio.next_expired_time nextExpiredTime,pmio.remarks remarks,pmio.inservice inservice
     </sql>
     <select id="findMemberRechargeRecordInfo" resultType="com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo">
-    (select mer.crt_name consumerName,1 type ,DATE_FORMAT(mer.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,
+    (select mer.crt_name consumerName,pbi.name as patientName,1 type ,DATE_FORMAT(mer.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,
     (mer.expend_principal+mer.expend_gift) rechargePrincipal from member_expend_record mer
     left JOIN patient_base_info pbi on mer.patient_id = pbi.id
     where mer.inservice = 1  and DATE_FORMAT(mer.crt_time,'%Y-%m') >
     DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
-    and mer.member_id = #{memberId} and mer.patient_id = #{patientId}
+    and mer.member_id = #{memberId}
+        <if test="patientId != null">
+            and mer.patient_id = #{patientId}
+        </if>
     )
     UNION
-    (select crt_name consumerName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+ifnull(recharge_bonus,0)) rechargePrincipal
+    (select crt_name consumerName,'--' patientName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+ifnull(recharge_bonus,0)) rechargePrincipal
     from member_recharge_record
     where inservice = 1 and type = 0 and DATE_FORMAT(crt_time,'%Y-%m') >
     DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
     and member_id = #{memberId}
     )
     UNION
-    (select mrr.crt_name consumerName,2 type,DATE_FORMAT(mrr.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,mrr.actual_return_amount rechargePrincipal
+    (select mrr.crt_name consumerName,'--' patientName,2 type,DATE_FORMAT(mrr.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,mrr.actual_return_amount rechargePrincipal
     from member_return_record  mrr
       left JOIN patient_base_info pbi on mrr.patient_id = pbi.id
       where mrr.inservice = 1 and DATE_FORMAT(mrr.crt_time,'%Y-%m') >
       DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
-      and mrr.member_id = #{memberId} and mrr.patient_id = #{patientId}
+      and mrr.member_id = #{memberId}
+        <if test="patientId != null">
+            and mrr.patient_id = #{patientId}
+        </if>
 )
     </select>
     <select id="findMemberPrepaidRecordInfo" resultType="com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo">
-    (select mer.crt_name as consumerName,1 type ,DATE_FORMAT(mer.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,
+    (select mer.crt_name as consumerName,pbi.name as patientName,1 type ,DATE_FORMAT(mer.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,
     (mer.expend_principal+mer.expend_gift) rechargePrincipal from prepaid_expend_record mer
     left JOIN patient_base_info pbi on mer.patient_id = pbi.id
     where mer.inservice = 1 and DATE_FORMAT(mer.crt_time,'%Y-%m') >
     DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
-    and mer.prepaid_id = #{memberId} and mer.patient_id = #{patientId}
+    and mer.prepaid_id = #{memberId}
+    <if test="patientId != null">
+        and mer.patient_id = #{patientId}
+    </if>
     )
     UNION
-    (select crt_name consumerName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+ifnull(recharge_bonus,0)) rechargePrincipal
+    (select crt_name consumerName,'--' patientName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+ifnull(recharge_bonus,0)) rechargePrincipal
     from prepaid_recharge_record
     where inservice = 1 and type = 0 and DATE_FORMAT(crt_time,'%Y-%m') >
     DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
     and prepaid_id = #{memberId}
     )
     UNION
-    (select mrr.crt_name consumerName,2 type,DATE_FORMAT(mrr.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,mrr.actual_return_amount rechargePrincipal
+    (select mrr.crt_name consumerName,'--' patientName,2 type,DATE_FORMAT(mrr.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,mrr.actual_return_amount rechargePrincipal
     from prepaid_return_record  mrr
       left JOIN patient_base_info pbi on mrr.patient_id = pbi.id
       where mrr.inservice = 1 and DATE_FORMAT(mrr.crt_time,'%Y-%m') >
       DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
-      and mrr.prepaid_id = #{memberId} and mrr.patient_id = #{patientId}
+      and mrr.prepaid_id = #{memberId}
+      <if test="patientId != null">
+        and mrr.patient_id = #{patientId}
+    </if>
 )
     </select>
     <!-- 根据患者id查询会员基本信息(会员卡界面基本信息（非全部信息）) -->

@@ -10,6 +10,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.QztOrgVO;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.*;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -312,6 +314,8 @@ public class OrganizationBiz {
     company.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     company.setUpdName(BaseContextHandler.getName());
     company.setUpdTime(new Date(System.currentTimeMillis()));
+    company.setEnableQztSync(resource.getEnableQztSync());
+    company.setQztInstitutionCode(resource.getQztInstitutionCode());
     int i = companyMapper.updateByPrimaryKeySelective(company);
     redisUtils.delete(REDIS_KEY_ORG_LIST);
     redisUtils.delete(REDIS_KEY_ORG_ID + id);
@@ -550,5 +554,13 @@ public class OrganizationBiz {
     }
     PageHelper.startPage(1, 1);
     return companyMapper.selectOrgInfoById(null);
+  }
+
+  public List<QztOrgVO> qzOrgList() {
+    Example example = new Example(Company.class);
+    example.createCriteria().andEqualTo("enableQztSync", true)
+            .andEqualTo("inservice", true);
+    List<Company> list = companyMapper.selectByExample(example);
+    return BeanCopierUtils.listGeneralCopyBean(list, QztOrgVO.class);
   }
 }

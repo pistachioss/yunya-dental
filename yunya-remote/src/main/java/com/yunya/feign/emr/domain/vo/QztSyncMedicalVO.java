@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class QztSyncMedicalVO {
-    private Integer entid;
+    private String entid;
     /**
      * 医疗机构ID （全诊医学提供）
      */
@@ -72,4 +72,8 @@ public class QztSyncMedicalVO {
      * 创建时间 yyyy-MM-dd HH:mm:ss
      */
     private String createTm;
+    /**
+     * 处理（诊疗方案）
+     */
+    private String treatment;
 }

@@ -28,4 +28,7 @@ public class ExpertIntroductionForm extends PageQuery implements Serializable {
     @ApiModelProperty(value = "排序的方向 desc表示置顶在上 asc表示不置顶在上 可不传但不要空字符串")
     private String isSort = "desc";
 
+    @ApiModelProperty(value = "科室Ids")
+    private Integer[] typeIds;
+
 }

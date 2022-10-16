@@ -1086,7 +1086,7 @@
                 </foreach>
             </if>
             <if test="query.dentistIds != null and query.dentistIds.size > 0">
-                AND btp.registered_id IN
+                AND btp.registered_dentist_id IN
                 <foreach collection="query.dentistIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>

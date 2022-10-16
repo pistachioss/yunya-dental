@@ -8,7 +8,10 @@ import javax.persistence.*;
 @Table(name = "expert_introduction")
 public class ExpertIntroduction {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
+
+
 
     /**
      * 专家名称
@@ -35,6 +38,10 @@ public class ExpertIntroduction {
      */
     @Column(name = "picture_address")
     private String pictureAddress;
+    @Column(name = "visit_clinic")
+    private String visitClinic;
+    @Column(name = "visit_time")
+    private String visitTime;
 
     /**
      * 是否置顶 0否 1是

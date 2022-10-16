@@ -39,6 +39,7 @@ import java.util.*;
 public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> {
 
     public static final Byte STATUS = 7;
+    public static final Byte SUSSTATUS = 3;
 
     @Autowired
     private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
@@ -52,9 +53,23 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
             form.setActiveStatus(new Byte("0"));
             form.setProductType(new Byte("1"));
         }
+        if(SUSSTATUS.equals( form.getStatus())){
+            form.setActiveStatus(new Byte("1"));
+            form.setProductType(new Byte("1"));
+        }
         List<OrderVO> result = mapper.findOrderList(form);
         for (OrderVO a : result) {
             a.setReceivingInformation(a.getReceiverName() + " " + a.getReceiverPhone() + " " + a.getAddress());
+            if(STATUS.equals(form.getStatus())||form.getStatus()==null){
+                if(a.getStatus()==3&&a.getActiveStatus()==0&&a.getProductType()==1){
+                    a.setStatus(new Byte("7"));
+                }
+            }
+            if(SUSSTATUS.equals(form.getStatus())||form.getStatus()==null){
+                if(a.getStatus()==3&&a.getActiveStatus()==1&&a.getProductType()==1){
+                    a.setStatus(new Byte("3"));
+                }
+            }
         }
         return new PageInfo<>(result);
     }

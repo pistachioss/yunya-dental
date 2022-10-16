@@ -37,7 +37,7 @@ wx:
     useSandboxEnv: false
     notifyUrl: http://test.ivy2.yunya365.com/api/ivy/mini/wx/notify
     refundNotifyUrl: http://test.ivy2.yunya365.com/api/ivy/mini/wx/refund/notify
-    keyPath: classpath:static/apiclient_cert.p12
+    keyPath: classpath:static/test/apiclient_cert.p12
 
 cloopen:
   sms:

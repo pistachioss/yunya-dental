@@ -67,7 +67,6 @@ public class DiscountBiz {
 
   /**
    * 产品售出激活卡券明细（代金、折扣、兑换、套餐）
-   *
    * @param query query
    * @return page
    */
