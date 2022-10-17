@@ -23,6 +23,7 @@ import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.model.*;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
+import com.yunya.feign.ivy_mini.domain.query.OrderCountQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageOrderModel;
@@ -102,6 +103,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private RedisUtils redisUtils;
     @Resource
     private WxMiniPayProperties properties;
+
+    @Override
+    public OrderCountVO orderCount(OrderCountQuery query) {
+        return baseMapper.orderCount(query);
+    }
 
     @Override
     public ConfirmOrderVO confirmProductOrder(ConfirmProductQuery query) {

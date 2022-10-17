@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.model.*;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
+import com.yunya.feign.ivy_mini.domain.query.OrderCountQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya365.mini.entity.OrderInfo;
 
@@ -25,6 +26,7 @@ import java.util.List;
  */
 public interface IOrderInfoService extends IService<OrderInfo> {
 
+    OrderCountVO  orderCount(OrderCountQuery query);
     /**
      * 根据产品生成确认订单信息
      * @param query:

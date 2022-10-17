@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.model.*;
 import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
 import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
+import com.yunya.feign.ivy_mini.domain.query.OrderCountQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
@@ -34,6 +35,13 @@ public class OrderInfoController extends BaseController {
 
     @Resource
     private IOrderInfoService orderInfoService;
+
+    @PostMapping("/product/order/orderCount")
+    @ApiOperation("【小程序】各个状态订单数量")
+    public ResponseResult<OrderCountVO> orderCount(@RequestBody @Valid OrderCountQuery query) {
+        return ResponseUtil.success(orderInfoService.orderCount(query));
+    }
+
 
     @PostMapping("/product/order/confirm")
     @ApiOperation("【小程序】产品生成确认订单信息")
@@ -139,5 +147,7 @@ public class OrderInfoController extends BaseController {
     public String wxRefundNotify(HttpServletRequest request, HttpServletResponse response) {
         return orderInfoService.wxRefundNotify(request, response);
     }
+
+
 }
 
