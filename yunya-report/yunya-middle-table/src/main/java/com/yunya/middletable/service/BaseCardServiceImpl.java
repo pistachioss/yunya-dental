@@ -80,6 +80,7 @@ public class BaseCardServiceImpl{
 
 	private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static final int cutSlice = 100;
+	private static final String REMARK = "小程序虚拟服务售卖";
 
 	public void operateSingle(MessageModel model) {
 		Integer cardId = (Integer) model.getParamMap().get("id");
@@ -110,7 +111,13 @@ public class BaseCardServiceImpl{
 			} else {
 				List<BaseCard> updateCards = getUpdateCards(originData, Collections.singletonList(baseCard));
 				if (CollectionUtils.isNotEmpty(updateCards)) {
-					baseCardMapper.updateByPrimaryKeySelective(updateCards.get(0));
+					if(REMARK.equals(baseCard.getRemark())){
+						baseCardMapper.updateByPrimaryKey(updateCards.get(0));
+					}
+					else
+					{
+						baseCardMapper.updateByPrimaryKeySelective(updateCards.get(0));
+					}
 				}
 			}
 		}
