@@ -17,6 +17,9 @@ public class BaseCard {
     @Column(name = "card_id")
     private Integer cardId;
 
+    @Column(name = "remark")
+    private String remark;
+
     /**
      * 产品ID
      */
