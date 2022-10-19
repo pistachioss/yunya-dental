@@ -395,7 +395,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         String key = buildLockCacheKey(DRAFT_TEMP, date);
         String hashKey = loginUserId + "_" + model.getTreatmentId();
         if (redisUtils.hasKey(key)) {
-            redisUtils.hput(key, hashKey, model);
+            redisUtils.hput(key, hashKey, JSONObject.toJSONString(model));
         } else {
             long remainSeconds = Duration.between(LocalDateTime.of(now, LocalTime.MAX), java.time.LocalDateTime.now()).getSeconds();
             redisUtils.hPutAndExpire(RedisConstants.buildLockCacheKey(DRAFT_TEMP, date)
