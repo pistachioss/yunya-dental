@@ -65,6 +65,9 @@
           <if test="name != null and name != ''">
               and name like CONCAT(CONCAT('%',#{name}),'%')
           </if>
+          <if test="isOnlineSale != null and isOnlineSale != ''">
+              and is_online_sale = #{isOnlineSale}
+          </if>
       </where>
     </select>
 

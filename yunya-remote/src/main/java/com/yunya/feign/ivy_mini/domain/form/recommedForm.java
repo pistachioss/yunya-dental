@@ -42,7 +42,7 @@ public class recommedForm {
     /**
      * 链接类型
      */
-    @ApiModelProperty(value = "链接类型 0空白1产品 2文章")
+    @ApiModelProperty(value = "链接类型 0空白1产品 2文章 3.口腔服务")
     @NotNull(message = "链接类型不能为空！")
     private Integer linkType;
     /**

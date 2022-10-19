@@ -32,7 +32,7 @@ public class recommed {
     /**
      * 链接类型
      */
-    @ApiModelProperty(value = "链接类型")
+    @ApiModelProperty(value = "链接类型 0空白1产品 2文章 3.口腔服务")
     @Column(name = "link_type")
     private Integer linkType;
     /**
