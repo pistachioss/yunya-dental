@@ -2,8 +2,13 @@ package com.yunya365.mini.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.form.BannerAddForm;
+import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.BannerVO;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -35,15 +40,27 @@ public class BannerServiceImpl extends BaseBiz<BannerMapper, Banner> {
 
     @Autowired
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
+    @Autowired
+    private RemoteDiscountFeign remoteDiscountFeign;
 
     public List<BannerVO> findList() {
         List<BannerVO> result = mapper.findBannerList();
         List<BaseOralTariff> botList = remoteTreatmentServiceFeign.findBaseOralTariffList(new BaseOralTariff());
         Map<String, String> cliListsMap = new HashMap(16);
         botList.forEach(z -> cliListsMap.put(z.getId() + "", z.getName()));
+
+        VirtualProductQuery queryForm = new VirtualProductQuery();
+        queryForm.setWhetherPage(false);
+        queryForm.setProductType(1);
+        List<VirtualProductVO> disList = remoteDiscountFeign.pageVirtual(queryForm).getList();
+        Map<String, String> disMap = new HashMap(16);
+        disList.forEach(z -> disMap.put(z.getProductId() + "", z.getProductName()));
+
         for(BannerVO bannerVO:result){
             if(bannerVO.getLinkType()==1){
                 bannerVO.setLinkContext(cliListsMap.get(bannerVO.getProductId()+""));
+            }else if(bannerVO.getLinkType()==3){
+                bannerVO.setLinkContext(disMap.get(bannerVO.getProductId()+""));
             }
         }
         return result;
