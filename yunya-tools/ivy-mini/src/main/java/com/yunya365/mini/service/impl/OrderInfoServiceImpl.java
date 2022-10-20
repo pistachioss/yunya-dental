@@ -774,6 +774,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         response.setHeader("Content-disposition", "attachment;filename=" + encodeFileName + ".xlsx");
     }
 
+    @Override
+    public List<OrderInfo> listByOrderIds(Collection<Integer> ids) {
+        return ChainWrappers.lambdaQueryChain(baseMapper).in(OrderInfo::getId, ids).list();
+    }
+
     private PayOrderVO assembleOrderDetail(OrderInfo orderInfo) {
         PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
         payOrderVO.setOrderId(orderInfo.getId());

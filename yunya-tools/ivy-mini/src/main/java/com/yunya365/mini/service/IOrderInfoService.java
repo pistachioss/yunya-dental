@@ -5,9 +5,7 @@ import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.model.*;
-import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
-import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
-import com.yunya.feign.ivy_mini.domain.query.OrderCountQuery;
+import com.yunya.feign.ivy_mini.domain.query.*;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya365.mini.entity.OrderInfo;
 
@@ -163,4 +161,6 @@ public interface IOrderInfoService extends IService<OrderInfo> {
     void hotSaleCal(Integer orderId, boolean increase, int productType);
 
     void buildResponse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException;
+
+    List<OrderInfo> listByOrderIds(Collection<Integer> ids);
 }

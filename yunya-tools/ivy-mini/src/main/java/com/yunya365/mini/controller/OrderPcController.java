@@ -10,6 +10,7 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderItem;
 import com.yunya365.mini.service.IOrderInfoService;
 import com.yunya365.mini.service.IOrderItemService;
@@ -81,25 +82,46 @@ public class OrderPcController extends PcBaseController{
 
     @ApiOperation(value = "后台-小程序订单-导出")
     @PostMapping("/order/export")
-    public void exportOrder(HttpServletResponse response, @RequestBody @Valid OrderForm form) throws IOException {
-        form.setWhetherPage(false);
-        List<OrderVO> list = orderAdminiService.findList(form).getList();
-        if(CollectionUtils.isNotEmpty(list)){
-            Map<Integer, String> stringMap = orderItemService.listByOrderIds(list.stream().map(OrderVO::getId).collect(toSet()))
-                    .stream().filter(t -> Objects.nonNull(t.getProductName()))
-                    .collect(groupingBy(OrderItem::getOrderId, mapping(OrderItem::getProductName, joining(","))));
-            List<PcOrderExportVO> voList = list.stream().map(t -> {
+    public void exportOrder(HttpServletResponse response, @RequestBody @Valid PcOrderExportForm form) throws IOException {
+        List<Integer> orderIds = form.getOrderIds();
+        List<PcOrderExportVO> voList = null;
+        if (CollectionUtils.isNotEmpty(orderIds)) {
+            List<OrderInfo> orderInfos = orderInfoService.listByOrderIds(orderIds);
+            Map<Integer, String> stringMap = itemMap(orderIds);
+            voList = orderInfos.stream().map(t -> {
                 PcOrderExportVO pcOrderExportVO = new PcOrderExportVO();
                 pcOrderExportVO.setOrderSn(t.getOrderSn());
                 if (Objects.equals(FALSE.getCode().byteValue(), t.getProductType())) {
-                    pcOrderExportVO.setReceiverAddress(Joiner.on(",").join(t.getReceiverName(), t.getReceiverPhone(), t.getAddress()));
+                    pcOrderExportVO.setReceiverAddress(Joiner.on(",").join(t.getReceiverName(), t.getReceiverPhone(), t.getReceiverDetailAddress()));
                 }
                 pcOrderExportVO.setItemStr(stringMap.get(t.getId()));
                 return pcOrderExportVO;
             }).collect(toList());
-            orderInfoService.buildResponse(response, "小程序订单导出模板");
-            EasyExcel.write(response.getOutputStream(), PcOrderExportVO.class)
-                    .sheet("sheet").doWrite(voList);
+        } else {
+            OrderForm orderForm = form.getForm();
+            orderForm.setWhetherPage(false);
+            List<OrderVO> list = orderAdminiService.findList(orderForm).getList();
+            if(CollectionUtils.isNotEmpty(list)){
+                Map<Integer, String> stringMap = itemMap(list.stream().map(OrderVO::getId).collect(toSet()));
+                voList = list.stream().map(t -> {
+                    PcOrderExportVO pcOrderExportVO = new PcOrderExportVO();
+                    pcOrderExportVO.setOrderSn(t.getOrderSn());
+                    if (Objects.equals(FALSE.getCode().byteValue(), t.getProductType())) {
+                        pcOrderExportVO.setReceiverAddress(Joiner.on(",").join(t.getReceiverName(), t.getReceiverPhone(), t.getAddress()));
+                    }
+                    pcOrderExportVO.setItemStr(stringMap.get(t.getId()));
+                    return pcOrderExportVO;
+                }).collect(toList());
+                orderInfoService.buildResponse(response, "小程序订单导出模板");
+            }
         }
+        orderInfoService.buildResponse(response, "小程序订单导出模板");
+        EasyExcel.write(response.getOutputStream(), PcOrderExportVO.class)
+                .sheet("sheet").doWrite(voList);
+    }
+    private Map<Integer, String> itemMap(Collection<Integer> orderIds) {
+        return  orderItemService.listByOrderIds(orderIds)
+                .stream().filter(t -> Objects.nonNull(t.getProductName()))
+                .collect(groupingBy(OrderItem::getOrderId, mapping(OrderItem::getProductName, joining(","))));
     }
 }
