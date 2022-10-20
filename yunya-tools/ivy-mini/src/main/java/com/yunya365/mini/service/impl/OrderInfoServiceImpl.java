@@ -49,7 +49,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -761,6 +763,15 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             Integer productQuantity = item.getProductQuantity();
             redisUtils.zIncrBy(HOT_SALE_PRODUCT, productType + "_" + item.getProductId().toString(), increase ? productQuantity : -productQuantity);
         }
+    }
+
+    @Override
+    public void buildResponse(HttpServletResponse response, String fileName)
+            throws UnsupportedEncodingException {
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("utf-8");
+        String encodeFileName = URLEncoder.encode(fileName, "UTF-8");
+        response.setHeader("Content-disposition", "attachment;filename=" + encodeFileName + ".xlsx");
     }
 
     private PayOrderVO assembleOrderDetail(OrderInfo orderInfo) {
