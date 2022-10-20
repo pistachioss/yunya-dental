@@ -408,7 +408,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         String date = DateUtil.format(LocalDate.now(), "yyyyMMdd");
         String key = buildLockCacheKey(DRAFT_TEMP, date);
         Object hget = redisUtils.hget(key, loginUserId + "_" + treatmentId);
-        return JSONObject.parseObject(hget.toString(), MedicalCommonRecordModel.class);
+        return Objects.isNull(hget) ? null : JSONObject.parseObject(hget.toString(), MedicalCommonRecordModel.class);
     }
 
     public void removeDraftTemp(Integer treatmentId) {
