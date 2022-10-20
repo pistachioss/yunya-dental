@@ -3,7 +3,9 @@ package com.yunya365.mini.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
 import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
+import com.yunya.feign.discount.domain.vo.CouponCommonInfoVO;
 import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.form.BannerAddForm;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
@@ -49,12 +51,12 @@ public class BannerServiceImpl extends BaseBiz<BannerMapper, Banner> {
         Map<String, String> cliListsMap = new HashMap(16);
         botList.forEach(z -> cliListsMap.put(z.getId() + "", z.getName()));
 
-        VirtualProductQuery queryForm = new VirtualProductQuery();
+        CouponCommonInfoQuery queryForm = new CouponCommonInfoQuery();
         queryForm.setWhetherPage(false);
-        queryForm.setProductType(1);
-        List<VirtualProductVO> disList = remoteDiscountFeign.pageVirtual(queryForm).getList();
+        queryForm.setInservice(true);
+        List<CouponCommonInfoVO> disList = remoteDiscountFeign.findCouponList(queryForm).getData().getList();
         Map<String, String> disMap = new HashMap(16);
-        disList.forEach(z -> disMap.put(z.getProductId() + "", z.getProductName()));
+        disList.forEach(z -> disMap.put(z.getId() + "", z.getName()));
 
         for(BannerVO bannerVO:result){
             if(bannerVO.getLinkType()==1){

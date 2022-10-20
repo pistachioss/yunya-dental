@@ -101,6 +101,11 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     }
 
     @Override
+    public ResponseResult<PageInfo<CouponCommonInfoVO>> findCouponList(CouponCommonInfoQuery query) {
+        return null;
+    }
+
+    @Override
     public void lockVirtualStock(List<LockStockForm> form) {
 
     }
