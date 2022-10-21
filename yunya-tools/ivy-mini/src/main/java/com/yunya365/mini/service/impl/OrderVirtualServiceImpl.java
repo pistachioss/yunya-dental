@@ -62,7 +62,7 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
         if (Objects.nonNull(virtual)) {
             //订单核销状态更新
             long notActiveCount = calActiveStatus(virtual.getOrderSn());
-            if (Objects.equals(notActiveCount, 1)) {
+            if (notActiveCount == 1) {
                 orderInfoService.activeStatus(virtual.getOrderId(), true);
             }
             ChainWrappers.lambdaUpdateChain(baseMapper)
