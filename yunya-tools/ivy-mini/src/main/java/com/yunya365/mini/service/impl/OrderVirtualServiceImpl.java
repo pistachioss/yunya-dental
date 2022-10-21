@@ -61,8 +61,8 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
                 .one();
         if (Objects.nonNull(virtual)) {
             //订单核销状态更新
-            boolean calActiveStatus = calActiveStatus(virtual.getOrderSn());
-            if (calActiveStatus) {
+            long notActiveCount = calActiveStatus(virtual.getOrderSn());
+            if (Objects.equals(notActiveCount, 1)) {
                 orderInfoService.activeStatus(virtual.getOrderId(), true);
             }
             ChainWrappers.lambdaUpdateChain(baseMapper)
@@ -96,12 +96,11 @@ public class OrderVirtualServiceImpl extends ServiceImpl<OrderVirtualMapper, Ord
         return false;
     }
 
-    private boolean calActiveStatus(String orderSn) {
+    private long calActiveStatus(String orderSn) {
         //未核销卡券
-        Long count = ChainWrappers.lambdaQueryChain(baseMapper)
+        return ChainWrappers.lambdaQueryChain(baseMapper)
                 .eq(OrderVirtual::getOrderSn, orderSn)
                 .eq(OrderVirtual::getDeleteStatus, false)
                 .isNull(OrderVirtual::getPatientId).count();
-        return count > 0;
     }
 }
