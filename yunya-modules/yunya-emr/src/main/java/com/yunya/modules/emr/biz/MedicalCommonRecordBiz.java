@@ -1,10 +1,9 @@
 package com.yunya.modules.emr.biz;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
-import com.yunya.feign.emr.domain.model.ApplyBaseModel;
-import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
-import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
+import com.yunya.feign.emr.domain.model.*;
 import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
@@ -12,17 +11,16 @@ import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.emr.MedicalCommonRecord;
-import com.yunya.models.emr.MedicalGeneralNum;
-import com.yunya.models.emr.MedicalRecordHistory;
+import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.emr.*;
 import com.yunya.models.treatment.TreatmentRecord;
-import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
-import com.yunya.modules.emr.mapper.MedicalGeneralNumMapper;
-import com.yunya.modules.emr.mapper.MedicalRecordHistoryMapper;
+import com.yunya.modules.emr.mapper.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,16 +28,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.*;
+import java.util.*;
 
-import static com.yunya.framework.common.enums.FileSourceTypeEnum.MEDICAL_COMMON;
+import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.framework.common.enums.FileSourceTypeEnum.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -59,6 +54,8 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
     @Autowired
     private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
+    @Resource
+    private RedisUtils redisUtils;
 
     public ResponseResult create(MedicalCommonRecordModel model) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -389,5 +386,35 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     public TreatmentRecord findTreatmentByMedicalId(Integer medicalRecordId) {
         MedicalCommonRecord medical = mapper.selectByPrimaryKey(medicalRecordId);
         return remoteTreatmentServiceFeign.findTreatmentRecordById(medical.getTreatmentId());
+    }
+
+    public void draft(MedicalCommonRecordModel model) {
+        LocalDate now = LocalDate.now();
+        String date = DateUtil.format(now, "yyyyMMdd");
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        String key = buildLockCacheKey(DRAFT_TEMP, date);
+        String hashKey = loginUserId + "_" + model.getTreatmentId();
+        if (redisUtils.hasKey(key)) {
+            redisUtils.hput(key, hashKey, JSONObject.toJSONString(model));
+        } else {
+            long remainSeconds = Duration.between(LocalDateTime.of(now, LocalTime.MAX), java.time.LocalDateTime.now()).getSeconds();
+            redisUtils.hPutAndExpire(RedisConstants.buildLockCacheKey(DRAFT_TEMP, date)
+                    , loginUserId + "_" + model.getTreatmentId(), JSONObject.toJSONString(model), Math.abs(remainSeconds));
+        }
+    }
+
+    public MedicalCommonRecordModel draftDetail(Integer treatmentId) {
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        String date = DateUtil.format(LocalDate.now(), "yyyyMMdd");
+        String key = buildLockCacheKey(DRAFT_TEMP, date);
+        Object hget = redisUtils.hget(key, loginUserId + "_" + treatmentId);
+        return Objects.isNull(hget) ? null : JSONObject.parseObject(hget.toString(), MedicalCommonRecordModel.class);
+    }
+
+    public void removeDraftTemp(Integer treatmentId) {
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        String date = DateUtil.format(LocalDate.now(), "yyyyMMdd");
+        String key = buildLockCacheKey(DRAFT_TEMP, date);
+        redisUtils.hdelete(key, loginUserId + "_" + treatmentId);
     }
 }

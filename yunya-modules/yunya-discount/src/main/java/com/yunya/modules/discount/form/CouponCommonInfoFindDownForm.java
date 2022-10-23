@@ -20,4 +20,6 @@ import lombok.Data;
 public class CouponCommonInfoFindDownForm {
     @ApiModelProperty("卡券名称")
     private String name;
+    @ApiModelProperty("是否线上售卖(0:否 1:是)")
+    private Boolean isOnlineSale;
 }

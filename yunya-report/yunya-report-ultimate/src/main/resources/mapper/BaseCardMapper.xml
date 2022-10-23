@@ -50,6 +50,7 @@
         else null
         end as `sold_type`,
         case
+        when  `bc`.`remark` = '小程序虚拟服务售卖' then '小程序订单'
         when `bc`.`sold_way` = 0 then '线上'
         when `bc`.`sold_way` = 1 then '线下'
         else null
@@ -128,10 +129,14 @@
             date_format(#{activeEndDate},'%Y-%m-%d'))
         </if>
         <if test="soldWays != null and soldWays.size() > 0">
-            and `bc`.`sold_way` in
+            and (`bc`.`sold_way` in
             <foreach collection="soldWays" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
+        <if test="remark != null and remark != ''">
+              or `bc`.remark = #{remark}
+        </if>
+        )
         </if>
         <if test="chargeStatus != null and chargeStatus.size() > 0">
             and `bc`.`charge_status` in
@@ -246,6 +251,7 @@
         else null
         end as `sold_type`,
         case
+        when  `bc`.`remark` = '小程序虚拟服务售卖' then '小程序订单'
         when `bc`.`sold_way` = 0 then '线上'
         when `bc`.`sold_way` = 1 then '线下'
         else null
@@ -289,10 +295,14 @@
             DATE_FORMAT(#{soldEndDate},'%Y-%m-%d'))
         </if>
         <if test="soldWays != null and soldWays.size() > 0">
-            and `bc`.`sold_way` in
+            and (`bc`.`sold_way` in
             <foreach collection="soldWays" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
+            <if test="remark != null and remark != ''">
+                or `bc`.remark = #{remark}
+            </if>
+            )
         </if>
         <if test="chargeStatus != null and chargeStatus.size() > 0">
             and `bc`.`charge_status` in
@@ -381,6 +391,7 @@
         else null
         end as `sold_type`,
         case
+        when  `bc`.`remark` = '小程序虚拟服务售卖' then '小程序订单'
         when `bc`.`sold_way` = 0 then '线上'
         when `bc`.`sold_way` = 1 then '线下'
         else null
@@ -431,10 +442,14 @@
             DATE_FORMAT(#{soldEndDate},'%Y-%m-%d'))
         </if>
         <if test="soldWays != null and soldWays.size() > 0">
-            and `bc`.`sold_way` in
+            and (`bc`.`sold_way` in
             <foreach collection="soldWays" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
+            <if test="remark != null and remark != ''">
+                or `bc`.remark = #{remark}
+            </if>
+            )
         </if>
         <if test="chargeStatus != null and chargeStatus.size() > 0">
             and `bc`.`charge_status` in

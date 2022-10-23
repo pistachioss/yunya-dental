@@ -73,6 +73,9 @@ public class DiscountBiz {
   public PageInfo<CardStatisticsVo> getCardStatisticsPage(
       Integer couponId, CardStatisticsQuery query) {
     Page<CardStatisticsVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    if(query.getSoldWays().contains(2)){
+      query.setRemark("小程序虚拟服务售卖");
+    }
     List<CardStatisticsVo> cardStatisticsVos =
         cardMapper.listCardByParam(
             query.getCardNumber(),
@@ -85,6 +88,7 @@ public class DiscountBiz {
             query.getActiveEndDate(),
             query.getSoldWays(),
             query.getChargeStatus(),
+            query.getRemark(),
             couponId);
     cardStatisticsVos.forEach(
         vo -> {
@@ -150,6 +154,9 @@ public class DiscountBiz {
    */
   public PageInfo<CardSoldStatisticsVo> getCardSoldPage(CardSoldStatisticsQuery query) {
     Page<CardSoldStatisticsVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    if(query.getSoldWays().contains(2)){
+      query.setRemark("小程序虚拟服务售卖");
+    }
     cardMapper.listAllCardSoldParam(
         query.getCouponName(),
         query.getCouponTypes(),
@@ -160,6 +167,7 @@ public class DiscountBiz {
         query.getSoldStartDate(),
         query.getSoldEndDate(),
         query.getSoldWays(),
+        query.getRemark(),
         query.getChargeStatus());
     return new PageInfo<>(page);
   }
@@ -173,6 +181,9 @@ public class DiscountBiz {
   public PageInfo<CouponSoldDetailVo> getCouponSoldDetailPage(
       Integer couponId, CouponSoldDetailQuery query) {
     Page<CouponSoldDetailVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    if(query.getSoldWays().contains(2)){
+      query.setRemark("小程序虚拟服务售卖");
+    }
     cardMapper.listCouponSoldDetailByParam(
         query.getCardNumber(),
         query.getSoldTarget(),
@@ -182,6 +193,7 @@ public class DiscountBiz {
         query.getSoldEndDate(),
         query.getSoldWays(),
         query.getChargeStatus(),
+        query.getRemark(),
         couponId);
     return new PageInfo<>(page);
   }
@@ -373,6 +385,9 @@ public class DiscountBiz {
    * @return list
    */
   public List<CardStatisticsVo> getCardStatisticsList(Integer couponId, CardStatisticsQuery query) {
+    if(query.getSoldWays().contains(2)){
+      query.setRemark("小程序虚拟服务售卖");
+    }
     return cardMapper.listCardByParam(
         query.getCardNumber(),
         query.getAllocateOrgIds(),
@@ -384,6 +399,7 @@ public class DiscountBiz {
         query.getActiveEndDate(),
         query.getSoldWays(),
         query.getChargeStatus(),
+        query.getRemark(),
         couponId);
   }
 
@@ -415,6 +431,9 @@ public class DiscountBiz {
    * @return list
    */
   public List<CardSoldStatisticsVo> getCardSoldList(CardSoldStatisticsQuery query) {
+    if(query.getSoldWays().contains(2)){
+      query.setRemark("小程序虚拟服务售卖");
+    }
     return cardMapper.listAllCardSoldParam(
         query.getCouponName(),
         query.getCouponTypes(),
@@ -425,6 +444,7 @@ public class DiscountBiz {
         query.getSoldStartDate(),
         query.getSoldEndDate(),
         query.getSoldWays(),
+         query.getRemark(),
         query.getChargeStatus());
   }
 
@@ -436,6 +456,9 @@ public class DiscountBiz {
    */
   public List<CouponSoldDetailVo> getCouponSoldDetailList(
       Integer couponId, CouponSoldDetailQuery query) {
+    if(query.getSoldWays().contains(2)){
+      query.setRemark("小程序虚拟服务售卖");
+    }
     return cardMapper.listCouponSoldDetailByParam(
         query.getCardNumber(),
         query.getSoldTarget(),
@@ -445,6 +468,7 @@ public class DiscountBiz {
         query.getSoldEndDate(),
         query.getSoldWays(),
         query.getChargeStatus(),
+        query.getRemark(),
         couponId);
   }
 

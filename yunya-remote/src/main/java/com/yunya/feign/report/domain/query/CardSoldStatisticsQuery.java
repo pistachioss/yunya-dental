@@ -31,8 +31,10 @@ public class CardSoldStatisticsQuery extends PageQuery {
 	private LocalDate soldStartDate;
 	@ApiModelProperty(value = "售出结束日期")
 	private LocalDate soldEndDate;
-	@ApiModelProperty(value = "线上/线下（0-线上 1-线下）")
+	@ApiModelProperty(value = "线上/线下（0-线上 1-线下  2-小程序订单）")
 	private List<Integer> soldWays;
 	@ApiModelProperty(value = "收费状态（0-否 1-是）")
 	private List<Integer> chargeStatus;
+	@ApiModelProperty(value = "备注 后端使用")
+	private String remark;
 }

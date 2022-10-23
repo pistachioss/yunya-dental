@@ -25,6 +25,7 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
             @Param("activeEndDate") LocalDate activeEndDate,
             @Param("soldWays") List<Integer> soldWays,
             @Param("chargeStatus") List<Integer> chargeStatus,
+            @Param("remark") String remark,
             @Param("couponId") Integer couponId);
 
     /**
@@ -54,6 +55,7 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
             @Param("soldEndDate") LocalDate soldEndDate,
             @Param("soldWays") List<Integer> soldWays,
             @Param("chargeStatus") List<Integer> chargeStatus,
+            @Param("remark") String remark,
             @Param("couponId") Integer couponId);
 
     /**
@@ -81,6 +83,7 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
             @Param("soldStartDate") LocalDate soldStartDate,
             @Param("soldEndDate") LocalDate soldEndDate,
             @Param("soldWays") List<Integer> soldWays,
+            @Param("remark") String remark,
             @Param("chargeStatus") List<Integer> chargeStatus);
 
     /**

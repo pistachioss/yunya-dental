@@ -3,6 +3,7 @@ package com.yunya365.mini.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.form.BannerAddForm;
 import com.yunya.feign.ivy_mini.domain.vo.BannerVO;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -31,6 +32,7 @@ public class BannerPcController extends PcBaseController{
 
     @PostMapping("/wechat/banner/findlist")
     @ApiOperation("后台-banner-列表")
+    @IgnoreUserToken
     public ResponseResult<List<BannerVO>> findList() {
         return ResponseUtil.success(bannerService.findList());
     }

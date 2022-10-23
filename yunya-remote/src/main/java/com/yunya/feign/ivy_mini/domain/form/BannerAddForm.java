@@ -18,9 +18,9 @@ public class BannerAddForm {
     @ApiModelProperty(value = "图片地址")
     @NotNull(message = "图片地址不能为空")
     private String imageUrl;
-    @ApiModelProperty(value = "链接类型 0空白1产品 2文章")
+    @ApiModelProperty(value = "链接类型 0空白 1护理用品(产品) 2文章 3.口腔服务")
     @NotNull(message = "链接类型不能为空")
     private Integer linkType;
-    @ApiModelProperty(value = "绑定跳转的产品id/文章id(链接内容)")
+    @ApiModelProperty(value = "绑定跳转的产品id/文章id(链接内容)/卡券id")
     private Integer productId;
 }

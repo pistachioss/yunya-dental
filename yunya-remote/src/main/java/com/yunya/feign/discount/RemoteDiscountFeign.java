@@ -95,6 +95,9 @@ public interface RemoteDiscountFeign {
     @RequestMapping(value = "/coupon/list/ids", method = RequestMethod.POST)
     List<ProductBO> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids);
 
+    @PostMapping(value = "/coupon/list")
+    ResponseResult<PageInfo<CouponCommonInfoVO>> findCouponList(@RequestBody CouponCommonInfoQuery query);
+
     @RequestMapping(value = "/coupon/lock/stock", method = RequestMethod.POST)
     void lockVirtualStock(@Valid @RequestBody List<LockStockForm> form);
 

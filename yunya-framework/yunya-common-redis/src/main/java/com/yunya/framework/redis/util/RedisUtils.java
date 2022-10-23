@@ -13,8 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -37,10 +36,12 @@ public class RedisUtils {
   private ValueOperations<String, String> valueOperations;
   private final ZSetOperations<String, String> zSetOps;
   private final GeoOperations<String, String> opsForGeo;
+  private final HashOperations<String, Object, Object> opsForHash;
 
   public RedisUtils(RedisTemplate<String, String> redisTemplate) {
     zSetOps = redisTemplate.opsForZSet();
     opsForGeo = redisTemplate.opsForGeo();
+    opsForHash = redisTemplate.opsForHash();
   }
 
   /** 默认过期时长(24h)，单位：秒 */
@@ -376,5 +377,70 @@ public class RedisUtils {
    */
   public Long zRem(@NonNull String key, Object... members) {
     return zSetOps.remove(key, members);
+  }
+
+  /*****************************************hash相关操作*****************************************************/
+  /**
+   * 哈希表中的多个新建字段
+   * @param key key
+   * @param map map
+   */
+  public <K, V> void hmSet(
+          @NonNull String key, @NonNull Map<K, V> map) {
+    opsForHash.putAll(key, map);
+  }
+
+  /**
+   * 哈希表中的一个新建字段
+   * @param key
+   * @param hashKey
+   * @param value
+   */
+  public void hput(String key,String hashKey,Object value) {
+    opsForHash.put(key,hashKey,value);
+  }
+
+  public void hPutAndExpire(String key,String hashKey,Object value, long seconds) {
+    try {
+      redisTemplate.execute((RedisCallback<Object>) connection -> {
+        connection.hSet(key.getBytes(), hashKey.getBytes(), value.toString().getBytes());
+        connection.expire(key.getBytes(), seconds);
+        return null;
+      });
+    } catch (Exception e) {
+      log.error("hash 设置过期时间异常", e);
+    }
+
+  }
+
+  /**
+   * 返回哈希表中指定字段的值。
+   * @param key
+   * @param hashKey
+   * @return
+   */
+  public <T> T hget(String key, Object hashKey) {
+    return (T) opsForHash.get(key,hashKey);
+  }
+
+  /**
+   * 返回哈希表 key 中，所有的域和值
+   * @param key:
+   * @return Map<K,V>
+   */
+  public <K, V> Map<K, V> hGetAll(@NonNull String key) {
+    Map<K, V> map = (Map<K, V>) opsForHash.entries(key);
+    return map;
+  }
+
+
+  /**
+   * 删除哈希表中指定字段的值。
+   * @param key
+   * @param hashKeys
+   * @return
+   */
+  public long hdelete(String key,Object... hashKeys) {
+    return opsForHash.delete(key,hashKeys);
   }
 }

@@ -360,4 +360,20 @@
       </if>
     order by crt_time desc
   </select>
+  <select id="orderCount" resultType="com.yunya.feign.ivy_mini.domain.vo.OrderCountVO">
+SELECT
+	count(CASE WHEN STATUS = 1 THEN id END) delivery,
+	count(CASE WHEN STATUS = 2 THEN id END) received,
+	count(
+		CASE
+		WHEN STATUS = 3
+		AND active_status = 0
+		AND product_type = 1 THEN
+			id
+		END
+	) used
+    FROM
+	order_info
+    where fans_id = #{fansId}
+  </select>
 </mapper>
