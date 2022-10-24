@@ -46,11 +46,13 @@ public class WxApi {
     }
 
     public JSONObject getWxResult(String url) {
+        log.info("微信get请求，url：{}", url);
         String resultStr = restTemplate.getForObject(url, String.class);
         return getRequestRes(resultStr);
     }
 
     public JSONObject wxPostObject(String url, Object obj) {
+        log.info("微信片post请求，url：{}", url);
         String resultStr = restTemplate.postForObject(url, obj, String.class);
         return getRequestRes(resultStr);
     }
