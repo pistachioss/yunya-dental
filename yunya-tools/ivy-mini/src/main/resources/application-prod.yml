@@ -27,8 +27,8 @@ wx:
   mini:
     appId: wxb0616466dce8bd5b
     appSecret: 64da90b96969b100260e27b47d64d3ee
-    corpId: ww853499493423c56e
-    corpSecret: Rzu-GfUVBgsKXGyD_3Tipfq6I_usU-sodY4U8MF1Cts
+    corpId: wxd9689a169e95dfaf
+    corpSecret: 8ROXjPVXT20Wnm-YAdDSMQ3ZuFRP94JGt5iz8kPoTIQ
     name: "云牙艾维口腔"
   pay:
     appId: wxb0616466dce8bd5b
