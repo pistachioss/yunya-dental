@@ -65,6 +65,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
         channelArray.add("文二西路门诊");
         channelArray.add("曙晖医疗投资管理有限公司");
         channelArray.add("杭州艾维医疗投资管理有限公司");
+
         for (AttendanceAddressSet addressSet : list) {
             if(!StringUtils.isEmpty(addressSet.getOrganizationName())){
                 if(channelArray.contains(addressSet.getOrganizationName())){
