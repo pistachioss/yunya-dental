@@ -19,6 +19,7 @@ import com.yunya.framework.common.utils.LocationUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.modules.employeeattend.mapper.AttendanceAddressSetMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,8 +65,10 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
         channelArray.add("文二西路门诊");
         channelArray.add("曙晖医疗投资管理有限公司");
         for (AttendanceAddressSet addressSet : list) {
-            if(channelArray.contains(addressSet.getOrganizationName())){
-                continue;
+            if(!StringUtils.isEmpty(addressSet.getOrganizationName())){
+                if(channelArray.contains(addressSet.getOrganizationName())){
+                    continue;
+                }
             }
             ClinicListVO clinicListVO = new ClinicListVO();
             clinicListVO.setId(addressSet.getOrgId());
