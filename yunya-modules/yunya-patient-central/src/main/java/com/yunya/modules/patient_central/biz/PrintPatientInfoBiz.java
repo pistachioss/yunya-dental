@@ -1,6 +1,7 @@
 package com.yunya.modules.patient_central.biz;
 
 import com.yunya.feign.patient_central.domain.query.PrintInfoQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientExpInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientMedicalRecordDetailVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PrintInfoVo;
@@ -13,6 +14,7 @@ import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +40,7 @@ public class PrintPatientInfoBiz {
     /** 系统服务Feign */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
-
+    @Autowired private PatientExpInfoMapper patientExpInfoMapper;
     /**
      * 返回患者打印相关信息
      * @param treatmentIds 患者就诊记录ID(就诊ID)
@@ -49,8 +51,16 @@ public class PrintPatientInfoBiz {
         List<PatientMedicalRecordDetailVo> medicalRecordDetails = new ArrayList<>();
         // 设置患者名字和病历编号
         PatientTotalInfoVo patientTotalInfo = this.patientBaseInfoBiz.findPatientTotalInfo(patientId);
+        PatientExpInfoVo expInfo = patientExpInfoMapper.selectByPatientId(patientId);
         printInfoVo.setMedicalNumber(patientTotalInfo.getMedicalNumber());
         printInfoVo.setPatientName(patientTotalInfo.getName());
+        printInfoVo.setAddress(expInfo.getAddress());
+        printInfoVo.setAge(patientTotalInfo.getAge());
+        printInfoVo.setCity(expInfo.getCity());
+        printInfoVo.setCountry(expInfo.getCountry());
+        printInfoVo.setProvince(expInfo.getProvince());
+        printInfoVo.setGender(patientTotalInfo.getGender());
+        printInfoVo.setMobile(patientTotalInfo.getMobile());
         // 设置患者会员类型
         Integer memberTypeId = patientTotalInfo.getMemberTypeId();
         if (memberTypeId != null) {

@@ -29,4 +29,20 @@ public class PrintInfoVo implements Serializable {
     private String lastTreatmentDate;
     @ApiModelProperty(value = "病历记录详情")
     private List<PatientMedicalRecordDetailVo> medicalRecordDetails;
+
+
+    @ApiModelProperty(value = "性别 0-男；1-女；2-未知")
+    private Byte gender;
+    @ApiModelProperty(value = "年龄")
+    private Integer age;
+    @ApiModelProperty(value = "电话")
+    private String mobile;
+    @ApiModelProperty("家庭详细地址")
+    private String address;
+    @ApiModelProperty("省")
+    private String province;
+    @ApiModelProperty("市")
+    private String city;
+    @ApiModelProperty("区")
+    private String country;
 }
