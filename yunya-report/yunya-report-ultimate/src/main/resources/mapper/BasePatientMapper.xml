@@ -1105,6 +1105,7 @@
     <select id="selectEmployeeReceptionPatientList"
             resultType="com.yunya.feign.report.domain.vo.EmployeeReceptionPatientVO">
         SELECT
+            bp.patient_id AS patientId,
             bp.name AS patientName,
             bp.mobile,
             bp.medical_number AS medicalNumber,

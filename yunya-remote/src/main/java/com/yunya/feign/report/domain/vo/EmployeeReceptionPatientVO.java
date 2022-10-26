@@ -20,6 +20,9 @@ import java.util.Date;
 @ToString
 @ApiModel("个人接诊患者数据模型")
 public class EmployeeReceptionPatientVO implements Serializable {
+    /** 患者id */
+    @ApiModelProperty("患者id")
+    private Integer patientId;
 
     /** 序号 */
     @Excel(name = "序号")
