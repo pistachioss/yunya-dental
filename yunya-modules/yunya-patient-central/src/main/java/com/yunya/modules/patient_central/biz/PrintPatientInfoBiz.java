@@ -58,10 +58,12 @@ public class PrintPatientInfoBiz {
         PatientExpInfoVo expInfo = patientExpInfoMapper.selectByPatientId(patientId);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date birthday = null;
-        try {
-            birthday = simpleDateFormat.parse(patientTotalInfo.getBirthday());
-        } catch (ParseException e) {
-            e.printStackTrace();
+        if(patientTotalInfo.getBirthday() != null){
+            try {
+                birthday = simpleDateFormat.parse(patientTotalInfo.getBirthday());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
         if (birthday != null) {
             // 计算年龄
