@@ -119,7 +119,8 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
         entity.setVisitClinic(str);
         //测试用，发布切换
 //        entity.setCrtId(1);
-        entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        entity.setCrtId(userId);
         entity.setCrtTime(new Date(System.currentTimeMillis()));
         mapper.insertSelective(entity);
         //科室id数组
@@ -145,9 +146,9 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
 
         String str= StringUtils.join(form.getVisitClinicIds(),",");
         expertIntroduction.setVisitClinic(str);
-//        expertIntroduction.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        expertIntroduction.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         //测试用，发布切换
-        expertIntroduction.setUptId(1);
+//        expertIntroduction.setUptId(1);
         expertIntroduction.setUpdTime(new Date(System.currentTimeMillis()));
 
         int result = mapper.updateByPrimaryKeySelective(expertIntroduction);
