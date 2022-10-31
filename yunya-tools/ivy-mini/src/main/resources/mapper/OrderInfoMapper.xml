@@ -382,6 +382,6 @@ SELECT
         FROM
 	    order_info
         WHERE
-	    TO_DAYS(crt_time) = TO_DAYS(now()) and status != 0
+	    TO_DAYS(crt_time) = TO_DAYS(now()) and status != 0 and status != 4
   </select>
 </mapper>
