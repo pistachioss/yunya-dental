@@ -53,6 +53,13 @@ public class OrderPcController extends PcBaseController{
         return ResponseUtil.success(orderAdminiService.findList(form));
     }
 
+    @GetMapping("/order/findcount")
+    @ApiOperation("后台-订单-数量提醒")
+    @IgnoreUserToken
+    public ResponseResult<Integer> findCount() {
+        return ResponseUtil.success(orderAdminiService.findCount());
+    }
+
     @ApiOperation("后台-订单-发货")
     @PutMapping("/order/update")
     @CurrentUser

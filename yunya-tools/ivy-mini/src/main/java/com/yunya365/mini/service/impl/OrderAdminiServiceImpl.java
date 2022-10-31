@@ -24,7 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 简介:
@@ -73,7 +76,10 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         }
         return new PageInfo<>(result);
     }
-
+    public Integer findCount() {
+        Integer result  = mapper.findCount();
+        return result;
+    }
     public ResponseResult update(OrderUpdateForm form) {
         Integer id = form.getId();
         OrderInfo order = mapper.selectByPrimaryKey(id);

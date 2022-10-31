@@ -376,4 +376,12 @@ SELECT
 	order_info
     where fans_id = #{fansId}
   </select>
+  <select id="findCount" resultType="Integer">
+        SELECT
+	    COUNT(*)
+        FROM
+	    order_info
+        WHERE
+	    TO_DAYS(crt_time) = TO_DAYS(now())
+  </select>
 </mapper>

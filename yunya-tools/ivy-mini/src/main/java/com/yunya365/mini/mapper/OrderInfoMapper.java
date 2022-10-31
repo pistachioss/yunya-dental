@@ -25,4 +25,6 @@ public interface OrderInfoMapper extends Mapper<OrderInfo>, BaseMapper<OrderInfo
     List<OrderInfo> myList(@Param("fansId") Integer fansId, @Param("query")MyOrderQuery query);
 
     OrderCountVO orderCount(OrderCountQuery query);
+
+    Integer findCount();
 }
