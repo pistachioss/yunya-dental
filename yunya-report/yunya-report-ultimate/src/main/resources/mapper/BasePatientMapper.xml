@@ -1100,4 +1100,67 @@
         </where>
         ORDER BY bb.order_date DESC
     </select>
+
+    <!--根据条件查询个人接诊患者报表-->
+    <select id="selectEmployeeReceptionPatientList"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeReceptionPatientVO">
+        SELECT
+            bp.patient_id AS patientId,
+            bp.name AS patientName,
+            bp.mobile,
+            bp.medical_number AS medicalNumber,
+            bp.birthday,
+            bp.last_visit_date AS lastVisitDate,
+            be.employee_name AS dentistName,
+            bo.abbreviation
+        FROM base_patient bp
+        INNER JOIN (
+            SELECT
+                btp.patient_id,
+                btp.registered_dentist_id,
+                btp.org_id
+            FROM base_treatment_process btp
+            <where>
+                <if test="query.orgIds!=null and query.orgIds.size()>0">
+                    AND btp.org_id IN
+                    <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="query.employeeIds != null and query.employeeIds.size > 0">
+                    AND btp.registered_dentist_id IN
+                    <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="query.dateType==0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType==1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(btp.treat_start_time, '%Y-%m') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType==2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(btp.treat_start_time, '%Y') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(btp.treat_start_time, '%Y') &lt;= #{query.endDate}
+                    </if>
+                </if>
+            </where>
+            GROUP BY btp.patient_id, btp.registered_dentist_id, btp.org_id
+        ) btp ON btp.patient_id = bp.patient_id
+        LEFT JOIN base_employee be ON be.user_id = btp.registered_dentist_id
+        LEFT JOIN base_organization bo ON bo.org_id = btp.org_id
+    </select>
 </mapper>
