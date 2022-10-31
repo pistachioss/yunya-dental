@@ -123,7 +123,7 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
         return orderItemBOS;
     }
 
-    private CartItem getCartItem(Integer fansId, Integer productId, Integer productType) {
+    private CartItem getCartItem(Integer fansId, Integer productId, Byte productType) {
         Wrapper<CartItem> wrapper = Wrappers.lambdaQuery(CartItem.class)
                 .eq(CartItem::getFansId, fansId).eq(CartItem::getProductId, productId).eq(CartItem::getProductType, productType);
         return baseMapper.selectOne(wrapper);

@@ -32,5 +32,5 @@ public class AddCartModel {
     private String productPic;
     @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）", required = true)
     @NotNull
-    private Integer productType;
+    private Byte productType;
 }
