@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
+import com.google.common.base.Joiner;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.form.UpdateCartForm;
 import com.yunya.feign.ivy_mini.domain.model.AddCartModel;
@@ -46,14 +47,18 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
         List<CartItem> list = ChainWrappers.lambdaQueryChain(baseMapper).eq(CartItem::getFansId, userID).list();
         CartVO cartVO = new CartVO();
         if (CollectionUtils.isNotEmpty(list)) {
-            Set<Integer> productIds = list.stream().map(CartItem::getProductId).collect(toSet());
+            Set<Integer> goodsProductIds = list.stream().filter(t -> Objects.equals(t.getProductType().intValue(), 0)).map(CartItem::getProductId).collect(toSet());
+            Set<Integer> virtualProductIds = list.stream().filter(t -> Objects.equals(t.getProductType().intValue(), 1)).map(CartItem::getProductId).collect(toSet());
             //商品库存信息
-            List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(productIds, FALSE.getCode());
-            Map<Integer, Integer> map = orderItemBOS.stream().collect(toMap(OrderItemBO::getProductId, OrderItemBO::getStock, (o, n) -> n));
+            List<OrderItemBO> orderItemBOS = productService.listProductOrderItem(goodsProductIds, FALSE.getCode());
+            //虚拟服务
+            List<OrderItemBO> virtualBOS = productService.listProductOrderItem(virtualProductIds, TRUE.getCode());
+            orderItemBOS.addAll(virtualBOS);
+            Map<String, Integer> map = orderItemBOS.stream().collect(toMap(t -> Joiner.on(":").join(t.getProductId(), t.getProductType()), OrderItemBO::getStock, (o, n) -> n));
             List<CartItemVO> itemVOS = list.stream()
                     .map(t -> BeanCopierUtils.generalCopyBean(t, CartItemVO.class)).collect(toList());
             itemVOS.stream()
-                    .filter(t -> map.containsKey(t.getProductId()) && map.get(t.getProductId()) - t.getQuantity() >= 0)
+                    .filter(t -> map.containsKey(t.getProductId() + ":" + t.getProductType()) && map.get(t.getProductId() + ":" + t.getProductType()) - t.getQuantity() >= 0)
                     .forEach(t -> t.setStock(true));
             BigDecimal totalPrice = list.stream().map(t -> t.getProductPrice().multiply(BigDecimal.valueOf(t.getQuantity())))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -68,7 +73,7 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
     public void add(AddCartModel model) {
         Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
         String userName = BaseContextHandler.getName();
-        CartItem existItem = getCartItem(userID, model.getProductId());
+        CartItem existItem = getCartItem(userID, model.getProductId(), model.getProductType());
         if (Objects.nonNull(existItem)) {
             existItem.setQuantity(existItem.getQuantity() + model.getQuantity());
             updateById(existItem);
@@ -118,9 +123,9 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
         return orderItemBOS;
     }
 
-    private CartItem getCartItem(Integer fansId, Integer productId) {
+    private CartItem getCartItem(Integer fansId, Integer productId, Integer productType) {
         Wrapper<CartItem> wrapper = Wrappers.lambdaQuery(CartItem.class)
-                .eq(CartItem::getFansId, fansId).eq(CartItem::getProductId, productId);
+                .eq(CartItem::getFansId, fansId).eq(CartItem::getProductId, productId).eq(CartItem::getProductType, productType);
         return baseMapper.selectOne(wrapper);
     }
 }
