@@ -23,7 +23,7 @@ public class PatientKinRelationVo implements Serializable {
     /**
      * 主键 , id为0表示转介绍数据
      */
-    @ApiModelProperty("主键id, id为0表示转介绍数据")
+    @ApiModelProperty("主键id, id为-1表示转介绍数据")
     private Integer id;
 
     /**

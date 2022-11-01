@@ -54,50 +54,55 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     List<PatientKinRelationVo> resultList = patientKinRelationMapper.selectListByPatientId(patientId);
     // 转介绍人
     PatientBaseInfo introducer = patientBaseInfoBiz.findPatientIntroducerByPatientId(patientId);
-    resultList = mergeIntroducer(introducer, resultList);
+    resultList = mergeIntroducer(patientId, introducer, resultList);
     return PageUtl.doPage(query, resultList);
   }
 
   /**
-   * 转介绍人数据合并到亲属关系列表中
+   * 将转介绍人数据合并到亲属关系列表中
    *
+   * @param patientId
    * @param introducer
    * @param resultList
    */
-  private List<PatientKinRelationVo> mergeIntroducer(PatientBaseInfo introducer, List<PatientKinRelationVo> resultList) {
+  private List<PatientKinRelationVo> mergeIntroducer(Integer patientId, PatientBaseInfo introducer, List<PatientKinRelationVo> resultList) {
     List<PatientKinRelationVo> result = new ArrayList<>();
-    PatientKinRelationVo introPatientKin = null;
+    // 是否需要添加到亲属关系列表：
+    // 1、必须存在转介绍患者，
+    // 2、亲属关系列表中不存在该转介绍患者的亲属关系记录
+    Boolean needAddIntro = StringHelper.isNotNull(introducer);
     for (PatientKinRelationVo vo : resultList) {
       if (StringHelper.isNotNull(introducer)) {
         Integer introducerId = introducer.getId();
         Integer linkedPatientId = vo.getLinkedPatientId();
         if (introducerId.equals(linkedPatientId)) {
-          introPatientKin = introConvertPatientKin(introducer);
+          needAddIntro = false;
         }
       }
     }
     // 过滤掉已删除记录
     resultList = resultList.stream().filter(vo->vo.getInservice()).collect(Collectors.toList());
     // 转介绍关系的数据置顶
-    if (StringHelper.isNotNull(introPatientKin)) {
-      result.add(introPatientKin);
+    if (needAddIntro) {
+      result.add(intro2PatientKin(patientId, introducer));
     }
     if (StringHelper.isNotEmpty(resultList)) {
       result.addAll(resultList);
     }
-    return resultList;
+    return result;
   }
 
   /**
    * 将转介绍患者转换成 转介绍关系
    *
+   * @param patientId
    * @param introducer
    * @return
    */
-  private PatientKinRelationVo introConvertPatientKin(PatientBaseInfo introducer) {
+  private PatientKinRelationVo intro2PatientKin(Integer patientId, PatientBaseInfo introducer) {
     PatientKinRelationVo kin = new PatientKinRelationVo();
-    kin.setId(0);
-    kin.setPatientId(introducer.getOriginId());
+    kin.setId(-1);
+    kin.setPatientId(patientId);
     kin.setLinkedPatientId(introducer.getId());
     kin.setRelationName(introducer.getName());
     kin.setGender(introducer.getGender());
@@ -128,12 +133,12 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
       patientKinRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientKinRelation.setCrtName(BaseContextHandler.getName());
       patientKinRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      mapper.insert(patientKinRelation);
+      mapper.insertSelective(patientKinRelation);
       PatientKinRelation linkedPatient = new PatientKinRelation();
       BeanUtils.copyProperties(patientKinRelation, linkedPatient);
       linkedPatient.setPatientId(patientKinRelation.getLinkedPatientId());
       linkedPatient.setLinkedPatientId(patientKinRelation.getPatientId());
-      mapper.insert(linkedPatient);
+      mapper.insertSelective(linkedPatient);
     }
     return ResponseUtil.success();
   }
@@ -145,7 +150,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
    */
   public void update(PatientKinRelationForm patientKinRelationForm) {
     Integer id = patientKinRelationForm.getId();
-    if (id != 0) {
+    if (id != -1) {
       PatientKinRelation patientKinRelation = new PatientKinRelation();
       BeanUtils.copyProperties(patientKinRelationForm, patientKinRelation);
       patientKinRelation.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
@@ -164,7 +169,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
         mapper.updateByPrimaryKeySelective(linkedPatient);
       }
     } else {
-      // id = 0表示修改了列表中的转介绍患者
+      // id == -1表示当前修改，是对列表中的转介绍患者进行修改
       PatientKinRelationModel model = new PatientKinRelationModel();
       model.setKinshipId(patientKinRelationForm.getKinshipId());
       model.setPatientId(patientKinRelationForm.getPatientId());
