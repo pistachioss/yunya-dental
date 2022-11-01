@@ -24,7 +24,7 @@
     <result column="confirm_status" property="confirmStatus" jdbcType="TINYINT" />
     <result column="delete_status" property="deleteStatus" jdbcType="TINYINT" />
 
-    <result column="pick_up_clinic" property="pickUpClinic" jdbcType="VARCHAR" />
+    <result column="pick_up_clinic" property="pickUpClinic" jdbcType="INTEGER" />
     <result column="receiver_name" property="receiverName" jdbcType="VARCHAR" />
     <result column="receiver_phone" property="receiverPhone" jdbcType="VARCHAR" />
     <result column="receiver_post_code" property="receiverPostCode" jdbcType="VARCHAR" />

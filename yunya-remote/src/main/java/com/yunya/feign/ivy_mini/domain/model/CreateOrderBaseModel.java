@@ -26,5 +26,5 @@ public class CreateOrderBaseModel {
     @ApiModelProperty(value = "自提定位地址")
     private String locationAddress;
     @ApiModelProperty(value = "自提门诊")
-    private String pickUpClinic;
+    private Integer pickUpClinic;
 }
