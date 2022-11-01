@@ -543,6 +543,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportEmployeePersonalSupplyWorkloadDetailList(
       HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) throws IOException {
+    query.setWhetherPage(false);
     PageInfo<EmployeePersonalSupplyWorkloadDetailVO> pageInfo = findSupplyWorkloadDetailList(query);
     List<EmployeePersonalSupplyWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalSupplyWorkloadDetailVO> excelUtil =
