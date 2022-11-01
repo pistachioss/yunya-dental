@@ -153,6 +153,9 @@
       <if test="receiveTime != null">
         receive_time,
       </if>
+      <if test="hasSub != null">
+        has_sub,
+      </if>
       <if test="crtTime != null">
         crt_time,
       </if>
@@ -250,6 +253,9 @@
       </if>
       <if test="receiveTime != null">
         #{receiveTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="hasSub != null">
+        #{hasSub,jdbcType=BIT},
       </if>
       <if test="crtTime != null">
         #{crtTime,jdbcType=TIMESTAMP},

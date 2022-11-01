@@ -682,7 +682,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setStatus(CLOSE.getCode().byteValue());
             orderInfo.setUpdTime(new Date());
             baseMapper.updateByPrimaryKeySelective(orderInfo);
-            if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
+            if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())
+                    && (Objects.isNull(orderInfo.getHasSub()) || Objects.equals(false, orderInfo.getHasSub()))) {
                 //取消售出卡券
                 cancelSoldCard(orderInfo);
                 virtualService.deleteOrderCard(orderId);
