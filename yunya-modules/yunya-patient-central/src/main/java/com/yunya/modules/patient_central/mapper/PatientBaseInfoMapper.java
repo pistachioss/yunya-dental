@@ -234,4 +234,12 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @return
    */
   List<SelfRegistrationPatientVO> selectSelfRegistrationPatientList(@Param("query") SelfRegistrationPatientQuery query);
+
+  /**
+   * 根据患者id查询患者的转介绍患者信息
+   *
+   * @param patientId
+   * @return
+   */
+  PatientBaseInfo selectPatientIntroducerByPatientId(@Param("patientId") Integer patientId);
 }

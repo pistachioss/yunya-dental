@@ -426,5 +426,19 @@
         </where>
         ORDER BY pbi.crt_time DESC
     </select>
+
+    <!--根据患者id查询患者的转介绍患者信息-->
+    <select id="selectPatientIntroducerByPatientId"
+            resultType="com.yunya.models.patient_central.PatientBaseInfo">
+        select p1.*
+        from patient_base_info p1
+        INNER JOIN patient_base_info p2 ON p1.id = p2.origin_id and p2.origin_type = 2
+        <where>
+            AND p2.inservice = 1
+            <if test="patientId != null">
+               AND p2.id = #{patientId}
+            </if>
+        </where>
+    </select>
 </mapper>
 

@@ -28,7 +28,7 @@
         upd_time AS updTime
     FROM patient_communication
     <where>
-      inservice = true
+      inservice = 1
       <if test="query.patientId != null">
         AND patient_id = #{query.patientId}
       </if>
