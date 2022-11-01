@@ -610,12 +610,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             log.info("微信退款解密数据：{}", reqInfo);
             // 订单号
             String orderSn = reqInfo.getOutTradeNo();
+            //商户退款单号
+            String outRefundNo = reqInfo.getOutRefundNo();
             //退款状态 SUCCESS-退款成功  CHANGE-退款异常  REFUNDCLOSE—退款关闭
             String refundStatus = reqInfo.getRefundStatus();
             //退款成功时间
             String successTime = reqInfo.getSuccessTime();
             //本次支付的订单
-            OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, orderSn).one();
+            OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, outRefundNo).one();
             if (Objects.isNull(orderInfo)) {
                 throw ClientServiceException.wrap(ORDER_DATA_ERROR);
             }
