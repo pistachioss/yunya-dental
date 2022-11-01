@@ -162,7 +162,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer quantity = model.getQuantity();
         //商品类型
         Integer productType = model.getProductType();
-        List<OrderItemBO> itemBoList = null;
+        List<OrderItemBO> itemBoList;
         try {
             //加锁
             locked = lock(CREATE_ORDER_LOCK, productId, userId);
@@ -183,12 +183,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             try {
                 //创建订单
                 OrderInfo orderInfo = assembleOrder(userId, model, itemBoList, model.getFansReceiveAddressId());
+                baseMapper.insertDynamic(orderInfo);
                 WxPaymentVO wxPaymentVO = null;
-                if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
+                if (orderInfo.getPayAmount().compareTo(BigDecimal  .ZERO) > 0) {
                     //生成支付单
                     wxPaymentVO = wxPay(orderInfo);
                 }
-                baseMapper.insertDynamic(orderInfo);
                 List<OrderItem> itemList = generateItem(orderInfo, itemBoList);
                 //保存预付单信息
                 wxPayInfoService.save(wxPaymentVO, orderInfo);
@@ -239,12 +239,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 orderInfo.setDeleteStatus(((byte)1));
                 orderInfo.setHasSub(true);
             }
+            baseMapper.insertDynamic(orderInfo);
             WxPaymentVO wxPaymentVO = null;
             if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
                 //生成支付单
                 wxPaymentVO = wxPay(orderInfo);
             }
-            baseMapper.insertDynamic(orderInfo);
             List<OrderItem> itemList;
             //虚拟服务多单合并
             if (Objects.equals(TRUE.getCode(), productType) && orderItemBOS.size() > 1) {

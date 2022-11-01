@@ -227,11 +227,11 @@
       <if test="deleteStatus != null">
         #{deleteStatus,jdbcType=TINYINT},
       </if>
-      <if test="pickUpClinic != null">
-        #{pickUpClinic,jdbcType=INTEGER},
-      </if>
       <if test="receiverName != null">
         #{receiverName,jdbcType=VARCHAR},
+      </if>
+      <if test="pickUpClinic != null">
+        #{pickUpClinic,jdbcType=INTEGER},
       </if>
       <if test="receiverPhone != null">
         #{receiverPhone,jdbcType=VARCHAR},
