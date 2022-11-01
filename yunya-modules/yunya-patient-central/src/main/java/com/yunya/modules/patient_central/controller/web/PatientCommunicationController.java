@@ -38,7 +38,6 @@ public class PatientCommunicationController {
      * @return
      */
     @ApiOperation("根据条件查询患者沟通记录列表")
-    @CurrentUser
     @PostMapping("/list")
     public ResponseResult<PageInfo<PatientCommunicationVO>> findList(@RequestBody @Validated PatientCommunicationQueryForm query) {
         PageInfo<PatientCommunicationVO> page =  patientCommunicationBiz.findList(query);
@@ -52,7 +51,6 @@ public class PatientCommunicationController {
      * @return
      */
     @ApiOperation("根据id查询沟通详情")
-    @CurrentUser
     @GetMapping("/one/{id}")
     public ResponseResult<PatientCommunicationInfoVO> findOneById(@PathVariable(value = "id") Integer id) {
         PatientCommunicationInfoVO info = patientCommunicationBiz.findOneById(id);
