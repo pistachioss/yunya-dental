@@ -517,20 +517,27 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         OrderInfo orderInfo = getById(orderId);
         checkOrder(userId, orderInfo, ORDER_CANCEL_ERROR, ORDER_CANCEL_STATUS_ERROR, PAY_PENDING.getCode());
-        orderInfo.setStatus(CLOSE.getCode().byteValue());
-        Date date = new Date();
-        orderInfo.setUpdTime(date);
-        orderInfo.setUpdId(userId);
-        baseMapper.updateByPrimaryKeySelective(orderInfo);
-        List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
-        //商店放回购物车或下订单页面
-        addCart(orderInfo, orderItems);
-        //释放库存
-        freeStock(orderInfo.getProductType().intValue(), orderItems);
-        if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
-            //取消售出卡券
-            cancelSoldCard(orderInfo);
-            virtualService.deleteOrderCard(orderId);
+        //更新合单虚拟服务
+        Integer parentOrderId = orderInfo.getParentOrderId();
+        if (Objects.nonNull(parentOrderId)) {
+            List<OrderInfo> mergeList = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, parentOrderId).list();
+            for (OrderInfo info : mergeList) {
+                info.setStatus(CLOSE.getCode().byteValue());
+                Date date = new Date();
+                info.setUpdTime(date);
+                info.setUpdId(userId);
+                baseMapper.updateByPrimaryKeySelective(info);
+                List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
+                //商店放回购物车或下订单页面
+                addCart(info, orderItems);
+                //释放库存
+                freeStock(info.getProductType().intValue(), orderItems);
+                if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())) {
+                    //取消售出卡券
+                    cancelSoldCard(info);
+                    virtualService.deleteOrderCard(orderId);
+                }
+            }
         }
     }
 
