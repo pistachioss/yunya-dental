@@ -313,6 +313,7 @@
         and order_type =  #{orderType}
       </if>
       <if test="name != null and name != ''">
+      AND delete_status = 0
       AND concat(IFNULL(od.receiver_name,''),
       IFNULL(od.receiver_phone,''),
       IFNULL(od.receiver_detail_address,''))
@@ -394,6 +395,6 @@ SELECT
         FROM
 	    order_info
         WHERE
-	    TO_DAYS(crt_time) = TO_DAYS(now()) and status != 0 and status != 4
+	    TO_DAYS(crt_time) = TO_DAYS(now()) and status != 0 and status != 4 and delete_status = 0
   </select>
 </mapper>
