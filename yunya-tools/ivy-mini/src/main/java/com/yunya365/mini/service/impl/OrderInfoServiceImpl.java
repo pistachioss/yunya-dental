@@ -519,24 +519,27 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         checkOrder(userId, orderInfo, ORDER_CANCEL_ERROR, ORDER_CANCEL_STATUS_ERROR, PAY_PENDING.getCode());
         //更新合单虚拟服务
         Integer parentOrderId = orderInfo.getParentOrderId();
+        List<OrderInfo> mergeList;
         if (Objects.nonNull(parentOrderId)) {
-            List<OrderInfo> mergeList = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, parentOrderId).list();
-            for (OrderInfo info : mergeList) {
-                info.setStatus(CLOSE.getCode().byteValue());
-                Date date = new Date();
-                info.setUpdTime(date);
-                info.setUpdId(userId);
-                baseMapper.updateByPrimaryKeySelective(info);
-                List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
-                //商店放回购物车或下订单页面
-                addCart(info, orderItems);
-                //释放库存
-                freeStock(info.getProductType().intValue(), orderItems);
-                if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())) {
-                    //取消售出卡券
-                    cancelSoldCard(info);
-                    virtualService.deleteOrderCard(orderId);
-                }
+            mergeList = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, parentOrderId).list();
+        } else {
+            mergeList = Lists.newArrayList(orderInfo);
+        }
+        for (OrderInfo info : mergeList) {
+            info.setStatus(CLOSE.getCode().byteValue());
+            Date date = new Date();
+            info.setUpdTime(date);
+            info.setUpdId(userId);
+            baseMapper.updateByPrimaryKeySelective(info);
+            List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
+            //商店放回购物车或下订单页面
+            addCart(info, orderItems);
+            //释放库存
+            freeStock(info.getProductType().intValue(), orderItems);
+            if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())) {
+                //取消售出卡券
+                cancelSoldCard(info);
+                virtualService.deleteOrderCard(orderId);
             }
         }
     }
@@ -1011,7 +1014,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private CreateOrderVO createVO(OrderInfo orderInfo, List<OrderItem> itemList, WxPaymentVO wxPaymentVO) {
         CreateOrderVO vo = new CreateOrderVO();
         PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+        //多单 取一个 订单放入orderId
         payOrderVO.setOrderId(orderInfo.getId());
+        if (Objects.nonNull(orderInfo.getHasSub()) && orderInfo.getHasSub()) {
+            payOrderVO.setOrderId(itemList.get(0).getOrderId());
+        }
         payOrderVO.setOrderDate(orderInfo.getCrtTime());
         payOrderVO.setPayDate(orderInfo.getPaymentTime());
         payOrderVO.setRemainDate("15:00");
