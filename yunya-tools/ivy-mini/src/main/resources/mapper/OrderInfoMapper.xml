@@ -126,6 +126,9 @@
       <if test="receiverName != null">
         receiver_name,
       </if>
+      <if test="pickUpClinic != null">
+        pick_up_clinic,
+      </if>
       <if test="receiverPhone != null">
         receiver_phone,
       </if>
@@ -223,6 +226,9 @@
       </if>
       <if test="deleteStatus != null">
         #{deleteStatus,jdbcType=TINYINT},
+      </if>
+      <if test="pickUpClinic != null">
+        #{pickUpClinic,jdbcType=INTEGER},
       </if>
       <if test="receiverName != null">
         #{receiverName,jdbcType=VARCHAR},
