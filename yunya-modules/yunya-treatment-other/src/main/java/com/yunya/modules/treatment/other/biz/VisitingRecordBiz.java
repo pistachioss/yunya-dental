@@ -566,6 +566,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 visitingRecordVo.setPatientRemark(patientTotalInfo.getRemarks());
                 visitingRecordVo.setMedicalNumber(patientTotalInfo.getMedicalNumber());
                 visitingRecordVo.setPatientKind(patientTotalInfo.getPatientKindName());
+                visitingRecordVo.setIsCommunicate(patientTotalInfo.getIsCommunicate());
                 // 设置患者过敏源
                 visitingRecordVo.setAllergen(patientTotalInfo.getAllergensDescriptions());
                 // 设置会员图标信息

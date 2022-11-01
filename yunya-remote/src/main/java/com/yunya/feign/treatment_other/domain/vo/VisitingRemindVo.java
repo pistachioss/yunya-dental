@@ -146,6 +146,10 @@ public class VisitingRemindVo implements Serializable {
     @ApiModelProperty(value = "患者类型")
     private String patientKind;
 
+    /** 沟通标识 */
+    @ApiModelProperty(value = "沟通标识")
+    private Boolean isCommunicate = false;
+
     @ApiModelProperty(value = "是否為初復診 0-初診； 1-復診")
     private Byte firstVisit;
 

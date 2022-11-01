@@ -200,7 +200,7 @@
             pei.profession,
             pei.heredity,
             pei.other_health as otherHealth,
-
+            IF(pc.num IS NULL, 0, 1) AS isCommunicate,
             IFNULL(pmi.member_type_id,mi.member_type_id) as memberTypeId
 
         from patient_base_info pbi
@@ -211,7 +211,9 @@
         select min(pmi.member_type_id) as member_type_id,pmr.secondary_card_id as secondary_card_id from patient_member_info pmi
         INNER JOIN patient_member_relation pmr on pmi.patient_id = pmr.master_card_id GROUP by pmr.secondary_card_id
         ) mi on pbi.id = mi.secondary_card_id
-
+        LEFT JOIN (
+            SELECT count(id) AS num, patient_id FROM patient_communication GROUP BY patient_id
+        ) pc ON pc.patient_id = pbi.id
         where pbi.id in
               <foreach collection="ids" index="index" item="id" open="(" separator="," close=")">
                   #{id}

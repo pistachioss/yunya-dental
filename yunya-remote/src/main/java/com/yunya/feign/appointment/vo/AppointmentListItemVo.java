@@ -1,8 +1,6 @@
 package com.yunya.feign.appointment.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -83,6 +81,10 @@ public class AppointmentListItemVo implements Serializable {
     /** 患者等级 */
     @ApiModelProperty(value = "患者等级")
     private String patientKind;
+    
+    /** 患者标识 */
+    @ApiModelProperty("患者标识")
+    private Boolean isCommunicate = false;
 
     /********************************  预约信息 *********************************/
 

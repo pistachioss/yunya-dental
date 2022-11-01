@@ -73,6 +73,9 @@ public class AppointmentUnDonePatientInfoVO implements Serializable {
   /** 患者备注 */
   @ApiModelProperty("患者备注")
   private String patientRemark;
+  /** 沟通标识 */
+  @ApiModelProperty("沟通标识")
+  private Boolean isCommunicate;
 
   /********************************  预约信息 *********************************/
   /** 预约医生id */

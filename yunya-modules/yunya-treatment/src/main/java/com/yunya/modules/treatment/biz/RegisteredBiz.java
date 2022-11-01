@@ -444,6 +444,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
                   StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
               patientEntity.setAllergen(patientTotalInfoVo.getAllergensDescriptions());
               patientEntity.setPatientKind(patientTotalInfoVo.getPatientKindName());
+              patientEntity.setIsCommunicate(patientTotalInfoVo.getIsCommunicate());
               // 设置会员类型图标
               if (StringHelper.isNotEmpty(memberTypeByIds)) {
                 List<MemberType> collect1 =

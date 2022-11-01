@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
-import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -198,6 +197,10 @@ public class VisitingRecordVo implements Serializable {
     /** 患者类型 */
     @ApiModelProperty(value = "患者类型")
     private String patientKind;
+
+    /** 沟通标识 */
+    @ApiModelProperty(value = "沟通标识")
+    private Boolean isCommunicate = false;
 
     /** 是否初诊，0-初诊，1-复诊 */
     @ApiModelProperty(value = "是否初诊，0-初诊，1-复诊")
