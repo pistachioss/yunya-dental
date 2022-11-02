@@ -1687,4 +1687,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     return new PageInfo<>(result);
   }
+
+  /**
+   * 根据患者id查询患者的转介绍患者信息
+   *
+   * @param patientId
+   * @return
+   */
+  public PatientBaseInfo findPatientIntroducerByPatientId(Integer patientId) {
+    return mapper.selectPatientIntroducerByPatientId(patientId);
+  }
 }

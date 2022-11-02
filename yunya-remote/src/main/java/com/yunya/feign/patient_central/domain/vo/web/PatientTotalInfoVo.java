@@ -49,6 +49,9 @@ public class PatientTotalInfoVo implements Serializable {
   /** 备注 备注 */
   private String remarks;
 
+  /** 沟通标识 */
+  private Boolean isCommunicate;
+
   /*************** 扩展信息 *****************/
   /** 患者类型 患者类型对应字典ID */
   private Integer patientKind;

@@ -10,21 +10,18 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br> 患者亲属关系信息查询QueryFrom
- *
- * @author: WY
- * @date 2020/7/29 11:08
- * @description:
+ * @author: chenlin
+ * @date: 2022/11/1 9:44
+ * @description: 沟通记录查询模型
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("患者亲属关系")
-public class PatientKinRelationQueryForm extends PageQuery implements Serializable {
-    /**
-     * 患者ID
-     */
-    @NotNull(message = "患者ID不能为空！")
-    @ApiModelProperty(value = "患者id",required = true)
+@ApiModel("沟通记录查询模型")
+public class PatientCommunicationQueryForm extends PageQuery implements Serializable {
+
+    /** 患者id */
+    @ApiModelProperty(value = "患者id", required = true)
+    @NotNull(message = "患者id不能为空")
     private Integer patientId;
 }

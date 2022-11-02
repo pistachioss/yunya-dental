@@ -11,16 +11,11 @@ import com.yunya.feign.patient_central.domain.model.PatientKinRelationModel;
 import com.yunya.feign.patient_central.domain.query.PatientKinRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientKinRelationVo;
 import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.patient_central.PatientKinRelation;
 import com.yunya.modules.patient_central.biz.PatientKinRelationBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -95,15 +90,7 @@ public class PatientKinRelationController {
   @ApiOperation("删除患者亲属关系")
   @DeleteMapping("/deleteById/{id}")
   public ResponseResult deleteById(@PathVariable("id") Integer id) {
-    PatientKinRelation patientKinRelation = patientKinRelationBiz.selectById(id);
-    if (patientKinRelation != null){
-      patientKinRelationBiz.delete(patientKinRelation);
-      PatientKinRelation kinRelationPatient = new PatientKinRelation();
-      kinRelationPatient.setPatientId(patientKinRelation.getLinkedPatientId());
-      kinRelationPatient.setLinkedPatientId(patientKinRelation.getPatientId());
-      patientKinRelationBiz.delete(kinRelationPatient);
-      return ResponseUtil.success();
-    }
-    return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到亲属关系", null);
+    patientKinRelationBiz.tombstone(id);
+    return ResponseUtil.success();
   }
 }
