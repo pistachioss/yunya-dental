@@ -1,10 +1,12 @@
 package com.yunya365.mini.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.github.binarywang.wxpay.bean.notify.*;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
-import com.github.binarywang.wxpay.bean.request.*;
+import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
+import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
@@ -31,7 +33,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya365.mini.config.WxMiniPayProperties;
 import com.yunya365.mini.entity.*;
 import com.yunya365.mini.enums.IvyMiniError;
 import com.yunya365.mini.mapper.OrderInfoMapper;
@@ -80,8 +81,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private IProductService productService;
     @Resource
-    private IOrderSettingService orderSettingService;
-    @Resource
     private IOrderItemService orderItemService;
     @Resource
     private DistributionServiceImpl distributionService;
@@ -102,7 +101,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private RedisUtils redisUtils;
     @Resource
-    private WxMiniPayProperties properties;
+    private IWxRequestRecordService wxRequestRecordService;
 
     @Override
     public OrderCountVO orderCount(OrderCountQuery query) {
@@ -275,8 +274,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public String wxNotify(HttpServletRequest request, HttpServletResponse response) {
         try {
             String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
-            log.info("微信回调结果：{}", xmlResult);
+            log.info("微信付款回调结果：{}", xmlResult);
             WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(xmlResult);
+            wxRequestRecordService.saveRecord(2, JSON.toJSONString(result), null);
             if (!Objects.equals(WxPayConstants.ResultCode.SUCCESS, result.getReturnCode())) {
                 return WxPayNotifyResponse.fail(result.getReturnMsg());
             }
@@ -613,6 +613,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
             log.info("微信退款回调结果：{}", xmlResult);
             WxPayRefundNotifyResult result = wxPayService.parseRefundNotifyResult(xmlResult);
+            wxRequestRecordService.saveRecord(3, JSON.toJSONString(result), null);
             if (!Objects.equals(WxPayConstants.ResultCode.SUCCESS, result.getReturnCode())) {
                 return WxPayNotifyResponse.fail(result.getReturnMsg());
             }
@@ -913,6 +914,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         WxPayUnifiedOrderRequest miniPayRequest = assemblePayModel(orderInfo);
         try {
             WxPayMpOrderResult result = wxPayService.createOrder(miniPayRequest);
+            wxRequestRecordService.saveRecord(0, JSON.toJSONString(miniPayRequest), JSON.toJSONString(result));
             return BeanCopierUtils.generalCopyBean(result, WxPaymentVO.class);
         } catch (WxPayException e) {
             log.error("微信支付失败！订单号：{},原因:{}", orderInfo.getOrderSn(), e.getMessage());
