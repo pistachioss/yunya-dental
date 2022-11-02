@@ -72,11 +72,12 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     // 2、亲属关系列表中不存在该转介绍患者的亲属关系记录（包括已删除的记录）
     Boolean needAddIntro = StringHelper.isNotNull(introducer);
     for (PatientKinRelationVo vo : resultList) {
-      if (StringHelper.isNotNull(introducer)) {
+      if (needAddIntro) {
         Integer introducerId = introducer.getId();
         Integer linkedPatientId = vo.getLinkedPatientId();
         if (introducerId.equals(linkedPatientId)) {
           needAddIntro = false;
+          break;
         }
       }
     }
