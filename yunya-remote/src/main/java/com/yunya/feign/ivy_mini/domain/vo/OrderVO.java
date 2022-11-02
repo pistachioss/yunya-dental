@@ -29,6 +29,8 @@ public class OrderVO {
     private String receiverName = "";
     @ApiModelProperty(value = "收货人电话")
     private String receiverPhone = "";
+
+
     /**
      * 微信用户id
      */
@@ -85,6 +87,9 @@ public class OrderVO {
     private Byte activeStatus;
     @ApiModelProperty(value = "商品类型：0->商品 1->虚拟服务 后台使用")
     private Byte productType;
-
+    @ApiModelProperty(value = "自提门诊Id")
+    private Integer clinicId;
+    @ApiModelProperty(value = "自提门诊")
+    private String clinicName;
 
 }

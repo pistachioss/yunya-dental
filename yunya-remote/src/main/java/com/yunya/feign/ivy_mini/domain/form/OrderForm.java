@@ -39,7 +39,11 @@ public class OrderForm extends PageQuery implements Serializable {
      */
     @ApiModelProperty(value = "订单类型：0->正常订单；1->秒杀订单；2-拼团订单")
     private Byte orderType;
-
+    @ApiModelProperty(value = "配送方式：0->自提 1->配送")
+    @NotNull(message = "配送方式不能为空")
+    private Byte deliveryType;
+    @ApiModelProperty(value = "自提门诊")
+    private Integer clinicId;
     /**
      * 创建时间
      */

@@ -162,7 +162,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer quantity = model.getQuantity();
         //商品类型
         Integer productType = model.getProductType();
-        List<OrderItemBO> itemBoList = null;
+        List<OrderItemBO> itemBoList;
         try {
             //加锁
             locked = lock(CREATE_ORDER_LOCK, productId, userId);
@@ -183,12 +183,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             try {
                 //创建订单
                 OrderInfo orderInfo = assembleOrder(userId, model, itemBoList, model.getFansReceiveAddressId());
+                baseMapper.insertDynamic(orderInfo);
                 WxPaymentVO wxPaymentVO = null;
-                if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
+                if (orderInfo.getPayAmount().compareTo(BigDecimal  .ZERO) > 0) {
                     //生成支付单
                     wxPaymentVO = wxPay(orderInfo);
                 }
-                baseMapper.insertDynamic(orderInfo);
                 List<OrderItem> itemList = generateItem(orderInfo, itemBoList);
                 //保存预付单信息
                 wxPayInfoService.save(wxPaymentVO, orderInfo);
@@ -239,12 +239,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 orderInfo.setDeleteStatus(((byte)1));
                 orderInfo.setHasSub(true);
             }
+            baseMapper.insertDynamic(orderInfo);
             WxPaymentVO wxPaymentVO = null;
             if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
                 //生成支付单
                 wxPaymentVO = wxPay(orderInfo);
             }
-            baseMapper.insertDynamic(orderInfo);
             List<OrderItem> itemList;
             //虚拟服务多单合并
             if (Objects.equals(TRUE.getCode(), productType) && orderItemBOS.size() > 1) {
@@ -517,20 +517,30 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         OrderInfo orderInfo = getById(orderId);
         checkOrder(userId, orderInfo, ORDER_CANCEL_ERROR, ORDER_CANCEL_STATUS_ERROR, PAY_PENDING.getCode());
-        orderInfo.setStatus(CLOSE.getCode().byteValue());
-        Date date = new Date();
-        orderInfo.setUpdTime(date);
-        orderInfo.setUpdId(userId);
-        baseMapper.updateByPrimaryKeySelective(orderInfo);
-        List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
-        //商店放回购物车或下订单页面
-        addCart(orderInfo, orderItems);
-        //释放库存
-        freeStock(orderInfo.getProductType().intValue(), orderItems);
-        if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
-            //取消售出卡券
-            cancelSoldCard(orderInfo);
-            virtualService.deleteOrderCard(orderId);
+        //更新合单虚拟服务
+        Integer parentOrderId = orderInfo.getParentOrderId();
+        List<OrderInfo> mergeList;
+        if (Objects.nonNull(parentOrderId)) {
+            mergeList = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, parentOrderId).list();
+        } else {
+            mergeList = Lists.newArrayList(orderInfo);
+        }
+        for (OrderInfo info : mergeList) {
+            info.setStatus(CLOSE.getCode().byteValue());
+            Date date = new Date();
+            info.setUpdTime(date);
+            info.setUpdId(userId);
+            baseMapper.updateByPrimaryKeySelective(info);
+            List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
+            //商店放回购物车或下订单页面
+            addCart(info, orderItems);
+            //释放库存
+            freeStock(info.getProductType().intValue(), orderItems);
+            if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())) {
+                //取消售出卡券
+                cancelSoldCard(info);
+                virtualService.deleteOrderCard(orderId);
+            }
         }
     }
 
@@ -610,12 +620,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             log.info("微信退款解密数据：{}", reqInfo);
             // 订单号
             String orderSn = reqInfo.getOutTradeNo();
+            //商户退款单号
+            String outRefundNo = reqInfo.getOutRefundNo();
             //退款状态 SUCCESS-退款成功  CHANGE-退款异常  REFUNDCLOSE—退款关闭
             String refundStatus = reqInfo.getRefundStatus();
             //退款成功时间
             String successTime = reqInfo.getSuccessTime();
             //本次支付的订单
-            OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, orderSn).one();
+            OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, outRefundNo).one();
             if (Objects.isNull(orderInfo)) {
                 throw ClientServiceException.wrap(ORDER_DATA_ERROR);
             }
@@ -673,7 +685,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderInfo.setStatus(CLOSE.getCode().byteValue());
             orderInfo.setUpdTime(new Date());
             baseMapper.updateByPrimaryKeySelective(orderInfo);
-            if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
+            if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())
+                    && (Objects.isNull(orderInfo.getHasSub()) || Objects.equals(false, orderInfo.getHasSub()))) {
                 //取消售出卡券
                 cancelSoldCard(orderInfo);
                 virtualService.deleteOrderCard(orderId);
@@ -1001,7 +1014,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private CreateOrderVO createVO(OrderInfo orderInfo, List<OrderItem> itemList, WxPaymentVO wxPaymentVO) {
         CreateOrderVO vo = new CreateOrderVO();
         PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+        //多单 取一个 订单放入orderId
         payOrderVO.setOrderId(orderInfo.getId());
+        if (Objects.nonNull(orderInfo.getHasSub()) && orderInfo.getHasSub()) {
+            payOrderVO.setOrderId(itemList.get(0).getOrderId());
+        }
         payOrderVO.setOrderDate(orderInfo.getCrtTime());
         payOrderVO.setPayDate(orderInfo.getPaymentTime());
         payOrderVO.setRemainDate("15:00");

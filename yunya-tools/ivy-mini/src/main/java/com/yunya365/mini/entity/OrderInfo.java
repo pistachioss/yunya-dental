@@ -135,7 +135,7 @@ public class OrderInfo {
      * 自提门诊
      */
     @Column(name = "pick_up_clinic")
-    private String pickUpClinic;
+    private Integer pickUpClinic;
 
     /**
      * 收货人姓名

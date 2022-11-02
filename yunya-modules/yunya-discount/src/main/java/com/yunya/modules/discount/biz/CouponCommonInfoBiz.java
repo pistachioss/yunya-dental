@@ -132,7 +132,8 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
                 vo.setDetailHtml(fileInfo);
                 vo.setProductPics(fileInfo1);
             }
-            vo.setStock(unsold(Lists.newArrayList(couponId)).get(couponId).intValue());
+            Long unSoldCount = unsold(Lists.newArrayList(couponId)).get(couponId);
+            vo.setStock(Objects.isNull(unSoldCount) ? 0 : unSoldCount.intValue());
         }
         return vo;
     }
@@ -159,6 +160,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         Map<Integer, CouponFileInfo> fileInfoMap = files.stream()
                 .collect(Collectors.toMap(CouponFileInfo::getCouponId, Function.identity(), (o, n) -> n));
         List<ProductBO> collect = coupons.stream().map(t -> {
+            Long unsoldCount = unsold.get(t.getId());
             CouponFileInfo couponFileInfo = fileInfoMap.get(t.getId());
             String couponPic = Objects.nonNull(couponFileInfo) ? couponFileInfo.getPath() : null;
             ProductBO bo = new ProductBO();
@@ -170,7 +172,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
             bo.setProductType(TRUE.getCode());
             bo.setProductCategoryId(t.getProductTypeId());
             bo.setCouponType(t.getType().intValue());
-            bo.setStock(unsold.get(t.getId()).intValue());
+            bo.setStock(Objects.isNull(unsoldCount) ? 0 : unsoldCount.intValue());
             return bo;
         }).collect(Collectors.toList());
         Map<Integer, ProductTypeVO> categoryMap = cateGoryList.stream().collect(toMap(ProductTypeVO::getId, Function.identity()));
@@ -205,7 +207,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
                 .andEqualTo("orgId", COMPANY_ORGID)
                 .andEqualTo("status", 0);
         List<Card> cards = cardBiz.selectByExample(example);
-        return cards.stream().collect(Collectors.groupingBy(Card::getCouponId, counting()));
+        return CollectionUtils.isEmpty(cards) ? Maps.newHashMap() : cards.stream().collect(Collectors.groupingBy(Card::getCouponId, counting()));
     }
 
     public void removeHot(CouponCommonInfo old, Boolean isOnlineSale) {
