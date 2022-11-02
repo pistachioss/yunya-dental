@@ -69,7 +69,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     List<PatientKinRelationVo> result = new ArrayList<>();
     // 是否需要添加到亲属关系列表：
     // 1、必须存在转介绍患者，
-    // 2、亲属关系列表中不存在该转介绍患者的亲属关系记录
+    // 2、亲属关系列表中不存在该转介绍患者的亲属关系记录（包括已删除的记录）
     Boolean needAddIntro = StringHelper.isNotNull(introducer);
     for (PatientKinRelationVo vo : resultList) {
       if (StringHelper.isNotNull(introducer)) {
@@ -82,10 +82,11 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     }
     // 过滤掉已删除记录
     resultList = resultList.stream().filter(vo->vo.getInservice()).collect(Collectors.toList());
-    // 转介绍关系的数据置顶
+    // 添加转介绍关系的数据（置顶）
     if (needAddIntro) {
       result.add(intro2PatientKin(patientId, introducer));
     }
+    // 添加亲属关系列表
     if (StringHelper.isNotEmpty(resultList)) {
       result.addAll(resultList);
     }
