@@ -262,6 +262,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             sendOrderMessage(orderInfo.getId());
             //删除购物车中的下单商品
             cartItemService.delete(model.getCartIds());
+            //金额0元，直接售卖完成
+            if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0 && !Objects.equals(true, orderInfo.getHasSub())) {
+                //热销产品
+                hotSaleCal(orderInfo.getId(), true, productType);
+            }
             return vo;
         } catch (Exception e) {
             freeStock(productType, BeanCopierUtils.listGeneralCopyBean(orderItemBOS, OrderItem.class));
@@ -291,7 +296,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             //订单状态
             int status = orderInfo.getStatus().intValue();
             if (Objects.equals(PAY_PENDING.getCode(), status)) {
-                List<OrderInfo> subOrder = checkMergeOrder(orderInfo);
+                List<OrderInfo> subOrder = mergeOrder(orderInfo);
                 if (CollectionUtils.isNotEmpty(subOrder)) {
                     for (OrderInfo info : subOrder) {
                         //0->商品 1->虚拟服务
@@ -315,12 +320,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                         info.setPaymentTime(payTime);
                         info.setOutOrderNo(tradeNo);
                         baseMapper.updateByPrimaryKeySelective(info);
-                        if (Objects.equals(TRUE.getCode(), productType)) {
+                        if (Objects.equals(TRUE.getCode(), productType) && !Objects.equals(true, info.getHasSub())) {
                             //虚拟服务售卖卡券
                             virtualService.soldActiveOrInvalid(info.getId(), false);
                         }
-                        //热销产品
-                        hotSaleCal(info.getId(), true, productType);
+                        if (!Objects.equals(true, info.getHasSub())) {
+                            //热销产品
+                            hotSaleCal(info.getId(), true, productType);
+                        }
                     }
                 }
             }
@@ -683,14 +690,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         // 订单状态 0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款
         Integer status = orderInfo.getStatus().intValue();
         if (Objects.equals(PAY_PENDING.getCode(), status)) {
-            orderInfo.setStatus(CLOSE.getCode().byteValue());
-            orderInfo.setUpdTime(new Date());
-            baseMapper.updateByPrimaryKeySelective(orderInfo);
-            if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())
-                    && (Objects.isNull(orderInfo.getHasSub()) || Objects.equals(false, orderInfo.getHasSub()))) {
-                //取消售出卡券
-                cancelSoldCard(orderInfo);
-                virtualService.deleteOrderCard(orderId);
+            List<OrderInfo> orderInfos = mergeOrder(orderInfo);
+            for (OrderInfo info : orderInfos) {
+                info.setStatus(CLOSE.getCode().byteValue());
+                info.setUpdTime(new Date());
+                baseMapper.updateByPrimaryKeySelective(info);
+                if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())
+                        && !Objects.equals(true, info.getHasSub())) {
+                    //取消售出卡券
+                    cancelSoldCard(info);
+                    virtualService.deleteOrderCard(orderId);
+                }
             }
         }
     }
@@ -1290,6 +1300,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             list.addAll(generateItem(orderInfo, subItems));
             //合单 虚拟服务售卖卡券
             soldCard(orderInfo);
+            if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                //热销产品
+                hotSaleCal(orderInfo.getId(), true, TRUE.getCode());
+            }
         }
         return list;
     }
@@ -1305,9 +1319,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return itemList;
     }
 
-    private List<OrderInfo> checkMergeOrder(OrderInfo orderInfo) {
+    private List<OrderInfo> mergeOrder(OrderInfo orderInfo) {
         if (orderInfo.getHasSub()) {
-            return ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, orderInfo.getId()).list();
+            List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, orderInfo.getId()).list();
+            list.add(orderInfo);
+            return list;
         }
         return Lists.newArrayList(orderInfo);
     }
