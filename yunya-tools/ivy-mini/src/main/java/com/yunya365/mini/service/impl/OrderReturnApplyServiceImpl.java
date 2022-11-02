@@ -111,7 +111,7 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
                 if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
                     WxPayRefundRequest refundRequest = assembleRefundModel(orderInfo, apply);
                     WxPayRefundResult refund = wxPayService.refund(refundRequest);
-                    wxRequestRecordService.saveRecord(0, JSON.toJSONString(refundRequest), JSON.toJSONString(refund));
+                    wxRequestRecordService.saveRecord(1, JSON.toJSONString(refundRequest), JSON.toJSONString(refund));
                     apply.setOutOrderNo(refund.getRefundId());
                 } else {
                     //金额0元 直接退款
