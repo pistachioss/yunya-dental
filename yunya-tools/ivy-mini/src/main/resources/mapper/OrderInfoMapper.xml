@@ -291,7 +291,8 @@
     od.receiver_name as receiverName,
     od.receiver_phone as receiverPhone,
       od.product_type as productType ,
-     od.active_status as activeStatus
+     od.active_status as activeStatus,
+     od.pick_up_clinic as clinicId
     FROM
     `order_info`  od
     LEFT JOIN order_item oi ON od.id = oi.order_id
@@ -309,14 +310,20 @@
       <if test="status != null and activeStatus == null" >
         and od.status =  #{status}
       </if>
-      <if test="activeStatus != null" >
+      <if test=" activeStatus == 0" >
         and od.active_status =  #{activeStatus} and od.status = 3
+      </if>
+      <if test="activeStatus == 1" >
+        and (od.active_status =  #{activeStatus} or od.status = 3)
       </if>
       <if test="clinicId != null" >
         and od.pick_up_clinic =  #{clinicId}
       </if>
-      <if test="deliveryType != null" >
+      <if test="deliveryType == 0 " >
         and od.delivery_type =  #{deliveryType}
+      </if>
+      <if test="deliveryType == 1 " >
+        and (od.delivery_type =  #{deliveryType} or od.delivery_type IS NULL)
       </if>
       <if test="productType != null" >
         and od.product_type =  #{productType}

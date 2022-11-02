@@ -59,14 +59,16 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        if(STATUS.equals( form.getStatus())){
-            form.setActiveStatus(new Byte("0"));
-            form.setProductType(new Byte("1"));
-        }
-        if(SUSSTATUS.equals( form.getStatus())){
-            form.setActiveStatus(new Byte("1"));
-            form.setProductType(new Byte("1"));
-        }
+
+            if(STATUS.equals( form.getStatus())){
+                form.setActiveStatus(new Byte("0"));
+                form.setProductType(new Byte("1"));
+            }
+            if(SUSSTATUS.equals( form.getStatus())){
+                form.setActiveStatus(new Byte("1"));
+            }
+
+
         List<OrderVO> result = mapper.findOrderList(form);
 
         //全部门诊信息
