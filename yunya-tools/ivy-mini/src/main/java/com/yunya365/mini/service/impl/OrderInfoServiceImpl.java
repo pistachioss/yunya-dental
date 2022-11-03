@@ -525,28 +525,25 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         OrderInfo orderInfo = getById(orderId);
         checkOrder(userId, orderInfo, ORDER_CANCEL_ERROR, ORDER_CANCEL_STATUS_ERROR, PAY_PENDING.getCode());
         //更新合单虚拟服务
-        Integer parentOrderId = orderInfo.getParentOrderId();
-        List<OrderInfo> mergeList;
-        if (Objects.nonNull(parentOrderId)) {
-            mergeList = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, parentOrderId).list();
-        } else {
-            mergeList = Lists.newArrayList(orderInfo);
-        }
+        List<OrderInfo> mergeList = mergeOrder(orderInfo);
         for (OrderInfo info : mergeList) {
+            orderId = info.getId();
             info.setStatus(CLOSE.getCode().byteValue());
             Date date = new Date();
             info.setUpdTime(date);
             info.setUpdId(userId);
             baseMapper.updateByPrimaryKeySelective(info);
-            List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
-            //商店放回购物车或下订单页面
-            addCart(info, orderItems);
-            //释放库存
-            freeStock(info.getProductType().intValue(), orderItems);
-            if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())) {
-                //取消售出卡券
-                cancelSoldCard(info);
-                virtualService.deleteOrderCard(orderId);
+            if (!Objects.equals(true, info.getHasSub())) {
+                List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
+                //商店放回购物车或下订单页面
+                addCart(info, orderItems);
+                //释放库存
+                freeStock(info.getProductType().intValue(), orderItems);
+                if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())) {
+                    //取消售出卡券
+                    cancelSoldCard(info);
+                    virtualService.deleteOrderCard(orderId);
+                }
             }
         }
     }
@@ -626,8 +623,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             }
             WxPayRefundNotifyResult.ReqInfo reqInfo = result.getReqInfo();
             log.info("微信退款解密数据：{}", reqInfo);
-            // 订单号
-            String orderSn = reqInfo.getOutTradeNo();
             //商户退款单号
             String outRefundNo = reqInfo.getOutRefundNo();
             //退款状态 SUCCESS-退款成功  CHANGE-退款异常  REFUNDCLOSE—退款关闭
@@ -699,7 +694,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                         && !Objects.equals(true, info.getHasSub())) {
                     //取消售出卡券
                     cancelSoldCard(info);
-                    virtualService.deleteOrderCard(orderId);
+                    virtualService.deleteOrderCard(info.getId());
                 }
             }
         }
