@@ -314,7 +314,7 @@
         and od.active_status =  #{activeStatus} and od.status = 3
       </if>
       <if test="activeStatus == 1" >
-        and (od.active_status =  #{activeStatus} or od.status = 3)
+        and (od.active_status =  #{activeStatus} or (od.status = 3 and  od.product_type = 0))
       </if>
       <if test="clinicId != null" >
         and od.pick_up_clinic =  #{clinicId}
