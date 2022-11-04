@@ -406,7 +406,7 @@ SELECT
 	) used
     FROM
 	order_info
-    where fans_id = #{fansId}
+    where fans_id = #{fansId} AND delete_status = 0
   </select>
   <select id="findCount" resultType="Integer">
         SELECT
