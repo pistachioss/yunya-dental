@@ -1,10 +1,12 @@
 package com.yunya365.mini.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.github.binarywang.wxpay.bean.notify.*;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
-import com.github.binarywang.wxpay.bean.request.*;
+import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
+import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
@@ -31,7 +33,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya365.mini.config.WxMiniPayProperties;
 import com.yunya365.mini.entity.*;
 import com.yunya365.mini.enums.IvyMiniError;
 import com.yunya365.mini.mapper.OrderInfoMapper;
@@ -80,8 +81,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private IProductService productService;
     @Resource
-    private IOrderSettingService orderSettingService;
-    @Resource
     private IOrderItemService orderItemService;
     @Resource
     private DistributionServiceImpl distributionService;
@@ -102,7 +101,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private RedisUtils redisUtils;
     @Resource
-    private WxMiniPayProperties properties;
+    private IWxRequestRecordService wxRequestRecordService;
 
     @Override
     public OrderCountVO orderCount(OrderCountQuery query) {
@@ -263,6 +262,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             sendOrderMessage(orderInfo.getId());
             //删除购物车中的下单商品
             cartItemService.delete(model.getCartIds());
+            //金额0元，直接售卖完成
+            if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0 && !Objects.equals(true, orderInfo.getHasSub())) {
+                //热销产品
+                hotSaleCal(orderInfo.getId(), true, productType);
+            }
             return vo;
         } catch (Exception e) {
             freeStock(productType, BeanCopierUtils.listGeneralCopyBean(orderItemBOS, OrderItem.class));
@@ -275,8 +279,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public String wxNotify(HttpServletRequest request, HttpServletResponse response) {
         try {
             String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
-            log.info("微信回调结果：{}", xmlResult);
+            log.info("微信付款回调结果：{}", xmlResult);
             WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(xmlResult);
+            wxRequestRecordService.saveRecord(2, JSON.toJSONString(result), null);
             if (!Objects.equals(WxPayConstants.ResultCode.SUCCESS, result.getReturnCode())) {
                 return WxPayNotifyResponse.fail(result.getReturnMsg());
             }
@@ -291,7 +296,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             //订单状态
             int status = orderInfo.getStatus().intValue();
             if (Objects.equals(PAY_PENDING.getCode(), status)) {
-                List<OrderInfo> subOrder = checkMergeOrder(orderInfo);
+                List<OrderInfo> subOrder = mergeOrder(orderInfo);
                 if (CollectionUtils.isNotEmpty(subOrder)) {
                     for (OrderInfo info : subOrder) {
                         //0->商品 1->虚拟服务
@@ -315,12 +320,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                         info.setPaymentTime(payTime);
                         info.setOutOrderNo(tradeNo);
                         baseMapper.updateByPrimaryKeySelective(info);
-                        if (Objects.equals(TRUE.getCode(), productType)) {
+                        if (Objects.equals(TRUE.getCode(), productType) && !Objects.equals(true, info.getHasSub())) {
                             //虚拟服务售卖卡券
                             virtualService.soldActiveOrInvalid(info.getId(), false);
                         }
-                        //热销产品
-                        hotSaleCal(info.getId(), true, productType);
+                        if (!Objects.equals(true, info.getHasSub())) {
+                            //热销产品
+                            hotSaleCal(info.getId(), true, productType);
+                        }
                     }
                 }
             }
@@ -518,28 +525,25 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         OrderInfo orderInfo = getById(orderId);
         checkOrder(userId, orderInfo, ORDER_CANCEL_ERROR, ORDER_CANCEL_STATUS_ERROR, PAY_PENDING.getCode());
         //更新合单虚拟服务
-        Integer parentOrderId = orderInfo.getParentOrderId();
-        List<OrderInfo> mergeList;
-        if (Objects.nonNull(parentOrderId)) {
-            mergeList = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, parentOrderId).list();
-        } else {
-            mergeList = Lists.newArrayList(orderInfo);
-        }
+        List<OrderInfo> mergeList = mergeOrder(orderInfo);
         for (OrderInfo info : mergeList) {
+            orderId = info.getId();
             info.setStatus(CLOSE.getCode().byteValue());
             Date date = new Date();
             info.setUpdTime(date);
             info.setUpdId(userId);
             baseMapper.updateByPrimaryKeySelective(info);
-            List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
-            //商店放回购物车或下订单页面
-            addCart(info, orderItems);
-            //释放库存
-            freeStock(info.getProductType().intValue(), orderItems);
-            if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())) {
-                //取消售出卡券
-                cancelSoldCard(info);
-                virtualService.deleteOrderCard(orderId);
+            if (!Objects.equals(true, info.getHasSub())) {
+                List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
+                //商店放回购物车或下订单页面
+                addCart(info, orderItems);
+                //释放库存
+                freeStock(info.getProductType().intValue(), orderItems);
+                if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())) {
+                    //取消售出卡券
+                    cancelSoldCard(info);
+                    virtualService.deleteOrderCard(orderId);
+                }
             }
         }
     }
@@ -613,13 +617,12 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
             log.info("微信退款回调结果：{}", xmlResult);
             WxPayRefundNotifyResult result = wxPayService.parseRefundNotifyResult(xmlResult);
+            wxRequestRecordService.saveRecord(3, JSON.toJSONString(result), null);
             if (!Objects.equals(WxPayConstants.ResultCode.SUCCESS, result.getReturnCode())) {
                 return WxPayNotifyResponse.fail(result.getReturnMsg());
             }
             WxPayRefundNotifyResult.ReqInfo reqInfo = result.getReqInfo();
             log.info("微信退款解密数据：{}", reqInfo);
-            // 订单号
-            String orderSn = reqInfo.getOutTradeNo();
             //商户退款单号
             String outRefundNo = reqInfo.getOutRefundNo();
             //退款状态 SUCCESS-退款成功  CHANGE-退款异常  REFUNDCLOSE—退款关闭
@@ -682,14 +685,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         // 订单状态 0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款
         Integer status = orderInfo.getStatus().intValue();
         if (Objects.equals(PAY_PENDING.getCode(), status)) {
-            orderInfo.setStatus(CLOSE.getCode().byteValue());
-            orderInfo.setUpdTime(new Date());
-            baseMapper.updateByPrimaryKeySelective(orderInfo);
-            if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())
-                    && (Objects.isNull(orderInfo.getHasSub()) || Objects.equals(false, orderInfo.getHasSub()))) {
-                //取消售出卡券
-                cancelSoldCard(orderInfo);
-                virtualService.deleteOrderCard(orderId);
+            List<OrderInfo> orderInfos = mergeOrder(orderInfo);
+            for (OrderInfo info : orderInfos) {
+                info.setStatus(CLOSE.getCode().byteValue());
+                info.setUpdTime(new Date());
+                baseMapper.updateByPrimaryKeySelective(info);
+                if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())
+                        && !Objects.equals(true, info.getHasSub())) {
+                    //取消售出卡券
+                    cancelSoldCard(info);
+                    virtualService.deleteOrderCard(info.getId());
+                }
             }
         }
     }
@@ -913,6 +919,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         WxPayUnifiedOrderRequest miniPayRequest = assemblePayModel(orderInfo);
         try {
             WxPayMpOrderResult result = wxPayService.createOrder(miniPayRequest);
+            wxRequestRecordService.saveRecord(0, JSON.toJSONString(miniPayRequest), JSON.toJSONString(result));
             return BeanCopierUtils.generalCopyBean(result, WxPaymentVO.class);
         } catch (WxPayException e) {
             log.error("微信支付失败！订单号：{},原因:{}", orderInfo.getOrderSn(), e.getMessage());
@@ -1288,6 +1295,10 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             list.addAll(generateItem(orderInfo, subItems));
             //合单 虚拟服务售卖卡券
             soldCard(orderInfo);
+            if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                //热销产品
+                hotSaleCal(orderInfo.getId(), true, TRUE.getCode());
+            }
         }
         return list;
     }
@@ -1303,9 +1314,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return itemList;
     }
 
-    private List<OrderInfo> checkMergeOrder(OrderInfo orderInfo) {
+    private List<OrderInfo> mergeOrder(OrderInfo orderInfo) {
         if (orderInfo.getHasSub()) {
-            return ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, orderInfo.getId()).list();
+            List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, orderInfo.getId()).list();
+            list.add(orderInfo);
+            return list;
         }
         return Lists.newArrayList(orderInfo);
     }

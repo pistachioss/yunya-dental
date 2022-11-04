@@ -1,5 +1,6 @@
 package com.yunya365.mini.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
@@ -51,6 +52,8 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
     private IOrderVirtualService virtualService;
     @Resource
     private WxMiniPayProperties properties;
+    @Resource
+    private IWxRequestRecordService wxRequestRecordService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -108,6 +111,7 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
                 if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
                     WxPayRefundRequest refundRequest = assembleRefundModel(orderInfo, apply);
                     WxPayRefundResult refund = wxPayService.refund(refundRequest);
+                    wxRequestRecordService.saveRecord(1, JSON.toJSONString(refundRequest), JSON.toJSONString(refund));
                     apply.setOutOrderNo(refund.getRefundId());
                 } else {
                     //金额0元 直接退款
@@ -146,11 +150,17 @@ public class OrderReturnApplyServiceImpl extends ServiceImpl<OrderReturnApplyMap
     }
 
     private WxPayRefundRequest assembleRefundModel(OrderInfo orderInfo, OrderReturnApply apply) {
+        Integer parentOrderId = orderInfo.getParentOrderId();
+        BigDecimal payAmount = orderInfo.getPayAmount();
+        if (Objects.nonNull(parentOrderId)) {
+            OrderInfo mainOrder = orderInfoService.getById(parentOrderId);
+            payAmount = mainOrder.getPayAmount();
+        }
         WxPayRefundRequest refundRequest = new WxPayRefundRequest();
         refundRequest.setTransactionId(orderInfo.getOutOrderNo());
 //        refundRequest.setOutTradeNo(orderInfo.getOrderSn());
         refundRequest.setOutRefundNo(orderInfo.getOrderSn());
-        refundRequest.setTotalFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
+        refundRequest.setTotalFee(BaseWxPayRequest.yuanToFen(payAmount.toPlainString()));
         refundRequest.setRefundFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
         refundRequest.setRefundDesc(apply.getReason());
         refundRequest.setNotifyUrl(properties.getRefundNotifyUrl());

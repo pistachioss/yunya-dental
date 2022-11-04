@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya365.mini.mapper.WxRequestRecordMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.WxRequestRecord">
+        <id column="id" property="id" />
+        <result column="type" property="type" />
+        <result column="request_json" property="requestJson" />
+        <result column="response_json" property="responseJson" />
+        <result column="crt_id" property="crtId" />
+        <result column="upd_id" property="updId" />
+        <result column="crt_time" property="crtTime" />
+        <result column="upd_time" property="updTime" />
+    </resultMap>
+
+</mapper>

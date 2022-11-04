@@ -314,7 +314,7 @@
         and od.active_status =  #{activeStatus} and od.status = 3
       </if>
       <if test="activeStatus == 1" >
-        and (od.active_status =  #{activeStatus} or od.status = 3)
+        and (od.active_status =  #{activeStatus} or (od.status = 3 and  od.product_type = 0))
       </if>
       <if test="clinicId != null" >
         and od.pick_up_clinic =  #{clinicId}
@@ -332,12 +332,12 @@
         and order_type =  #{orderType}
       </if>
       <if test="name != null and name != ''">
-      AND delete_status = 0
       AND concat(IFNULL(od.receiver_name,''),
       IFNULL(od.receiver_phone,''),
       IFNULL(od.receiver_detail_address,''))
       like concat(concat('%', rtrim(#{name})), '%')
       </if>
+      AND delete_status = 0
     </where>
     GROUP BY
     od.id
@@ -406,7 +406,7 @@ SELECT
 	) used
     FROM
 	order_info
-    where fans_id = #{fansId}
+    where fans_id = #{fansId} AND delete_status = 0
   </select>
   <select id="findCount" resultType="Integer">
         SELECT
