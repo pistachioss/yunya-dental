@@ -22,7 +22,7 @@
 
   <sql id="PatientKinRelationVo_Column_List">
     pkr.id,pkr.patient_id patientId,pkr.linked_patient_id linkedPatientId,pbi.name relationName,pkr.kinship_id kinshipId,
-	pbi.gender gender,pbi.mobile mobile,pkr.remarks,pkr.crt_time crtTime
+	pbi.gender gender,pbi.mobile mobile,pkr.remarks,pkr.crt_time crtTime,pkr.inservice
   </sql>
 
   <!-- 根据患者id查询 患者亲属列表 -->
@@ -38,6 +38,6 @@
     select pkr.id id,pkr.org_id orgId,pkr.patient_id patientId,pkr.linked_patient_id linkedPatientId,pkr.kinship_id kinshipId,pkr.remarks remarks,pkr.inservice inservice,
            pkr.crt_id crtId,pkr.crt_name crtName,pkr.crt_time crtTime,pkr.upt_id uptId,pkr.upd_name updName,pkr.upd_time updTime
     from patient_kin_relation pkr
-    where pkr.patient_id =#{patientKinRelation.patientId} and pkr.linked_patient_id =#{patientKinRelation.linkedPatientId}
+    where inservice = 1 and pkr.patient_id =#{patientKinRelation.patientId} and pkr.linked_patient_id =#{patientKinRelation.linkedPatientId}
   </select>
 </mapper>

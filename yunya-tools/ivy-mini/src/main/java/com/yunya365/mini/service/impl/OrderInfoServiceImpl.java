@@ -1,10 +1,12 @@
 package com.yunya365.mini.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.github.binarywang.wxpay.bean.notify.*;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
-import com.github.binarywang.wxpay.bean.request.*;
+import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
+import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
@@ -21,9 +23,7 @@ import com.yunya.feign.discount.domain.vo.CardSalePageVo;
 import com.yunya.feign.ivy_mini.domain.bo.FansAddressBO;
 import com.yunya.feign.ivy_mini.domain.bo.OrderItemBO;
 import com.yunya.feign.ivy_mini.domain.model.*;
-import com.yunya.feign.ivy_mini.domain.query.ConfirmProductQuery;
-import com.yunya.feign.ivy_mini.domain.query.MyOrderQuery;
-import com.yunya.feign.ivy_mini.domain.query.OrderCountQuery;
+import com.yunya.feign.ivy_mini.domain.query.*;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageOrderModel;
@@ -33,7 +33,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya365.mini.config.WxMiniPayProperties;
 import com.yunya365.mini.entity.*;
 import com.yunya365.mini.enums.IvyMiniError;
 import com.yunya365.mini.mapper.OrderInfoMapper;
@@ -82,8 +81,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private IProductService productService;
     @Resource
-    private IOrderSettingService orderSettingService;
-    @Resource
     private IOrderItemService orderItemService;
     @Resource
     private DistributionServiceImpl distributionService;
@@ -104,7 +101,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Resource
     private RedisUtils redisUtils;
     @Resource
-    private WxMiniPayProperties properties;
+    private IWxRequestRecordService wxRequestRecordService;
 
     @Override
     public OrderCountVO orderCount(OrderCountQuery query) {
@@ -143,15 +140,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //查询购物车产品信息
         List<OrderItemBO> orderItemBOS = cartItemService.listProductByIds(cartIds);
         List<PayOrderItemVO> orderItemVOS = orderItemBOS.stream()
-                .map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)
-                ).collect(toList());
+                .map(t -> BeanCopierUtils.generalCopyBean(t, PayOrderItemVO.class)).collect(toList());
         //商品类产品有自提和配送区分
         vo.setDeliveryVO(confirmAddress(userId));
         vo.setProductList(orderItemVOS);
         vo.setCalcAmountVO(calcOrderAmount(orderItemVOS));
         //判断购物车中商品是否都有库存
         checkCartStockStatus(orderItemBOS, orderItemVOS);
-        vo.setProductType(FALSE.getCode());
+        vo.setProductType(orderItemBOS.get(0).getProductType());
         return vo;
     }
 
@@ -165,7 +161,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer quantity = model.getQuantity();
         //商品类型
         Integer productType = model.getProductType();
-        List<OrderItemBO> itemBoList = null;
+        List<OrderItemBO> itemBoList;
         try {
             //加锁
             locked = lock(CREATE_ORDER_LOCK, productId, userId);
@@ -186,19 +182,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             try {
                 //创建订单
                 OrderInfo orderInfo = assembleOrder(userId, model, itemBoList, model.getFansReceiveAddressId());
+                baseMapper.insertDynamic(orderInfo);
                 WxPaymentVO wxPaymentVO = null;
-                if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
+                if (orderInfo.getPayAmount().compareTo(BigDecimal  .ZERO) > 0) {
                     //生成支付单
                     wxPaymentVO = wxPay(orderInfo);
                 }
-                baseMapper.insertDynamic(orderInfo);
-                List<OrderItem> itemList = itemBoList.stream().map(t -> {
-                    OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
-                    orderItem.setOrderId(orderInfo.getId());
-                    orderItem.setOrderSn(orderInfo.getOrderSn());
-                    return orderItem;
-                }).collect(toList());
-                orderItemService.saveBatch(itemList);
+                List<OrderItem> itemList = generateItem(orderInfo, itemBoList);
                 //保存预付单信息
                 wxPayInfoService.save(wxPaymentVO, orderInfo);
                 CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
@@ -209,7 +199,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                     soldCard(orderInfo);
                 }
                 //金额0元，直接售卖完成
-                if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0 ) {
+                if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0) {
                     //热销产品
                     hotSaleCal(orderInfo.getId(), true, productType);
                 }
@@ -231,6 +221,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public CreateOrderVO createCartOrder(CreateCartOrderModel model) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         List<OrderItemBO> orderItemBOS = cartItemService.listProductByIds(model.getCartIds());
+        Integer productType = orderItemBOS.get(0).getProductType();
         if (CollectionUtils.isEmpty(orderItemBOS)) {
             throw ClientServiceException.wrap(CART_DATA_ERROR);
         }
@@ -239,34 +230,46 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             throw ClientServiceException.wrap(STOCK_LACK);
         }
         //进行库存锁定
-        lockStock(null, null, orderItemBOS, model.getProductType());
+        lockStock(null, null, orderItemBOS, productType);
         try {
             //创建订单
             OrderInfo orderInfo = assembleOrder(userId, model, orderItemBOS, model.getFansReceiveAddressId());
-            //删除购物车中的下单商品
-            cartItemService.delete(model.getCartIds());
+            if (Objects.equals(TRUE.getCode(), productType) && orderItemBOS.size() > 1) {
+                orderInfo.setDeleteStatus(((byte)1));
+                orderInfo.setHasSub(true);
+            }
+            baseMapper.insertDynamic(orderInfo);
             WxPaymentVO wxPaymentVO = null;
             if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) > 0) {
                 //生成支付单
                 wxPaymentVO = wxPay(orderInfo);
             }
-            baseMapper.insertDynamic(orderInfo);
-            List<OrderItem> itemList = orderItemBOS.stream().map(t -> {
-                OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
-                orderItem.setProductQuantity(t.getProductQuantity());
-                orderItem.setOrderId(orderInfo.getId());
-                orderItem.setOrderSn(orderInfo.getOrderSn());
-                return orderItem;
-            }).collect(toList());
-            orderItemService.saveBatch(itemList);
+            List<OrderItem> itemList;
+            //虚拟服务多单合并
+            if (Objects.equals(TRUE.getCode(), productType) && orderItemBOS.size() > 1) {
+                itemList = subOrder(orderInfo, orderItemBOS, model, userId);
+            } else {
+                itemList = generateItem(orderInfo, orderItemBOS);
+                if (Objects.equals(TRUE.getCode(), productType)) {
+                    //虚拟服务售卖卡券
+                    soldCard(orderInfo);
+                }
+            }
             //保存预付单信息
             wxPayInfoService.save(wxPaymentVO, orderInfo);
             CreateOrderVO vo = createVO(orderInfo, itemList, wxPaymentVO);
             //发送延迟消息取消订单
             sendOrderMessage(orderInfo.getId());
+            //删除购物车中的下单商品
+            cartItemService.delete(model.getCartIds());
+            //金额0元，直接售卖完成
+            if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0 && !Objects.equals(true, orderInfo.getHasSub())) {
+                //热销产品
+                hotSaleCal(orderInfo.getId(), true, productType);
+            }
             return vo;
         } catch (Exception e) {
-            freeStock(model.getProductType(), BeanCopierUtils.listGeneralCopyBean(orderItemBOS, OrderItem.class));
+            freeStock(productType, BeanCopierUtils.listGeneralCopyBean(orderItemBOS, OrderItem.class));
             throw e;
         }
     }
@@ -276,8 +279,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public String wxNotify(HttpServletRequest request, HttpServletResponse response) {
         try {
             String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
-            log.info("微信回调结果：{}", xmlResult);
+            log.info("微信付款回调结果：{}", xmlResult);
             WxPayOrderNotifyResult result = wxPayService.parseOrderNotifyResult(xmlResult);
+            wxRequestRecordService.saveRecord(2, JSON.toJSONString(result), null);
             if (!Objects.equals(WxPayConstants.ResultCode.SUCCESS, result.getReturnCode())) {
                 return WxPayNotifyResponse.fail(result.getReturnMsg());
             }
@@ -292,33 +296,40 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             //订单状态
             int status = orderInfo.getStatus().intValue();
             if (Objects.equals(PAY_PENDING.getCode(), status)) {
-                //0->商品 1->虚拟服务
-                int productType = orderInfo.getProductType().intValue();
-                //商品
-                if (Objects.equals(FALSE.getCode(), productType)) {
-                    //0->自提 1->配送
-                    int deliveryType = orderInfo.getDeliveryType().intValue();
-                    //自提
-                    if (Objects.equals(FALSE.getCode(), deliveryType)) {
-                        orderInfo.setStatus(HAS_SHIP.getCode().byteValue());
-                        //配送
-                    } else {
-                        orderInfo.setStatus(SHIP_PENDING.getCode().byteValue());
+                List<OrderInfo> subOrder = mergeOrder(orderInfo);
+                if (CollectionUtils.isNotEmpty(subOrder)) {
+                    for (OrderInfo info : subOrder) {
+                        //0->商品 1->虚拟服务
+                        int productType = info.getProductType().intValue();
+                        //商品
+                        if (Objects.equals(FALSE.getCode(), productType)) {
+                            //0->自提 1->配送
+                            int deliveryType = info.getDeliveryType().intValue();
+                            //自提
+                            if (Objects.equals(FALSE.getCode(), deliveryType)) {
+                                info.setStatus(HAS_SHIP.getCode().byteValue());
+                                //配送
+                            } else {
+                                info.setStatus(SHIP_PENDING.getCode().byteValue());
+                            }
+                            //虚拟服务
+                        } else {
+                            info.setStatus(FINISH.getCode().byteValue());
+                        }
+                        Date payTime = Date.from(java.time.LocalDateTime.parse(result.getTimeEnd(), DateTimeFormatter.ofPattern("yyyyMMddHHmmss")).atZone(ZoneOffset.ofHours(8)).toInstant());
+                        info.setPaymentTime(payTime);
+                        info.setOutOrderNo(tradeNo);
+                        baseMapper.updateByPrimaryKeySelective(info);
+                        if (Objects.equals(TRUE.getCode(), productType) && !Objects.equals(true, info.getHasSub())) {
+                            //虚拟服务售卖卡券
+                            virtualService.soldActiveOrInvalid(info.getId(), false);
+                        }
+                        if (!Objects.equals(true, info.getHasSub())) {
+                            //热销产品
+                            hotSaleCal(info.getId(), true, productType);
+                        }
                     }
-                    //虚拟服务
-                } else {
-                    orderInfo.setStatus(FINISH.getCode().byteValue());
                 }
-                Date payTime = Date.from(java.time.LocalDateTime.parse(result.getTimeEnd(), DateTimeFormatter.ofPattern("yyyyMMddHHmmss")).atZone(ZoneOffset.ofHours(8)).toInstant());
-                orderInfo.setPaymentTime(payTime);
-                orderInfo.setOutOrderNo(tradeNo);
-                baseMapper.updateByPrimaryKeySelective(orderInfo);
-                if (Objects.equals(TRUE.getCode(), productType)) {
-                    //虚拟服务售卖卡券
-                    virtualService.soldActiveOrInvalid(orderInfo.getId(), false);
-                }
-                //热销产品
-                hotSaleCal(orderInfo.getId(), true, productType);
             }
             return WxPayNotifyResponse.success("处理成功!");
         } catch (Exception e) {
@@ -349,7 +360,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public PageInfo<OrderFrontVO> orderList(MyOrderQuery query) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         Page<OrderInfo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        List<OrderInfo> list =  baseMapper.myList(userId, query);
+        List<OrderInfo> list = baseMapper.myList(userId, query);
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }
@@ -513,20 +524,27 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         OrderInfo orderInfo = getById(orderId);
         checkOrder(userId, orderInfo, ORDER_CANCEL_ERROR, ORDER_CANCEL_STATUS_ERROR, PAY_PENDING.getCode());
-        orderInfo.setStatus(CLOSE.getCode().byteValue());
-        Date date = new Date();
-        orderInfo.setUpdTime(date);
-        orderInfo.setUpdId(userId);
-        baseMapper.updateByPrimaryKeySelective(orderInfo);
-        List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
-        //商店放回购物车或下订单页面
-        addCart(orderInfo, orderItems);
-        //释放库存
-        freeStock(orderInfo.getProductType().intValue(), orderItems);
-        if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
-            //取消售出卡券
-            cancelSoldCard(orderInfo);
-            virtualService.deleteOrderCard(orderId);
+        //更新合单虚拟服务
+        List<OrderInfo> mergeList = mergeOrder(orderInfo);
+        for (OrderInfo info : mergeList) {
+            orderId = info.getId();
+            info.setStatus(CLOSE.getCode().byteValue());
+            Date date = new Date();
+            info.setUpdTime(date);
+            info.setUpdId(userId);
+            baseMapper.updateByPrimaryKeySelective(info);
+            if (!Objects.equals(true, info.getHasSub())) {
+                List<OrderItem> orderItems = orderItemService.listByOrderIds(Collections.singleton(orderId));
+                //商店放回购物车或下订单页面
+                addCart(info, orderItems);
+                //释放库存
+                freeStock(info.getProductType().intValue(), orderItems);
+                if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())) {
+                    //取消售出卡券
+                    cancelSoldCard(info);
+                    virtualService.deleteOrderCard(orderId);
+                }
+            }
         }
     }
 
@@ -599,19 +617,20 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             String xmlResult = IOUtils.toString(request.getInputStream(), request.getCharacterEncoding());
             log.info("微信退款回调结果：{}", xmlResult);
             WxPayRefundNotifyResult result = wxPayService.parseRefundNotifyResult(xmlResult);
+            wxRequestRecordService.saveRecord(3, JSON.toJSONString(result), null);
             if (!Objects.equals(WxPayConstants.ResultCode.SUCCESS, result.getReturnCode())) {
                 return WxPayNotifyResponse.fail(result.getReturnMsg());
             }
             WxPayRefundNotifyResult.ReqInfo reqInfo = result.getReqInfo();
             log.info("微信退款解密数据：{}", reqInfo);
-            // 订单号
-            String orderSn = reqInfo.getOutTradeNo();
+            //商户退款单号
+            String outRefundNo = reqInfo.getOutRefundNo();
             //退款状态 SUCCESS-退款成功  CHANGE-退款异常  REFUNDCLOSE—退款关闭
             String refundStatus = reqInfo.getRefundStatus();
             //退款成功时间
             String successTime = reqInfo.getSuccessTime();
             //本次支付的订单
-            OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, orderSn).one();
+            OrderInfo orderInfo = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getOrderSn, outRefundNo).one();
             if (Objects.isNull(orderInfo)) {
                 throw ClientServiceException.wrap(ORDER_DATA_ERROR);
             }
@@ -666,13 +685,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         // 订单状态 0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款
         Integer status = orderInfo.getStatus().intValue();
         if (Objects.equals(PAY_PENDING.getCode(), status)) {
-            orderInfo.setStatus(CLOSE.getCode().byteValue());
-            orderInfo.setUpdTime(new Date());
-            baseMapper.updateByPrimaryKeySelective(orderInfo);
-            if (Objects.equals(TRUE.getCode().byteValue(), orderInfo.getProductType())) {
-                //取消售出卡券
-                cancelSoldCard(orderInfo);
-                virtualService.deleteOrderCard(orderId);
+            List<OrderInfo> orderInfos = mergeOrder(orderInfo);
+            for (OrderInfo info : orderInfos) {
+                info.setStatus(CLOSE.getCode().byteValue());
+                info.setUpdTime(new Date());
+                baseMapper.updateByPrimaryKeySelective(info);
+                if (Objects.equals(TRUE.getCode().byteValue(), info.getProductType())
+                        && !Objects.equals(true, info.getHasSub())) {
+                    //取消售出卡券
+                    cancelSoldCard(info);
+                    virtualService.deleteOrderCard(info.getId());
+                }
             }
         }
     }
@@ -896,6 +919,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         WxPayUnifiedOrderRequest miniPayRequest = assemblePayModel(orderInfo);
         try {
             WxPayMpOrderResult result = wxPayService.createOrder(miniPayRequest);
+            wxRequestRecordService.saveRecord(0, JSON.toJSONString(miniPayRequest), JSON.toJSONString(result));
             return BeanCopierUtils.generalCopyBean(result, WxPaymentVO.class);
         } catch (WxPayException e) {
             log.error("微信支付失败！订单号：{},原因:{}", orderInfo.getOrderSn(), e.getMessage());
@@ -916,20 +940,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         request.setTimeStart(now.toString("yyyyMMddHHmmss"));
         request.setTimeExpire(now.plusMinutes(15).toString("yyyyMMddHHmmss"));
         return request;
-    }
-
-    private WxPayRefundRequest assembleRefundModel(OrderInfo orderInfo, OrderReturnApply apply) {
-        String openId = BaseContextHandler.getOpenId();
-        LocalDateTime now = LocalDateTime.fromDateFields(orderInfo.getCrtTime());
-        WxPayRefundRequest refundRequest = new WxPayRefundRequest();
-        refundRequest.setTransactionId(orderInfo.getOutOrderNo());
-//        refundRequest.setOutTradeNo(orderInfo.getOrderSn());
-        refundRequest.setOutRefundNo(orderInfo.getOrderSn());
-        refundRequest.setTotalFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
-        refundRequest.setRefundFee(BaseWxPayRequest.yuanToFen(orderInfo.getPayAmount().toPlainString()));
-        refundRequest.setRefundDesc(apply.getReason());
-        refundRequest.setNotifyUrl(properties.getRefundNotifyUrl());
-        return refundRequest;
     }
 
     /**
@@ -1011,7 +1021,11 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private CreateOrderVO createVO(OrderInfo orderInfo, List<OrderItem> itemList, WxPaymentVO wxPaymentVO) {
         CreateOrderVO vo = new CreateOrderVO();
         PayOrderVO payOrderVO = BeanCopierUtils.generalCopyBean(orderInfo, PayOrderVO.class);
+        //多单 取一个 订单放入orderId
         payOrderVO.setOrderId(orderInfo.getId());
+        if (Objects.nonNull(orderInfo.getHasSub()) && orderInfo.getHasSub()) {
+            payOrderVO.setOrderId(itemList.get(0).getOrderId());
+        }
         payOrderVO.setOrderDate(orderInfo.getCrtTime());
         payOrderVO.setPayDate(orderInfo.getPaymentTime());
         payOrderVO.setRemainDate("15:00");
@@ -1102,7 +1116,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 orderInfo.setReceiverDetailAddress(model.getLocationAddress());
                 orderInfo.setPickUpClinic(model.getPickUpClinic());
                 //订单金额为0元
-                if ( totalAmount.compareTo(BigDecimal.ZERO) <= 0 ) {
+                if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
                     //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
                     orderInfo.setStatus((byte) 2);
                     orderInfo.setPaymentTime(payDate);
@@ -1119,7 +1133,7 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 }
                 totalAmount = totalAmount.add(Objects.isNull(freightAmount) ? BigDecimal.ZERO : freightAmount);
                 //订单金额为0元
-                if ( totalAmount.compareTo(BigDecimal.ZERO) <= 0 ) {
+                if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
                     //订单状态（0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款）
                     orderInfo.setStatus((byte) 1);
                     orderInfo.setPaymentTime(payDate);
@@ -1270,4 +1284,42 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         }
     }
 
+    private List<OrderItem> subOrder(OrderInfo parentOrder, List<OrderItemBO> orderItemBOS, CreateCartOrderModel model
+            , Integer userId) {
+        List<OrderItem> list = Lists.newArrayListWithCapacity(orderItemBOS.size());
+        for (OrderItemBO orderItemBO : orderItemBOS) {
+            List<OrderItemBO> subItems = Lists.newArrayList(orderItemBO);
+            OrderInfo orderInfo = assembleOrder(userId, model, subItems, model.getFansReceiveAddressId());
+            orderInfo.setParentOrderId(parentOrder.getId());
+            baseMapper.insertDynamic(orderInfo);
+            list.addAll(generateItem(orderInfo, subItems));
+            //合单 虚拟服务售卖卡券
+            soldCard(orderInfo);
+            if (orderInfo.getPayAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                //热销产品
+                hotSaleCal(orderInfo.getId(), true, TRUE.getCode());
+            }
+        }
+        return list;
+    }
+
+    private List<OrderItem> generateItem(OrderInfo orderInfo, List<OrderItemBO> orderItemBOS) {
+        List<OrderItem> itemList = orderItemBOS.stream().map(t -> {
+            OrderItem orderItem = BeanCopierUtils.generalCopyBean(t, OrderItem.class);
+            orderItem.setOrderId(orderInfo.getId());
+            orderItem.setOrderSn(orderInfo.getOrderSn());
+            return orderItem;
+        }).collect(toList());
+        orderItemService.saveBatch(itemList);
+        return itemList;
+    }
+
+    private List<OrderInfo> mergeOrder(OrderInfo orderInfo) {
+        if (orderInfo.getHasSub()) {
+            List<OrderInfo> list = ChainWrappers.lambdaQueryChain(baseMapper).eq(OrderInfo::getParentOrderId, orderInfo.getId()).list();
+            list.add(orderInfo);
+            return list;
+        }
+        return Lists.newArrayList(orderInfo);
+    }
 }

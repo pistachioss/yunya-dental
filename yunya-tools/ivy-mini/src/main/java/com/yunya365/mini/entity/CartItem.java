@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -40,6 +41,12 @@ public class CartItem implements Serializable {
      */
     @TableField("product_id")
     private Integer productId;
+
+    /**
+     * 商品类型：0-商品 1-虚拟服务
+     */
+    @Column(name = "product_type")
+    private Byte productType;
 
     /**
      * 商品名称

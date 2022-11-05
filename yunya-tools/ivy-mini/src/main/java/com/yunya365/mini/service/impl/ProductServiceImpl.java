@@ -188,12 +188,14 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public List<OrderItemBO> listProductOrderItem(Collection<Integer> ids, Integer type) {
         List<ProductBO> itemBoList = Lists.newArrayList();
-        if (FALSE.equals(type)) {
-            itemBoList = treatmentServiceFeign.listOnSaleOral(ids);
-        }
-        //原始商品集合(虚拟服务)
-        if (TRUE.equals(type)) {
-            itemBoList = discountFeign.listOnSaleOral(ids);
+        if (CollectionUtils.isNotEmpty(ids)) {
+            if (FALSE.equals(type)) {
+                itemBoList = treatmentServiceFeign.listOnSaleOral(ids);
+            }
+            //原始商品集合(虚拟服务)
+            if (TRUE.equals(type)) {
+                itemBoList = discountFeign.listOnSaleOral(ids);
+            }
         }
         return assembleOrderItemBO(itemBoList);
     }
@@ -201,11 +203,13 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public void lockProductStock(List<LockStockForm> form, Integer type) {
-        if (FALSE.equals(type)) {
-            treatmentServiceFeign.lockGoodsStock(form);
-        }
-        if (TRUE.equals(type)) {
-            discountFeign.lockVirtualStock(form);
+        if (CollectionUtils.isNotEmpty(form)) {
+            if (FALSE.equals(type)) {
+                treatmentServiceFeign.lockGoodsStock(form);
+            }
+            if (TRUE.equals(type)) {
+                discountFeign.lockVirtualStock(form);
+            }
         }
     }
 
@@ -242,11 +246,13 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public void freeStock(List<FreeStockForm> form, Integer type) {
-        if (FALSE.equals(type)) {
-            treatmentServiceFeign.freeGoodsStock(form);
-        }
-        if (TRUE.equals(type)) {
-            discountFeign.freeVirtualStock(form);
+        if (CollectionUtils.isNotEmpty(form)) {
+            if (FALSE.equals(type)) {
+                treatmentServiceFeign.freeGoodsStock(form);
+            }
+            if (TRUE.equals(type)) {
+                discountFeign.freeVirtualStock(form);
+            }
         }
     }
 

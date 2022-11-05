@@ -202,4 +202,12 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    * @return
    */
   List<BaseReturnVisitVO> selectReturnVisitRecordList(@Param("query") BaseReturnVisitQuery query);
+
+  /**
+   * 根据条件查询个人接诊患者报表
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeReceptionPatientVO> selectEmployeeReceptionPatientList(@Param("query") EmployeeReceptionPatientQueryForm query);
 }

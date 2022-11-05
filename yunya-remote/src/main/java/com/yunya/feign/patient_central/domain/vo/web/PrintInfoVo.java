@@ -45,4 +45,6 @@ public class PrintInfoVo implements Serializable {
     private String city;
     @ApiModelProperty("区")
     private String country;
+    @ApiModelProperty("单位")
+    private String employer;
 }

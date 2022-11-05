@@ -9,10 +9,14 @@ import com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.WxUserQuery;
 import com.yunya.feign.patient_central.domain.vo.web.WxPatientVo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.patient_central.WxFans;
 import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.entity.OrderOperateHistory;
@@ -24,7 +28,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 简介:
@@ -38,6 +45,9 @@ import java.util.*;
 @Transactional(rollbackFor = Exception.class)
 public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> {
 
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
     public static final Byte STATUS = 7;
     public static final Byte SUSSTATUS = 3;
 
@@ -49,15 +59,26 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        if(STATUS.equals( form.getStatus())){
-            form.setActiveStatus(new Byte("0"));
-            form.setProductType(new Byte("1"));
-        }
-        if(SUSSTATUS.equals( form.getStatus())){
-            form.setActiveStatus(new Byte("1"));
-            form.setProductType(new Byte("1"));
-        }
+
+            if(STATUS.equals( form.getStatus())){
+                form.setActiveStatus(new Byte("0"));
+                form.setProductType(new Byte("1"));
+            }
+            if(SUSSTATUS.equals( form.getStatus())){
+                form.setActiveStatus(new Byte("1"));
+            }
+
+
         List<OrderVO> result = mapper.findOrderList(form);
+
+        //全部门诊信息
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        Map<String, OrganizationInfoDetail> cMap = new HashMap(16);
+        clinics.forEach(z -> cMap.put(z.getId() + "", z));
+
+
         for (OrderVO a : result) {
             a.setReceivingInformation(a.getReceiverName() + " " + a.getReceiverPhone() + " " + a.getAddress());
             if(STATUS.equals(form.getStatus())||form.getStatus()==null){
@@ -70,10 +91,16 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
                     a.setStatus(new Byte("3"));
                 }
             }
+            if(a.getClinicId()!=null){
+                a.setClinicName(cMap.get(a.getClinicId()+"").getName());
+            }
         }
         return new PageInfo<>(result);
     }
-
+    public Integer findCount() {
+        Integer result  = mapper.findCount();
+        return result;
+    }
     public ResponseResult update(OrderUpdateForm form) {
         Integer id = form.getId();
         OrderInfo order = mapper.selectByPrimaryKey(id);

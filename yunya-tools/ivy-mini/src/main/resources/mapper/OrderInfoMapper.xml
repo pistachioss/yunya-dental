@@ -24,7 +24,7 @@
     <result column="confirm_status" property="confirmStatus" jdbcType="TINYINT" />
     <result column="delete_status" property="deleteStatus" jdbcType="TINYINT" />
 
-    <result column="pick_up_clinic" property="pickUpClinic" jdbcType="VARCHAR" />
+    <result column="pick_up_clinic" property="pickUpClinic" jdbcType="INTEGER" />
     <result column="receiver_name" property="receiverName" jdbcType="VARCHAR" />
     <result column="receiver_phone" property="receiverPhone" jdbcType="VARCHAR" />
     <result column="receiver_post_code" property="receiverPostCode" jdbcType="VARCHAR" />
@@ -71,6 +71,9 @@
       </if>
       <if test="orderSn != null">
         order_sn,
+      </if>
+      <if test="parentOrderId != null">
+        parent_order_id,
       </if>
       <if test="outOrderNo != null">
         out_order_no,
@@ -123,6 +126,9 @@
       <if test="receiverName != null">
         receiver_name,
       </if>
+      <if test="pickUpClinic != null">
+        pick_up_clinic,
+      </if>
       <if test="receiverPhone != null">
         receiver_phone,
       </if>
@@ -150,6 +156,9 @@
       <if test="receiveTime != null">
         receive_time,
       </if>
+      <if test="hasSub != null">
+        has_sub,
+      </if>
       <if test="crtTime != null">
         crt_time,
       </if>
@@ -166,6 +175,9 @@
       </if>
       <if test="orderSn != null">
         #{orderSn,jdbcType=VARCHAR},
+      </if>
+      <if test="parentOrderId != null">
+        #{parentOrderId,jdbcType=INTEGER},
       </if>
       <if test="outOrderNo != null">
         #{outOrderNo,jdbcType=VARCHAR},
@@ -218,6 +230,9 @@
       <if test="receiverName != null">
         #{receiverName,jdbcType=VARCHAR},
       </if>
+      <if test="pickUpClinic != null">
+        #{pickUpClinic,jdbcType=INTEGER},
+      </if>
       <if test="receiverPhone != null">
         #{receiverPhone,jdbcType=VARCHAR},
       </if>
@@ -244,6 +259,9 @@
       </if>
       <if test="receiveTime != null">
         #{receiveTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="hasSub != null">
+        #{hasSub,jdbcType=BIT},
       </if>
       <if test="crtTime != null">
         #{crtTime,jdbcType=TIMESTAMP},
@@ -273,7 +291,8 @@
     od.receiver_name as receiverName,
     od.receiver_phone as receiverPhone,
       od.product_type as productType ,
-     od.active_status as activeStatus
+     od.active_status as activeStatus,
+     od.pick_up_clinic as clinicId
     FROM
     `order_info`  od
     LEFT JOIN order_item oi ON od.id = oi.order_id
@@ -291,8 +310,21 @@
       <if test="status != null and activeStatus == null" >
         and od.status =  #{status}
       </if>
-      <if test="activeStatus != null" >
+      <if test=" activeStatus == 0" >
         and od.active_status =  #{activeStatus} and od.status = 3
+      </if>
+      <if test="activeStatus == 1" >
+
+        and (od.active_status =  #{activeStatus} or (od.status = 3 and  od.product_type = 0))
+      </if>
+      <if test="clinicId != null" >
+        and od.pick_up_clinic =  #{clinicId}
+      </if>
+      <if test="deliveryType == 0 " >
+        and od.delivery_type =  #{deliveryType}
+      </if>
+      <if test="deliveryType == 1 " >
+        and (od.delivery_type =  #{deliveryType} or od.delivery_type IS NULL)
       </if>
       <if test="productType != null" >
         and od.product_type =  #{productType}
@@ -306,6 +338,7 @@
       IFNULL(od.receiver_detail_address,''))
       like concat(concat('%', rtrim(#{name})), '%')
       </if>
+      AND delete_status = 0
     </where>
     GROUP BY
     od.id
@@ -374,6 +407,14 @@ SELECT
 	) used
     FROM
 	order_info
-    where fans_id = #{fansId}
+    where fans_id = #{fansId} AND delete_status = 0
+  </select>
+  <select id="findCount" resultType="Integer">
+        SELECT
+	    COUNT(*)
+        FROM
+	    order_info
+        WHERE
+	    TO_DAYS(crt_time) = TO_DAYS(now()) and status != 0 and status != 4 and delete_status = 0
   </select>
 </mapper>

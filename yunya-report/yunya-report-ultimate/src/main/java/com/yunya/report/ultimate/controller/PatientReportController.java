@@ -2,16 +2,9 @@ package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PatientNotSeenForm;
-import com.yunya.feign.report.domain.query.ArrearsQueryForm;
-import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
-import com.yunya.feign.report.domain.query.PatientReportQueryForm;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.FuchaForm;
-import com.yunya.feign.report.domain.vo.AnalysisVo;
-import com.yunya.feign.report.domain.vo.ArrearsStatisticsVo;
-import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
-import com.yunya.feign.report.domain.vo.FuchaVO;
-import com.yunya.feign.report.domain.query.BaseReturnVisitQuery;
-import com.yunya.feign.report.domain.vo.BaseReturnVisitVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.report.BaseEmployee;
@@ -192,5 +185,33 @@ public class PatientReportController {
   public ResponseResult exportReturnVisitList(@RequestBody @Validated BaseReturnVisitQuery query, HttpServletResponse response) throws IOException {
     patientReportBiz.exportReturnVisitList(query, response);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询个人接诊患者列表（门诊端-个人中心-个人报表）
+   *
+   * @param query
+   * @return
+   * @throws Exception
+   */
+  @ApiOperation("根据条件查询个人接诊患者列表（门诊端-个人中心-个人报表）")
+  @PostMapping("/empReception/list")
+  public ResponseResult<PageInfo<EmployeeReceptionPatientVO>> findEmployeeReceptionPatientList(@RequestBody @Validated EmployeeReceptionPatientQueryForm query){
+    PageInfo<EmployeeReceptionPatientVO> pageInfo = patientReportBiz.findEmployeeReceptionPatientList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出个人接诊患者列表（门诊端-个人中心-个人报表）
+   *
+   * @param query
+   * @return
+   * @throws Exception
+   */
+  @ApiOperation("根据条件查询个人接诊患者列表（门诊端-个人中心-个人报表）")
+  @PostMapping("/empReception/export")
+  public ResponseResult exportEmployeeReceptionPatientList(@RequestBody @Validated EmployeeReceptionPatientQueryForm query, HttpServletResponse response) throws Exception{
+    patientReportBiz.exportEmployeeReceptionPatientList(query, response);
+    return ResponseUtil.success();
   }
 }

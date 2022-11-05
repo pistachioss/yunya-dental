@@ -47,10 +47,17 @@ public class OrderPcController extends PcBaseController{
     private IOrderItemService orderItemService;
 
     @PostMapping("/order/findlist")
-    @ApiOperation("后台-订单-列表")
+    @ApiOperation("后台-订单-列表(自提/配送)")
     @IgnoreUserToken
     public ResponseResult<PageInfo<OrderVO>> findList(@RequestBody @Valid OrderForm form) {
         return ResponseUtil.success(orderAdminiService.findList(form));
+    }
+
+    @GetMapping("/order/findcount")
+    @ApiOperation("后台-订单-数量提醒")
+    @IgnoreUserToken
+    public ResponseResult<Integer> findCount() {
+        return ResponseUtil.success(orderAdminiService.findCount());
     }
 
     @ApiOperation("后台-订单-发货")

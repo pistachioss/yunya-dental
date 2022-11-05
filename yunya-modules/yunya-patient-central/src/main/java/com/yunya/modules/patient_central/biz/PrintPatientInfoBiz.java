@@ -58,10 +58,12 @@ public class PrintPatientInfoBiz {
         PatientExpInfoVo expInfo = patientExpInfoMapper.selectByPatientId(patientId);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date birthday = null;
-        try {
-            birthday = simpleDateFormat.parse(patientTotalInfo.getBirthday());
-        } catch (ParseException e) {
-            e.printStackTrace();
+        if(patientTotalInfo.getBirthday() != null){
+            try {
+                birthday = simpleDateFormat.parse(patientTotalInfo.getBirthday());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
         if (birthday != null) {
             // 计算年龄
@@ -78,6 +80,7 @@ public class PrintPatientInfoBiz {
         printInfoVo.setProvince(expInfo.getProvince());
         printInfoVo.setGender(patientTotalInfo.getGender());
         printInfoVo.setMobile(patientTotalInfo.getMobile());
+        printInfoVo.setEmployer(expInfo.getEmployer());
         // 设置患者会员类型
         Integer memberTypeId = patientTotalInfo.getMemberTypeId();
         if (memberTypeId != null) {

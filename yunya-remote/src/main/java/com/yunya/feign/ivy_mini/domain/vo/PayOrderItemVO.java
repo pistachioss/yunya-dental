@@ -21,4 +21,6 @@ public class PayOrderItemVO {
     private Integer productQuantity;
     @ApiModelProperty(value = "库存是否足够")
     private boolean isStock;
+    @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")
+    private Integer productType;
 }

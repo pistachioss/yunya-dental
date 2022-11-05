@@ -124,7 +124,7 @@ public class OrderInfoController extends BaseController {
     }
 
     @PostMapping("/order/pay/continue/{orderId}")
-    @ApiOperation("【小程序】继续支付订单")
+    @ApiOperation(value = "【小程序】继续支付订单", notes = "订单详情parentOrderId不为null，取parentOrderId传参")
     public ResponseResult<WxPaymentVO> continuePay(@PathVariable Integer orderId) {
         return ResponseUtil.success(orderInfoService.continuePay(orderId));
     }

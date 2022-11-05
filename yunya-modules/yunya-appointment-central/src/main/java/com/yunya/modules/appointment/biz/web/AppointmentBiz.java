@@ -1,6 +1,5 @@
 package com.yunya.modules.appointment.biz.web;
 
-import ch.qos.logback.core.joran.util.beans.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -73,7 +72,6 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,15 +80,15 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
-import static com.yunya.feign.wechat.enums.TemplateEnum.*;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
+import static com.yunya.feign.wechat.enums.TemplateEnum.APPOINT_CANCEL;
+import static com.yunya.feign.wechat.enums.TemplateEnum.APPOINT_SUCCESS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
@@ -2536,6 +2534,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     patientEntity.setAllergenDescription(patientTotalInfoVo.getAllergensDescriptions());
                     patientEntity.setAllergen(patientTotalInfoVo.getAllergensDescriptions());
                     patientEntity.setPatientKind(patientTotalInfoVo.getPatientKindName());
+                    patientEntity.setIsCommunicate(patientTotalInfoVo.getIsCommunicate());
                     // 设置会员类型图标
                     if (StringHelper.isNotEmpty(memberTypeByIds)) {
                         List<MemberType> collect1 = memberTypeByIds.stream().filter(memberType -> memberType.getId().equals(patientTotalInfoVo.getMemberTypeId())).collect(Collectors.toList());
@@ -3200,6 +3199,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 build.setAllergen(patientInfo.getAllergensDescriptions());
                 build.setPinyinName(patientInfo.getPinyinName());
                 build.setPatientKind(patientInfo.getPatientKindName());
+                build.setIsCommunicate(patientInfo.getIsCommunicate());
                 // 设置会员卡图标类型
                 Integer memberTypeId = patientInfo.getMemberTypeId();
                 if (memberTypeId != null && StringHelper.isNotEmpty(memberTypes)) {

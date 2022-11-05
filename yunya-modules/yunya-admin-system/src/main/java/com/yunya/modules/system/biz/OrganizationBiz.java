@@ -157,11 +157,41 @@ public class OrganizationBiz {
   private List<OrganizationInfoVO> latitudeLongitudeFilter(OrganizationQueryForm queryForm, List<OrganizationInfoVO> resultList) {
     String longitude = queryForm.getLongitude();
     String latitude = queryForm.getLatitude();
-    List<Integer> orgIds = new ArrayList<>();
     if (StringHelper.isNotEmpty(resultList)) {
+      putOrganizationLogo(resultList);
+
+      // 定位排序
+      List<Integer> orgIds = resultList.stream().map(OrganizationInfoVO::getId).collect(Collectors.toList());
+      if (StringHelper.isNotNull(employeeAttendServiceFeign) &&
+              StringHelper.isNotEmpty(longitude) && StringHelper.isNotEmpty(latitude)
+              && StringHelper.isNotEmpty(orgIds)) {
+        try {
+          List<AttendanceAddressSetVO> addresses = employeeAttendServiceFeign.findAttendanceAddressByOrgId(orgIds);
+          resultList.forEach(org->{
+            Integer orgId = org.getId();
+            addresses.forEach(address->{
+              if (orgId.equals(address.getOrgId())) {
+                org.setDistance(LocationUtil.distanceKilometer(longitude, latitude,
+                        address.getLongitude(), address.getLatitude()));
+              }
+            });
+          });
+        } catch (Exception e) {
+          log.error("findAttendanceAddressByOrgId error: ", e);
+        }
+        resultList = SortUtil.sort(resultList,
+                SortUtil.comparing(Comparator.nullsLast(Double::compare), //空值往后排
+                        OrganizationInfoVO::getDistance));
+      }
+    }
+    return resultList;
+  }
+
+
+  private void putOrganizationLogo(List<OrganizationInfoVO> resultList) {
+    if (StringHelper.isNotNull(remoteOssServiceFeign)) {
       List<OssUrlForm> ossUrlForms = new ArrayList<>();
-      resultList.forEach(org->{
-        orgIds.add(org.getId());
+      resultList.forEach(org -> {
         String clinicPath = org.getClinicPath();
         if (StringHelper.isNotEmpty(clinicPath)) {
           OssUrlForm form = new OssUrlForm();
@@ -173,33 +203,19 @@ public class OrganizationBiz {
           ossUrlForms.add(form);
         }
       });
-      Map<String, String> urlMap = remoteOssServiceFeign.getUrlMap(ossUrlForms).getData();
-      resultList.forEach(org->{
-        String clinicPath = org.getClinicPath();
-        String url = urlMap.get(clinicPath);
-        if (StringHelper.isNotEmpty(url)) {
-          org.setClinicPath(domainUrl+"/"+url);
-        }
-      });
-
-      // 定位排序
-      if (StringHelper.isNotEmpty(longitude) && StringHelper.isNotEmpty(latitude)) {
-        List<AttendanceAddressSetVO> addresses = employeeAttendServiceFeign.findAttendanceAddressByOrgId(orgIds);
+      try {
+        Map<String, String> urlMap = remoteOssServiceFeign.getUrlMap(ossUrlForms).getData();
         resultList.forEach(org->{
-          Integer orgId = org.getId();
-          addresses.forEach(address->{
-            if (orgId.equals(address.getOrgId())) {
-              org.setDistance(LocationUtil.distanceKilometer(longitude, latitude,
-                      address.getLongitude(), address.getLatitude()));
-            }
-          });
+          String clinicPath = org.getClinicPath();
+          String url = urlMap.get(clinicPath);
+          if (StringHelper.isNotEmpty(url)) {
+            org.setClinicPath(domainUrl + "/" + url);
+          }
         });
-        resultList = SortUtil.sort(resultList,
-                SortUtil.comparing(Comparator.nullsLast(Double::compare), //空值往后排
-                        OrganizationInfoVO::getDistance));
+      } catch (Exception e) {
+        log.error("putOrganizationLogo error: ", e);
       }
     }
-    return resultList;
   }
 
   private void childIfAbsent(List<OrganizationInfoVO> resultList) {

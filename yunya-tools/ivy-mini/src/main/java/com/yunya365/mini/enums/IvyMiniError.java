@@ -52,6 +52,7 @@ public enum IvyMiniError implements RestError {
     CAPTCHA_NOT_MATCH(42, "验证码输入不正确"),
     ADDRESS_IS_NULL(43, "请先添加收货地址"),
     SEND_AMOUNT_LACK(44, "起送价不足，还差%s起送"),
+    PRODUCT_TYPE_MIX_ERROR(45, "不同产品类型无法混合下单"),
     ;
     private final Integer code;
     private final String value;

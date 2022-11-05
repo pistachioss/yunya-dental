@@ -26,6 +26,12 @@ public class OrderInfo {
     private String orderSn;
 
     /**
+     * 父订单id
+     */
+    @Column(name = "parent_order_id")
+    private Integer parentOrderId;
+
+    /**
      * 微信产生的订单号
      */
     @Column(name = "out_order_no")
@@ -129,7 +135,7 @@ public class OrderInfo {
      * 自提门诊
      */
     @Column(name = "pick_up_clinic")
-    private String pickUpClinic;
+    private Integer pickUpClinic;
 
     /**
      * 收货人姓名
@@ -190,6 +196,12 @@ public class OrderInfo {
      */
     @Column(name = "receive_time")
     private Date receiveTime;
+
+    /**
+     * 是否有子单（0-无 1-有）
+     */
+    @Column(name = "has_sub")
+    private Boolean hasSub;
 
     /**
      * 更新时间

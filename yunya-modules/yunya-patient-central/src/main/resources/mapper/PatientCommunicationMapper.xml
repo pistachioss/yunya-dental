@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientCommunicationMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientCommunication" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="content" property="content" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+  </resultMap>
+
+  <!--根据条件查询患者沟通记录列表-->
+  <select id="selectPatientCommunicationList"
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientCommunicationVO">
+    SELECT
+        id,
+        content,
+        crt_id AS crtName,
+        crt_time AS crtTime,
+        upd_id AS updName,
+        upd_time AS updTime
+    FROM patient_communication
+    <where>
+      inservice = 1
+      <if test="query.patientId != null">
+        AND patient_id = #{query.patientId}
+      </if>
+    </where>
+  </select>
+</mapper>

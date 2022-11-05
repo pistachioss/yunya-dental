@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -18,6 +19,8 @@ public class CartItemVO {
     private Integer id;
     @ApiModelProperty(value = "产品id")
     private Integer productId;
+    @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")
+    private Byte productType;
     @ApiModelProperty(value = "产品名称")
     private String productName;
     @ApiModelProperty(value = "封面")

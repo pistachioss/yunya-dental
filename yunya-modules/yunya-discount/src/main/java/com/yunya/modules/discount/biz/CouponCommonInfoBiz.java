@@ -132,7 +132,8 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
                 vo.setDetailHtml(fileInfo);
                 vo.setProductPics(fileInfo1);
             }
-            vo.setStock(unsold(couponId));
+            Long unSoldCount = unsold(Lists.newArrayList(couponId)).get(couponId);
+            vo.setStock(Objects.isNull(unSoldCount) ? 0 : unSoldCount.intValue());
         }
         return vo;
     }
@@ -150,13 +151,16 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         ProductTypeQueryForm queryForm = new ProductTypeQueryForm();
         queryForm.setWhetherPage(false);
         PageInfo<ProductTypeVO> data = productTypeBiz.findList(queryForm);
-        return assembleProductBO(couponCommonInfos, couponFileInfos, data.getList());
+        Map<Integer, Long> unsold = unsold(Lists.newArrayList(ids));
+        return assembleProductBO(couponCommonInfos, couponFileInfos, data.getList(), unsold);
     }
 
-    private List<ProductBO> assembleProductBO(List<CouponCommonInfo> coupons, List<CouponFileInfo> files, List<ProductTypeVO> cateGoryList) {
+    private List<ProductBO> assembleProductBO(List<CouponCommonInfo> coupons, List<CouponFileInfo> files, List<ProductTypeVO> cateGoryList
+            , Map<Integer, Long> unsold) {
         Map<Integer, CouponFileInfo> fileInfoMap = files.stream()
                 .collect(Collectors.toMap(CouponFileInfo::getCouponId, Function.identity(), (o, n) -> n));
         List<ProductBO> collect = coupons.stream().map(t -> {
+            Long unsoldCount = unsold.get(t.getId());
             CouponFileInfo couponFileInfo = fileInfoMap.get(t.getId());
             String couponPic = Objects.nonNull(couponFileInfo) ? couponFileInfo.getPath() : null;
             ProductBO bo = new ProductBO();
@@ -168,6 +172,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
             bo.setProductType(TRUE.getCode());
             bo.setProductCategoryId(t.getProductTypeId());
             bo.setCouponType(t.getType().intValue());
+            bo.setStock(Objects.isNull(unsoldCount) ? 0 : unsoldCount.intValue());
             return bo;
         }).collect(Collectors.toList());
         Map<Integer, ProductTypeVO> categoryMap = cateGoryList.stream().collect(toMap(ProductTypeVO::getId, Function.identity()));
@@ -196,12 +201,13 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         }
     }
 
-    private int unsold(Integer couponId) {
+    private Map<Integer, Long> unsold(List<Integer> couponIds) {
         Example example = new Example(Card.class);
-        example.createCriteria().andEqualTo("couponId", couponId)
+        example.createCriteria().andIn("couponId", couponIds)
                 .andEqualTo("orgId", COMPANY_ORGID)
                 .andEqualTo("status", 0);
-        return cardBiz.selectCountByExample(example);
+        List<Card> cards = cardBiz.selectByExample(example);
+        return CollectionUtils.isEmpty(cards) ? Maps.newHashMap() : cards.stream().collect(Collectors.groupingBy(Card::getCouponId, counting()));
     }
 
     public void removeHot(CouponCommonInfo old, Boolean isOnlineSale) {

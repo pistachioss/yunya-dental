@@ -59,6 +59,7 @@ public class SelfMentionClinicServiceImpl extends BaseBiz<SelfMentionClinicMappe
         for (SelfMentionClinic s:sslit){
             SelfMentionClinicVO sc = new SelfMentionClinicVO();
             BeanUtil.copy(s,sc);
+            sc.setClinicId(s.getClinicId());
             sc.setPath(cMap.get(s.getClinicId()+"").getPath());
             sc.setClinicAddress(clinicMap.get(s.getClinicId()+"").getAttendanceAddress());
             sc.setClinicName(cMap.get(s.getClinicId()+"").getAbbreviation());

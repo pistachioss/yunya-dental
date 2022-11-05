@@ -232,7 +232,7 @@
         ) AS numBind,
         COUNT(
         CASE
-        WHEN bind = 0
+        WHEN bind = 0 or ISNULL(bind)
         THEN
         1
         ELSE

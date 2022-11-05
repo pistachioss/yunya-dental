@@ -3,10 +3,7 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PatientNotSeenForm;
-import com.yunya.feign.report.domain.query.ArrearsQueryForm;
-import com.yunya.feign.report.domain.query.BaseReturnVisitQuery;
-import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
-import com.yunya.feign.report.domain.query.PatientReportQueryForm;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.FuchaForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -353,5 +350,51 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     List<BaseReturnVisitVO> data = findReturnVisitList(query).getList();
     ExcelUtil<BaseReturnVisitVO> excelUtil = new ExcelUtil<>(BaseReturnVisitVO.class);
     excelUtil.exportExcel(response, data, "老客回访列表", "老客回访列表");
+  }
+
+  /**
+   * 根据条件查询个人接诊患者报表（门诊端-个人中心-个人报表）
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<EmployeeReceptionPatientVO> findEmployeeReceptionPatientList(EmployeeReceptionPatientQueryForm query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeReceptionPatientVO> result = mapper.selectEmployeeReceptionPatientList(query);
+    generateSequeneNum(query, result);
+    return new PageInfo<>(result);
+  }
+
+  /**
+   * 生成分页序列
+   * @param query
+   * @param result
+   */
+  private void generateSequeneNum(EmployeeReceptionPatientQueryForm query, List<EmployeeReceptionPatientVO> result) {
+    if (StringHelper.isNotEmpty(result)) {
+      Integer pageNum = query.getPageNum();
+      Integer pageSize = query.getPageSize();
+      for (int i = 0; i < result.size(); i++) {
+        EmployeeReceptionPatientVO vo = result.get(i);
+        vo.setSeqNum((pageNum - 1) * pageSize + i + 1);
+      }
+    }
+  }
+
+  /**
+   * 根据条件导出个人接诊患者列表
+   *
+   * @param query
+   * @param response
+   * @throws IOException
+   */
+  public void exportEmployeeReceptionPatientList(EmployeeReceptionPatientQueryForm query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<EmployeeReceptionPatientVO> data = findEmployeeReceptionPatientList(query).getList();
+    ExcelUtil<EmployeeReceptionPatientVO> excelUtil = new ExcelUtil<>(EmployeeReceptionPatientVO.class);
+    String name = "个人接诊患者列表";
+    excelUtil.exportExcel(response, data, name, name);
   }
 }
