@@ -603,7 +603,9 @@
             GROUP BY patient_id
         ) bpgr on bpgr.patient_id = bp.patient_id
         <where>
-            and bp.medical_number is not null and substr(bp.medical_number, 1, 1) != '*'
+            <if test="query.limitMobile != true and query.limitName != true">
+                and bp.medical_number is not null and substr(bp.medical_number, 1, 1) != '*'
+            </if>
             <if test="query.patientKeyWord != null and query.patientKeyWord != ''">
                 and concat(IFNULL(bp.`name`,''), IFNULL(bp.pinyin_name,''), IFNULL(bp.mobile,''),
                 IFNULL(bp.medical_number,'')) like
