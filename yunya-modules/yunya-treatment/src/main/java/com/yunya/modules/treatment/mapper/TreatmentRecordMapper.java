@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
+import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentCountQuery;
@@ -179,4 +180,11 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
       @Param("treatDate") String treatDate,
       @Param("treatmentProcessedStatus") Byte treatmentProcessedStatus);
 
+  /**
+   * 根据患者id查询患者就诊轨迹
+   *
+   * @param patientId
+   * @return
+   */
+  List<PatientEventVO> selectPatientTreatmentTrajectory(@Param("patientId") Integer patientId);
 }

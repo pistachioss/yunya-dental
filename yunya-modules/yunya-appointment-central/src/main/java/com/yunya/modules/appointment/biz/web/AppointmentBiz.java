@@ -23,6 +23,7 @@ import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
@@ -3604,8 +3605,35 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     public NextAppointmentVO findNextAppointment(Integer patientId) {
         List<NextAppointmentVO> appoints = mapper.selectNextAppointmentList(patientId);
         if (StringHelper.isNotEmpty(appoints)) {
-            return appoints.get(0);
+            NextAppointmentVO appointment = appoints.get(0);
+            appointment.setAbbreviation(findAbbreviation(appointment.getOrgId()));
+            appointment.setDentistName(findEmployeeName(appointment.getDentistId()));
+            return appointment;
         }
         return null;
+    }
+
+    private String findAbbreviation(Integer orgId) {
+        if (StringHelper.isNotNull(orgId)) {
+            OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+            if (StringHelper.isNotNull(org)) {
+                return org.getAbbreviation();
+            }
+        }
+        return null;
+    }
+
+    private String findEmployeeName(Integer userId) {
+        if (StringHelper.isNotNull(userId)) {
+            SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(userId);
+            if (StringHelper.isNotNull(employee)) {
+                return employee.getName();
+            }
+        }
+        return null;
+    }
+
+    public List<PatientEventVO> findPatientAppointTrajectory(Integer patientId) {
+        return mapper.selectPatientAppointTrajectory(patientId);
     }
 }

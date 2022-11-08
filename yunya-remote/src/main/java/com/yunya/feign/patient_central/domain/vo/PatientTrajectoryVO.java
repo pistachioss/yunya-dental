@@ -1,11 +1,13 @@
-package com.yunya.feign.report.domain.vo;
+package com.yunya.feign.patient_central.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author: chenlin
@@ -19,8 +21,9 @@ import java.io.Serializable;
 public class PatientTrajectoryVO implements Serializable {
 
     /** 时间点 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
     @ApiModelProperty("时间点")
-    private String timePoint;
+    private Date timePoint;
     
     /** 轨迹内容 */
     @ApiModelProperty("轨迹内容")

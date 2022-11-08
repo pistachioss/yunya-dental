@@ -667,7 +667,7 @@
     <select id="selectNextAppointmentList" resultType="com.yunya.feign.appointment.vo.NextAppointmentVO">
         SELECT
             dentist_id AS dentistId,
-            DATE_FORMAT(appoint_date, '%Y-%m-%d') || appoint_time AS appointDate,
+            appoint_start_time AS appointDate,
             org_id AS orgId
         FROM appointment
         <where>
@@ -678,5 +678,37 @@
             AND DATE_FORMAT(appoint_date, '%Y-%m-%d') || appoint_time &gt; date_format(now(),'%Y-%m-%d %H:%i')
         </where>
         ORDER BY id ASC
+    </select>
+
+
+    <select id="selectPatientAppointTrajectory" resultType="com.yunya.feign.patient_central.domain.vo.PatientEventVO">
+        SELECT * FROM (
+            SELECT
+                org_id AS orgId,
+                2 AS eventCode,
+                crt_time AS timePoint
+            FROM appointment
+            WHERE inservice = true
+            AND patient_id = #{patientId}
+            UNION ALL
+            SELECT
+                org_id,
+                4 AS eventCode,
+                appoint_start_time AS timePoint
+            FROM appointment
+            WHERE inservice = true
+            AND appoint_status = 1
+            AND patient_id = #{patientId}
+            UNION ALL
+            SELECT
+                org_id,
+                4 AS eventCode,
+                appoint_start_time AS timePoint
+            FROM appointment
+            WHERE inservice = true
+            AND appoint_status = 3
+            AND patient_id = #{patientId}
+        ) t
+        ORDER BY t.timePoint ASC
     </select>
 </mapper>

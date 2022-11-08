@@ -20,6 +20,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
+import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -1779,5 +1780,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       return result;
     }
     return null;
+  }
+
+  public List<PatientEventVO> findPatientTreatmentTrajectory(Integer patientId) {
+    return mapper.selectPatientTreatmentTrajectory(patientId);
   }
 }

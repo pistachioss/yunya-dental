@@ -237,6 +237,7 @@ public class BaseTreatmentProcessBiz
   public ResponseResult<AppointmentCountVO> appointmentCount(
       Integer patientId, AppointmentCountQuery query) {
     AppointmentCountVO result = mapper.appointmentCount(patientId, query);
+
     return ResponseUtil.success(result);
   }
 

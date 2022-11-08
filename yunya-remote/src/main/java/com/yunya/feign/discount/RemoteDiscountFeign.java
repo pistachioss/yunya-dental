@@ -12,6 +12,7 @@ import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
@@ -121,4 +122,13 @@ public interface RemoteDiscountFeign {
 
     @DeleteMapping("/mini/card/delete/batch")
     void deleteCard(@RequestBody List<Integer> cardIds);
+
+    /**
+     * 根据患者id查询患者卡券轨迹
+     *
+     * @param patientId
+     * @return
+     */
+    @GetMapping("/card/trajectory/{patientId}")
+    List<PatientEventVO> findPatientCardTrajectory(@PathVariable(value = "patientId") Integer patientId);
 }

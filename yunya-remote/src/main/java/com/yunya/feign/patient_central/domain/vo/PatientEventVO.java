@@ -1,4 +1,4 @@
-package com.yunya.feign.report.domain.vo;
+package com.yunya.feign.patient_central.domain.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author: chenlin
@@ -18,16 +19,23 @@ import java.io.Serializable;
 @ApiModel("患者操作数据模型")
 public class PatientEventVO implements Serializable {
 
-    @ApiModelProperty("事件点")
-    private String timePoint;
+    @ApiModelProperty("时间点")
+    private Date timePoint;
 
-    /** 门诊 */
-    @ApiModelProperty("门诊")
-    private String abbreviation;
+    /** 门诊id */
+    @ApiModelProperty("门诊id")
+    private Integer orgId;
 
     /** 患者轨迹事件码 */
     @ApiModelProperty("患者轨迹事件码")
     private Integer eventCode;
+
+    /** 内容第一部分 */
+    private String firstContent = "";
+
+    /** 内容第二部分 */
+    @ApiModelProperty("内容第二部分")
+    private String secondContent = "";
 
     /** 作用体 */
     @ApiModelProperty("作用体")

@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleInfoVO;
 import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleRefererVO;
+import com.yunya.feign.patient_central.domain.vo.PatientTrajectoryVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.CustomerPatientBiz;
@@ -48,6 +49,17 @@ public class CustomerPatientController {
     @PostMapping("/patient/referer")
     public ResponseResult<PageInfo<PatientSimpleRefererVO>> findPatientReferrerList(@RequestBody @Validated CustomerPatientQueryForm query) {
         PageInfo<PatientSimpleRefererVO> page = customerPatientBiz.findPatientReferrerList(query);
+        return ResponseUtil.success(page);
+    }
+
+    /**
+     * 根据患者id查询患者动态列表
+     *
+     */
+    @ApiOperation("根据患者id查询患者动态列表")
+    @PostMapping("/patient/trajectory")
+    public ResponseResult<PageInfo<PatientTrajectoryVO>> findPatientTrajectoryList(@RequestBody @Validated CustomerPatientQueryForm query) {
+        PageInfo<PatientTrajectoryVO> page = customerPatientBiz.findPatientTrajectoryList(query);
         return ResponseUtil.success(page);
     }
 }

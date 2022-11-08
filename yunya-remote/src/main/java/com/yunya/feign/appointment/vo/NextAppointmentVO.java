@@ -1,11 +1,13 @@
 package com.yunya.feign.appointment.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author: chenlin
@@ -34,6 +36,7 @@ public class NextAppointmentVO implements Serializable {
     private String dentistName;
 
     /** 预约时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
     @ApiModelProperty("预约时间")
-    private String appointDate;
+    private Date appointDate;
 }

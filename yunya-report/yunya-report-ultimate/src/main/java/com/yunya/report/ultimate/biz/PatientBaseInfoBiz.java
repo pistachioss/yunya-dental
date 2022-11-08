@@ -4,10 +4,12 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
-import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
+import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
+import com.yunya.feign.report.domain.query.PatientManageQuery;
+import com.yunya.feign.report.domain.query.PatientOriginConsumptionQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.enums.PatientTrajectoryEventEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;
@@ -30,9 +32,6 @@ import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.yunya.framework.common.enums.PatientTrajectoryEventEnum.ADD_APPOINTMENT;
-import static com.yunya.framework.common.enums.PatientTrajectoryEventEnum.REGIST_TREAT;
 
 /**
  * 简介:患者信息业务层
@@ -288,59 +287,4 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
     String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", sheetName);
     excelUtil.exportExcel(response, result, sheetName, fileName);
   }
-
-  /**
-   * 根据患者id查询患者动态列表
-   *
-   * @param query
-   * @return
-   */
-    public PageInfo<PatientTrajectoryVO> findPatientTrajectoryList(PatientCreditsRecordQuery query) {
-      Integer pageNum = query.getPageNum();
-      if (query.getWhetherPage()) {
-        PageHelper.startPage(pageNum, query.getPageSize());
-      }
-      List<PatientEventVO> trajectorys =  mapper.selectPatientTrajectoryList(query);
-      PageInfo page = new PageInfo(trajectorys);
-      List<PatientTrajectoryVO> result = new ArrayList<>();
-      if (StringHelper.isNotEmpty(trajectorys)) {
-        Boolean firstAppointment = true;
-        Boolean firstTreatment = true;
-        StringBuilder builder = new StringBuilder();
-        for (PatientEventVO traject : trajectorys) {
-          String abbreviation = traject.getAbbreviation();
-          if (StringHelper.isNotEmpty(abbreviation)) {
-            builder.append("在").append(abbreviation);
-          }
-          Integer event = traject.getEventCode();
-          if (pageNum == 1) {
-            if (firstAppointment && ADD_APPOINTMENT.equals(event)) { // 添加预约
-              builder.append("首次");
-              firstAppointment = false;
-            } else if (firstTreatment && REGIST_TREAT.equals(event)) {// 挂号就诊
-              builder.append("首次");
-              firstAppointment = false;
-            }
-          }
-          String eventContent = PatientTrajectoryEventEnum.getContentByCode(event);
-          if (StringHelper.isNotEmpty(eventContent)) {
-            builder.append(eventContent);
-          }
-          String effectBody = traject.getEffectBody();
-          if (StringHelper.isNotEmpty(effectBody)) {
-            builder.append(effectBody);
-          }
-          String content = builder.toString();
-          if (StringHelper.isNotEmpty(content)) {
-            PatientTrajectoryVO trajectVO = new PatientTrajectoryVO();
-            trajectVO.setTimePoint(traject.getTimePoint());
-            trajectVO.setContent(content);
-            result.add(trajectVO);
-          }
-          builder.setLength(0); // 清空
-        }
-        page.setList(result);
-      }
-      return page;
-    }
 }

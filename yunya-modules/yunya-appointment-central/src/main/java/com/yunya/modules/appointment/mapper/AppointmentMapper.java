@@ -2,6 +2,7 @@ package com.yunya.modules.appointment.mapper;
 
 import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
+import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.models.appointment.Appointment;
 import org.apache.ibatis.annotations.Param;
@@ -288,4 +289,11 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @return
    */
   List<NextAppointmentVO> selectNextAppointmentList(@Param("patientId") Integer patientId);
+
+  /**
+   * 根据患者id查询患者预约轨迹
+   * @param patientId
+   * @return
+   */
+  List<PatientEventVO> selectPatientAppointTrajectory(@Param("patientId") Integer patientId);
 }
