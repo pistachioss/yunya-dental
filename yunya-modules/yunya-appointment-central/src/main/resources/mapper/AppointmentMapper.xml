@@ -662,4 +662,21 @@
             </if>
         </where>
     </select>
+
+    <!--查询患者的后续预约列表-->
+    <select id="selectNextAppointmentList" resultType="com.yunya.feign.appointment.vo.NextAppointmentVO">
+        SELECT
+            dentist_id AS dentistId,
+            DATE_FORMAT(appoint_date, '%Y-%m-%d') || appoint_time AS appointDate,
+            org_id AS orgId
+        FROM appointment
+        <where>
+            inservice = true
+            <if test="patientId != null ">
+                AND patient_id = #{patientId}
+            </if>
+            AND DATE_FORMAT(appoint_date, '%Y-%m-%d') || appoint_time &gt; date_format(now(),'%Y-%m-%d %H:%i')
+        </where>
+        ORDER BY id ASC
+    </select>
 </mapper>

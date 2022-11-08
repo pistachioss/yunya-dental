@@ -334,18 +334,19 @@
 
     <!-- 患者档案-预约信息-履约次数/失约次数/改约次数/取消预约次数 -->
     <select id="appointmentCount" resultType="com.yunya.feign.report.domain.vo.AppointmentCountVO">
-        select ifnull(count(btp1.appointment_id), 0) as keepAppointmentCount,
-        ifnull(count(btp2.appointment_id), 0) as missAppointmentCount,
-        ifnull(sum(btp3.appoint_modify_time), 0) as changeAppointmentCount,
-        ifnull(count(btp4.appointment_id), 0) as cancelAppointmentCount
+        select
+            ifnull(count(btp1.appointment_id), 0) as keepAppointmentCount,
+            ifnull(count(btp2.appointment_id), 0) as missAppointmentCount,
+            ifnull(sum(btp3.appoint_modify_time), 0) as changeAppointmentCount,
+            ifnull(count(btp4.appointment_id), 0) as cancelAppointmentCount,
+            ifnull(count(btp3.appointment_id), 0) appointedCount,
+            ifnull(count(btp5.appointment_id), 0) treatmentCount,
         from base_treatment_process btp
         left join base_treatment_process btp1 on btp1.appointment_id = btp.appointment_id and btp1.treat_status >=0
-        left join base_treatment_process btp2
-        on btp2.appointment_id = btp.appointment_id and btp2.registered_id is null and btp.appoint_status!=2
-        and date_format(btp2.appoint_start_time, '%Y-%m-%d') &lt; date_format(now(), '%Y-%m-%d')
-        left join base_treatment_process btp3
-        on btp3.appointment_id = btp.appointment_id
+        left join base_treatment_process btp2 on btp2.appointment_id = btp.appointment_id and btp2.registered_id is null and btp.appoint_status!=2 and date_format(btp2.appoint_start_time, '%Y-%m-%d') &lt; date_format(now(), '%Y-%m-%d')
+        left join base_treatment_process btp3 on btp3.appointment_id = btp.appointment_id
         left join base_treatment_process btp4 on btp4.appointment_id = btp.appointment_id and btp4.appoint_status = 2
+        left join base_treatment_process btp5 on btp5.treatment_id = btp.treatment_id and btp5.treat_status > 0
         <where>
             btp.patient_id = #{patientId}
             <if test="query.orgId != null">

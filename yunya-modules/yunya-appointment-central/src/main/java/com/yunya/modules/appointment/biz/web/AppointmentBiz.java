@@ -3600,4 +3600,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Appointment appointment = mapper.selectOne(query);
         return appointment;
     }
+
+    public NextAppointmentVO findNextAppointment(Integer patientId) {
+        List<NextAppointmentVO> appoints = mapper.selectNextAppointmentList(patientId);
+        if (StringHelper.isNotEmpty(appoints)) {
+            return appoints.get(0);
+        }
+        return null;
+    }
 }

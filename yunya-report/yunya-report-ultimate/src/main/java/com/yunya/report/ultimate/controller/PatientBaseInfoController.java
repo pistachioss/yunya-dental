@@ -3,6 +3,8 @@ package com.yunya.report.ultimate.controller;
 import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
+import com.yunya.feign.report.domain.vo.PatientTrajectoryVO;
+import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.query.PatientOriginConsumptionQuery;
 import com.yunya.feign.report.domain.vo.PatientDataVo;
@@ -108,5 +110,17 @@ public class PatientBaseInfoController {
           throws Exception {
     patientBaseInfoBiz.exportPatientOriginConsumption(query, response);
     return ResponseUtil.success(null);
+  }
+
+
+  /**
+   * 根据患者id查询患者动态列表
+   *
+   */
+  @ApiOperation("根据患者id查询患者动态列表")
+  @PostMapping("/trajectory/list")
+  public ResponseResult<PageInfo<PatientTrajectoryVO>> findPatientTrajectoryList(@RequestBody @Validated PatientCreditsRecordQuery query) {
+    PageInfo<PatientTrajectoryVO> page = patientBaseInfoBiz.findPatientTrajectoryList(query);
+    return ResponseUtil.success(page);
   }
 }

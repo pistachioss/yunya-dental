@@ -11,6 +11,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -22,6 +23,7 @@ import com.yunya.feign.treatment_other.domain.model.VisitingContentModel;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingForMonthInfo;
+import com.yunya.feign.treatment_other.domain.query.VisitingPatientQueryForm;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -31,14 +33,12 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.other.code.TreatmentOtherError;
@@ -979,5 +979,62 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             return visitingRecordVoPageInfo;
         }
         return new PageInfo<>(new ArrayList<>());
+    }
+
+    /**
+     * 根据患者id查询患者随访列表
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<VisitingRecordSimpleVO> findPatientVisitingList(VisitingPatientQueryForm query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        VisitingRecordQuery queryForm = new VisitingRecordQuery();
+        queryForm.setPatientId(query.getPatientId());
+        List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(queryForm);
+        PageInfo page = new PageInfo<>(visitingRecordVos);
+        List<VisitingRecordSimpleVO> result = convert(visitingRecordVos);
+        page.setList(result);
+        return page;
+    }
+
+    private List<VisitingRecordSimpleVO> convert(List<VisitingRecordVo> visitingRecordVos) {
+        List<VisitingRecordSimpleVO> result = new ArrayList<>();
+        if (StringHelper.isNotEmpty(visitingRecordVos)) {
+            visitingRecordVos.forEach(vo->{
+                VisitingRecordSimpleVO simple = new VisitingRecordSimpleVO();
+                BeanUtil.copyProperties(vo, simple);
+                Integer dentistId = vo.getDentistId();
+                simple.setDentistName(findEmployeeName(dentistId));
+
+                String visitingDate = DateUtil.format(vo.getVisitingDate()) + " " + vo.getVisitingTime();
+                simple.setVisitingDate(visitingDate);
+                simple.setAbbreviation(findAbbreviation(vo.getOrgId()));
+                result.add(simple);
+            });
+        }
+        return result;
+    }
+
+    private String findAbbreviation(Integer orgId) {
+        if (StringHelper.isNotNull(orgId)) {
+            OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+            if (StringHelper.isNotNull(org)) {
+                return org.getAbbreviation();
+            }
+        }
+        return null;
+    }
+
+    private String findEmployeeName(Integer userId) {
+        if (StringHelper.isNotNull(userId)) {
+            SysEmployee dentist = remoteSystemServiceFeign.findSysEmployeeById(userId);
+            if (StringHelper.isNotNull(dentist)) {
+                return dentist.getName();
+            }
+        }
+        return null;
     }
 }

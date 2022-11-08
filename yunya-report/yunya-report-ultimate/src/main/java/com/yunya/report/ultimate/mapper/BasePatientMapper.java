@@ -210,4 +210,12 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    * @return
    */
   List<EmployeeReceptionPatientVO> selectEmployeeReceptionPatientList(@Param("query") EmployeeReceptionPatientQueryForm query);
+
+  /**
+   * 根据患者id查询患者动态列表
+   *
+   * @param query
+   * @return
+   */
+  List<PatientEventVO> selectPatientTrajectoryList(@Param("query") PatientCreditsRecordQuery query);
 }

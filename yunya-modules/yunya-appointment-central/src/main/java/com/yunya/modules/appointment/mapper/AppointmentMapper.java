@@ -281,4 +281,11 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @return
    */
   List<CancelAppointmentVO> cancelAppointmentList(@Param("query") CancelAppointmentQuery query);
+
+  /**
+   * 查询患者的下次预约列表
+   * @param patientId
+   * @return
+   */
+  List<NextAppointmentVO> selectNextAppointmentList(@Param("patientId") Integer patientId);
 }
