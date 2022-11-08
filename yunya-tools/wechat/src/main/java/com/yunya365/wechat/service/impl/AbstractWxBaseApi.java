@@ -2,7 +2,6 @@ package com.yunya365.wechat.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.wechat.domain.form.WxSuCaiForm;
-import com.yunya.feign.wechat.domain.model.WxAutoTextReplyModel;
 import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
 import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.constant.WXConstant;
@@ -175,7 +174,7 @@ public abstract class AbstractWxBaseApi {
         String resultStr = restTemplate.getForObject(requestUrl, String.class);
         log.info("微信api返回结果：{}", resultStr);
         assert resultStr != null;
-        JSONObject jsonObject = JSONObject.parseObject(new String(resultStr.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
+        JSONObject jsonObject = JSONObject.parseObject(new String(resultStr.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
         Integer errCode = jsonObject.getInteger("errcode");
         if (errCode != null && errCode != 0) {
             String errMsg = jsonObject.getString("errmsg");
