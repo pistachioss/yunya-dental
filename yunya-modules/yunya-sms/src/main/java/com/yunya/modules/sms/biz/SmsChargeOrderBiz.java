@@ -10,7 +10,6 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.RetryUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsChargeOrder;
@@ -18,7 +17,6 @@ import com.yunya.modules.sms.enums.SmsOrderStatusEnum;
 import com.yunya.modules.sms.exception.SignException;
 import com.yunya.modules.sms.mapper.SmsChargeOrderMapper;
 import com.yunya.modules.sms.utl.WikiUtl;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -33,7 +31,6 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
@@ -133,14 +130,6 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         });
     }
 
-    public static void main(String[] args) {
-        Date d1 = DateUtil.parse("2022-07-16 16:34:47");
-        Date d2 = DateUtil.parse("2022-07-16 16:34:27");
-        long expireIn = 3600000 * 2;
-        System.out.println(d1.getTime() - d2.getTime() <= expireIn);
-
-    }
-
     /**
      * 同步采宝订单信息
      * @param smsChargeOrderVOS
@@ -153,13 +142,14 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
             try {
                 JSONObject data = WikiUtl.queryOrder(smsChargeOrderVO.getOrderNo(), smsChargeOrderVO.getCbOrderNo());
                 String orderStatus = data.getString("order_status");
+                logOrderStatus(orderStatus);
                 if (StringHelper.isNotEmpty(orderStatus)) {
                     byte status = SmsOrderStatusEnum.CLOSED.getCode();//关闭
                     if ("PAY_SUC".equals(orderStatus)) {
                         status = SmsOrderStatusEnum.PAY_SUC.getCode();
                     } else if ("PAY_FAIL".equals(orderStatus)) {
                         status = SmsOrderStatusEnum.PAY_FAIL.getCode();
-                    } else if ("PAY_WAIT".equals(orderStatus)) {
+                    } else if ("WAIT_PAY".equals(orderStatus)) {
                         status = SmsOrderStatusEnum.WAIT_PAY.getCode();
                     }
                     smsChargeOrder.setId(smsChargeOrderVO.getId());
@@ -240,6 +230,7 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         }
         String payTimeStr = params.get("payTime");
         String orderStatus = params.get("orderStatus");
+        logOrderStatus(orderStatus);
         Byte status = smsChargeOrderVO.getOrderStatus();
         if (!SmsOrderStatusEnum.PAY_SUC.getCode().equals(status)) {
             SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
@@ -276,6 +267,15 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
 //            case "CLOSED"://订单撤销成功
 //            case "CANCEL"://已取消 (历史状态，已废弃，新接入用户不用考虑)
         }
+    }
+
+    /**
+     * 记录采宝账单状态
+     *
+     * @param orderStatus
+     */
+    private void logOrderStatus(String orderStatus) {
+        System.out.println("采宝支付账单状态order_status: " + orderStatus);
     }
 
     /**
