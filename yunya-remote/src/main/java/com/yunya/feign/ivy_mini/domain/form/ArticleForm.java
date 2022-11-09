@@ -42,5 +42,8 @@ public class ArticleForm extends PageQuery implements Serializable {
     @ApiModelProperty(value = "排序的方向desc或者asc 可不传但不要空字符串")
     private String isAsc = "desc";
 
+    @ApiModelProperty(value = "是否置顶 0否1是")
+    private Integer sort;
+
 
 }
