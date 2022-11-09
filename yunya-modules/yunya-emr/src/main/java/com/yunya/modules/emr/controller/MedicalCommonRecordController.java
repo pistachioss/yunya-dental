@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 @Api(tags = "普通电子病历接口")
 @RestController
 @RequestMapping("/medical_common")
-@CrossOrigin
 public class MedicalCommonRecordController {
 
   @Autowired

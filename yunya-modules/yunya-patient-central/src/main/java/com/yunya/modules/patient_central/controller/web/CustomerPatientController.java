@@ -2,9 +2,9 @@ package com.yunya.modules.patient_central.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
+import com.yunya.feign.patient_central.domain.vo.PatientTrajectoryVO;
 import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleInfoVO;
 import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleRefererVO;
-import com.yunya.feign.patient_central.domain.vo.PatientTrajectoryVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.CustomerPatientBiz;
