@@ -6,6 +6,7 @@ import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
 import com.yunya.feign.emr.domain.query.MedicalCommonRecordQueryForm;
 import com.yunya.feign.emr.domain.vo.ExaminationsVO;
+import com.yunya.feign.emr.domain.vo.MedicalCommonRecordVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -13,8 +14,6 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
-import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
-import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
@@ -24,7 +23,6 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.modules.emr.biz.MedicalCommonRecordBiz;
-import com.yunya.modules.emr.biz.TreatPlanRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
@@ -34,8 +32,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.yunya.framework.common.enums.FileSourceTypeEnum.MEDICAL_COMMON;
 
 /**
  * @author 杨柳絮
@@ -52,13 +48,9 @@ public class MedicalCommonRecordController {
   @Autowired
   private MedicalCommonRecordBiz medicalCommonRecordBiz;
   @Autowired
-  private TreatPlanRecordBiz treatPlanRecordBiz;
-  @Autowired
   private RemoteSystemServiceFeign remoteSystemServiceFeign;
   @Autowired
   private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
-  @Autowired
-  private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
 
   /**
    * 新增普通电子病历
@@ -164,26 +156,11 @@ public class MedicalCommonRecordController {
     return ResponseUtil.success(reList);
   }
 
-  private Map<Integer, List<XUploadFileVO>> findXRayFilmList(List<MedicalCommonRecord> medicalCommonRecords) {
+  public Map<Integer, List<XUploadFileVO>> findXRayFilmList(List<MedicalCommonRecord> medicalCommonRecords) {
     Map<Integer, List<XUploadFileVO>> result = new HashMap<>(16);
     if (StringHelper.isNotEmpty(medicalCommonRecords)) {
       List<Integer> medicalIds = medicalCommonRecords.stream().map(MedicalCommonRecord::getId).collect(Collectors.toList());
-      XUploadFileQuery query = new XUploadFileQuery();
-      query.setWhetherPage(false);
-      query.setSourceIds(medicalIds);
-      query.setSourceType(MEDICAL_COMMON.getCode());
-      List<XUploadFileVO> files = remoteTreatmentOtherFeign.findXUploadFileList(query);
-      if (StringHelper.isNotEmpty(files)) {
-        files.forEach(file->{
-          Integer sourceId = file.getSourceId();
-          List<XUploadFileVO> list = result.get(sourceId);
-          if (list == null) {
-            list = new ArrayList<>();
-          }
-          list.add(file);
-          result.put(sourceId, list);
-        });
-      }
+      result = medicalCommonRecordBiz.findXRayFilmList(medicalIds);
     }
     return result;
   }
@@ -211,5 +188,19 @@ public class MedicalCommonRecordController {
     model.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     model.setUpdTime(new Date());
     return ResponseUtil.success(medicalCommonRecordBiz.updateMedicalAfter(model));
+  }
+
+
+  /**
+   * 根据就诊id查询普通电子病历
+   *
+   * @param treatmentId
+   * @return
+   */
+  @ApiOperation("根据就诊id查询普通电子病历")
+  @GetMapping("/one/{treatmentId}")
+  public ResponseResult<MedicalCommonRecordVO> findOneByTreatmentId(@PathVariable(value = "treatmentId") Integer treatmentId) {
+    MedicalCommonRecordVO result = medicalCommonRecordBiz.findOneByTreatmentId(treatmentId);
+    return ResponseUtil.success(result);
   }
 }

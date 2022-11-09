@@ -77,7 +77,30 @@
 		WHERE id = #{id}
 	</select>
 
-	<insert id="insertMedical" parameterType="com.yunya.models.emr.MedicalCommonRecord"
+	<!--根据就诊id查询普通电子病历-->
+    <select id="selectOneByTreatmentId" resultType="com.yunya.feign.emr.domain.vo.MedicalCommonRecordVO">
+		SELECT
+		    id,
+		    treatment_id AS treatmentId,
+		    patient_id AS patientId,
+			major_dentist_id AS majorDentistId,
+			chief_complaint AS chiefComplaint,
+			present_illness AS presentIllness,
+			past_history AS pastHistory,
+			re_examination AS reExamination,
+			examination,
+			diagnosis,
+			plan,
+			treatment,
+			prescription,
+			type,
+			crt_id AS crtId,
+			crt_time AS crtTime
+		FROM medical_common_record
+		WHERE treatment_id = #{treatmentId}
+	</select>
+
+    <insert id="insertMedical" parameterType="com.yunya.models.emr.MedicalCommonRecord"
           useGeneratedKeys="true" keyProperty="id">
      INSERT INTO medical_common_record (
 	id,
