@@ -56,7 +56,7 @@
     </where>
     group BY ei.id
     order by ei.is_sort ${isSort} ,sort_num is null, sort_num ,
-    ei.crt_time desc
+    ei.crt_time  desc
   </select>
   <update id="updateAllList">
   UPDATE expert_introduction
