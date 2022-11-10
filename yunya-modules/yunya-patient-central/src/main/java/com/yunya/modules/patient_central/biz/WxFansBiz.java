@@ -429,6 +429,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         WxFans data = BeanCopierUtils.generalCopyBean(model, WxFans.class);
         data.setRegisterMobile(model.getMobile());
         data.setFansStatus(2);
+        data.setSex(Optional.of(model.getGender().shortValue()).orElse((short) 2));
         if (Objects.isNull(wxFans)) {
             mapper.insertSelective(data);
             return;
