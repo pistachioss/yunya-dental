@@ -84,7 +84,7 @@
         AND type_id = #{typeId}
       </if>
     </where>
-    order by  sort desc
+    order by  sort desc,sort_num is null, sort_num ,crt_time desc
     <if test="orderByColumn != null and orderByColumn!=''">
       , ${orderByColumn} ${isAsc}
     </if>
