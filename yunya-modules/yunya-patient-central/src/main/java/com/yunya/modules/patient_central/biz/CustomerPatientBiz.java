@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
@@ -22,6 +23,7 @@ import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
 import com.yunya.modules.patient_central.mapper.WxFansBindMapper;
+import com.yunya.modules.patient_central.mapper.WxFansMapper;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,9 +59,10 @@ public class CustomerPatientBiz {
     @Autowired
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
     @Autowired
+    private WxFansMapper wxFansMapper;
+    @Autowired
     private RemoteDiscountFeign remoteDiscountFeign;
     public static String QIN_SHU_GUAN_XI = "亲属关系";
-
 
 
     /**
@@ -309,5 +312,29 @@ public class CustomerPatientBiz {
             page.setList(result);
         }
         return page;
+    }
+
+    /**
+     * 根据unionid查询微信用户已关注公众号和小程序信息
+     *
+     * @param unionid
+     * @return
+     */
+    public JSONObject findWxFansSubscribeInfo(String unionid) {
+        JSONObject result = new JSONObject();
+        result.put("wxPubAccount", false);
+        result.put("wxApplet", false);
+        List<WxFansVo> fans = wxFansMapper.selectWxFansSubscibedList(unionid);
+        fans.forEach(fan->{
+            Integer sourceType = fan.getSourceType();
+            if (StringHelper.isNotNull(sourceType)) {
+                if (sourceType == 0) {// 公众号
+                    result.put("wxPubAccount", true);
+                } else if (sourceType == 1) {// 小程序
+                    result.put("wxApplet", true);
+                }
+            }
+        });
+        return result;
     }
 }

@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.controller.web;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.CustomerBindPatientQueryForm;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
@@ -76,5 +77,18 @@ public class CustomerPatientController {
     public ResponseResult<PageInfo<CustomerBindPatientVO>> findBindPatientList(@RequestBody @Validated CustomerBindPatientQueryForm query) {
         PageInfo<CustomerBindPatientVO> page = customerPatientBiz.findBindPatientList(query);
         return ResponseUtil.success(page);
+    }
+
+    /**
+     * 根据unionid查询微信用户已关注公众号和小程序信息
+     *
+     * @param unionid
+     * @return
+     */
+    @ApiOperation("根据unionid查询微信用户关注公众号和小程序信息")
+    @GetMapping("/wxFans/subscribe/{unionid}")
+    public ResponseResult<JSONObject> findWxFansSubscribeInfo(@PathVariable(value = "unionid") String unionid) {
+        JSONObject result = customerPatientBiz.findWxFansSubscribeInfo(unionid);
+        return ResponseUtil.success(result);
     }
 }
