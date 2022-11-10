@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.ivy_mini.domain.bo.WeChatSessionBO;
 import com.yunya.feign.ivy_mini.domain.form.WxSaveFansForm;
 import com.yunya.feign.ivy_mini.domain.form.WxUserInfoForm;
+import com.yunya.feign.patient_central.domain.model.WorkWxUserModel;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -28,6 +29,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -68,6 +70,8 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
     private PatientPrepaymentRelationBiz prepaymentRelationBiz;
     @Resource
     private WxFansBindMapper wxFansBindMapper;
+    @Resource
+    private PatientBaseInfoBiz patientBaseInfoBiz;
 
     public Integer syncUnionId(SyncUnionIdForm form){
        return wxFansBindMapper.syncUnionId(form);
@@ -412,5 +416,56 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             }
         }
         return null;
+    }
+
+    public void saveWorkWx(WorkWxUserModel model) {
+        String openId = model.getOpenId();
+        String unionId = model.getUnionId();
+        Example example = new Example(WxFans.class);
+        example.createCriteria()
+                .andEqualTo("openId", openId)
+                .andEqualTo("unionId", unionId);
+        WxFans wxFans = mapper.selectOneByExample(example);
+        WxFans data = BeanCopierUtils.generalCopyBean(model, WxFans.class);
+        data.setRegisterMobile(model.getMobile());
+        data.setFansStatus(2);
+        if (Objects.isNull(wxFans)) {
+            mapper.insertSelective(data);
+            return;
+        }
+        data.setId(wxFans.getId());
+        mapper.updateByPrimaryKey(data);
+    }
+
+    public List<WorkWxPatientBindVO> wechatRelateList(String unionId) {
+        Example example = new Example(WxFansBind.class);
+        example.createCriteria()
+                .andEqualTo("unionId", unionId);
+        List<WxFansBind> wxFansBinds = wxFansBindMapper.selectByExample(example);
+        if (CollectionUtils.isEmpty(wxFansBinds)) {
+            return Lists.newArrayList();
+        }
+        List<Integer> patientIds = wxFansBinds.stream().map(WxFansBind::getPatientId).collect(Collectors.toList());
+        Map<Integer, PatientBaseInfoVo> patientMap = Optional.of(patientBaseInfoBiz.findPatientInfoByIds(patientIds, null))
+                .orElse(Lists.newArrayList()).stream()
+                .collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
+
+        DictionaryItemModel model = new DictionaryItemModel();
+        Map<Integer, String> dictionaryMap = Optional.of(systemServiceFeign.findDictionaryItemList(model))
+                .orElse(Lists.newArrayList()).stream()
+                .collect(Collectors.toMap(DictionaryItem::getId, DictionaryItem::getName));
+        return wxFansBinds.stream().map(t -> {
+            PatientBaseInfoVo baseInfoVo = patientMap.get(t.getPatientId());
+            WorkWxPatientBindVO vo = new WorkWxPatientBindVO();
+            vo.setPatientId(t.getPatientId());
+            if (Objects.nonNull(baseInfoVo)) {
+                vo.setPatientName(baseInfoVo.getName());
+                vo.setMobile(baseInfoVo.getMobile());
+            }
+            vo.setDictionaryId(t.getDictionaryId());
+            vo.setDictionaryName(dictionaryMap.get(t.getDictionaryId()));
+            vo.setBindDate(t.getBindTime());
+            return vo;
+        }).collect(Collectors.toList());
     }
 }
