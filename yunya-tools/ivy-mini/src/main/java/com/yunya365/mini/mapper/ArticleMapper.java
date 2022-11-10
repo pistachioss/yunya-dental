@@ -23,7 +23,7 @@ public interface ArticleMapper extends Mapper<Article> {
 
    void updateList(List<ArticleVO>list);
 
-   void updateAllList(ArticleVO form);
+   void updateAllList(Integer type);
 
 
 

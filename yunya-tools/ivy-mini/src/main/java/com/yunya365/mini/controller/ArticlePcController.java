@@ -48,9 +48,9 @@ public class ArticlePcController extends PcBaseController{
      * @return ResponseResult
      */
     @ApiOperation("后台-艾维动态/口腔科普-置顶列表更新")
-    @PutMapping("/article/updateList")
-    public ResponseResult updateList(@RequestBody @Validated List<ArticleVO>list) {
-        articleService.updateList(list);
+    @PutMapping("/article/updateList/{type}")
+    public ResponseResult updateList(@PathVariable(value = "type") Integer type,@RequestBody @Validated List<ArticleVO>list) {
+        articleService.updateList(type,list);
         return ResponseUtil.success(null);
     }
 

@@ -45,8 +45,8 @@ public class ExpertIntroductionServiceImpl extends BaseBiz<ExpertIntroductionMap
     private ExpertTypeMapper expertTypeMapper;
 
     public void updateList(List<ExpertIntroductionVO>list) {
+        mapper.updateAllList();
         if(list.size()>0){
-            mapper.updateAllList();
             mapper.updateList(list);
         }
     }
