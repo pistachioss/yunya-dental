@@ -31,4 +31,7 @@ public class ExpertIntroductionForm extends PageQuery implements Serializable {
     @ApiModelProperty(value = "科室Ids")
     private Integer[] typeIds;
 
+    @ApiModelProperty(value = "是否置顶 0否1是")
+    private Integer sort;
+
 }

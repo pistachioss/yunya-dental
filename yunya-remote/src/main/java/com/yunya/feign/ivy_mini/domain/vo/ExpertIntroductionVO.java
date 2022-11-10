@@ -62,7 +62,8 @@ public class ExpertIntroductionVO {
      */
     @ApiModelProperty(value = "是否置顶 0否 1是")
     private Integer isSort;
-
+    @ApiModelProperty(value = "置顶排序")
+    private Integer sortNum;
     /**
      * 发布状态 0否1是
      */
