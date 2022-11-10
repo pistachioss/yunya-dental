@@ -1,4 +1,4 @@
-package com.yunya.feign.patient_central.domain.vo;
+package com.yunya.feign.patient_central.domain.vo.web;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;

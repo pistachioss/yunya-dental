@@ -8,7 +8,7 @@ import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.factory.RemoteAppointmentFeignBackFactory;
 import com.yunya.feign.appointment.vo.*;
-import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;

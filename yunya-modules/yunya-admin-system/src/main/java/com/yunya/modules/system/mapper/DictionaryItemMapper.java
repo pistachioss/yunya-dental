@@ -29,4 +29,12 @@ public interface DictionaryItemMapper extends Mapper<DictionaryItem> {
      * @return dictItem
      */
     DictionaryItem findByTypeAndItemName(@Param("typeName") String typeName, @Param("itemName") String itemName);
+
+    /**
+     * 根据字典类型查询字典项列表
+     *
+     * @param typeName
+     * @return
+     */
+    List<DictionaryItem> selectDictItemByTypeName(@Param("typeName") String typeName);
 }

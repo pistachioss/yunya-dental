@@ -5,12 +5,9 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.middle.RemoteMiddleServiceFeign;
+import com.yunya.feign.patient_central.domain.query.CustomerBindPatientQueryForm;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
-import com.yunya.feign.patient_central.domain.vo.PatientTrajectoryVO;
-import com.yunya.feign.patient_central.domain.vo.web.PatientExpInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleInfoVO;
-import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleRefererVO;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -24,15 +21,15 @@ import com.yunya.models.report.CreditsShop;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
+import com.yunya.modules.patient_central.mapper.WxFansBindMapper;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author: chenlin
@@ -50,6 +47,8 @@ public class CustomerPatientBiz {
     @Autowired
     private PatientExpInfoMapper patientExpInfoMapper;
     @Autowired
+    private WxFansBindMapper wxFansBindMapper;
+    @Autowired
     private RemoteMiddleServiceFeign remoteMiddleServiceFeign;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
@@ -59,6 +58,8 @@ public class CustomerPatientBiz {
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
     @Autowired
     private RemoteDiscountFeign remoteDiscountFeign;
+    public static String QIN_SHU_GUAN_XI = "亲属关系";
+
 
 
     /**
@@ -276,5 +277,37 @@ public class CustomerPatientBiz {
             abbreviation = "在" + org.getAbbreviation();
         }
         return abbreviation;
+    }
+
+    /**
+     * 根据unionid查询绑定患者列表
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<CustomerBindPatientVO> findBindPatientList(CustomerBindPatientQueryForm query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<CustomerBindPatientVO> result = new ArrayList<>();
+        List<WxWechatbindAppListVO> list = wxFansBindMapper.findPatientBaseInfo(query.getUnionid());
+        PageInfo page = new PageInfo(list);
+        if (StringHelper.isNotEmpty(list)) {
+            List<DictionaryItem> items = remoteSystemServiceFeign.findDictItemByTypeName(QIN_SHU_GUAN_XI);
+            Map<Integer, String> itemNameMap = items.stream().collect(toMap(DictionaryItem::getId, DictionaryItem::getName));
+            list.forEach(vo -> {
+                CustomerBindPatientVO bindPatient = new CustomerBindPatientVO();
+                BeanUtil.copyProperties(vo, bindPatient);
+                Integer dictionaryId = vo.getDictionaryId();
+                String itemName = itemNameMap.get(dictionaryId);
+                if (StringHelper.isNotEmpty(itemName)) {
+                    bindPatient.setBindShipName(itemName);
+                    bindPatient.setShipId(dictionaryId);
+                }
+                result.add(bindPatient);
+            });
+            page.setList(result);
+        }
+        return page;
     }
 }

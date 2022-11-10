@@ -962,7 +962,7 @@ WHERE
         </where>
     </select>
 
-    <select id="selectPatientCardTrajectory" resultType="com.yunya.feign.patient_central.domain.vo.PatientEventVO">
+    <select id="selectPatientCardTrajectory" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientEventVO">
         SELECT
             bc.active_org_id AS org_id,
             7 AS eventCode,

@@ -13,7 +13,7 @@ import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
-import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;

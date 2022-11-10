@@ -681,7 +681,7 @@
     </select>
 
 
-    <select id="selectPatientAppointTrajectory" resultType="com.yunya.feign.patient_central.domain.vo.PatientEventVO">
+    <select id="selectPatientAppointTrajectory" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientEventVO">
         SELECT * FROM (
             SELECT
                 org_id AS orgId,

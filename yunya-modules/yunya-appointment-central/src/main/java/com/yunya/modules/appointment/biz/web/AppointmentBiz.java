@@ -23,7 +23,7 @@ import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;

@@ -1,4 +1,4 @@
-package com.yunya.feign.patient_central.domain.vo;
+package com.yunya.feign.patient_central.domain.vo.web;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

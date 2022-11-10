@@ -11,7 +11,7 @@ import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.appointment.vo.NextAppointsVo;
-import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
 import com.yunya.framework.common.model.ResponseResult;
