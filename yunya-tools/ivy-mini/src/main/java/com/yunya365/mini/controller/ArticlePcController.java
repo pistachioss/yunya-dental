@@ -31,7 +31,6 @@ import java.util.List;
  */
 @RestController
 @Api(tags = "后台-文章管理")
-@IgnoreUserToken
 public class ArticlePcController extends PcBaseController{
 
     @Resource
