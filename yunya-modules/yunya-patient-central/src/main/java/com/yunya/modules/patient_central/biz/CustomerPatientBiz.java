@@ -4,13 +4,13 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.middle.RemoteMiddleServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientEventVO;
 import com.yunya.feign.patient_central.domain.vo.PatientTrajectoryVO;
 import com.yunya.feign.patient_central.domain.vo.web.PatientExpInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleInfoVO;
 import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleRefererVO;
-import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -50,7 +50,7 @@ public class CustomerPatientBiz {
     @Autowired
     private PatientExpInfoMapper patientExpInfoMapper;
     @Autowired
-    private RemoteReportServiceFeign remoteReportServiceFeign;
+    private RemoteMiddleServiceFeign remoteMiddleServiceFeign;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Autowired
@@ -99,7 +99,7 @@ public class CustomerPatientBiz {
         if (StringHelper.isNotNull(patientExpInfoVo)) {
             result.setAddress(patientExpInfoVo.getAddress());
         }
-        CreditsShop creditsShop = remoteReportServiceFeign.lastPatientCredits(patientId);
+        CreditsShop creditsShop = remoteMiddleServiceFeign.lastPatientCredits(patientId).getData();
         if (StringHelper.isNotNull(creditsShop)) {
             result.setCreditsAccount(creditsShop.getCreditsAccount());
         }
