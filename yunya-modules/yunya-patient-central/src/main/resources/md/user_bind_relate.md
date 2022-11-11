@@ -9,8 +9,8 @@
 
 ### 请求URL：
 
-* 测试 [http://test.ivy2.yunya365.com/api/patient/white/wechat/user/relate](http://test.ivy2.yunya365.com/api/patient/white/wechat/user/relate)
-* 正式 [http://ivy2.yunya365.com/api/patient/white/wechat/user/relate](http://ivy2.yunya365.com/api/patient/white/wechat/user/relate)
+* 测试 [https://test.ivy2.yunya365.com/api/patient/white/wechat/user/relate](http://test.ivy2.yunya365.com/api/patient/white/wechat/user/relate)
+* 正式 [https://ivy2.yunya365.com/api/patient/white/wechat/user/relate](http://ivy2.yunya365.com/api/patient/white/wechat/user/relate)
 
 
 ### 请求方式：
@@ -24,6 +24,9 @@
 | 参数名 | 必选 | 类型      | 说明 |
 | --- |:---:|---------| --- |
 | unionId | 是 | string  | 微信开放平台的唯一身份标识 |
+
+### 请求示例
+> https://test.ivy2.yunya365.com/api/patient/white/wechat/user/relate?unionId=o9ls5v7jFIPFPA2Q419-94JKU_tI
 
 
 ### 返回示例

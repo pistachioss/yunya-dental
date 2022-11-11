@@ -12,8 +12,8 @@
 
 ### 请求URL：
 
-* 测试 [http://test.ivy2.yunya365.com/api/patient/white/wechat/user](http://test.ivy2.yunya365.com/api/patient/white/wechat/user)
-* 正式 [http://ivy2.yunya365.com/api/patient/white/wechat/user](http://ivy2.yunya365.com/api/patient/white/wechat/user)
+* 测试 [https://test.ivy2.yunya365.com/api/patient/white/wechat/user](http://test.ivy2.yunya365.com/api/patient/white/wechat/user)
+* 正式 [https://ivy2.yunya365.com/api/patient/white/wechat/user](http://ivy2.yunya365.com/api/patient/white/wechat/user)
   
 
 ### 请求方式：
