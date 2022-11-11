@@ -34,7 +34,7 @@ public class WechatRest {
     }
 
     @ApiOperation("企微、小程序、公众号-客户患者关系列表")
-    @GetMapping(value = "/white/wechat/user/relate")
+    @GetMapping(value = "/white/wechat/user/relate",produces="application/json")
     public ResponseResult<List<WorkWxPatientBindVO>> wechatRelateList(@NotBlank @RequestParam String unionId) {
         return ResponseUtil.success( wxFansBiz.wechatRelateList(unionId));
     }
