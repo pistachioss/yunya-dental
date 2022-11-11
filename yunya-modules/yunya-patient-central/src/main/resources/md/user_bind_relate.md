@@ -4,69 +4,77 @@
 
 ### 简要描述：
 
-*   ```  
-    查询客户
-    ```
-
+*   <font size=4> 根据unionId查询客户患者关系</font>
 
 
 ### 请求URL：
 
-* [http://x.com/api/user/password1](http://x.com/api/user/password1)
-
+* 测试 [http://test.ivy2.yunya365.com/api/patient/white/wechat/user/relate](http://test.ivy2.yunya365.com/api/patient/white/wechat/user/relate)
+* 正式 [http://ivy2.yunya365.com/api/patient/white/wechat/user/relate](http://ivy2.yunya365.com/api/patient/white/wechat/user/relate)
 
 
 ### 请求方式：
 
-* POST
+* GET
 
 
 
-### json参数
+### 参数
 
-```
-{
-    &quot;uid&quot;: 1,
-    &quot;password&quot;:&quot;123456&quot;
-  }
-```
-
-
-
-### json参数字段说明
-
-
-
-| 参数名 | 必选 | 类型 | 说明 |
-| --- |:---:| --- | --- |
-| uid | 是 | number | 用户id |
-| password | 是 | string | 要设置的新密码 |
-
+| 参数名 | 必选 | 类型      | 说明 |
+| --- |:---:|---------| --- |
+| unionId | 是 | string  | 微信开放平台的唯一身份标识 |
 
 
 ### 返回示例
 
 ```
 {
-    &quot;error_code&quot;: 0,
-    &quot;data&quot;: {
-      &quot;uid&quot;: &quot;1&quot;,
-      &quot;username&quot;: &quot;12154545&quot;,
-      &quot;name&quot;: &quot;吴系挂&quot;,
-      &quot;groupid&quot;: 2 ,
-      &quot;reg_time&quot;: &quot;1936864169&quot;,
-      &quot;last_login_time&quot;: &quot;0&quot;,
-    }
-  }
+    "status": 0,
+    "msg": "success",
+    "data": [
+        {
+            "patientName": "xy",
+            "patientId": 105,
+            "dictionaryName": "朋友",
+            "dictionaryId": 127,
+            "mobile": "17816726150",
+            "bindDate": "2022-11-10 16:49"
+        },
+        {
+            "patientName": "艾",
+            "patientId": 235,
+            "dictionaryName": "同事",
+            "dictionaryId": 128,
+            "mobile": "13306517203",
+            "bindDate": "2022-11-10 17:43"
+        }
+    ],
+    "audit": true
+}
 ```
 
 
 
 ### 返回参数说明
 
-| 参数名 | 类型 | 说明 |
-| --- |:---:| --- |
-| groupid | int | 用户组id，1：超级管理员；2：普通用户 |
+| 参数名 |   类型    | 说明                    |
+| --- |:-------:|-----------------------|
+| status |   int   | 0成功，其余状态失败(根据该字段校验接口) |
+| msg | String  | 成功success             |
+| data | Object  | 数据，见data明细                |
+| audit | Boolean |                       |
+
+### data明细
+
+| 参数名 |   类型    | 说明     |
+| --- |:-------:|--------|
+| patientName | String | 患者姓名   |
+| patientId | Integer  | 患者id   |
+| dictionaryName | String  | 关系名称   |
+| dictionaryId |   Integer   | 关系字典ID |
+| mobile | String  | 患者手机号  |
+| bindDate | String  | 绑定时间(yyyy-MM-dd HH:mm:ss) |
 
 
 

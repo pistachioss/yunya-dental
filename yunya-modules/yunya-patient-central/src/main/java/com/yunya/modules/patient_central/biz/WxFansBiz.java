@@ -435,6 +435,8 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             return;
         }
         data.setId(wxFans.getId());
+        data.setCrtTime(wxFans.getCrtTime());
+        data.setUpdTime(new Date());
         mapper.updateByPrimaryKey(data);
     }
 

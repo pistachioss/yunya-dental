@@ -20,13 +20,13 @@ public class WorkWxPatientBindVO {
     private String patientName;
     @ApiModelProperty("患者Id")
     private Integer patientId;
-    @ApiModelProperty("关系")
+    @ApiModelProperty("关系名称")
     private String dictionaryName;
     @ApiModelProperty("关系字典ID")
     private Integer dictionaryId;
     @ApiModelProperty("患者手机号")
     private String mobile;
     @ApiModelProperty("绑定时间")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date bindDate;
 }
