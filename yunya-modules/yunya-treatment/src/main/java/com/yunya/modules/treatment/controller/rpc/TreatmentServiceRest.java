@@ -13,6 +13,7 @@ import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
@@ -659,5 +660,16 @@ public class TreatmentServiceRest {
   @GetMapping("/treatmentOrder/{treatmentRecordId}")
   public TreatmentOrderVO findTreatmentOrderByTreatmentId(@PathVariable(value = "treatmentRecordId") Integer treatmentId) {
     return treatmentRecordBiz.findTreatmentOrderByTreatmentId(treatmentId);
+  }
+
+  /**
+   * 根据患者id查询患者就诊轨迹
+   *
+   * @param patientId
+   * @return
+   */
+  @GetMapping("/treatment/trajectory/{patientId}")
+  public List<PatientEventVO> findPatientTreatmentTrajectory(@PathVariable(value = "patientId") Integer patientId) {
+    return treatmentRecordBiz.findPatientTreatmentTrajectory(patientId);
   }
 }

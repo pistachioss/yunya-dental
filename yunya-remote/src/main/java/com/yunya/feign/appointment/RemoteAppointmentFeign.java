@@ -8,14 +8,13 @@ import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.factory.RemoteAppointmentFeignBackFactory;
 import com.yunya.feign.appointment.vo.*;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
-import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
-import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
@@ -201,4 +200,13 @@ public interface RemoteAppointmentFeign {
   @RequestMapping(value = "api/online/appoint/setting/{dentistId}/{orgId}",method = RequestMethod.DELETE)
   ResponseResult<T> deleteOnlineAppointItemSetting(@PathVariable(value = "dentistId") Integer dentistId,
                                                               @PathVariable(value = "orgId") Integer orgId);
+
+  /**
+   * 根据患者id查询患者预约轨迹
+   *
+   * @param patientId
+   * @return
+   */
+  @GetMapping("api/appoint/trajectory/{patientId}")
+  List<PatientEventVO> findPatientAppointTrajectory(@PathVariable(value = "patientId") Integer patientId);
 }

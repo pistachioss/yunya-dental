@@ -11,6 +11,7 @@ import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.appointment.vo.NextAppointsVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
 import com.yunya.framework.common.model.ResponseResult;
@@ -24,11 +25,7 @@ import com.yunya.modules.appointment.biz.web.AppointmentBiz;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -238,4 +235,14 @@ public class AppointmentRest {
     return this.appointmentBiz.confirmWxAppointment(model);
   }
 
+  /**
+   * 根据患者id查询患者预约轨迹
+   *
+   * @param patientId
+   * @return
+   */
+  @GetMapping("/appoint/trajectory/{patientId}")
+  List<PatientEventVO> findPatientAppointTrajectory(@PathVariable(value = "patientId") Integer patientId) {
+    return this.appointmentBiz.findPatientAppointTrajectory(patientId);
+  }
 }

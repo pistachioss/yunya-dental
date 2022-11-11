@@ -485,4 +485,31 @@
         and date_format(crt_time, '%Y-%m-%d') = #{treatDate}
         and status = #{treatmentProcessedStatus}
     </select>
+
+    <select id="selectPatientTreatmentTrajectory" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientEventVO">
+        SELECT * FROM (
+            SELECT
+                org_id AS orgId,
+                3 AS eventCode,
+                treat_start_time AS timePoint,
+                '' AS effectBody
+            FROM treatment_record
+            WHERE
+                inservice = true
+                AND patient_id = #{patientId}
+                AND status > 0
+            UNION ALL
+            SELECT
+                org_id AS orgId,
+                6 AS eventCode,
+                treat_end_time AS timePoint,
+                '' AS effectBody
+            FROM treatment_record
+            WHERE
+                inservice = true
+                AND patient_id = #{patientId}
+                AND status > 1
+        ) t
+        ORDER BY t.timePoint ASC
+    </select>
 </mapper>

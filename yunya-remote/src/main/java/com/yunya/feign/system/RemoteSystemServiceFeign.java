@@ -473,4 +473,13 @@ public interface RemoteSystemServiceFeign {
 
   @GetMapping("/qzt/company/list")
   List<Company> certCompanys();
+
+  /**
+   * 根据字典类型查询字典项列表
+   *
+   * @param typeName
+   * @return
+   */
+  @GetMapping(value = "/api/dictItem/{typeName}")
+  List<DictionaryItem> findDictItemByTypeName(@PathVariable(value = "typeName") String typeName);
 }

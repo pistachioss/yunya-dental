@@ -12,6 +12,7 @@ import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -162,5 +163,10 @@ public class BenefitApiController {
     @DeleteMapping("/mini/card/delete/batch")
     void deleteCard(@RequestBody List<Integer> cardIds){
         cardBiz.removeCardList(cardIds);
+    }
+
+    @GetMapping("/card/trajectory/{patientId}")
+    public List<PatientEventVO> findPatientCardTrajectory(@PathVariable(value = "patientId") Integer patientId) {
+        return cardBiz.findPatientCardTrajectory(patientId);
     }
 }

@@ -10,7 +10,6 @@ import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.query.PatientOriginConsumptionQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;

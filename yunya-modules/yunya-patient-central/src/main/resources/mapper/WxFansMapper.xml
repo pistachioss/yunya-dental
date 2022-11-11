@@ -273,4 +273,15 @@
       LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
       where wfb.union_id = #{unionId}
   </select>
+
+    <select id="selectWxFansSubscibedList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
+        SELECT
+            union_id AS unionId,
+            source_type AS sourceType
+        FROM wx_fans
+        <where>
+            AND subscribe = true
+            AND union_id = #{unionid}
+        </where>
+    </select>
 </mapper>

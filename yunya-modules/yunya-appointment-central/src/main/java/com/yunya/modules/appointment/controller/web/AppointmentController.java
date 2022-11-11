@@ -9,8 +9,6 @@ import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
-import com.yunya.feign.appointment.domain.query.CancelAppointmentQuery;
-import com.yunya.feign.appointment.vo.CancelAppointmentVO;
 import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
@@ -24,7 +22,6 @@ import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
 import io.swagger.annotations.*;
 import org.apache.poi.ss.formula.functions.T;
-import org.omg.CORBA.INTERNAL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +33,6 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 /**
  * 患者预约中心Controller
@@ -354,5 +349,18 @@ public class AppointmentController {
   })
   public ResponseResult<ClinicBusinessHoursVo> orgBusinessHours(@PathVariable("orgId") @NotNull(message = "请选择门诊") Integer orgId) {
     return clinicAppointSettingBiz.orgBusinessHours(orgId);
+  }
+
+  /**
+   * 查询下次预约信息
+   *
+   * @param patientId
+   * @return
+   */
+  @ApiOperation("查询下次预约信息")
+  @GetMapping("/next/{patientId}")
+  public ResponseResult<NextAppointmentVO> findNextAppointment(@PathVariable(value = "patientId") Integer patientId) {
+    NextAppointmentVO vo = appointmentBiz.findNextAppointment(patientId);
+    return ResponseUtil.success(vo);
   }
 }

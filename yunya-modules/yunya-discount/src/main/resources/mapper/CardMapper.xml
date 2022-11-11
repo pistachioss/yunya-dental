@@ -961,4 +961,18 @@ WHERE
             and c.status in(2,3)
         </where>
     </select>
+
+    <select id="selectPatientCardTrajectory" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientEventVO">
+        SELECT
+            bc.active_org_id AS org_id,
+            7 AS eventCode,
+            bc.active_date AS timePoint,
+            bcp.name AS effectBody
+        FROM card bc
+        LEFT JOIN coupon_common_info bcp ON bc.coupon_id = bcp.id
+        WHERE
+        bc.STATUS > 1
+        AND bc.patient_id = #{patientId}
+        ORDER BY bc.active_date ASC
+    </select>
 </mapper>

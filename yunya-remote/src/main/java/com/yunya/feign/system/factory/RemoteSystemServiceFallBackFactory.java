@@ -311,4 +311,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public List<Company> certCompanys() {
     return null;
   }
+
+  @Override
+  public List<DictionaryItem> findDictItemByTypeName(String typeName) {
+    return null;
+  }
 }
