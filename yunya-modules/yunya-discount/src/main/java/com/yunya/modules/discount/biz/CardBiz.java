@@ -3514,4 +3514,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     public List<PatientEventVO> findPatientCardTrajectory(Integer patientId) {
         return mapper.selectPatientCardTrajectory(patientId);
     }
+
+    public List<PatientCardBaseVo> findPatientActivedCardList(Integer patientId) {
+        List<PatientCardBo> list = mapper.listPatientCardsByParam(patientId, null, null, 0);
+        //对象转换
+        return list.stream().map(obj -> this.patientCardBoConvertVo(0, obj))
+                .collect(toList());
+    }
 }
