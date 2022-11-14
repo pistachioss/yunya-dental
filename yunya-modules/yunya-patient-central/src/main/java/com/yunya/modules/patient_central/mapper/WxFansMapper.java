@@ -28,4 +28,16 @@ public interface WxFansMapper extends Mapper<WxFans> {
      * @return
      */
     List<WxFansVo> selectWxFansSubscibedList(@Param("unionid") String unionid);
+
+    /**
+     * 批量插入
+     * @param list
+     */
+    void insertList(@Param("list") List<WxFans> list);
+
+    /**
+     * 批量更新
+     * @param list
+     */
+    void updateList(@Param("list") List<WxFans> list);
 }

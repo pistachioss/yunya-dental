@@ -12,8 +12,8 @@ import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.utils.BeanCopierUtils;
-import com.yunya.framework.common.utils.BeanUtil;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.*;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.mapper.*;
@@ -28,9 +28,12 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.yunya.framework.common.enums.ExceptionCode.*;
 
 /**
  * 简介: 公司微信公众号粉丝业务层
@@ -418,26 +421,50 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         return null;
     }
 
-    public void saveWorkWx(WorkWxUserModel model) {
-        String openId = model.getOpenId();
-        String unionId = model.getUnionId();
+    public void saveWorkWx(List<WorkWxUserModel> list) {
+        log.info("企业微信用户同步数量：{}", list.size());
+        if (CollectionUtils.isNotEmpty(list) && list.size() > 1000) {
+            throw ClientServiceException.wrap(SIZE_OVERFLOW);
+        }
+        Set<String> openIds = list.stream().map(WorkWxUserModel::getOpenId).collect(Collectors.toSet());
         Example example = new Example(WxFans.class);
         example.createCriteria()
-                .andEqualTo("openId", openId)
-                .andEqualTo("unionId", unionId);
-        WxFans wxFans = mapper.selectOneByExample(example);
-        WxFans data = BeanCopierUtils.generalCopyBean(model, WxFans.class);
-        data.setRegisterMobile(model.getMobile());
-        data.setFansStatus(2);
-        data.setSex(Optional.of(model.getGender().shortValue()).orElse((short) 2));
-        if (Objects.isNull(wxFans)) {
-            mapper.insertSelective(data);
-            return;
+                .andIn("openId", openIds);
+        //筛选更新
+        List<WxFans> wxFansList = mapper.selectByExample(example);
+        Map<String, WxFans> wxFansMap = wxFansList.stream().collect(Collectors.toMap(WxFans::getOpenId, Function.identity(), (o, n) -> o));
+        //筛选新增
+        List<List<WorkWxUserModel>> insert = Lists.partition(list.stream()
+                .filter(t -> !wxFansMap.containsKey(t.getOpenId())).collect(Collectors.toList()), 100);
+        List<List<WorkWxUserModel>> update = Lists.partition(list.stream()
+                .filter(t -> wxFansMap.containsKey(t.getOpenId())).collect(Collectors.toList()), 100);
+        for (List<WorkWxUserModel> insertList : insert) {
+            List<WxFans> insertData = insertList.parallelStream().map(t -> {
+                WxFans data = BeanCopierUtils.generalCopyBean(t, WxFans.class);
+                data.setRegisterMobile(t.getMobile());
+                data.setFansStatus(2);
+                data.setSex(Optional.of(t.getGender().shortValue()).orElse((short) 2));
+                return data;
+            }).collect(Collectors.toList());
+            mapper.insertList(insertData);
+            log.info("企业微信用户新增同步当前批次数量：{}", insertList.size());
         }
-        data.setId(wxFans.getId());
-        data.setCrtTime(wxFans.getCrtTime());
-        data.setUpdTime(new Date());
-        mapper.updateByPrimaryKey(data);
+        for (List<WorkWxUserModel> updateList : update) {
+            List<WxFans> updateData = updateList.parallelStream().map(t -> {
+                WxFans wxFans = wxFansMap.get(t.getOpenId());
+                WxFans data = BeanCopierUtils.generalCopyBean(t, WxFans.class);
+                data.setRegisterMobile(t.getMobile());
+                data.setFansStatus(2);
+                data.setSex(Optional.of(t.getGender().shortValue()).orElse((short) 2));
+                data.setId(wxFans.getId());
+                data.setCrtTime(wxFans.getCrtTime());
+                data.setUpdTime(new Date());
+                return data;
+            }).collect(Collectors.toList());
+            mapper.updateList(updateData);
+            log.info("企业微信用户修改同步当前批次数量：{}", updateList.size());
+        }
+        log.info("{}，当前时间同步完成", DateUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss"));
     }
 
     public List<WorkWxPatientBindVO> wechatRelateList(String unionId) {
