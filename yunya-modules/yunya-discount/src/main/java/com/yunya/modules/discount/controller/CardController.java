@@ -226,8 +226,8 @@ public class CardController {
     }
 
 
-    @ApiOperation(value = "客户详情-患者资料-激活列表（产品）")
-    @GetMapping("/activedCard/{patientId}")
+    @ApiOperation(value = "客户详情-患者资料-激活列表（自有）")
+    @GetMapping("/ownProduct/activedCard/{patientId}")
     public ResponseResult<List<PatientCardBaseVo>> findPatientActivedCardList(@PathVariable(value = "patientId") Integer patientId) {
         List<PatientCardBaseVo> result = cardBiz.findPatientActivedCardList(patientId);
         return ResponseUtil.success(result);
