@@ -28,8 +28,8 @@ public class WechatRest {
 
     @ApiOperation("企微、小程序、公众号-保存客户信息")
     @PostMapping(value = "/white/wechat/user")
-    public ResponseResult<Boolean> saveWechat(@Valid @RequestBody WorkWxUserModel model) {
-        wxFansBiz.saveWorkWx(model);
+    public ResponseResult<Boolean> saveWechat(@Valid @RequestBody List<WorkWxUserModel> list) {
+        wxFansBiz.saveWorkWx(list);
         return ResponseUtil.success();
     }
 
