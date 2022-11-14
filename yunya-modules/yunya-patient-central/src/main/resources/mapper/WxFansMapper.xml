@@ -304,21 +304,21 @@
             <trim prefix="register_mobile = case" suffix="end,">
                 <foreach collection="list" item="item" index="index">
                     <if test="item.registerMobile != null and item.registerMobile != ''">
-                        when `id` = #{item.id} then #{registerMobile}
+                        when `id` = #{item.id} then #{item.registerMobile}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="open_id = case" suffix="end,">
                 <foreach collection="list" item="item" index="index">
                     <if test="item.openId != null and item.openId != ''">
-                        when `id` = #{item.id} then #{openId}
+                        when `id` = #{item.id} then #{item.openId}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="nick_name = case" suffix="end,">
                 <foreach collection="list" item="item" index="index">
                     <if test="item.nickName != null and item.nickName != ''">
-                        when `id` = #{id} then #{item.nickName}
+                        when `id` = #{item.id} then #{item.nickName}
                     </if>
                 </foreach>
             </trim>
