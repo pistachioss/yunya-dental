@@ -25,9 +25,7 @@
 ### 参数
 
 ```
-{
-    "openId": "o6yjV5Anq6ExBAbqFuz6TWvxwY6U",
-    "unionId": "o9ls5v7jFIPFPA2Q419-94JKU_tI",
+[{
     "address": "杭州xxxxx",
     "birthday": "2022-11-10 09:10:29",
     "city": "杭州市",
@@ -37,11 +35,13 @@
     "language": "zh_CN",
     "mobile": "17816726150",
     "nickName": "佚名",
+    "openId": "o6yjV5Anq6ExBAbqFuz6TWvxwY6U3",
     "province": "浙江省",
     "remark": "备注",
     "sourceType": 2,
-    "sourceTypeName": "xxx企业微信"
-}
+    "sourceTypeName": "xxx企业微信",
+    "unionId": "o9ls5v7jFIPFPA2Q419-94JKU_tI"
+}]
 ```
 
 

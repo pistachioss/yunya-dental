@@ -304,14 +304,14 @@
             <trim prefix="register_mobile = case" suffix="end,">
                 <foreach collection="list" item="item" index="index">
                     <if test="item.registerMobile != null and item.registerMobile != ''">
-                        when `id` = #{id} then #{registerMobile}
+                        when `id` = #{item.id} then #{registerMobile}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="open_id = case" suffix="end,">
                 <foreach collection="list" item="item" index="index">
                     <if test="item.openId != null and item.openId != ''">
-                        when `id` = #{id} then #{openId}
+                        when `id` = #{item.id} then #{openId}
                     </if>
                 </foreach>
             </trim>
@@ -325,91 +325,91 @@
             <trim prefix="sex = case" suffix="end,">
                 <foreach collection="list" item="item" index="index">
                     <if test="item.sex != null">
-                        when `id` = #{id} then #{item.sex}
+                        when `id` = #{item.id} then #{item.sex}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="birthday = case" suffix="end,">
                 <foreach collection="list" item="item" index="index">
                     <if test="item.birthday != null">
-                        when `id` = #{id} then #{item.birthday}
+                        when `id` = #{item.id} then #{item.birthday}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="country = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.country != null and item.country != ''">
-                        when `id` = #{id} then #{item.country}
+                        when `id` = #{item.id} then #{item.country}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="province = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.province != null and item.province != ''">
-                        when `id` = #{id} then #{item.province}
+                        when `id` = #{item.id} then #{item.province}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="city = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.city != null and item.city != ''">
-                        when `id` = #{id} then #{item.city}
+                        when `id` = #{item.id} then #{item.city}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="language = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.language != null and item.language != ''">
-                        when `id` = #{id} then #{item.language}
+                        when `id` = #{item.id} then #{item.language}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="head_imgurl = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.headImgurl != null and item.headImgurl != ''">
-                        when `id` = #{id} then #{item.headImgurl}
+                        when `id` = #{item.id} then #{item.headImgurl}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="union_id = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.unionId != null and item.unionId != ''">
-                        when `id` = #{id} then #{item.unionId}
+                        when `id` = #{item.id} then #{item.unionId}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="remark = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.remark != null and item.remark != ''">
-                        when `id` = #{id} then #{item.remark}
+                        when `id` = #{item.id} then #{item.remark}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="source_type = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.sourceType != null">
-                        when `id` = #{id} then #{item.sourceType}
+                        when `id` = #{item.id} then #{item.sourceType}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="source_type_name = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.sourceTypeName != null and item.sourceTypeName != ''">
-                        when `id` = #{id} then #{item.sourceTypeName}
+                        when `id` = #{item.id} then #{item.sourceTypeName}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="fans_status = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.fansStatus != null">
-                        when `id` = #{id} then #{item.fansStatus}
+                        when `id` = #{item.id} then #{item.fansStatus}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="address = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.address != null and item.address != ''">
-                        when `id` = #{id} then #{item.address}
+                        when `id` = #{item.id} then #{item.address}
                     </if>
                 </foreach>
             </trim>
