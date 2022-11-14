@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.rpc;
 
+import com.yunya.feign.patient_central.domain.model.ValidateList;
 import com.yunya.feign.patient_central.domain.model.WorkWxUserModel;
 import com.yunya.feign.patient_central.domain.vo.web.WorkWxPatientBindVO;
 import com.yunya.framework.common.model.ResponseResult;
@@ -28,7 +29,7 @@ public class WechatRest {
 
     @ApiOperation("企微、小程序、公众号-保存客户信息")
     @PostMapping(value = "/white/wechat/user")
-    public ResponseResult<Boolean> saveWechat(@Valid @RequestBody List<WorkWxUserModel> list) {
+    public ResponseResult<Boolean> saveWechat(@Valid @RequestBody ValidateList<WorkWxUserModel> list) {
         wxFansBiz.saveWorkWx(list);
         return ResponseUtil.success();
     }

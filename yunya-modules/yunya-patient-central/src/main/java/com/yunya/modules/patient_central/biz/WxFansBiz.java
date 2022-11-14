@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.ivy_mini.domain.bo.WeChatSessionBO;
 import com.yunya.feign.ivy_mini.domain.form.WxSaveFansForm;
 import com.yunya.feign.ivy_mini.domain.form.WxUserInfoForm;
+import com.yunya.feign.patient_central.domain.model.ValidateList;
 import com.yunya.feign.patient_central.domain.model.WorkWxUserModel;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
@@ -421,7 +422,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         return null;
     }
 
-    public void saveWorkWx(List<WorkWxUserModel> list) {
+    public void saveWorkWx(ValidateList<WorkWxUserModel> list) {
         log.info("企业微信用户同步数量：{}", list.size());
         if (CollectionUtils.isNotEmpty(list) && list.size() > 1000) {
             throw ClientServiceException.wrap(SIZE_OVERFLOW);
