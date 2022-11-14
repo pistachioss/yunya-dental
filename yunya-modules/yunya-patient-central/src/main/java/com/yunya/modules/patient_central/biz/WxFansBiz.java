@@ -424,6 +424,9 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public void saveWorkWx(ValidateList<WorkWxUserModel> list) {
         log.info("企业微信用户同步数量：{}", list.size());
+        if (CollectionUtils.isEmpty(list)) {
+            return;
+        }
         if (CollectionUtils.isNotEmpty(list) && list.size() > 1000) {
             throw ClientServiceException.wrap(SIZE_OVERFLOW);
         }
