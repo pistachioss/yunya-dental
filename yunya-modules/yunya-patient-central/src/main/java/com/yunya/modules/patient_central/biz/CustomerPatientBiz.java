@@ -352,25 +352,26 @@ public class CustomerPatientBiz {
      */
     public PatientVipRightInterestVO findPatientVipRightInterest(Integer patientId) {
         PatientVipRightInterestVO result = new PatientVipRightInterestVO();
+        // 最新激活的产品
         PatientCardBaseVo lastestActivedCard = remoteDiscountFeign.findPatientLastestActivedCardInfo(patientId);
         if (StringHelper.isNotNull(lastestActivedCard)) {
             result.setCouponName(lastestActivedCard.getCouponName());
             result.setUseDeadline(lastestActivedCard.getUseDeadline());
             result.setCouponLogo(lastestActivedCard.getCouponLogo());
         }
-
+        // 会员卡信息
         MemberBaseInfoVo memberBaseInfo = patientMemberInfoBiz.findMemberBaseInfo(patientId);
         if (StringHelper.isNotNull(memberBaseInfo)) {
             result.setMemberTypeId(memberBaseInfo.getMemberTypeId());
             result.setMemberCardName(memberBaseInfo.getMemberCardName());
             result.setMemberCardMoneySum(memberBaseInfo.getMemberCardMoneySum());
         }
-
+        // 预付款信息
         PatientPrepaymentsInfoVo prepaymentInfo = patientPrepaymentBiz.findPrepaymentInfo(patientId);
         if (StringHelper.isNotNull(prepaymentInfo)) {
             result.setPrepaymentMoneySum(prepaymentInfo.getPrepaymentMoneySum());
         }
-
+        // 会员卡绑定关系
         PatientMemberRelationQueryForm query = new PatientMemberRelationQueryForm();
         query.setPatientId(patientId);
         MemberRelationVo memberBindingRelation = patientMemberInfoBiz.findMemberBindingRelation(query);
