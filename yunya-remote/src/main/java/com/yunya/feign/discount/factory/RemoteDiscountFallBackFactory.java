@@ -151,5 +151,10 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
         return null;
     }
 
+    @Override
+    public PatientCardBaseVo findPatientLastestActivedCardInfo(Integer patientId) {
+        return null;
+    }
+
 
 }

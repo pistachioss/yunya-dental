@@ -173,6 +173,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      */
     @Value("${codeUrl.url}")
     private String serverPort;
+    @Autowired
+    private CouponFileInfoBiz couponFileInfoBiz;
 
     /**
      * 加密加密生成卡券密码
@@ -3520,5 +3522,25 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         //对象转换
         return list.stream().map(obj -> this.patientCardBoConvertVo(0, obj))
                 .collect(toList());
+    }
+
+    /**
+     * 查询患者最近激活产品信息
+     *
+     * @param patientId
+     * @return
+     */
+    public PatientCardBaseVo findPatientLastestActivedCardInfo(Integer patientId) {
+        List<PatientCardBaseVo> activedCards = findPatientActivedCardList(patientId);
+        if (StringHelper.isNotEmpty(activedCards)) {
+            PatientCardBaseVo lastestActivedCard = activedCards.get(0);
+            Integer couponId = lastestActivedCard.getCouponId();
+            List<CouponFileInfo> files = couponFileInfoBiz.listByCouponIds(Collections.singletonList(couponId), 0);
+            if (StringHelper.isNotEmpty(files)) {
+                lastestActivedCard.setCouponLogo(files.get(0).getPath());
+            }
+            return lastestActivedCard;
+        }
+        return null;
     }
 }

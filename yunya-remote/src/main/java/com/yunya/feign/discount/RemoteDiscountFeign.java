@@ -4,7 +4,10 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
-import com.yunya.feign.discount.domain.query.*;
+import com.yunya.feign.discount.domain.query.CardSaleQuery;
+import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
+import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
@@ -131,4 +134,13 @@ public interface RemoteDiscountFeign {
      */
     @GetMapping("/card/trajectory/{patientId}")
     List<PatientEventVO> findPatientCardTrajectory(@PathVariable(value = "patientId") Integer patientId);
+
+    /**
+     * 查询患者最新激活的产品卡券
+     *
+     * @param patientId
+     * @return
+     */
+    @GetMapping("/card/lastestActived/{patientId}")
+    PatientCardBaseVo findPatientLastestActivedCardInfo(@PathVariable(value = "patientId") Integer patientId);
 }

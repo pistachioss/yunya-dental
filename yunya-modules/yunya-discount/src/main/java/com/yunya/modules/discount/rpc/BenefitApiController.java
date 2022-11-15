@@ -5,7 +5,10 @@ import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
-import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.discount.domain.vo.PatientCardBaseVo;
+import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
+import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
@@ -18,7 +21,9 @@ import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.discount.biz.*;
+import com.yunya.modules.discount.biz.BenefitBiz;
+import com.yunya.modules.discount.biz.CardBiz;
+import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -168,5 +173,11 @@ public class BenefitApiController {
     @GetMapping("/card/trajectory/{patientId}")
     public List<PatientEventVO> findPatientCardTrajectory(@PathVariable(value = "patientId") Integer patientId) {
         return cardBiz.findPatientCardTrajectory(patientId);
+    }
+
+    @ApiOperation(value = "查询患者最新激活的产品卡券")
+    @GetMapping("/card/lastestActived/{patientId}")
+    public PatientCardBaseVo findPatientLastestActivedCardInfo(@PathVariable(value = "patientId") Integer patientId) {
+        return cardBiz.findPatientLastestActivedCardInfo(patientId);
     }
 }

@@ -35,4 +35,6 @@ public class PatientCardBaseVo implements Serializable {
     private Integer couponEnable;
     @ApiModelProperty("售出渠道（0-艾维小程序；1-pc购买）")
     private Integer payChannel;
+    @ApiModelProperty("产品设计图")
+    private String couponLogo;
 }

@@ -391,6 +391,7 @@
     <select id="selectLastVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientTreatInfoVo">
         SELECT btp.treatmentId,
                btp.treatDate,
+               btp.treat_start_time AS treatStartTime,
                btp.registered_dentist_id AS treatDentistId,
                be.employee_name          AS treatDentistName,
                btp.org_id                AS orgId,
@@ -398,6 +399,7 @@
         FROM (
                  SELECT distinct btp.treatmentId,
                                  DATE_FORMAT(btp1.treat_start_time, '%Y-%m-%d') AS treatDate,
+                                 btp1.treat_start_time,
                                  btp1.registered_dentist_id,
                                  btp1.org_id
                  FROM (SELECT btp.treatment_id AS treatmentId
