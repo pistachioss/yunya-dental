@@ -302,7 +302,7 @@
                             group by `bb`.`item_id`, `bb`.`item_type`) `temp`
                            on `bci`.`item_id` = `temp`.`item_id`
                                and `temp`.`item_type` = `bci`.`type`
-        where `c`.`card_id` = #{cardId}
+        where `c`.`card_id` = #{cardId} and `bci`.`is_show_app` = 1
         group by `bci`.`item_id`, `bci`.`type`
     </select>
 

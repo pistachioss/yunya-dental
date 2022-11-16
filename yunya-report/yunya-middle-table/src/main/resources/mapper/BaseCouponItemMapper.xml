@@ -42,6 +42,13 @@
                     </if>
                 </foreach>
             </trim>
+            <trim prefix="is_show_app = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.isShowApp != null">
+                        when `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type} then #{item.isShowApp}
+                    </if>
+                </foreach>
+            </trim>
             <trim prefix="item_id = case" suffix="end,">
                 <foreach collection="list" item="item" index="index">
                     <if test="item.itemId != null">
