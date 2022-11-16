@@ -5,9 +5,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.vo.PatientCardBaseVo;
 import com.yunya.feign.middle.RemoteMiddleServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CustomerBindPatientQueryForm;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -60,6 +62,10 @@ public class CustomerPatientBiz {
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
     @Autowired
     private WxFansMapper wxFansMapper;
+    @Autowired
+    private PatientMemberInfoBiz patientMemberInfoBiz;
+    @Autowired
+    private PatientPrepaymentRelationBiz patientPrepaymentBiz;
     @Autowired
     private RemoteDiscountFeign remoteDiscountFeign;
     public static String QIN_SHU_GUAN_XI = "亲属关系";
@@ -335,6 +341,44 @@ public class CustomerPatientBiz {
                 }
             }
         });
+        return result;
+    }
+
+    /**
+     * 根据patientId查询客户画像侧边栏的会员权益
+     *
+     * @param patientId
+     * @return
+     */
+    public PatientVipRightInterestVO findPatientVipRightInterest(Integer patientId) {
+        PatientVipRightInterestVO result = new PatientVipRightInterestVO();
+        // 最新激活的产品
+        PatientCardBaseVo lastestActivedCard = remoteDiscountFeign.findPatientLastestActivedCardInfo(patientId);
+        if (StringHelper.isNotNull(lastestActivedCard)) {
+            result.setCouponName(lastestActivedCard.getCouponName());
+            result.setUseDeadline(lastestActivedCard.getUseDeadline());
+            result.setCouponLogo(lastestActivedCard.getCouponLogo());
+        }
+        // 会员卡信息
+        MemberBaseInfoVo memberBaseInfo = patientMemberInfoBiz.findMemberBaseInfo(patientId);
+        if (StringHelper.isNotNull(memberBaseInfo)) {
+            result.setMemberTypeId(memberBaseInfo.getMemberTypeId());
+            result.setMemberCardName(memberBaseInfo.getMemberCardName());
+            result.setMemberCardMoneySum(memberBaseInfo.getMemberCardMoneySum());
+        }
+        // 预付款信息
+        PatientPrepaymentsInfoVo prepaymentInfo = patientPrepaymentBiz.findPrepaymentInfo(patientId);
+        if (StringHelper.isNotNull(prepaymentInfo)) {
+            result.setPrepaymentMoneySum(prepaymentInfo.getPrepaymentMoneySum());
+        }
+        // 会员卡绑定关系
+        PatientMemberRelationQueryForm query = new PatientMemberRelationQueryForm();
+        query.setPatientId(patientId);
+        MemberRelationVo memberBindingRelation = patientMemberInfoBiz.findMemberBindingRelation(query);
+        if (StringHelper.isNotNull(memberBindingRelation)) {
+            result.setMemberRelationList(memberBindingRelation.getMemberRelationList());
+            result.setMemberBalanceRelationList(memberBindingRelation.getMemberBalanceRelationList());
+        }
         return result;
     }
 }

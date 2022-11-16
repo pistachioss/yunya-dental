@@ -89,4 +89,7 @@ public class PatientTreatmentRecordVO implements Serializable {
   /** 优惠类型 */
   @ApiModelProperty("优惠类型")
   private Byte privilegeType;
+
+  @ApiModelProperty("开单项目列表")
+  private String billItems;
 }

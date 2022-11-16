@@ -287,4 +287,14 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
     String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", sheetName);
     excelUtil.exportExcel(response, result, sheetName, fileName);
   }
+
+  /**
+   * 根据患者id查询末次就诊信息
+   *
+   * @param patientId
+   * @return
+   */
+  public PatientTreatInfoVo findPatientLastTreatmentInfo(Integer patientId) {
+    return baseTreatmentProcessMapper.selectLastVisitInfo(patientId);
+  }
 }
