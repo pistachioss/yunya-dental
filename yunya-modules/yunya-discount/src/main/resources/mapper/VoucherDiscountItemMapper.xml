@@ -46,6 +46,7 @@
         sale_amount,
         count,
         workload_load,
+        is_show_app,
         crt_id,
         crt_time,
         upd_id,
@@ -56,7 +57,7 @@
             (#{item.id}, #{item.couponId},#{item.type}
             ,#{item.itemId}
             ,#{item.saleUnitPrice},#{item.saleAmount}
-            ,#{item.count},#{item.workloadRate}
+            ,#{item.count},#{item.workloadRate},#{item.isShowApp}
             ,#{item.crtId},#{item.crtTime}
             ,#{item.updId},#{item.updTime})
         </foreach>
