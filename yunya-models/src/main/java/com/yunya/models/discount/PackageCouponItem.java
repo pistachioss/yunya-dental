@@ -1,5 +1,7 @@
 package com.yunya.models.discount;
 
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -7,6 +9,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "package_coupon_item")
+@Data
 public class PackageCouponItem {
     /**
      * 主键
@@ -53,6 +56,9 @@ public class PackageCouponItem {
      */
     @Column(name = "workload_load")
     private BigDecimal workloadLoad;
+
+    @Column(name = "is_show_app")
+    private Integer isShowApp;
 
     /**
      * 创建人
