@@ -26,6 +26,7 @@
     type as type,
     type_id as typeId,
     sort as isSort,
+    sort_num as sortNum,
     reading_number as readingNumber,
     status as status,
     crt_time as crtTime,
@@ -44,13 +45,16 @@
       <if test="typeId != null">
         AND type_id = #{typeId}
       </if>
+      <if test="sort!=null and sort!=''">
+        AND sort = #{sort}
+      </if>
     </where>
     order by
      <if test="orderByColumn != null and orderByColumn!=''">
-       ${orderByColumn} ${isAsc} ,sort desc
+       ${orderByColumn} ${isAsc},sort_num is null,sort_num
       </if>
     <if test="orderByColumn == null or orderByColumn==''">
-      sort desc ,crt_time desc
+     sort desc,sort_num is null, sort_num ,crt_time desc
     </if>
   </select>
   <select id="findArticleAppList" resultType="com.yunya.feign.ivy_mini.domain.vo.ArticleVO">
@@ -80,7 +84,7 @@
         AND type_id = #{typeId}
       </if>
     </where>
-    order by  sort desc
+    order by  sort desc,sort_num is null, sort_num ,crt_time desc
     <if test="orderByColumn != null and orderByColumn!=''">
       , ${orderByColumn} ${isAsc}
     </if>
@@ -121,5 +125,34 @@
       id=#{item.id}
     </foreach>
   </update>
-
+  <update id="updateList" parameterType="java.util.List">
+    update `article`
+    <trim prefix="set" suffixOverrides=",">
+      <trim prefix="sort = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.isSort != null">
+            when `id` = #{item.id} then #{item.isSort}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="sort_num = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.sortNum != null">
+            when `id` = #{item.id} then #{item.sortNum}
+          </if>
+        </foreach>
+      </trim>
+    </trim>
+    where id in
+    <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+      #{item.id}
+    </foreach>
+  </update>
+  <update id="updateAllList">
+  UPDATE article
+  SET
+	sort = 0,
+    sort_num = NULL
+    where type =  #{type}
+  </update>
 </mapper>

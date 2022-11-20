@@ -148,4 +148,14 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     }
     return null;
   }
+
+  /**
+   * 根据字典类型查询字典项列表
+   *
+   * @param typeName
+   * @return
+   */
+  public List<DictionaryItem> findDictItemByTypeName(String typeName) {
+    return mapper.selectDictItemByTypeName(typeName);
+  }
 }

@@ -62,7 +62,7 @@ public class ReturnVisitRecordController {
      */
     @ApiOperation("根据条件查询回访记录列表")
     @PostMapping("/find")
-    public ResponseResult<PageInfo<ReturnVisitRecordVO>> findReturnVisitRecordList(@RequestBody @Validated PatientReturnVisitQuery query) {
+    public ResponseResult<PageInfo<ReturnVisitRecordVO>> findReturnVisitRecordList(@RequestBody PatientReturnVisitQuery query) {
         PageInfo<ReturnVisitRecordVO> page = returnVisitRecordBiz.findReturnVisitRecordList(query);
         return ResponseUtil.success(page);
     }

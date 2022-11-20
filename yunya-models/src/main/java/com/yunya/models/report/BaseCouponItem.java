@@ -48,5 +48,9 @@ public class BaseCouponItem {
 	 */
 	@Column(name = "workload_load")
 	private BigDecimal workloadLoad;
-
+	/**
+	 * 套餐券匹配项目小程序是否显示 0否 1是
+	 */
+	@Column(name = "is_show_app")
+	private Integer isShowApp;
 }

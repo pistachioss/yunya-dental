@@ -29,4 +29,7 @@ public class BenefitItemVo {
 	private Integer originalQuantity;
 	@ApiModelProperty("剩余可使用数量（数量为-1，代表不限次数，固定写死的项目）")
 	private Integer remainingQuantity;
+	@ApiModelProperty("app是否显示")
+	private Integer isShowApp;
+
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 简介: 患者就诊信息VO
@@ -25,6 +26,9 @@ public class PatientTreatInfoVo implements Serializable {
   /** 初诊日期 */
   @ApiModelProperty("就诊日期")
   private String treatDate;
+  /** 末诊时间 */
+  @ApiModelProperty("末诊时间")
+  private Date treatStartTime;
   /** 接诊医生ID */
   @ApiModelProperty("接诊医生ID")
   private Integer treatDentistId;

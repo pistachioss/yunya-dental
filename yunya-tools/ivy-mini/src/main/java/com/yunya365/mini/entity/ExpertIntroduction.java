@@ -48,6 +48,8 @@ public class ExpertIntroduction {
      */
     @Column(name = "is_sort")
     private Integer isSort;
+    @Column(name = "sort_num")
+    private Integer sortNum;
 
     /**
      * 发布状态 0否1是

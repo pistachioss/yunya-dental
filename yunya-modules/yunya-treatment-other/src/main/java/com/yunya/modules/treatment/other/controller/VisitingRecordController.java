@@ -1,21 +1,20 @@
 package com.yunya.modules.treatment.other.controller;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingForMonthInfo;
+import com.yunya.feign.treatment_other.domain.query.VisitingPatientQueryForm;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.model.PageQuery;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,4 +169,17 @@ public class VisitingRecordController {
 
     }
 
+
+    /**
+     * 根据患者id查询患者随访列表
+     *
+     * @param query
+     * @return
+     */
+    @ApiModelProperty(value = "根据患者id查询患者随访列表")
+    @PostMapping("/patient")
+    public ResponseResult<PageInfo<VisitingRecordSimpleVO>> findPatientVisitingList(@RequestBody @Validated VisitingPatientQueryForm query) {
+        PageInfo<VisitingRecordSimpleVO> page = visitingRecordBiz.findPatientVisitingList(query);
+        return ResponseUtil.success(page);
+    }
 }

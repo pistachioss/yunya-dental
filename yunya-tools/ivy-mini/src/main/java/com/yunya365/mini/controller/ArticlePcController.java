@@ -7,6 +7,7 @@ import com.yunya.feign.ivy_mini.domain.form.ArticleForm;
 import com.yunya.feign.ivy_mini.domain.form.ArticleUpdateForm;
 import com.yunya.feign.ivy_mini.domain.vo.ArticleVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -40,6 +41,20 @@ public class ArticlePcController extends PcBaseController{
     public ResponseResult<PageInfo<ArticleVO>> findList(@RequestBody @Valid ArticleForm form) {
         return ResponseUtil.success(articleService.findList(form));
     }
+
+    /**
+     * 艾维动态/口腔科普 置顶列表更新
+     *
+     * @return ResponseResult
+     */
+    @ApiOperation("后台-艾维动态/口腔科普-置顶列表更新")
+    @PutMapping("/article/updateList/{type}")
+    public ResponseResult updateList(@PathVariable(value = "type") Integer type,@RequestBody @Validated List<ArticleVO>list) {
+        articleService.updateList(type,list);
+        return ResponseUtil.success(null);
+    }
+
+
 
     @PostMapping("/article/add")
     @ApiOperation("后台-艾维动态/口腔科普-新增")

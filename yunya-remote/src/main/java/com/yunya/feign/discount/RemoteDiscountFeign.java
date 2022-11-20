@@ -4,7 +4,10 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
-import com.yunya.feign.discount.domain.query.*;
+import com.yunya.feign.discount.domain.query.CardSaleQuery;
+import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
+import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
@@ -12,6 +15,7 @@ import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
@@ -121,4 +125,22 @@ public interface RemoteDiscountFeign {
 
     @DeleteMapping("/mini/card/delete/batch")
     void deleteCard(@RequestBody List<Integer> cardIds);
+
+    /**
+     * 根据患者id查询患者卡券轨迹
+     *
+     * @param patientId
+     * @return
+     */
+    @GetMapping("/card/trajectory/{patientId}")
+    List<PatientEventVO> findPatientCardTrajectory(@PathVariable(value = "patientId") Integer patientId);
+
+    /**
+     * 查询患者最新激活的产品卡券
+     *
+     * @param patientId
+     * @return
+     */
+    @GetMapping("/card/lastestActived/{patientId}")
+    PatientCardBaseVo findPatientLastestActivedCardInfo(@PathVariable(value = "patientId") Integer patientId);
 }

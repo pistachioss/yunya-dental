@@ -3,11 +3,16 @@ package com.yunya.modules.emr.biz;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
-import com.yunya.feign.emr.domain.model.*;
+import com.yunya.feign.emr.domain.model.ApplyBaseModel;
+import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
+import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
+import com.yunya.feign.emr.domain.vo.MedicalCommonRecordVO;
 import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
+import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -17,10 +22,16 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.emr.*;
+import com.yunya.models.emr.MedicalCommonRecord;
+import com.yunya.models.emr.MedicalGeneralNum;
+import com.yunya.models.emr.MedicalRecordHistory;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.TreatmentRecord;
-import com.yunya.modules.emr.mapper.*;
+import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
+import com.yunya.modules.emr.mapper.MedicalGeneralNumMapper;
+import com.yunya.modules.emr.mapper.MedicalRecordHistoryMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,8 +44,9 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.*;
 
-import static com.yunya.framework.common.constant.RedisConstants.*;
-import static com.yunya.framework.common.enums.FileSourceTypeEnum.*;
+import static com.yunya.framework.common.constant.RedisConstants.DRAFT_TEMP;
+import static com.yunya.framework.common.constant.RedisConstants.buildLockCacheKey;
+import static com.yunya.framework.common.enums.FileSourceTypeEnum.MEDICAL_COMMON;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -54,6 +66,8 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
     @Autowired
     private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Resource
     private RedisUtils redisUtils;
 
@@ -416,5 +430,66 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         String date = DateUtil.format(LocalDate.now(), "yyyyMMdd");
         String key = buildLockCacheKey(DRAFT_TEMP, date);
         redisUtils.hdelete(key, loginUserId + "_" + treatmentId);
+    }
+
+    public Map<Integer, List<XUploadFileVO>> findXRayFilmList(List<Integer> medicalIds) {
+        Map<Integer, List<XUploadFileVO>> result = new HashMap<>(16);
+        XUploadFileQuery query = new XUploadFileQuery();
+        query.setWhetherPage(false);
+        query.setSourceIds(medicalIds);
+        query.setSourceType(MEDICAL_COMMON.getCode());
+        List<XUploadFileVO> files = remoteTreatmentOtherFeign.findXUploadFileList(query);
+        if (StringHelper.isNotEmpty(files)) {
+            files.forEach(file->{
+                Integer sourceId = file.getSourceId();
+                List<XUploadFileVO> list = result.get(sourceId);
+                if (list == null) {
+                    list = new ArrayList<>();
+                }
+                list.add(file);
+                result.put(sourceId, list);
+            });
+        }
+        return result;
+    }
+
+    /**
+     * 根据就诊id查询普通电子病历
+     *
+     * @param treatmentId
+     * @return
+     */
+    public MedicalCommonRecordVO findOneByTreatmentId(Integer treatmentId) {
+        MedicalCommonRecordVO result = mapper.selectOneByTreatmentId(treatmentId);
+        if (StringHelper.isNotNull(result)) {
+            Integer id = result.getId();
+            Map<Integer, List<XUploadFileVO>> fileMap = findXRayFilmList(Collections.singletonList(id));
+            result.setXrayFilms(fileMap.get(id));
+            TreatmentRecord treatment = remoteTreatmentServiceFeign.findTreatmentRecordById(result.getTreatmentId());
+            result.setTreatDate(treatment.getTreatStartTime());
+            String dentistName = findEmployeeName(result.getMajorDentistId());
+            result.setMajorDentistName(dentistName);
+            String crtName = findEmployeeName(result.getCrtId());
+            result.setCrtName(crtName);
+        }
+        return result;
+    }
+
+
+
+    /**
+     * 根据员工id查询员工姓名
+     *
+     * @param userId
+     * @return
+     */
+    private String findEmployeeName(Integer userId) {
+        if (StringHelper.isNotNull(userId)) {
+            SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(userId);
+            if (StringHelper.isNotNull(employee)) {
+                return employee.getName();
+            }
+        }
+        return null;
     }
 }

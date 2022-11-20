@@ -52,6 +52,8 @@ public class Article {
      * 排序
      */
     private Integer sort;
+    @Column(name = "sort_num")
+    private Integer sortNum;
 
     /**
      * 阅读数

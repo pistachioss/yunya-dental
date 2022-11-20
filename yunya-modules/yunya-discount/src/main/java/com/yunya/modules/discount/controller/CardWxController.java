@@ -87,7 +87,8 @@ public class CardWxController {
     @ApiOperation(value = "小程序-我的-待使用产品列表-使用权益（2-兑换券，3-套餐券）")
     @GetMapping("/benefit/multi/{cardId}")
     public ResponseResult<List<CardWxItemVO>> getUseRecord(@PathVariable(value = "cardId") Integer cardId) {
-        List<BenefitItemVo>list = remoteReportServiceFeign.listWxCouponsUseItem(cardId);
+        List<BenefitItemVo>list = remoteReportServiceFeign.listWxCouponsUseItem(cardId)
+                .stream().filter(benefitItemVo -> benefitItemVo.getIsShowApp().equals(1)).collect(Collectors.toList());
         List<CardWxItemVO> newList = list.stream()
                 .map(e -> new CardWxItemVO(e.getItemName(), e.getOriginalQuantity(), e.getRemainingQuantity()))
                 .collect(Collectors.toList());

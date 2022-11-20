@@ -12,6 +12,7 @@ import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -301,6 +302,11 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
 
   @Override
   public TreatmentOrderVO findTreatmentOrderByTreatmentId(Integer treatmentId) {
+    return null;
+  }
+
+  @Override
+  public List<PatientEventVO> findPatientTreatmentTrajectory(Integer patientId) {
     return null;
   }
 }

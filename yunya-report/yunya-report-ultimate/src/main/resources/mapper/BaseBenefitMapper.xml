@@ -284,6 +284,7 @@
     <select id="listItemUseById" resultType="com.yunya.feign.report.domain.vo.BenefitItemVo">
         select `bci`.`item_id`,
                `bti`.`item_name`,
+                `bci`.`is_show_app` as isShowApp,
                `bci`.`quantity`                                          as `originalQuantity`,
                if((`bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) &lt; 0
                    , 0, `bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) as `remainingQuantity`
@@ -302,6 +303,7 @@
                             group by `bb`.`item_id`, `bb`.`item_type`) `temp`
                            on `bci`.`item_id` = `temp`.`item_id`
                                and `temp`.`item_type` = `bci`.`type`
+
         where `c`.`card_id` = #{cardId}
         group by `bci`.`item_id`, `bci`.`type`
     </select>

@@ -1,6 +1,7 @@
 package com.yunya365.mini.service.impl;
 
 import cn.hutool.core.convert.Convert;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.yunya.feign.ivy_mini.domain.bo.WeChatSessionBO;
 import com.yunya.feign.ivy_mini.domain.form.WeChatLoginForm;
@@ -128,7 +129,7 @@ public class LoginServiceImpl {
         if (authVO == null) {
             throw ClientServiceException.wrap(IvyMiniError.ACCOUNT_IS_LOGOUT);
         }
-        log.info("用户重复登录");
+        log.info("用户重复登录token：{}，已存在登录信息：{}", keySuffix, JSON.toJSONString(authVO));
         return authVO;
     }
 

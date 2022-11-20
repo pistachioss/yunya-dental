@@ -20,6 +20,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -893,6 +894,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     queryForm.setPayIds(FREE_PAYMENT_ID);
     List<PatientTreatmentRecordVO> resultList = mapper.selectPatientTreatmentRecordList(queryForm);
     if (StringHelper.isNotEmpty(resultList)) {
+      Boolean queryBillItem = queryForm.getQueryBillItem();
       resultList.forEach(
           vo -> {
             // 查询组织信息
@@ -914,6 +916,22 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             if (StringHelper.isNotEmpty(assistantMatchingRecords)) {
               setTreatmentRecordAssistantInfo(vo, assistantMatchingRecords);
             }
+
+            Integer orderRecordId = vo.getOrderRecordId();
+            if (queryBillItem && StringHelper.isNotNull(orderRecordId)) {
+              List<OrderDetailVO> details = orderDetailMapper.selectOrderDetailVOList(orderRecordId, null);
+              if (StringHelper.isNotEmpty(details)) {
+                StringBuilder builder = new StringBuilder();
+                details.forEach(detail->{
+                  if (builder.length() > 0) {
+                    builder.append("，");
+                  }
+                  builder.append(detail.getBillingItemName());
+                });
+                vo.setBillItems(builder.toString());
+              }
+            }
+
           });
     } else {
       resultList = new ArrayList<>();
@@ -1779,5 +1797,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       return result;
     }
     return null;
+  }
+
+  public List<PatientEventVO> findPatientTreatmentTrajectory(Integer patientId) {
+    return mapper.selectPatientTreatmentTrajectory(patientId);
   }
 }

@@ -12,6 +12,7 @@ import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.model.ResponseResult;
@@ -143,6 +144,16 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     @Override
     public void deleteCard(List<Integer> cardIds) {
 
+    }
+
+    @Override
+    public List<PatientEventVO> findPatientCardTrajectory(Integer patientId) {
+        return null;
+    }
+
+    @Override
+    public PatientCardBaseVo findPatientLastestActivedCardInfo(Integer patientId) {
+        return null;
     }
 
 

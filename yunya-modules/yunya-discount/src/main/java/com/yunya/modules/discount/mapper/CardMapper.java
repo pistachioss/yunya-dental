@@ -13,6 +13,7 @@ import com.yunya.feign.discount.domain.vo.CardWxDetailVO;
 import com.yunya.feign.discount.domain.vo.CardWxVO;
 import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.models.discount.Card;
 import org.apache.ibatis.annotations.Mapper;
@@ -109,4 +110,12 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
     List<Integer> listPatientAllCard(@Param("patientId") Integer patientId);
 
     List<CardIyOr365VO> selectIyOr365CardActivedList(@Param("query") CardIyOr365ActivedQuery query);
+
+    /**
+     * 根据患者id查询患者卡券轨迹
+     *
+     * @param patientId
+     * @return
+     */
+    List<PatientEventVO> selectPatientCardTrajectory(@Param("patientId") Integer patientId);
 }

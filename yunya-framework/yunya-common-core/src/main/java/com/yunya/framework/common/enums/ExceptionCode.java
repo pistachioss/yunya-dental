@@ -73,6 +73,7 @@ public enum ExceptionCode implements RestError {
   JWT_NOT_LOGIN(40009, "登录超时，请重新登录！"),
   JWT_IS_LOGIN(40010, "用户已登录"),
 // jwt token 相关 end
+  SIZE_OVERFLOW(5100, "数据大小不能超过1000"),
 
 ;
 

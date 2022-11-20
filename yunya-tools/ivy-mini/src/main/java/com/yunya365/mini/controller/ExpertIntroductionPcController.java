@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 简介:
@@ -36,6 +37,18 @@ public class ExpertIntroductionPcController extends PcBaseController{
     @ApiOperation("后台-专家介绍-列表")
     public ResponseResult<PageInfo<ExpertIntroductionVO>> findList(@RequestBody @Valid ExpertIntroductionForm form) {
         return ResponseUtil.success(expertIntroductionService.findList(form));
+    }
+
+    /**
+     * 艾维动态/口腔科普 置顶列表更新
+     *
+     * @return ResponseResult
+     */
+    @ApiOperation("后台-艾维动态/口腔科普-置顶列表更新")
+    @PutMapping("/expertIntroduction/updateList")
+    public ResponseResult updateList(@RequestBody @Validated List<ExpertIntroductionVO> list) {
+        expertIntroductionService.updateList(list);
+        return ResponseUtil.success(null);
     }
 
     @PostMapping("/expertIntroduction/add")

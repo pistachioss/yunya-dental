@@ -44,6 +44,13 @@ public class ArticleServiceImpl extends BaseBiz<ArticleMapper, Article> {
         return new PageInfo<>(result);
     }
 
+    public void updateList(Integer type,List<ArticleVO>list) {
+        mapper.updateAllList(type);
+        if(list.size()>0){
+            mapper.updateList(list);
+        }
+    }
+
     public PageInfo<ArticleVO> findAppList(ArticleForm form) {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());

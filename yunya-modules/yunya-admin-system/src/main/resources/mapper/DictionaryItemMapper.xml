@@ -73,4 +73,18 @@
         where dt.name = #{typeName}
           and di.name = #{itemName}
     </select>
+
+    <select id="selectDictItemByTypeName" resultType="com.yunya.models.system.DictionaryItem">
+        select
+            di.id as id,
+            di.name as `name`,
+            di.english_name as englishName,
+            di.dictionary_type_id as dictionaryTypeId
+        from dictionary_item di
+        inner join dictionary_type dt on di.dictionary_type_id = dt.id
+        <where>
+            AND dt.inservice = true
+            AND dt.name = #{typeName}
+        </where>
+    </select>
 </mapper>

@@ -61,7 +61,7 @@
         od.id as orderDetailId,
         od.`type`,
         od.billing_item_id as billingItemId,
-        od.billing_item_name AS billingItemName,
+        IFNULL(od.billing_item_name, if(od.type=0, bf.name, bof.name)) AS billingItemName,
         od.price,
         od.quantity,
         od.receivable_amount as receivableAmount,
@@ -70,6 +70,8 @@
         od.consulter_id as consulterId,
         od.remarks
         from order_detail od
+        left join base_tariff bf on bf.id = od.billing_item_id and od.type = 0
+        left join base_oral_tariff bof on bof.id = od.billing_item_id and od.type = 1
         <where>
             <if test="orderRecordId != null">
                 and od.order_record_id = #{orderRecordId}

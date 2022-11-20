@@ -30,6 +30,7 @@
     ei.expertise as expertise,
     ei.picture_address as pictureAddress,
     ei.is_sort as isSort,
+    ei.sort_num as sortNum,
     ei.status as status,
     ei.crt_time as crtTime,
     ei.upd_time as updTime
@@ -43,6 +44,9 @@
       <if test="status != null">
         AND ei.status = #{status}
       </if>
+      <if test="sort!=null and sort!=''">
+        AND is_sort = #{sort}
+      </if>
       <if test="typeIds != null and typeIds.length > 0">
         and et.type_id in
         <foreach collection="typeIds" item="item" index="index" open="(" close=")" separator=",">
@@ -51,7 +55,36 @@
       </if>
     </where>
     group BY ei.id
-    order by ei.is_sort ${isSort} ,
-    ei.crt_time desc
+    order by ei.is_sort ${isSort} ,sort_num is null, sort_num ,
+    ei.crt_time  desc
   </select>
+  <update id="updateAllList">
+  UPDATE expert_introduction
+  SET
+	is_sort = 0,
+    sort_num = NULL
+  </update>
+  <update id="updateList" parameterType="java.util.List">
+    update `expert_introduction`
+    <trim prefix="set" suffixOverrides=",">
+      <trim prefix="is_sort = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.isSort != null">
+            when `id` = #{item.id} then #{item.isSort}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="sort_num = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.sortNum != null">
+            when `id` = #{item.id} then #{item.sortNum}
+          </if>
+        </foreach>
+      </trim>
+    </trim>
+    where id in
+    <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+      #{item.id}
+    </foreach>
+  </update>
 </mapper>

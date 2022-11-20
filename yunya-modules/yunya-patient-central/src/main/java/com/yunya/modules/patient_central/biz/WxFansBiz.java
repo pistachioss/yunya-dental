@@ -6,13 +6,15 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.ivy_mini.domain.bo.WeChatSessionBO;
 import com.yunya.feign.ivy_mini.domain.form.WxSaveFansForm;
 import com.yunya.feign.ivy_mini.domain.form.WxUserInfoForm;
+import com.yunya.feign.patient_central.domain.model.ValidateList;
+import com.yunya.feign.patient_central.domain.model.WorkWxUserModel;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.utils.BeanCopierUtils;
-import com.yunya.framework.common.utils.BeanUtil;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.*;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.mapper.*;
@@ -27,8 +29,12 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.yunya.framework.common.enums.ExceptionCode.*;
 
 /**
  * 简介: 公司微信公众号粉丝业务层
@@ -68,6 +74,8 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
     private PatientPrepaymentRelationBiz prepaymentRelationBiz;
     @Resource
     private WxFansBindMapper wxFansBindMapper;
+    @Resource
+    private PatientBaseInfoBiz patientBaseInfoBiz;
 
     public Integer syncUnionId(SyncUnionIdForm form){
        return wxFansBindMapper.syncUnionId(form);
@@ -412,5 +420,86 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             }
         }
         return null;
+    }
+
+    public void saveWorkWx(ValidateList<WorkWxUserModel> list) {
+        log.info("企业微信用户同步数量：{}", list.size());
+        if (CollectionUtils.isEmpty(list)) {
+            return;
+        }
+        if (CollectionUtils.isNotEmpty(list) && list.size() > 1000) {
+            throw ClientServiceException.wrap(SIZE_OVERFLOW);
+        }
+        Set<String> openIds = list.stream().map(WorkWxUserModel::getOpenId).collect(Collectors.toSet());
+        Example example = new Example(WxFans.class);
+        example.createCriteria()
+                .andIn("openId", openIds);
+        //筛选更新
+        List<WxFans> wxFansList = mapper.selectByExample(example);
+        Map<String, WxFans> wxFansMap = wxFansList.stream().collect(Collectors.toMap(WxFans::getOpenId, Function.identity(), (o, n) -> o));
+        //筛选新增
+        List<List<WorkWxUserModel>> insert = Lists.partition(list.stream()
+                .filter(t -> !wxFansMap.containsKey(t.getOpenId())).collect(Collectors.toList()), 100);
+        List<List<WorkWxUserModel>> update = Lists.partition(list.stream()
+                .filter(t -> wxFansMap.containsKey(t.getOpenId())).collect(Collectors.toList()), 100);
+        for (List<WorkWxUserModel> insertList : insert) {
+            List<WxFans> insertData = insertList.parallelStream().map(t -> {
+                WxFans data = BeanCopierUtils.generalCopyBean(t, WxFans.class);
+                data.setRegisterMobile(t.getMobile());
+                data.setFansStatus(2);
+                data.setSex(Optional.of(t.getGender().shortValue()).orElse((short) 2));
+                return data;
+            }).collect(Collectors.toList());
+            mapper.insertList(insertData);
+            log.info("企业微信用户新增同步当前批次数量：{}", insertList.size());
+        }
+        for (List<WorkWxUserModel> updateList : update) {
+            List<WxFans> updateData = updateList.parallelStream().map(t -> {
+                WxFans wxFans = wxFansMap.get(t.getOpenId());
+                WxFans data = BeanCopierUtils.generalCopyBean(t, WxFans.class);
+                data.setRegisterMobile(t.getMobile());
+                data.setFansStatus(2);
+                data.setSex(Optional.of(t.getGender().shortValue()).orElse((short) 2));
+                data.setId(wxFans.getId());
+                data.setCrtTime(wxFans.getCrtTime());
+                data.setUpdTime(new Date());
+                return data;
+            }).collect(Collectors.toList());
+            mapper.updateList(updateData);
+            log.info("企业微信用户修改同步当前批次数量：{}", updateList.size());
+        }
+        log.info("{}，当前时间同步完成", DateUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss"));
+    }
+
+    public List<WorkWxPatientBindVO> wechatRelateList(String unionId) {
+        Example example = new Example(WxFansBind.class);
+        example.createCriteria()
+                .andEqualTo("unionId", unionId);
+        List<WxFansBind> wxFansBinds = wxFansBindMapper.selectByExample(example);
+        if (CollectionUtils.isEmpty(wxFansBinds)) {
+            return Lists.newArrayList();
+        }
+        List<Integer> patientIds = wxFansBinds.stream().map(WxFansBind::getPatientId).collect(Collectors.toList());
+        Map<Integer, PatientBaseInfoVo> patientMap = Optional.of(patientBaseInfoBiz.findPatientInfoByIds(patientIds, null))
+                .orElse(Lists.newArrayList()).stream()
+                .collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
+
+        DictionaryItemModel model = new DictionaryItemModel();
+        Map<Integer, String> dictionaryMap = Optional.of(systemServiceFeign.findDictionaryItemList(model))
+                .orElse(Lists.newArrayList()).stream()
+                .collect(Collectors.toMap(DictionaryItem::getId, DictionaryItem::getName));
+        return wxFansBinds.stream().map(t -> {
+            PatientBaseInfoVo baseInfoVo = patientMap.get(t.getPatientId());
+            WorkWxPatientBindVO vo = new WorkWxPatientBindVO();
+            vo.setPatientId(t.getPatientId());
+            if (Objects.nonNull(baseInfoVo)) {
+                vo.setPatientName(baseInfoVo.getName());
+                vo.setMobile(baseInfoVo.getMobile());
+            }
+            vo.setDictionaryId(t.getDictionaryId());
+            vo.setDictionaryName(dictionaryMap.get(t.getDictionaryId()));
+            vo.setBindDate(t.getBindTime());
+            return vo;
+        }).collect(Collectors.toList());
     }
 }

@@ -128,7 +128,7 @@ public class JwtInterceptor implements HandlerInterceptor {
             } else {
                 //重新生成token
                 Token jwt = createJwt(authInfo, TOKEN_EXPIRE);
-                authInfo.setToken(MINI_AUTH + jwt.getToken());
+                authInfo.setToken(MINI_AUTH.getValue() + jwt.getToken());
                 log.info("用户：[{}]，续期，token=[{}], jwt.getToken()", authInfo.getUserName(), token);
             }
         }

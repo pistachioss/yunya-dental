@@ -59,6 +59,13 @@ public class PackageCouponItemForm {
   @Min(value = 0, message = "补入工作量不能小于0")
   private BigDecimal workloadRate;
 
+  /**
+   * 兑换券匹配项目小程序是否显示 0否 1是
+   */
+  @ApiModelProperty("兑换券匹配项目小程序是否显示 0否 1是")
+  @NotNull(message = "兑换券匹配项目小程序是否显示不能为空")
+  private Integer isShowApp;
+
   /** 创建人 */
   private Integer crtId;
 

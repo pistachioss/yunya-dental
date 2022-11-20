@@ -5,10 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.query.PatientOriginConsumptionQuery;
-import com.yunya.feign.report.domain.vo.PatientDataVo;
-import com.yunya.feign.report.domain.vo.PatientInfoVO;
-import com.yunya.feign.report.domain.vo.PatientManageVo;
-import com.yunya.feign.report.domain.vo.PatientOriginConsumptionVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
@@ -108,5 +105,18 @@ public class PatientBaseInfoController {
           throws Exception {
     patientBaseInfoBiz.exportPatientOriginConsumption(query, response);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据患者id查询末次就诊信息
+   *
+   * @param patientId
+   * @return
+   */
+  @ApiOperation("客户画像-患者末次就诊信息")
+  @GetMapping("/lastTreatment/{patientId}")
+  public ResponseResult<PatientTreatInfoVo> findPatientLastTreatmentInfo(@PathVariable(value = "patientId") Integer patientId) {
+    PatientTreatInfoVo result = patientBaseInfoBiz.findPatientLastTreatmentInfo(patientId);
+    return ResponseUtil.success(result);
   }
 }

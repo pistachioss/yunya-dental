@@ -15,6 +15,8 @@ import java.io.Serializable;
 @Data
 @ApiModel(value = "AppointmentCountVO",description = "预约统计视图模型")
 public class AppointmentCountVO implements Serializable {
+    @ApiModelProperty("预约次数")
+    private Integer appointedCount;
     @ApiModelProperty("履约次数")
     private Integer keepAppointmentCount;
     @ApiModelProperty("失约次数")
@@ -23,4 +25,6 @@ public class AppointmentCountVO implements Serializable {
     private Integer changeAppointmentCount;
     @ApiModelProperty("取消预约次数")
     private Integer cancelAppointmentCount;
+    @ApiModelProperty("就诊次数")
+    private Integer treatmentCount;
 }

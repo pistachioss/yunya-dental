@@ -2,12 +2,7 @@ package com.yunya.modules.discount.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.discount.domain.form.CardSoldForm;
-import com.yunya.feign.discount.domain.form.ConfigSharerForm;
-import com.yunya.feign.discount.domain.form.LockForm;
-import com.yunya.feign.discount.domain.form.OtherCardActiveForm;
-import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
-import com.yunya.feign.discount.domain.form.UnLockForm;
+import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.GenerateAllocateModel;
 import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
@@ -17,28 +12,22 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.discount.biz.CardBiz;
 import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
-import com.yunya.modules.discount.task.CardActivedSmsNoticeTask;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.framework.common.constant.BusinessConstants.EXPORT_CARD_FILENAME;
 
 /**
  * 描述:
@@ -234,5 +223,13 @@ public class CardController {
     public ResponseResult<PageInfo<CouponCommonInfoVO>> findCouponList(@RequestBody CouponCommonInfoQuery query) {
         PageInfo<CouponCommonInfoVO> page = couponCommonInfoBiz.findList(query);
         return ResponseUtil.success(page);
+    }
+
+
+    @ApiOperation(value = "客户详情-患者资料-激活列表（自有）")
+    @GetMapping("/ownProduct/activedCard/{patientId}")
+    public ResponseResult<List<PatientCardBaseVo>> findPatientActivedCardList(@PathVariable(value = "patientId") Integer patientId) {
+        List<PatientCardBaseVo> result = cardBiz.findPatientActivedCardList(patientId);
+        return ResponseUtil.success(result);
     }
 }

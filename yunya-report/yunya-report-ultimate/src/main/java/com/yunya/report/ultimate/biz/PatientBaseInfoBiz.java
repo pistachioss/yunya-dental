@@ -10,7 +10,6 @@ import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.query.PatientOriginConsumptionQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;
@@ -287,5 +286,15 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
     String sheetName = "渠道来源消费报表";
     String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", sheetName);
     excelUtil.exportExcel(response, result, sheetName, fileName);
+  }
+
+  /**
+   * 根据患者id查询末次就诊信息
+   *
+   * @param patientId
+   * @return
+   */
+  public PatientTreatInfoVo findPatientLastTreatmentInfo(Integer patientId) {
+    return baseTreatmentProcessMapper.selectLastVisitInfo(patientId);
   }
 }

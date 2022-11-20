@@ -1,10 +1,14 @@
 package com.yunya.modules.discount.biz;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.*;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import com.google.common.collect.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.yunya.feign.discount.domain.bo.*;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.ClinicAllocateModel;
@@ -17,30 +21,43 @@ import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
-import com.yunya.feign.system.vo.*;
+import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.*;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.model.RestError;
-import com.yunya.framework.common.utils.*;
+import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.AccountItem;
-import com.yunya.models.tariff.*;
+import com.yunya.models.tariff.BaseOralTariff;
+import com.yunya.models.tariff.BaseTariff;
+import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
+import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.discount.enums.*;
@@ -51,7 +68,6 @@ import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestAttributes;
@@ -63,7 +79,10 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -72,17 +91,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCardBatch;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCardSingle;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.modules.discount.enums.BenefitTypeEnum.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
+import static com.yunya.modules.discount.enums.BenefitTypeEnum.COUPON_TYPE;
+import static com.yunya.modules.discount.enums.BenefitTypeEnum.MEMBER_TYPE;
 import static com.yunya.modules.discount.enums.CardQrCodeEnum.*;
 import static com.yunya.modules.discount.enums.CardStatusEnum.*;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.EXCHANGE;
 import static com.yunya.modules.discount.enums.CouponTypeEnum.*;
 import static com.yunya.modules.discount.enums.RangTypeEnum.*;
-import static com.yunya.modules.discount.enums.SoldTypeEnum.*;
-import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
+import static com.yunya.modules.discount.enums.SoldTypeEnum.SOLD;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.FALSE;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.TRUE;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -152,6 +173,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      */
     @Value("${codeUrl.url}")
     private String serverPort;
+    @Autowired
+    private CouponFileInfoBiz couponFileInfoBiz;
 
     /**
      * 加密加密生成卡券密码
@@ -3482,5 +3505,42 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             form.setPatientName(patientBaseInfo.getName());
             ivyMiniServiceFeign.activeCard(form);
         }
+    }
+
+    /**
+     * 根据患者id查询患者卡券轨迹
+     *
+     * @param patientId
+     * @return
+     */
+    public List<PatientEventVO> findPatientCardTrajectory(Integer patientId) {
+        return mapper.selectPatientCardTrajectory(patientId);
+    }
+
+    public List<PatientCardBaseVo> findPatientActivedCardList(Integer patientId) {
+        List<PatientCardBo> list = mapper.listPatientCardsByParam(patientId, null, null, 0);
+        //对象转换
+        return list.stream().map(obj -> this.patientCardBoConvertVo(0, obj))
+                .collect(toList());
+    }
+
+    /**
+     * 查询患者最近激活产品信息
+     *
+     * @param patientId
+     * @return
+     */
+    public PatientCardBaseVo findPatientLastestActivedCardInfo(Integer patientId) {
+        List<PatientCardBaseVo> activedCards = findPatientActivedCardList(patientId);
+        if (StringHelper.isNotEmpty(activedCards)) {
+            PatientCardBaseVo lastestActivedCard = activedCards.get(0);
+            Integer couponId = lastestActivedCard.getCouponId();
+            List<CouponFileInfo> files = couponFileInfoBiz.listByCouponIds(Collections.singletonList(couponId), 0);
+            if (StringHelper.isNotEmpty(files)) {
+                lastestActivedCard.setCouponLogo(files.get(0).getPath());
+            }
+            return lastestActivedCard;
+        }
+        return null;
     }
 }

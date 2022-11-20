@@ -17,11 +17,11 @@
     <insert id="insertList" parameterType="List">
         insert into
             `base_coupon_item`
-            (`coupon_id`, `type`, `choice_rang_type`, `item_id`, `sale_unit_price`,`quantity`, `workload_load`)
+            (`coupon_id`, `type`, `choice_rang_type`, `item_id`, `sale_unit_price`,`quantity`, `workload_load`,is_show_app)
         values
             <foreach collection="list" item="item" separator=",">
                 (#{item.couponId}, #{item.type}, #{item.choiceRangType}, #{item.itemId}, #{item.saleUnitPrice}
-                , #{item.quantity}, #{item.workloadLoad})
+                , #{item.quantity}, #{item.workloadLoad}, #{item.isShowApp})
             </foreach>
     </insert>
 
@@ -39,6 +39,13 @@
                 <foreach collection="list" item="item" index="index">
                     <if test="item.choiceRangType != null">
                         when `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type} then #{item.choiceRangType}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="is_show_app = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.isShowApp != null">
+                        when `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type} then #{item.isShowApp}
                     </if>
                 </foreach>
             </trim>

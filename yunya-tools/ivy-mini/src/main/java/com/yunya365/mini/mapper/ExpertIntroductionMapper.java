@@ -10,4 +10,7 @@ import java.util.List;
 public interface ExpertIntroductionMapper extends Mapper<ExpertIntroduction> {
 
     List<ExpertIntroductionVO> findExpertIntroductionList(ExpertIntroductionForm form);
+    void updateList(List<ExpertIntroductionVO>list);
+
+    void updateAllList();
 }

@@ -21,6 +21,10 @@ public interface ArticleMapper extends Mapper<Article> {
 
    void updateBatch(List<ArticleVO>list);
 
+   void updateList(List<ArticleVO>list);
+
+   void updateAllList(Integer type);
+
 
 
 }

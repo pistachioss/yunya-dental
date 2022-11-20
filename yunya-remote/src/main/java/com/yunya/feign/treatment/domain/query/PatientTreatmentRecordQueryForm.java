@@ -54,4 +54,7 @@ public class PatientTreatmentRecordQueryForm implements Serializable {
   /** 入账方式id列表 */
   @ApiModelProperty("入账方式id列表")
   private Collection<Integer> payIds;
+  /** 是否查询开单明细 */
+  @ApiModelProperty("是否查询开单明细， 默认为false")
+  private Boolean queryBillItem = false;
 }

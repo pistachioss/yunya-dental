@@ -577,6 +577,7 @@ public class WXService extends AbstractWxBaseApi {
         if (patientId == null || patientId == 0) {
             query.setOpenId(openId);
         } else {
+            query.setOpenId(openId);
             query.setPatientId(patientId);
         }
         //查询微信患者id
