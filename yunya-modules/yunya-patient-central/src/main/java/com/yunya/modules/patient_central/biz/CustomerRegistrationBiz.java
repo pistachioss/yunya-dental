@@ -446,10 +446,11 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         addPatientExtInfo(model, userId, userName, patientId);
         addPatientChildInfo(model, userId, patientId);
 
-        PatientBaseInfoVo patientBaseInfoVo = mapper.selectPatienInfoById(patientId);
-        if (patientBaseInfoVo.getOriginId() != null) {
-            addPatientOriginLog(patientBaseInfo, model.getId());
-        }
+//        儿童登记去掉患者来源填写
+//        PatientBaseInfoVo patientBaseInfoVo = mapper.selectPatienInfoById(patientId);
+//        if (patientBaseInfoVo.getOriginId() != null) {
+//            addPatientOriginLog(patientBaseInfo, model.getId());
+//        }
         patientBaseInfoBiz.sendMessages(patientId, 0);
         // 创建预付款 并发送消息
         addPatientPrepaymentsInfo(patientBaseInfo, model.getId());
