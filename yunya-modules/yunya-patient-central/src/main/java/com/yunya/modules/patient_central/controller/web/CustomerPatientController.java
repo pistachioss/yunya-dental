@@ -83,8 +83,8 @@ public class CustomerPatientController {
      * @return
      */
     @ApiOperation("根据unionid查询微信用户关注公众号和小程序信息")
-    @GetMapping("/wxFans/subscribe/{unionid}")
-    public ResponseResult<JSONObject> findWxFansSubscribeInfo(@PathVariable(value = "unionid") String unionid) {
+    @GetMapping("/wxFans/subscribe")
+    public ResponseResult<JSONObject> findWxFansSubscribeInfo(@RequestParam(value = "unionid") String unionid) {
         JSONObject result = customerPatientBiz.findWxFansSubscribeInfo(unionid);
         return ResponseUtil.success(result);
     }
