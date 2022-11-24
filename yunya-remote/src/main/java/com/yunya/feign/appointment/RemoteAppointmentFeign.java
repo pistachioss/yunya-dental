@@ -212,7 +212,19 @@ public interface RemoteAppointmentFeign {
   List<PatientEventVO> findPatientAppointTrajectory(@PathVariable(value = "patientId") Integer patientId);
 
 
-
-  @GetMapping("api/reservation/code")
+  /**
+   * 校验权益码
+   * @param model
+   * @return
+   */
+  @GetMapping("api/reservation/code/valid")
   boolean checkReservatoinCode(@RequestBody ReservationCodeQuery model);
+
+  /**
+   * 激活使用权益码
+   * @param model
+   * @return
+   */
+  @PostMapping("api/reservation/code/use")
+  boolean editReservatoinCode(@RequestBody ReservationCodeQuery model);
 }

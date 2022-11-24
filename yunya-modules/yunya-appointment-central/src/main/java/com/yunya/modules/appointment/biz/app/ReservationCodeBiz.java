@@ -44,4 +44,23 @@ public class ReservationCodeBiz extends BaseBiz<ReservationCodeMapper, Reservati
       return false;
     }
   }
+
+  public boolean use(ReservationCodeQuery query) {
+    if ( Strings.isNullOrEmpty(query.getCode())) {
+      return false;
+    }
+    Example example = new Example(ReservationCode.class);
+    Example.Criteria criteria = example.createCriteria();
+    criteria.andEqualTo("code", query.getCode());
+    List<ReservationCode> reservationCodeList = mapper.selectByExample(example);
+    if (reservationCodeList.size() == 1 && reservationCodeList.get(0).getCodeStatus() > 1) {
+      ReservationCode reservationCode = new ReservationCode();
+      reservationCode.setCodeStatus((byte)2);
+      int i = mapper.updateByExample(reservationCode, example);
+      if (i > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
