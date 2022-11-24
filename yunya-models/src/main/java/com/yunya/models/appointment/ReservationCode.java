@@ -1,15 +1,32 @@
 package com.yunya.models.appointment;
 
-import lombok.Data;
-
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "reservation_code")
-@Data
 public class ReservationCode {
     @Id
     private String code;
+
+    /**
+     * 状态(默认0新建) 0：新建；1：预约；2：已激活；
+     */
+    @Column(name = "code_status")
+    private Byte codeStatus;
+
+    /**
+     * 有效开始日期，包含
+     */
+    @Column(name = "code_start_date")
+    private Date codeStartDate;
+
+    /**
+     * 有效结束日期，包含
+     */
+    @Column(name = "code_end_date")
+    private Date codeEndDate;
 
     /**
      * 是否有效，是否删除(默认有效) 1-有效；0删除
@@ -52,6 +69,60 @@ public class ReservationCode {
      */
     public void setCode(String code) {
         this.code = code;
+    }
+
+    /**
+     * 获取状态(默认0新建) 0：新建；1：预约；2：已激活；
+     *
+     * @return code_status - 状态(默认0新建) 0：新建；1：预约；2：已激活；
+     */
+    public Byte getCodeStatus() {
+        return codeStatus;
+    }
+
+    /**
+     * 设置状态(默认0新建) 0：新建；1：预约；2：已激活；
+     *
+     * @param codeStatus 状态(默认0新建) 0：新建；1：预约；2：已激活；
+     */
+    public void setCodeStatus(Byte codeStatus) {
+        this.codeStatus = codeStatus;
+    }
+
+    /**
+     * 获取有效开始日期，包含
+     *
+     * @return code_start_date - 有效开始日期，包含
+     */
+    public Date getCodeStartDate() {
+        return codeStartDate;
+    }
+
+    /**
+     * 设置有效开始日期，包含
+     *
+     * @param codeStartDate 有效开始日期，包含
+     */
+    public void setCodeStartDate(Date codeStartDate) {
+        this.codeStartDate = codeStartDate;
+    }
+
+    /**
+     * 获取有效结束日期，包含
+     *
+     * @return code_end_date - 有效结束日期，包含
+     */
+    public Date getCodeEndDate() {
+        return codeEndDate;
+    }
+
+    /**
+     * 设置有效结束日期，包含
+     *
+     * @param codeEndDate 有效结束日期，包含
+     */
+    public void setCodeEndDate(Date codeEndDate) {
+        this.codeEndDate = codeEndDate;
     }
 
     /**

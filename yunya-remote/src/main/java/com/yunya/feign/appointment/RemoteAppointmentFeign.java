@@ -6,6 +6,7 @@ import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
+import com.yunya.feign.appointment.domain.query.ReservationCodeQuery;
 import com.yunya.feign.appointment.factory.RemoteAppointmentFeignBackFactory;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
@@ -209,4 +210,9 @@ public interface RemoteAppointmentFeign {
    */
   @GetMapping("api/appoint/trajectory/{patientId}")
   List<PatientEventVO> findPatientAppointTrajectory(@PathVariable(value = "patientId") Integer patientId);
+
+
+
+  @GetMapping("api/reservation/code")
+  List<PatientEventVO> checkReservatoinCode(@RequestBody ReservationCodeQuery model);
 }
