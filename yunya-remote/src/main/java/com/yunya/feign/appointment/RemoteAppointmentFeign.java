@@ -214,5 +214,5 @@ public interface RemoteAppointmentFeign {
 
 
   @GetMapping("api/reservation/code")
-  List<PatientEventVO> checkReservatoinCode(@RequestBody ReservationCodeQuery model);
+  boolean checkReservatoinCode(@RequestBody ReservationCodeQuery model);
 }
