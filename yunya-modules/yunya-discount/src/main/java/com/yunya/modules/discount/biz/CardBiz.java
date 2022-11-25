@@ -18,6 +18,8 @@ import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.ivy_mini.RemoteIvyMiniServiceFeign;
 import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
+import com.yunya.feign.oss.RemoteOssServiceFeign;
+import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
@@ -175,6 +177,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private String serverPort;
     @Autowired
     private CouponFileInfoBiz couponFileInfoBiz;
+    @Autowired
+    private RemoteOssServiceFeign remoteOssServiceFeign;
+    @Value("${domainUrl}")
+    private String domainUrl;
 
     /**
      * 加密加密生成卡券密码
@@ -3533,13 +3539,27 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     public PatientCardBaseVo findPatientLastestActivedCardInfo(Integer patientId) {
         List<PatientCardBaseVo> activedCards = findPatientActivedCardList(patientId);
         if (StringHelper.isNotEmpty(activedCards)) {
-            PatientCardBaseVo lastestActivedCard = activedCards.get(0);
-            Integer couponId = lastestActivedCard.getCouponId();
+            PatientCardBaseVo lastestCard = activedCards.get(0);
+            Integer couponId = lastestCard.getCouponId();
             List<CouponFileInfo> files = couponFileInfoBiz.listByCouponIds(Collections.singletonList(couponId), 0);
             if (StringHelper.isNotEmpty(files)) {
-                lastestActivedCard.setCouponLogo(files.get(0).getPath());
+                lastestCard.setCouponLogo(findLogoUrl(files.get(0).getPath()));
             }
-            return lastestActivedCard;
+            return lastestCard;
+        }
+        return null;
+    }
+
+    private String findLogoUrl(String fileName) {
+        if (StringUtils.isNotEmpty(fileName)) {
+            OssUrlForm form = new OssUrlForm();
+            form.setOssFilename(fileName);
+            form.setCompanyId(0);
+            form.setIsThumb(false);
+            form.setOssCategory(4);
+            form.setObjectId(111111);
+            String path = (String) remoteOssServiceFeign.getUrl(form).getData();
+            return domainUrl + "/" + path;
         }
         return null;
     }

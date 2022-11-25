@@ -7,7 +7,6 @@ import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.PatientCardBaseVo;
 import com.yunya.feign.middle.RemoteMiddleServiceFeign;
-import com.yunya.feign.patient_central.domain.query.CustomerBindPatientQueryForm;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
@@ -31,9 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
-
-import static java.util.stream.Collectors.toMap;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author: chenlin
@@ -286,38 +286,6 @@ public class CustomerPatientBiz {
             abbreviation = "在" + org.getAbbreviation();
         }
         return abbreviation;
-    }
-
-    /**
-     * 根据unionid查询绑定患者列表
-     *
-     * @param query
-     * @return
-     */
-    public PageInfo<CustomerBindPatientVO> findBindPatientList(CustomerBindPatientQueryForm query) {
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        }
-        List<CustomerBindPatientVO> result = new ArrayList<>();
-        List<WxWechatbindAppListVO> list = wxFansBindMapper.findPatientBaseInfo(query.getUnionid());
-        PageInfo page = new PageInfo(list);
-        if (StringHelper.isNotEmpty(list)) {
-            List<DictionaryItem> items = remoteSystemServiceFeign.findDictItemByTypeName(QIN_SHU_GUAN_XI);
-            Map<Integer, String> itemNameMap = items.stream().collect(toMap(DictionaryItem::getId, DictionaryItem::getName));
-            list.forEach(vo -> {
-                CustomerBindPatientVO bindPatient = new CustomerBindPatientVO();
-                BeanUtil.copyProperties(vo, bindPatient);
-                Integer dictionaryId = vo.getDictionaryId();
-                String itemName = itemNameMap.get(dictionaryId);
-                if (StringHelper.isNotEmpty(itemName)) {
-                    bindPatient.setBindShipName(itemName);
-                    bindPatient.setShipId(dictionaryId);
-                }
-                result.add(bindPatient);
-            });
-            page.setList(result);
-        }
-        return page;
     }
 
     /**

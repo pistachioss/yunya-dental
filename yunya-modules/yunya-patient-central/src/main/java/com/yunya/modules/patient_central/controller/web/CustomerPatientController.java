@@ -2,9 +2,11 @@ package com.yunya.modules.patient_central.controller.web;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.query.CustomerBindPatientQueryForm;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleInfoVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleRefererVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientTrajectoryVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientVipRightInterestVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.CustomerPatientBiz;
@@ -60,19 +62,6 @@ public class CustomerPatientController {
     @PostMapping("/patient/trajectory")
     public ResponseResult<PageInfo<PatientTrajectoryVO>> findPatientTrajectoryList(@RequestBody @Validated CustomerPatientQueryForm query) {
         PageInfo<PatientTrajectoryVO> page = customerPatientBiz.findPatientTrajectoryList(query);
-        return ResponseUtil.success(page);
-    }
-
-    /**
-     * 根据unionid查询绑定患者列表
-     *
-     * @param query
-     * @return
-     */
-    @ApiOperation("根据unionid查询绑定患者列表")
-    @PostMapping("/bound/patient")
-    public ResponseResult<PageInfo<CustomerBindPatientVO>> findBindPatientList(@RequestBody @Validated CustomerBindPatientQueryForm query) {
-        PageInfo<CustomerBindPatientVO> page = customerPatientBiz.findBindPatientList(query);
         return ResponseUtil.success(page);
     }
 
