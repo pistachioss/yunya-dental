@@ -94,3 +94,5 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 110000
+
+domainUrl: http://192.168.31.95

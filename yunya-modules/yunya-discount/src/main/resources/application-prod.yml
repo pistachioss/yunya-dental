@@ -30,3 +30,5 @@ logging:
 
 codeUrl:
   url: http://ivy2.yunya365.com/mobile
+
+domainUrl: http://ivy2.yunya365.com
