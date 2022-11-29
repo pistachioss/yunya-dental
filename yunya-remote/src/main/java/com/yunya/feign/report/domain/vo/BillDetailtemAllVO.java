@@ -28,6 +28,7 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 public class BillDetailtemAllVO implements Serializable {
   private Integer billId;
   @Excel(name = "门诊名称", cellType = STRING, isStatistics = false, type = EXPORT)
+  private String billOrgname;
   private Integer executorId;
   private Integer consulterId;
   private String executorName;
@@ -43,7 +44,6 @@ public class BillDetailtemAllVO implements Serializable {
   private String billDate;
   @Excel(name = "账单日期", cellType = STRING, isStatistics = false, type = EXPORT)
   private String orderDate;
-  private String billOrgname;
   private String billPayId;
   @Excel(name = "患者名称", cellType = STRING, isStatistics = false, type = EXPORT)
   private String patientName;
