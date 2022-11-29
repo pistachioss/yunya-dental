@@ -24,6 +24,11 @@ public class CouponCommonInfo {
      */
     @Column(name = "product_type_id")
     private Integer productTypeId;
+    /**
+     * 销售来源ID
+     */
+    @Column(name = "sales_source_id")
+    private Integer salesSourceId;
 
     /**
      * 卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）
