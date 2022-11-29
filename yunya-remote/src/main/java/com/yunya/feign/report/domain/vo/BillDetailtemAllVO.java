@@ -22,11 +22,11 @@ import java.util.Date;
 public class BillDetailtemAllVO implements Serializable {
   private Integer billId;
   private String billOrgname;
-  private Date billDate;
+  private String billDate;
   private String billNum;
   private String billPayId;
   private String payOrgName;
-  private Date chargeDate;
+  private String chargeDate;
   private String patientName;
   private String patientMobile;
   private Integer orderDetailId;
@@ -56,5 +56,5 @@ public class BillDetailtemAllVO implements Serializable {
 
   /** 开单日期*/
   @ApiModelProperty("开单日期")
-  private Date orderDate;
+  private String orderDate;
 }
