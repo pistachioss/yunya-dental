@@ -675,7 +675,7 @@
             <if test="patientId != null ">
                 AND patient_id = #{patientId}
             </if>
-            AND DATE_FORMAT(appoint_date, '%Y-%m-%d') || appoint_time &gt; date_format(now(),'%Y-%m-%d %H:%i')
+            AND CONCAT(DATE_FORMAT(appoint_date, '%Y-%m-%d'),' ', appoint_time) &gt;= date_format(now(),'%Y-%m-%d %H:%i')
         </where>
         ORDER BY id ASC
     </select>
