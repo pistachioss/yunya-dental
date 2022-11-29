@@ -555,4 +555,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   List<BillDetailtemVO> selectBillDetailItemList(
       @Param("query") ClinicPerformanceBusinessQuery query);
+
+  List<BillDetailtemAllVO> selectClinicReceivedDetailList(
+          @Param("query") ClinicEmployeeWorkloadQuery query);
 }

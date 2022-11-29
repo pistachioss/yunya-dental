@@ -4,14 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.vo.BillItemTollAndWorkloadVO;
-import com.yunya.feign.report.domain.vo.ClinicEmployeBonusCoefficientVO;
-import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfOperationVO;
-import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfPersonnelVO;
-import com.yunya.feign.report.domain.vo.EmployeeTariffWorkloadVO;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
-import com.yunya.feign.report.domain.vo.ItemCategoryVO;
-import com.yunya.feign.report.domain.vo.ItemInfoVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.SortUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -851,4 +844,20 @@ public class EmployeeWorkloadBiz {
     // 分页
     return PageUtl.doPage(query.getPageNum(), query.getPageSize(), result, query.getWhetherPage());
   }
+
+    /**
+     * 咨询师业绩项目明细列表导出
+     * @param response
+     * @param query
+     * @return
+     * @throws Exception
+     */
+    public void exportListDetailsOfConsulter(HttpServletResponse response,
+            ClinicEmployeeWorkloadQuery query) throws Exception {
+        String fileName = query.getStartDate() + "-" + query.getEndDate() + "咨询师业绩项目明细列表";
+        List<BillDetailtemAllVO> result = baseBillDetailMapper.selectClinicReceivedDetailList(query);
+        ExcelUtil<BillDetailtemAllVO> excelUtil =
+                new ExcelUtil<>(BillDetailtemAllVO.class);
+        excelUtil.exportExcel(response, result, "咨询师业绩项目明细列表", fileName);
+    }
 }

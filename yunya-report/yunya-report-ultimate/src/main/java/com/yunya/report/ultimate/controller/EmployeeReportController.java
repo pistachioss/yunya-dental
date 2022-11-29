@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
+import com.yunya.feign.report.domain.vo.BillDetailtemAllVO;
 import com.yunya.feign.report.domain.vo.BillItemTollAndWorkloadVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfOperationVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfPersonnelVO;
@@ -134,5 +135,21 @@ public class EmployeeReportController {
     PageInfo<ClinicEmployeeWorkloadOfOperationVO> pageInfo =
         employeeWorkloadBiz.findWorkloadListOfConsulter(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出项目收费及工作量列表
+   *
+   * @param response http响应
+   * @param query 查询参数
+   * @return
+   */
+  @ApiOperation("咨询师业绩明细导出（公司端-运营报表-员工报表）")
+  @PostMapping(value = "/consulter/list/detail/export", name = "咨询师业绩明细导出")
+  public ResponseResult exportListDetailsOfConsulter(
+          HttpServletResponse response, @RequestBody @Validated BillItemTollWorkloadQuery query)
+          throws Exception {
+    employeeWorkloadBiz.exportListDetailsOfConsulter(response, query);
+    return ResponseUtil.success(null);
   }
 }
