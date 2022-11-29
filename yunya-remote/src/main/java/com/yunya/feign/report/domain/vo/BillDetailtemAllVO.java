@@ -1,12 +1,18 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
+
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.ColumnType.STRING;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
 /**
  * 简介: 开单项目数量及金额VO
@@ -21,26 +27,40 @@ import java.util.Date;
 @ToString
 public class BillDetailtemAllVO implements Serializable {
   private Integer billId;
-  private String billOrgname;
-  private String billDate;
-  private String billNum;
-  private String billPayId;
-  private String payOrgName;
-  private String chargeDate;
-  private String patientName;
-  private String patientMobile;
-  private Integer orderDetailId;
+  @Excel(name = "门诊名称", cellType = STRING, isStatistics = false, type = EXPORT)
   private Integer executorId;
   private Integer consulterId;
   private String executorName;
+  @Excel(name = "员工", cellType = STRING, isStatistics = false, type = EXPORT)
   private String consulterName;
+  @Excel(name = "收费日期", cellType = STRING, isStatistics = false, type = EXPORT)
+  private String chargeDate;
+  @Excel(name = "收费门诊", cellType = STRING, isStatistics = false, type = EXPORT)
+  private String payOrgName;
+  @Excel(name = "账单编号", cellType = STRING, isStatistics = false, type = EXPORT)
+  private String billNum;
+  @Excel(name = "订单日期", cellType = STRING, isStatistics = false, type = EXPORT)
+  private String billDate;
+  @Excel(name = "账单日期", cellType = STRING, isStatistics = false, type = EXPORT)
+  private String orderDate;
+  private String billOrgname;
+  private String billPayId;
+  @Excel(name = "患者名称", cellType = STRING, isStatistics = false, type = EXPORT)
+  private String patientName;
+  @Excel(name = "手机号", cellType = STRING, isStatistics = false, type = EXPORT)
+  private String patientMobile;
+  private Integer orderDetailId;
   /** 项目ID */
   @ApiModelProperty("项目ID")
+  @Excel(name = "项目编号", cellType = STRING, isStatistics = false, type = EXPORT)
   private Integer itemId;
 
   /** 项目类型 */
   @ApiModelProperty("项目类型：0-价目表；1-商品")
   private Byte itemType;
+
+  @Excel(name = "项目名称", cellType = STRING, isStatistics = false, type = EXPORT)
+  private String itemName;
 
   /** 门诊ID */
   @ApiModelProperty("门诊ID")
@@ -54,7 +74,6 @@ public class BillDetailtemAllVO implements Serializable {
   @ApiModelProperty("患者id")
   private Integer patientId;
 
-  /** 开单日期*/
-  @ApiModelProperty("开单日期")
-  private String orderDate;
+  @Excel(name = "实收工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  private BigDecimal receivedWorkload;
 }
