@@ -107,10 +107,9 @@ public class CustomerPatientBiz {
         getTypeName(result);
         PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectByPatientId(patientId);
         if (StringHelper.isNotNull(patientExpInfoVo)) {
-            String province = patientExpInfoVo.getProvince();
-            String city = patientExpInfoVo.getCity();
-            String country = patientExpInfoVo.getCountry();
-
+            result.setProvince(patientExpInfoVo.getProvince());
+            result.setCity(patientExpInfoVo.getCity());
+            result.setCountry(patientExpInfoVo.getCountry());
             result.setAddress(patientExpInfoVo.getAddress());
         }
         CreditsShop creditsShop = remoteMiddleServiceFeign.lastPatientCredits(patientId).getData();
