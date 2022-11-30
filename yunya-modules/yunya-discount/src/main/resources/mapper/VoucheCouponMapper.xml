@@ -68,6 +68,9 @@
           <if test="isOnlineSale != null and isOnlineSale != ''">
               and is_online_sale = #{isOnlineSale}
           </if>
+          <if test="salesSourceId != null and salesSourceId != ''">
+              and sales_source_id = #{salesSourceId}
+          </if>
       </where>
     </select>
 
