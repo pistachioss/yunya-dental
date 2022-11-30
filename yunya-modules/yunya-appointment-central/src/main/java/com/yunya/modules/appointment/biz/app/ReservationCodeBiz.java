@@ -56,7 +56,7 @@ public class ReservationCodeBiz extends BaseBiz<ReservationCodeMapper, Reservati
     if (reservationCodeList.size() == 1 && reservationCodeList.get(0).getCodeStatus() < 2) {
       ReservationCode reservationCode = new ReservationCode();
       reservationCode.setCodeStatus((byte)2);
-      int i = mapper.updateByExample(reservationCode, example);
+      int i = mapper.updateByExampleSelective(reservationCode, example);
       if (i > 0) {
         return true;
       }

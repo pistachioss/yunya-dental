@@ -223,7 +223,7 @@ public interface RemoteAppointmentFeign {
   /**
    * 激活使用权益码
    * @param model
-   * @return
+   * @return 返回false表示激活失败
    */
   @PostMapping("api/reservation/code/use")
   boolean editReservatoinCode(@RequestBody ReservationCodeQuery model);
