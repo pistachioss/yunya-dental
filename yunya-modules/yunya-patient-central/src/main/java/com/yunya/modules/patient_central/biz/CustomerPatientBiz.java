@@ -90,7 +90,7 @@ public class CustomerPatientBiz {
         if (StringHelper.isNotNull(birthday)) {
             // 计算年龄
             Integer age = DateUtil.differFromDate(birthday, new Date(System.currentTimeMillis()));
-            patientBaseInfo.setAge(age);
+            result.setAge(age);
             String timeStr = new DateTime(birthday).toString("yyyy-MM-dd");
             result.setBirthday(timeStr);
         }
