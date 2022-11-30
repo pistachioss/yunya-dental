@@ -59,7 +59,7 @@ public class BillDetailtemAllVO implements Serializable {
   private Byte itemType;
 
   @Excel(name = "项目编号", cellType = STRING, isStatistics = false, type = EXPORT)
-  private Integer itemNum;
+  private String itemNum;
 
   @Excel(name = "项目名称", cellType = STRING, isStatistics = false, type = EXPORT)
   private String itemName;
