@@ -131,4 +131,16 @@ public class PatientSimpleInfoVO implements Serializable {
      */
     @ApiModelProperty("积分")
     private Long creditsAccount;
+
+    /** 省份行政编码 */
+    @ApiModelProperty("省份行政编码")
+    private String province;
+
+    /** 市行政编码 */
+    @ApiModelProperty("市行政编码")
+    private String city;
+    
+    /** 区县行政编码 */
+    @ApiModelProperty("区县行政编码")
+    private String country;
 }

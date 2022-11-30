@@ -90,7 +90,7 @@ public class CustomerPatientBiz {
         if (StringHelper.isNotNull(birthday)) {
             // 计算年龄
             Integer age = DateUtil.differFromDate(birthday, new Date(System.currentTimeMillis()));
-            patientBaseInfo.setAge(age);
+            result.setAge(age);
             String timeStr = new DateTime(birthday).toString("yyyy-MM-dd");
             result.setBirthday(timeStr);
         }
@@ -107,6 +107,10 @@ public class CustomerPatientBiz {
         getTypeName(result);
         PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectByPatientId(patientId);
         if (StringHelper.isNotNull(patientExpInfoVo)) {
+            String province = patientExpInfoVo.getProvince();
+            String city = patientExpInfoVo.getCity();
+            String country = patientExpInfoVo.getCountry();
+
             result.setAddress(patientExpInfoVo.getAddress());
         }
         CreditsShop creditsShop = remoteMiddleServiceFeign.lastPatientCredits(patientId).getData();
