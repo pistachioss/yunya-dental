@@ -144,5 +144,8 @@ public class VoucheCouponForm {
   @ApiModelProperty("是否线上售卖(0:否 1:是)")
   private Boolean isOnlineSale;
 
+  @ApiModelProperty(value = "销售来源", required = true)
+  private Integer saleSourceId;
+
 
 }
