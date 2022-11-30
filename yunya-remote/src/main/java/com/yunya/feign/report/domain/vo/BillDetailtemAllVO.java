@@ -52,12 +52,14 @@ public class BillDetailtemAllVO implements Serializable {
   private Integer orderDetailId;
   /** 项目ID */
   @ApiModelProperty("项目ID")
-  @Excel(name = "项目编号", cellType = STRING, isStatistics = false, type = EXPORT)
   private Integer itemId;
 
   /** 项目类型 */
   @ApiModelProperty("项目类型：0-价目表；1-商品")
   private Byte itemType;
+
+  @Excel(name = "项目编号", cellType = STRING, isStatistics = false, type = EXPORT)
+  private Integer itemNum;
 
   @Excel(name = "项目名称", cellType = STRING, isStatistics = false, type = EXPORT)
   private String itemName;

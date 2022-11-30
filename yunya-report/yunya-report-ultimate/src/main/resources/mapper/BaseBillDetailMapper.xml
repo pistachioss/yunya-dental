@@ -5473,6 +5473,7 @@
         LEFT JOIN base_employee be2 on be2.user_id = bbd.consulter_id
         LEFT JOIN base_tariff_info bti ON bbd.item_type = bti.item_type AND bbd.item_id = bti.item_id
         <where>
+            AND bbd.consulter_id is not null
             <if test="query.orgIds!=null and query.orgIds.length>0">
                 AND bb.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
