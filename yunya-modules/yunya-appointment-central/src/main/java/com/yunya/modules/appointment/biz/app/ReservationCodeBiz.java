@@ -53,7 +53,7 @@ public class ReservationCodeBiz extends BaseBiz<ReservationCodeMapper, Reservati
     Example.Criteria criteria = example.createCriteria();
     criteria.andEqualTo("code", query.getCode());
     List<ReservationCode> reservationCodeList = mapper.selectByExample(example);
-    if (reservationCodeList.size() == 1 && reservationCodeList.get(0).getCodeStatus() > 1) {
+    if (reservationCodeList.size() == 1 && reservationCodeList.get(0).getCodeStatus() < 2) {
       ReservationCode reservationCode = new ReservationCode();
       reservationCode.setCodeStatus((byte)2);
       int i = mapper.updateByExample(reservationCode, example);
