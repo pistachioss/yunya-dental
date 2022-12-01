@@ -5430,16 +5430,8 @@
         bbd.itemName,
         bbd.quantity,
         bbd.itemNum,
-        CONVERT( (bbd.itemWorkload / bbp.actualAmount) * bbp.receivedAmount , DECIMAL (19 , 2 )) AS receivedWorkload
+        CONVERT( (bbd.itemWorkload / bbd.actualAmount) * bbd.receivedAmount , DECIMAL (19 , 2 )) AS receivedWorkload
         FROM (
-        SELECT
-        bbp.bill_id AS billId,
-        bbp.received_amount AS receivedAmount,
-        bb.actual_amount AS actualAmount
-        FROM base_bill_pay bbp
-        INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        ) bbp
-        INNER JOIN (
         SELECT
         bb.bill_id AS billId,
         bbp.bill_pay_id AS billPayId,
@@ -5462,7 +5454,9 @@
         bti.item_num AS itemNum,
         bti.item_name AS itemName,
         bbd.quantity,
-        (bbd.price * bbd.quantity - bbd.discount_amount) AS itemWorkload
+        (bbd.price * bbd.quantity - bbd.discount_amount) AS itemWorkload,
+        bbp.received_amount AS receivedAmount,
+        bb.actual_amount AS actualAmount
         FROM base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         LEFT JOIN base_organization bo ON bb.org_id = bo.org_id
@@ -5517,6 +5511,6 @@
                 </if>
             </if>
         </where>
-        ) bbd ON bbp.billId = bbd.billId
+        ) bbd
     </select>
 </mapper>
