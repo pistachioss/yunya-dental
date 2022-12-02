@@ -702,7 +702,7 @@
             UNION ALL
             SELECT
                 org_id,
-                4 AS eventCode,
+                3 AS eventCode,
                 appoint_start_time AS timePoint
             FROM appointment
             WHERE inservice = true
