@@ -38,7 +38,7 @@ public class BillDetailtemAllVO implements Serializable {
   private String chargeDate;
   @Excel(name = "收费门诊", cellType = STRING, isStatistics = false, type = EXPORT)
   private String payOrgName;
-  @Excel(name = "账单编号", cellType = STRING, isStatistics = false, type = EXPORT)
+  @Excel(name = "账单编号", cellType = STRING, isStatistics = false, type = EXPORT, width = 22)
   private String billNum;
   @Excel(name = "订单日期", cellType = STRING, isStatistics = false, type = EXPORT)
   private String billDate;
