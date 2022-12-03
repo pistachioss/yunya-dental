@@ -277,10 +277,10 @@
     <select id="selectWxFansSubscibedList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
         SELECT
             union_id AS unionId,
+            subscribe,
             source_type AS sourceType
         FROM wx_fans
         <where>
-            AND subscribe = true
             AND union_id = #{unionid}
         </where>
     </select>

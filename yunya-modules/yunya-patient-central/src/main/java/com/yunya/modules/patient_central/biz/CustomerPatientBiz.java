@@ -304,10 +304,11 @@ public class CustomerPatientBiz {
         List<WxFansVo> fans = wxFansMapper.selectWxFansSubscibedList(unionid);
         fans.forEach(fan->{
             Integer sourceType = fan.getSourceType();
+            String subscribe = fan.getSubscribe();
             if (StringHelper.isNotNull(sourceType)) {
-                if (sourceType == 0) {// 公众号
+                 if (sourceType==0 && "1".equals(subscribe)) {// 公众号，要求处于关注状态
                     result.put("wxPubAccount", true);
-                } else if (sourceType == 1) {// 小程序
+                } else if (sourceType == 1) {// 小程序，只需授权登录过即可
                     result.put("wxApplet", true);
                 }
             }
