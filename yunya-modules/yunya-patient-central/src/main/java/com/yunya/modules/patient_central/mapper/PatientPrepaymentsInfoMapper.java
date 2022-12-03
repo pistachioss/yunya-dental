@@ -42,4 +42,11 @@ public interface PatientPrepaymentsInfoMapper extends Mapper<PatientPrepaymentsI
      */
     PatientPrepaymentsInfo selectOneByCardNumber(@Param("prepaidId") String prepaidId);
 
+
+    /**
+     * 根据门诊id获取最新预付款号后六位
+     * @param orgId 门诊id
+     * @return String
+     */
+    String generateCardNumber4Prepay(@Param("orgId") Integer orgId);
 }

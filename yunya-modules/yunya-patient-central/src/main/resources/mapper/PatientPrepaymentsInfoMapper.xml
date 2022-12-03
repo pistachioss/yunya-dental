@@ -92,4 +92,13 @@
         where ppio.prepayment_number = #{prepaidId}
     </select>
 
+    <!-- 根据门诊id获取病历号后六位 -->
+    <select id="generateCardNumber4Prepay" resultType="java.lang.String">
+        select
+            IF(prepayment_number is null,'000000',substr( MAX(prepayment_number), -6, 6 )) as maxnum
+        from patient_prepayments_info
+        where
+            left(prepayment_number,1)='Y'
+          and org_id = #{orgId}
+    </select>
 </mapper>

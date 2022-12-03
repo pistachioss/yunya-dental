@@ -12,6 +12,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientRegistrationVO;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.patient_central.biz.CustomerRegistrationBiz;
 import com.yunya.modules.patient_central.controller.web.CustomerRegistrationController;
 import com.yunya.modules.patient_central.controller.web.PatientBaseInfoController;
@@ -25,6 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 简介：
@@ -51,6 +53,8 @@ public class PatientRegistrationControllerTest {
     private RemoteOssServiceFeign remoteOssServiceFeign;
     @Autowired
     private PatientExpInfoMapper patientExpInfoMapper;
+    @Autowired
+    private RedisUtils redisUtils;
 
     @Test
     public void testAdultAddPatient() {
@@ -269,5 +273,31 @@ public class PatientRegistrationControllerTest {
         query.setPatientId(186);
         PatientRegistrationVO data = customerRegistrationController.findPatientRegistrationById(query).getData();
         System.out.println(JSONObject.toJSON(data));
+    }
+
+    @Test
+    public void lock() {
+        for (int i = 0; i < 10; i++) {
+            int finalI = i;
+            Thread thread = new Thread(()->{
+                function(finalI);
+            });
+            thread.setName("线程-+" + (i+1));
+            thread.start();
+        }
+    }
+
+    private void function(int i) {
+        redisUtils.lockedFunc("key", o->{
+            String name = Thread.currentThread().getName();
+            System.out.println(name + "-进入: " + System.currentTimeMillis());
+            try {
+                TimeUnit.SECONDS.sleep(10);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println(name + "-退出: " + System.currentTimeMillis());
+            return null;
+        });
     }
 }

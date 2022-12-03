@@ -48,13 +48,6 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
     String generateCardNumber(@Param("orgId") Integer orgId);
 
     /**
-     * 根据门诊id获取最新预付款号后六位
-     * @param orgId 门诊id
-     * @return String
-     */
-    String generateCardNumber4Prepay(@Param("orgId") Integer orgId);
-
-    /**
      * 根据会员卡号查询
      * @param cardNumber 会员卡号
      * @return PatientMemberInfo

@@ -61,11 +61,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     /** 注入患者来源Mapper */
     @Autowired private PatientOriginMapper patientOriginMapper;
 
-    @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
-
     @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
-
-    @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
 
     @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
@@ -83,12 +79,10 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
 
     @Autowired private RemoteOssServiceFeign remoteOssServiceFeign;
 
-    /** 多线程 */
-    @Resource(name = "customizeThreadPool")
-    private ExecutorService executorService;
-
     @Value("${domainUrl}")
     private String domainUrl;
+    @Autowired
+    private PatientMemberInfoBiz patientMemberInfoBiz;
 
     /**
      * 添加客户登记
@@ -113,7 +107,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         }
         // 创建预付款 并发送消息
         patientBaseInfoBiz.sendMessages(patientBaseInfo.getId(), 0);
-        addPatientPrepaymentsInfo(patientBaseInfo, null);
+        if (!ObjectUtils.isEmpty(patientBaseInfo.getId())) {
+            patientMemberInfoBiz.addPatientPrepaymentsInfo(patientBaseInfo);
+        }
         return patientBaseInfoVo;
     }
 
@@ -191,47 +187,6 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     }
 
     /**
-     * 添加患者时,创建预付款账户
-     *
-     * @param patientBaseInfo 患者信息
-     * @param id
-     */
-    public void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo, Integer id) {
-        if (ObjectUtils.isEmpty(id) && !ObjectUtils.isEmpty(patientBaseInfo.getId())) {
-            PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
-            patientPrepaymentsInfo.setOrgId(patientBaseInfo.getOrgId());
-            patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
-            // 预付款卡号生成规则 开通Y
-            patientPrepaymentsInfo.setPrepaymentNumber(
-                    this.generateCardNumber("Y",patientBaseInfo.getOrgId()));
-            patientPrepaymentsInfo.setCrtId(1);
-            patientPrepaymentsInfo.setCrtName("管理员");
-            this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
-            remoteRabbitMqServiceFeign.sendMessage(
-                    patientPrepaymentsInfo.getId(), 1, 0, MsgCategoryEnum.BasePatientMember);
-        }
-    }
-
-
-    /**
-     * 生产预付款卡号
-     *
-     * @param mark 会员号标识 H：会员卡，Y：预付款
-     * @return String 卡号
-     */
-    public String generateCardNumber(String mark, Integer orgId) {
-        String number = this.patientMemberInfoMapper.generateCardNumber4Prepay(orgId);
-        String suffix = String.format("%06d", Integer.parseInt(number) + 1);
-        // 获取门诊简称
-        OrganizationInfo organizationInfo =
-                this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-        if (organizationInfo != null) {
-            return mark + organizationInfo.getClinicNumber() + suffix;
-        }
-        return null;
-    }
-
-    /**
      * 添加成人患者登记
      * @param model  客户登记
      * @return PatientBaseInfoVo
@@ -261,7 +216,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         }
         patientBaseInfoBiz.sendMessages(patientId, 0);
         // 创建预付款 并发送消息
-        addPatientPrepaymentsInfo(patientBaseInfo, model.getId());
+        if (ObjectUtils.isEmpty(model.getId()) && !ObjectUtils.isEmpty(patientBaseInfo.getId())) {
+            patientMemberInfoBiz.addPatientPrepaymentsInfo(patientBaseInfo);
+        }
         savePatientSignature(model, userId, patientId);
     }
 
@@ -452,7 +409,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         }
         patientBaseInfoBiz.sendMessages(patientId, 0);
         // 创建预付款 并发送消息
-        addPatientPrepaymentsInfo(patientBaseInfo, model.getId());
+        if (ObjectUtils.isEmpty(model.getId()) && !ObjectUtils.isEmpty(patientBaseInfo.getId())) {
+            patientMemberInfoBiz.addPatientPrepaymentsInfo(patientBaseInfo);
+        }
         savePatientSignature(model, userId, patientId);
     }
 
