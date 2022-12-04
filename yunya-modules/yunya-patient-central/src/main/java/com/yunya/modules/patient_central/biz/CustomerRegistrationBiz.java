@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.constant.BusinessConstants.UNKNOWN_ORIGIN_TYPE;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.enums.FileSourceTypeEnum.PATIENT_SIGNATURE;
 
