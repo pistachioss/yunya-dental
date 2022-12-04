@@ -94,6 +94,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         BeanUtils.copyProperties(customerRegistrationModel, patientBaseInfo);
         Integer originId = patientBaseInfo.getOriginId();
         checkOriginSource(originId, patientBaseInfo.getOriginType(), originId, originId);
+        defaultOriginType(patientBaseInfo);
         // 设置患者登记默认的门诊为总院
         patientBaseInfo.setOrgId(findRecentlyOrgId(39));
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
@@ -111,6 +112,25 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             patientMemberInfoBiz.addPatientPrepaymentsInfo(patientBaseInfo);
         }
         return patientBaseInfoVo;
+    }
+
+    /**
+     * 设置默认患者来源为未知来源
+     *
+     * @param patientBaseInfo
+     */
+    private void defaultOriginType(PatientBaseInfo patientBaseInfo) {
+        Integer originType = patientBaseInfo.getOriginType();
+        Integer originId = patientBaseInfo.getOriginId();
+        if (StringHelper.isNull(originType)) {
+            patientBaseInfo.setOriginType(UNKNOWN_ORIGIN_TYPE);
+        }
+        if (UNKNOWN_ORIGIN_TYPE.equals(originType) && StringHelper.isNull(originId)) {
+            PatientOrigin origin = patientOriginMapper.getTypeName(originType);
+            if (StringHelper.isNotNull(origin)) {
+                patientBaseInfo.setOriginId(origin.getId());
+            }
+        }
     }
 
     /**
@@ -377,6 +397,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         baseInfo.setUptId(userId);
         baseInfo.setUpdName(userName);
         baseInfo.setUpdTime(now);
+        defaultOriginType(baseInfo);
         Integer id = model.getId();
         if (!ObjectUtils.isEmpty(id)) {
             baseInfo.setId(id);
@@ -416,7 +437,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 儿童患者登记
         final int userId = -777;
         final String userName = "患者自主登记";
-        PatientBaseInfo patientBaseInfo = savePatientBaseInfo(model, userId, userName, null, null, null);
+        PatientBaseInfo patientBaseInfo = savePatientBaseInfo(model, userId, userName, null, UNKNOWN_ORIGIN_TYPE, null);
         int patientId = patientBaseInfo.getId();
         addPatientExpInfoByChild(model, userId, userName, patientId);
         addPatientExtInfo(model, userId, userName, patientId);

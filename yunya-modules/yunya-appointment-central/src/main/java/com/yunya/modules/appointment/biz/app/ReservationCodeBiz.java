@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class ReservationCodeBiz extends BaseBiz<ReservationCodeMapper, ReservationCode> {
@@ -26,11 +27,40 @@ public class ReservationCodeBiz extends BaseBiz<ReservationCodeMapper, Reservati
     Example example = new Example(ReservationCode.class);
     Example.Criteria criteria = example.createCriteria();
     criteria.andEqualTo("code", query.getCode());
-    int count = mapper.selectCountByExample(example);
-    if (count > 0) {
+    List<ReservationCode> reservationCodeList = mapper.selectByExample(example);
+    if (reservationCodeList.size() == 1) {
+      ReservationCode reservationCode = reservationCodeList.get(0);
+      if (reservationCode.getCodeStatus() > 1) {
+        return false;
+      }
+      if (reservationCode.getCodeStartDate().after(new Date())) {
+        return false;
+      }
+      if (reservationCode.getCodeEndDate().before(new Date())) {
+        return false;
+      }
       return true;
     } else {
       return false;
     }
+  }
+
+  public boolean use(ReservationCodeQuery query) {
+    if ( Strings.isNullOrEmpty(query.getCode())) {
+      return false;
+    }
+    Example example = new Example(ReservationCode.class);
+    Example.Criteria criteria = example.createCriteria();
+    criteria.andEqualTo("code", query.getCode());
+    List<ReservationCode> reservationCodeList = mapper.selectByExample(example);
+    if (reservationCodeList.size() == 1 && reservationCodeList.get(0).getCodeStatus() < 2) {
+      ReservationCode reservationCode = new ReservationCode();
+      reservationCode.setCodeStatus((byte)2);
+      int i = mapper.updateByExampleSelective(reservationCode, example);
+      if (i > 0) {
+        return true;
+      }
+    }
+    return false;
   }
 }

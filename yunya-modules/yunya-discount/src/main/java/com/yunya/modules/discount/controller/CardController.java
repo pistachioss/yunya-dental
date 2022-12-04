@@ -163,6 +163,15 @@ public class CardController {
         return cardBiz.otherActiveCard(patientId, form);
     }
 
+    @ApiOperation(value = "患者档案-产品管理-激活-西湖益联保平台激活")
+    @PutMapping("/{patientId}/product/card/xihu/activation")
+    @CurrentUser
+    public ResponseResult xihuActiveCard(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody XihuCardActiveForm form) {
+        return cardBiz.xihuActiveCard(patientId, form);
+    }
+
+
+
     @ApiOperation(value = "患者档案-产品管理-配置共享人")
     @PutMapping("/{patientId}/product/card/{cardId}/configuration/sharer")
     @CurrentUser

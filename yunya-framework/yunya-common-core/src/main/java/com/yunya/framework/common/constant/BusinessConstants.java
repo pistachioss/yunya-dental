@@ -74,6 +74,10 @@ public class BusinessConstants {
 
   /** -------------------------用户、员工信息相关常量--------------------------- */
 
+  /** ---------------------------患者信息相关常量------------------------------ */
+  /** 患者来源类型：未知来源 */
+  public static final Integer UNKNOWN_ORIGIN_TYPE = 12;
+
   /** ------------------------ 其他 ----------------------------------------- */
   public static final String CLINIC_BUSINESS_PATTER = "HH:mm";
 

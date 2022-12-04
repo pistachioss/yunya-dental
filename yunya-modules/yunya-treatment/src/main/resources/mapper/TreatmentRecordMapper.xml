@@ -137,46 +137,54 @@
         br.actual_receivable_amount AS actualReceivableAmount,
         br.debt_amount AS debtAmount,
         br.freePaymentPrice,
-        br.privilege_type as privilegeType
+        br.privilege_type as privilegeType,
+        br.receivedAmount
         FROM
         treatment_record tr
         LEFT JOIN (
-        SELECT
-        ord.treatment_record_id,
-        ord.id,
-        ord.total_amount
-        FROM
-        order_record ord
-        WHERE
-        ord.inservice = 1
+            SELECT
+                ord.treatment_record_id,
+                ord.id,
+                ord.total_amount
+            FROM order_record ord
+            WHERE ord.inservice = 1
         ) ord ON tr.id = ord.treatment_record_id
         LEFT JOIN (
-        SELECT
-        br.treatment_record_id,
-        br.id,
-        br.actual_receivable_amount,
-        br.debt_amount,
-        ifnull(bpd.amount, 0) as freePaymentPrice,
-        br.privilege_type
-        from bill_record br
-        left join (
-        select bill_record_id,sum(amount) amount from bill_pay_detail_record
-        <where>
-            inservice=true
-            <if test="queryForm.patientId != null">
-                and patient_id = #{queryForm.patientId}
-            </if>
-            <if test="queryForm.payIds!=null and queryForm.payIds.size()>0">
-                and account_item_id in
-                <foreach collection="queryForm.payIds" item="id" open="(" separator="," close=")">
-                    #{id}
-                </foreach>
-            </if>
-        </where>
-        group by bill_record_id
-        ) bpd on br.id=bpd.bill_record_id
-        WHERE
-        br.inservice = 1
+            SELECT
+                br.treatment_record_id,
+                br.id,
+                br.actual_receivable_amount,
+                br.debt_amount,
+                ifnull(bpd.amount, 0) as freePaymentPrice,
+                br.privilege_type,
+                bpr.receivedAmount
+            from bill_record br
+            LEFT JOIN (
+                SELECT
+                    bill_record_id,
+                    sum(received_amount) AS receivedAmount
+                FROM bill_pay_record
+                WHERE inservice = 1
+                GROUP BY bill_record_id
+            ) bpr ON bpr.bill_record_id = br.id
+            left join (
+                select bill_record_id,sum(amount) amount from bill_pay_detail_record
+                <where>
+                    inservice=true
+                    <if test="queryForm.patientId != null">
+                        and patient_id = #{queryForm.patientId}
+                    </if>
+                    <if test="queryForm.payIds!=null and queryForm.payIds.size()>0">
+                        and account_item_id in
+                        <foreach collection="queryForm.payIds" item="id" open="(" separator="," close=")">
+                            #{id}
+                        </foreach>
+                    </if>
+                </where>
+                group by bill_record_id
+            ) bpd on br.id=bpd.bill_record_id
+            WHERE
+            br.inservice = 1
         ) br ON tr.id = br.treatment_record_id
         <where>
             <if test="queryForm.patientId != null">

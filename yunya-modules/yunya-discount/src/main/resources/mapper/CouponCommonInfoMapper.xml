@@ -7,6 +7,7 @@
         -->
         <id column="id" property="id" jdbcType="INTEGER" />
         <result column="product_type_id" property="productTypeId" jdbcType="INTEGER" />
+        <result column="sales_source_id" property="salesSourceId" jdbcType="INTEGER" />
         <result column="type" property="type" jdbcType="TINYINT" />
         <result column="name" property="name" jdbcType="VARCHAR" />
         <result column="is_make_physical_card" property="isMakePhysicalCard" jdbcType="BIT" />

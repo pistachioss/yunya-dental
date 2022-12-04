@@ -65,6 +65,7 @@ public class WxFansServiceImpl implements IWxFansService {
 
     @Override
     public String competeAuthPhone(WxAuthUserInfoForm form) {
+        log.info("微信手机授权参数:{}", form);
         String code = form.getCode();
         String phoneNumber;
         JSONObject result;

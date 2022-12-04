@@ -22,4 +22,6 @@ public class CouponCommonInfoFindDownForm {
     private String name;
     @ApiModelProperty("是否线上售卖(0:否 1:是)")
     private Boolean isOnlineSale;
+    @ApiModelProperty("销售来源ID")
+    private Integer salesSourceId;
 }
