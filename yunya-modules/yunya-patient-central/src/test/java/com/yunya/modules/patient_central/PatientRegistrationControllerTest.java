@@ -26,7 +26,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 简介：
@@ -273,31 +272,5 @@ public class PatientRegistrationControllerTest {
         query.setPatientId(186);
         PatientRegistrationVO data = customerRegistrationController.findPatientRegistrationById(query).getData();
         System.out.println(JSONObject.toJSON(data));
-    }
-
-    @Test
-    public void lock() {
-        for (int i = 0; i < 10; i++) {
-            int finalI = i;
-            Thread thread = new Thread(()->{
-                function(finalI);
-            });
-            thread.setName("线程-+" + (i+1));
-            thread.start();
-        }
-    }
-
-    private void function(int i) {
-        redisUtils.lockedFunc("key", o->{
-            String name = Thread.currentThread().getName();
-            System.out.println(name + "-进入: " + System.currentTimeMillis());
-            try {
-                TimeUnit.SECONDS.sleep(10);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            System.out.println(name + "-退出: " + System.currentTimeMillis());
-            return null;
-        });
     }
 }

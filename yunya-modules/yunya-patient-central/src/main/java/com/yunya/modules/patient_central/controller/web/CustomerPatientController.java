@@ -7,12 +7,15 @@ import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.patient_central.biz.CustomerPatientBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: chenlin
@@ -100,5 +103,37 @@ public class CustomerPatientController {
     public ResponseResult<PatientVipRightInterestVO> findPatientVipRightInterest(@PathVariable(value = "patientId") Integer patientId) {
         PatientVipRightInterestVO result = customerPatientBiz.findPatientVipRightInterest(patientId);
         return ResponseUtil.success(result);
+    }
+
+    @Autowired
+    private RedisUtils redisUtils;
+
+    @GetMapping("/locked")
+    public ResponseResult redisLock() {
+        System.out.println(Thread.currentThread().getName());
+        Thread[] threads = new Thread[100];
+        for (int i = 0; i < threads.length; i++) {
+            Thread t = new Thread(()->{
+                redisUtils.lockedFunc("key", o->{
+                    String name = Thread.currentThread().getName();
+                    System.out.println(name + "-进入: " + System.currentTimeMillis());
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                        System.out.println(name + "，正在执行任务");
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    System.out.println(name + "-退出: " + System.currentTimeMillis());
+                    return null;
+                });
+            });
+            t.setName("线程" + (i+1));
+            threads[i] = t;
+        }
+        for (int i = 0; i < threads.length; i++) {
+            threads[i].start();
+            System.out.println(threads[i].getName()+"启动");
+        }
+        return ResponseUtil.success();
     }
 }
