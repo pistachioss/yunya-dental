@@ -13,11 +13,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.Callable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -268,7 +267,6 @@ public class RedisUtils {
    * @param <R> func方法的返回值
    */
   public <R> R lockedFunc(String key, Integer expire, Integer wait, Function<Object, R> func) {
-    R result = null;
     try {
       while (!setLock(key, expire.longValue())) {
         try {
@@ -278,11 +276,10 @@ public class RedisUtils {
           throw new RuntimeException(e);
         }
       }
-      result = func.apply(key);
+      return func.apply(key);
     } finally {
       unlock(key, DEFAULT_LOCK_VALUE);
     }
-    return result;
   }
 
   /**
