@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.domain.model.AdultPatientRegistrationMode
 import com.yunya.feign.patient_central.domain.model.ChildrenPatientRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.CustomerRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.PatientRegistrationModel;
+import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
@@ -18,6 +19,7 @@ import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
@@ -36,11 +38,9 @@ import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.enums.FileSourceTypeEnum.PATIENT_SIGNATURE;
 
 /**
@@ -359,6 +359,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      */
     private PatientBaseInfo savePatientBaseInfo(PatientRegistrationModel model, int userId, String userName,
                                                 Integer mobileOwner, Integer originType, Integer originId) {
+        if (patientNameMobileExist(model)) {
+            throw new ClientServiceException("该患者姓名和手机号已存在", DATA_EXIST);
+        }
         Date now = new Date(System.currentTimeMillis());
         PatientBaseInfo baseInfo = new PatientBaseInfo();
         baseInfo.setAge(model.getAge());
@@ -386,6 +389,22 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             mapper.insertSelective(baseInfo);
         }
         return baseInfo;
+    }
+
+    /**
+     * 判断患者姓名和手机号是否存在
+     *
+     * @param model
+     * @return
+     */
+    private boolean patientNameMobileExist(PatientRegistrationModel model) {
+        PatientBaseInfoQueryForm query = new PatientBaseInfoQueryForm();
+        query.setMobile(model.getMobile());
+        query.setName(model.getName());
+        query.setId(model.getId());
+        ResponseResult result = patientBaseInfoBiz.findUserExists(query);
+        Integer status = result.getStatus();
+        return status != 0;
     }
 
     /**

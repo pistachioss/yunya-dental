@@ -334,7 +334,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public void generateCardNumber(PatientMemberInfo patientMemberInfo) {
     log.info("==>开始生成预付款账号...");
-    Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+    Integer orgId = patientMemberInfo.getOrgId();
     if (StringHelper.isNotNull(orgId)) {
       String number = mapper.generateCardNumber(orgId);
       String suffix = String.format("%06d", Integer.parseInt(number) + 1);
@@ -379,7 +379,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public void generateCardNumber(PatientPrepaymentsInfo prepaymentsInfo) {
     log.info("==>开始生成预付款账号...");
-    Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+    Integer orgId = prepaymentsInfo.getOrgId();
     if (StringHelper.isNotNull(orgId)) {
       String number = patientPrepaymentsInfoMapper.generateCardNumber4Prepay(orgId);
       String suffix = String.format("%06d", Integer.parseInt(number) + 1);
