@@ -12,7 +12,6 @@ import com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordD
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadOfPersonnelVO;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
@@ -38,7 +37,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
-import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
@@ -56,8 +54,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.yunya.feign.wechat.enums.TemplateEnum.*;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.feign.wechat.enums.TemplateEnum.MEMBER_OPEN_CARD;
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.RETURN_VALUE_ISNULL;
 import static com.yunya.framework.common.constant.RedisConstants.MEMBER_GENERAT_LOCK;
 import static com.yunya.framework.common.constant.RedisConstants.PREPAYMENT_GENERAT_LOCK;
 
@@ -344,9 +343,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         // 生成规则：Y + 门诊编号 + 6位递增值（数据库）
         patientMemberInfo.setCardNumber(MEMBER_PREFIX + org.getClinicNumber() + suffix);
         mapper.insertSelective(patientMemberInfo);
+        log.info("==========预付款账号生成结束===========");
+        return;
       }
     }
-    log.info("==========预付款账号生成结束===========");
     throw new ClientServiceException("【开卡失败，门诊不存在，请重写登录后重试】",OperationCodeConstants.DATA_EXIST);
   }
 
