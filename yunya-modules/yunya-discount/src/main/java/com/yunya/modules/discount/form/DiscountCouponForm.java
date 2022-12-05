@@ -135,5 +135,5 @@ public class DiscountCouponForm {
     private Boolean isOnlineSale;
 
     @ApiModelProperty(value = "销售来源", required = true)
-    private Integer saleSourceId;
+    private Integer salesSourceId;
 }
