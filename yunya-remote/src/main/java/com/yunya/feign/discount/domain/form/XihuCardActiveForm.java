@@ -23,7 +23,7 @@ public class XihuCardActiveForm implements Serializable {
     @NotNull
     private Integer couponId;
     @ApiModelProperty(value = "销售来源", required = true)
-    private Integer saleSourceId;
+    private Integer salesSourceId;
     @ApiModelProperty(value = "卡号", required = true)
     @NotBlank
     private String thirdCardNumber;

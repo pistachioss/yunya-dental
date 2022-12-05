@@ -1052,7 +1052,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         boolean locked = false;
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         String cardNumber = form.getThirdCardNumber();
-        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CARD_ACTIVE, form.getCouponId(), form.getSaleSourceId(), cardNumber);
+        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CARD_ACTIVE, form.getCouponId(), form.getSalesSourceId(), cardNumber);
         String lockVal = String.valueOf(loginUserId);
         log.info("西湖益联保平台卡券激活开始提交：[{}]", cardNumber);
         try {
