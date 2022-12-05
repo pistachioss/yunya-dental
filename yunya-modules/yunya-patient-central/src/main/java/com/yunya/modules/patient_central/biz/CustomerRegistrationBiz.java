@@ -425,8 +425,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         query.setName(model.getName());
         query.setId(model.getId());
         ResponseResult result = patientBaseInfoBiz.findUserExists(query);
-        Integer status = result.getStatus();
-        return status != 0;
+        return result.getStatus() == DATA_EXIST;
     }
 
     /**
