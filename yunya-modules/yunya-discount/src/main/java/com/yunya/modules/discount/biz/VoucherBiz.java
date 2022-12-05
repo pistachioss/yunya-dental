@@ -94,7 +94,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         } else {
             throw new BaseException("已超过系统允许新增代金券产品的最大数量9999，不允许新增！", INSERT_MODEL);
         }
-//        mqServiceFeign.sendMessage(couponCommonInfo.getId(), BusinessConstants.ADD, BaseCoupon);
+        mqServiceFeign.sendMessage(couponCommonInfo.getId(), BusinessConstants.ADD, BaseCoupon);
         return couponCommonInfo.getId();
 
     }
