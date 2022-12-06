@@ -2,15 +2,14 @@ package com.yunya.models.appointment;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 @Data
 @Table(name = "reservation_rate_limit")
 public class ReservationRateLimit {
     @Id
+    @GeneratedValue(generator = "JDBC", strategy = GenerationType.IDENTITY)
     private Integer id;
 
     /**

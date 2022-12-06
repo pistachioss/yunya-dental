@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz.app;
 
+import com.google.common.collect.Lists;
 import com.yunya.feign.appointment.domain.model.ReservationModel;
 import com.yunya.feign.appointment.domain.query.ReservationCodeQuery;
 import com.yunya.feign.appointment.domain.query.ReservationQuery;
@@ -15,11 +16,16 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Reservation;
+import com.yunya.modules.appointment.biz.web.ReservationLimitBiz;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.ReservationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,10 +35,13 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
 
     @Autowired
     private RemoteSystemServiceFeign systemServiceFeign;
+    @Resource
+    private ReservationLimitBiz limitBiz;
 
     @Autowired
     private ReservationCodeBiz reservationCodeBiz;
 
+    @Transactional(rollbackFor = Exception.class)
     public ResponseResult add(ReservationModel model) {
         ReservationCodeQuery query = new ReservationCodeQuery();
         query.setCode(model.getCode());
@@ -41,6 +50,7 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
         }
         Reservation build = EntityUtils.build(model, Reservation.class);
         build.setCrtName(BaseContextHandler.getUsername());
+        limitBiz.checkAndTryAcquire(build.getReservationLimitId(), build.getReservationDate());
         int status = mapper.insertSelective(build);
         if (status <= 0) {
             ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
@@ -81,5 +91,24 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
                 ReservationVo.setOrgName(orgInfo.getBrandName() + "(" + orgInfo.getAbbreviation() + ")");
             });
         }
+    }
+
+    /**
+     *  查询已提交预约
+     * @param orgId 门诊
+     * @param configDate 配置日期
+     * @param whole 是否查询整月
+     * @param yearMonth 整月
+     */
+    public List<Reservation> submittedLimit(Integer orgId, List<LocalDate> configDate, boolean whole, Date yearMonth) {
+        Example example = new Example(Reservation.class);
+        Example.Criteria criteria = example.createCriteria().andEqualTo("orgId", orgId)
+                .andIn("status", Lists.newArrayList(0, 1));
+        if (whole) {
+            criteria.andGreaterThan("reservationDate", yearMonth);
+        } else {
+            criteria.andIn("reservationDate", configDate);
+        }
+        return mapper.selectByExample(example);
     }
 }

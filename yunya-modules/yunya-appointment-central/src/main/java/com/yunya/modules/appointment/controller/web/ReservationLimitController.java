@@ -1,7 +1,9 @@
 package com.yunya.modules.appointment.controller.web;
 
-import com.yunya.feign.appointment.domain.model.ReservationModel;
-import com.yunya.feign.appointment.domain.query.ReservationQuery;
+import com.yunya.feign.appointment.domain.model.ReservationLimitModel;
+import com.yunya.feign.appointment.domain.query.ReservationLimitQuery;
+import com.yunya.feign.appointment.vo.ReservationLimitVO;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.web.ReservationLimitBiz;
@@ -14,27 +16,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
+
 /**
  * @program: yunya-dental
  * @description: 预约意向登记控制
  **/
 @RestController
-@RequestMapping("/reservation")
+@RequestMapping("/reservation/limit")
 @Api(tags = "预约意向登记")
 public class ReservationLimitController {
 
     @Autowired
     private ReservationLimitBiz limitBiz;
 
+    @CurrentUser
     @ApiOperation("编辑预约登记流量")
     @PostMapping
-    public ResponseResult<Boolean> addOnlineAppointment(@RequestBody @Validated ReservationModel model) {
+    public ResponseResult<Boolean> addOnlineAppointment(@RequestBody @Validated ReservationLimitModel model) {
+        limitBiz.modify(model);
         return ResponseUtil.success();
     }
 
-    @ApiOperation("获取预约意向登记列表")
+    @ApiOperation("获取当月预约登记流量")
     @PostMapping("/list")
-    public ResponseResult<Boolean> find(@RequestBody @Validated ReservationQuery query) {
-        return ResponseUtil.success();
+    public ResponseResult<ReservationLimitVO> currentMonth(@RequestBody @Validated ReservationLimitQuery query) throws ParseException {
+        return ResponseUtil.success(limitBiz.currentMonth(query));
     }
+
 }

@@ -7,6 +7,7 @@
     -->
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="reservation_source_id" jdbcType="INTEGER" property="reservationSourceId" />
+    <result column="reservation_limit_id" jdbcType="INTEGER" property="reservationLimitId" />
     <result column="appoint_item_name" jdbcType="VARCHAR" property="appointItemName" />
     <result column="org_id" jdbcType="INTEGER" property="orgId" />
     <result column="patient_name" jdbcType="VARCHAR" property="patientName" />
@@ -15,6 +16,7 @@
     <result column="status" jdbcType="TINYINT" property="status" />
     <result column="remarks" jdbcType="VARCHAR" property="remarks" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="reservation_date" property="reservationDate" jdbcType="DATE" />
     <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
     <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
     <result column="upd_name" jdbcType="VARCHAR" property="updName" />

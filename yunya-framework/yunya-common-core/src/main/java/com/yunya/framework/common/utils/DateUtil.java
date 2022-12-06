@@ -1214,6 +1214,15 @@ public class DateUtil {
     return Date.from(zonedDateTime.toInstant());
   }
 
+  public static Date localDateToDate(LocalDate time) {
+    //获取系统默认时区
+    ZoneId zoneId = ZoneId.systemDefault();
+    //时区的日期
+    ZonedDateTime zonedDateTime = time.atStartOfDay().atZone(zoneId);
+    //获取时刻
+    return Date.from(zonedDateTime.toInstant());
+  }
+
   public static void main(String[] args) {
     System.out.println(parse2Date("1941-09-04"));
   }
