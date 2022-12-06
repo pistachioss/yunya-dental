@@ -46,14 +46,17 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
         ReservationCodeQuery query = new ReservationCodeQuery();
         query.setCode(model.getCode());
         if (!reservationCodeBiz.find(query)) {
-            ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
+            return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
         }
         Reservation build = EntityUtils.build(model, Reservation.class);
         build.setCrtName(BaseContextHandler.getUsername());
-        limitBiz.checkAndTryAcquire(build.getReservationLimitId(), build.getReservationDate());
+        //获取剩余号失败
+        if (!limitBiz.tryAcquire(build.getReservationLimitId())) {
+            throw ClientServiceException.wrap(AppointmentError.APPOINT_REMAINING_LACK);
+        }
         int status = mapper.insertSelective(build);
         if (status <= 0) {
-            ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
+            return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
         }
         return ResponseUtil.success(build.getId());
     }

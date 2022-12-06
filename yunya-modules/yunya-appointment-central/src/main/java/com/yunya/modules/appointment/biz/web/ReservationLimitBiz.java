@@ -32,6 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 import static com.yunya.framework.common.enums.ExceptionCode.BASE_VALID_PARAM;
+import static com.yunya.modules.appointment.code.AppointmentError.CONFIG_DATE_ERROR;
 import static java.util.stream.Collectors.*;
 
 @Service
@@ -42,7 +43,7 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
     private ReservationBiz reservationBiz;
     @Resource
     private ReservationLimitLogBiz limitLogBiz;
-    @Resource(name = "customizeExecutor")
+    @Resource(name = "poolExecutor")
     private ExecutorService executorService;
 
     @Transactional(rollbackFor = Exception.class)
@@ -51,7 +52,7 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         List<LocalDate> configDate = details.parallelStream().map(ReservationLimitDetailModel::getConfigDate).collect(toList());
         boolean anyMatch = configDate.parallelStream().anyMatch(t -> t.isBefore(LocalDate.now()));
         if (anyMatch) {
-            throw ClientServiceException.wrap(BASE_VALID_PARAM.getCode(), "预约配置时间只能选择当日及以后");
+            throw ClientServiceException.wrap(CONFIG_DATE_ERROR);
         }
         //查询已存在流量
         Map<Integer, Integer> existLimit = existLimit(details);
@@ -77,10 +78,10 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         }, executorService)).collect(toList());
         update.addAll(insert);
         CompletableFuture.allOf(update.toArray(new CompletableFuture[0]))
-                .whenComplete((r, e) -> log.info("预约登记流量更新完成"));
+                                .whenComplete((r, e) -> log.info("预约登记流量更新完成"));
     }
 
-    public ReservationLimitVO currentMonth(ReservationLimitQuery query) throws ParseException {
+    public ReservationLimitVO list(ReservationLimitQuery query) throws ParseException {
         Integer orgId = query.getOrgId();
         Date configDate = DateUtil.parse(query.getConfigDate(), "yyyy-MM");
         //已提交预约
@@ -102,12 +103,16 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
     }
 
     /**
-     * 检查且尝试获取剩余数
-     * @param orgId 门诊
-     * @param configDate 配置日期
+     * 尝试获取剩余数
+     * @param reservationLimitId id
      */
-    public void checkAndTryAcquire(Integer orgId, Date configDate) {
-
+    public boolean tryAcquire(Integer reservationLimitId) {
+        ReservationRateLimit rateLimit = mapper.selectByPrimaryKey(reservationLimitId);
+        if (Objects.isNull(rateLimit) || rateLimit.getConfigLimit() <= 0) {
+            return false;
+        }
+        int count = mapper.reduceLimit(reservationLimitId);
+        return count == 1;
     }
     private Map<Integer, Integer> existLimit(List<ReservationLimitDetailModel> details) {
         List<Integer> limitIds = details.stream().map(ReservationLimitDetailModel::getId).filter(Objects::nonNull).collect(toList());

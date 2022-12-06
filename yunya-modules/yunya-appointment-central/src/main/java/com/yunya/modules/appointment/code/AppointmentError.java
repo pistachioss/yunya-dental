@@ -1,6 +1,7 @@
 package com.yunya.modules.appointment.code;
 
 import com.yunya.framework.common.constant.PreFixCode;
+import com.yunya.framework.common.model.RestError;
 import com.yunya.framework.common.utils.StringHelper;
 
 /**
@@ -9,7 +10,7 @@ import com.yunya.framework.common.utils.StringHelper;
  * @author: LHB
  * @create: 2020-09-17 11:35
  **/
-public enum AppointmentError {
+public enum AppointmentError implements RestError {
     /**---------------------------------------- 预约中心异常提示 ----------------------------------------*/
     /** 11001-对象转换实体异常 */
     DATA_FROM_MODEL_EXP(1,"对象转换实体异常"),
@@ -91,6 +92,8 @@ public enum AppointmentError {
     /**---------------------------------------- 线上预约异常提示 ----------------------------------------*/
     /** 11070-预约项目使用中，请勿删除 */
     ONLINE_APPOINT_OUT_OF_CAPACITY(70,"线上预约人数已满，请重新预约"),
+    APPOINT_REMAINING_LACK(71,"预约登记余号不足"),
+    CONFIG_DATE_ERROR(72,"预约配置时间只能选择当日及以后"),
     ;
 
 
@@ -102,10 +105,12 @@ public enum AppointmentError {
         this.value = value;
     }
 
+    @Override
     public Integer getCode() {
         return PreFixCode.APPOINTMENT.getCode() * 1000 + code;
     }
 
+    @Override
     public String getMessage() {
         return value;
     }

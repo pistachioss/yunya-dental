@@ -9,9 +9,5 @@ import java.util.List;
 
 public interface ReservationRateLimitMapper extends Mapper<ReservationRateLimit> {
 
-    void insertList(@Param("list") List<ReservationRateLimit> list);
-
-    void updateList(@Param("list") List<ReservationRateLimit> list);
-
-    ReservationRateLimit selecr
+    int reduceLimit(Integer reservationLimitId);
 }

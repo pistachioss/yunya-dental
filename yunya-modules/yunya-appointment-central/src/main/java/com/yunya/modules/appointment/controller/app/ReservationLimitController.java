@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.controller.web;
+package com.yunya.modules.appointment.controller.app;
 
 import com.yunya.feign.appointment.domain.model.ReservationLimitModel;
 import com.yunya.feign.appointment.domain.query.ReservationLimitQuery;
@@ -25,22 +25,14 @@ import java.text.ParseException;
  **/
 @RestController
 @RequestMapping("/reservation/limit")
-@Api(tags = "预约意向登记流量管理")
+@Api(tags = "预约意向登记流量管理-app")
 public class ReservationLimitController {
 
     @Resource
     private ReservationLimitBiz limitBiz;
 
-    @CurrentUser
-    @ApiOperation("编辑预约登记流量")
-    @PostMapping
-    public ResponseResult<Boolean> addOnlineAppointment(@RequestBody @Validated ReservationLimitModel model) {
-        limitBiz.modify(model);
-        return ResponseUtil.success();
-    }
-
     @ApiOperation("获取当月预约登记流量")
-    @PostMapping("/list")
+    @PostMapping("/app")
     public ResponseResult<ReservationLimitVO> list(@RequestBody @Validated ReservationLimitQuery query) throws ParseException {
         return ResponseUtil.success(limitBiz.list(query));
     }
