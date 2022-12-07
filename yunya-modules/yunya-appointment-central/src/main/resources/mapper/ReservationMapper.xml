@@ -30,6 +30,7 @@
       , oa.org_name as 'orgName'
       , oa.reservation_source_id as 'reservationSourceId'
       , rr.source_name as 'reservationSourceName'
+      , oa.reservation_date as 'reservationDate'
       , oa.appoint_item_name as 'appointItemName'
       , oa.patient_name as 'patientName'
       , oa.patient_phone as 'patientPhone'
