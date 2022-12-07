@@ -35,7 +35,7 @@ public class ReservationCodeRest {
 
     @ApiOperation("预约意向登记号码验证")
     @GetMapping("/valid")
-    public boolean find(@RequestBody ReservationCodeQuery model) {
+    public String find(@RequestBody ReservationCodeQuery model) {
         return biz.find(model);
     }
 

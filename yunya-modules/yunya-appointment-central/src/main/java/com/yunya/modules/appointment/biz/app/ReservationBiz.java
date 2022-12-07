@@ -43,7 +43,8 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
     public ResponseResult add(ReservationModel model) {
         ReservationCodeQuery query = new ReservationCodeQuery();
         query.setCode(model.getCode());
-        if (!reservationCodeBiz.find(query)) {
+        String rst = reservationCodeBiz.find(query);
+        if (!"true".equals(rst)) {
             return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
         }
         Reservation build = EntityUtils.build(model, Reservation.class);
