@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  * @program: yunya-dental
@@ -35,7 +35,7 @@ public class ReservationLimitAppController {
     @PostMapping("/app")
     public ResponseResult<ReservationLimitVO> list(@RequestBody @Validated ReservationLimitAppQuery query) throws ParseException {
         ReservationLimitQuery limitAppQuery = BeanCopierUtils.generalCopyBean(query, ReservationLimitQuery.class);
-        limitAppQuery.setConfigDate(new Date());
+        limitAppQuery.setConfigDate(LocalDate.now());
         return ResponseUtil.success(limitBiz.list(limitAppQuery));
     }
 

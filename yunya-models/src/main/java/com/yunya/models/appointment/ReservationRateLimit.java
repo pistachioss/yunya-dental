@@ -19,6 +19,12 @@ public class ReservationRateLimit {
     private Integer orgId;
 
     /**
+     * 门诊名称
+     */
+    @Column(name = "org_name")
+    private String orgName;
+
+    /**
      * 预约配置时间
      */
     @Column(name = "config_date")

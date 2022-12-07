@@ -24,7 +24,6 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,7 +59,8 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
             ReservationRateLimit limit = new ReservationRateLimit();
             limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
             limit.setConfigLimit(t.getConfigLimit());
-            limit.setOrgId(model.getOrgId());
+//            limit.setOrgId(model.getOrgId());
+            limit.setOrgName(model.getOrgName());
             limit.setCrtId(userId);
             limit.setUpdId(userId);
             mapper.insertSelective(limit);
@@ -94,14 +94,13 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
     }
 
     public ReservationLimitVO list(ReservationLimitQuery query) throws ParseException {
-        Integer orgId = query.getOrgId();
-        Date configDate = query.getConfigDate();
+        String orgName = query.getOrgName();
+        LocalDate configDate = query.getConfigDate();
         //已提交预约
-        List<Reservation> submittedLimit = reservationBiz.submittedLimit(query.getOrgId(), null, true, configDate);
+        List<Reservation> submittedLimit = reservationBiz.submittedLimit(orgName, null, true, configDate);
         Map<Integer, Long> limitMap = submittedLimit.stream().collect(groupingBy(Reservation::getReservationLimitId, counting()));
         //剩余库存
-        Example example = new Example(ReservationRateLimit.class);
-        List<ReservationRateLimit> remaining = mapper.listRemaining(orgId, configDate);
+        List<ReservationRateLimit> remaining = mapper.listRemaining(orgName, configDate);
         ReservationLimitVO result = new ReservationLimitVO();
         result.setDetails(remaining.stream()
                 .map(t -> {

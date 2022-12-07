@@ -96,12 +96,12 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
 
     /**
      *  查询已提交预约
-     * @param orgId 门诊
+     * @param orgName 门诊
      * @param configDate 配置日期
      * @param whole 是否查询整月
      * @param yearMonth 整月
      */
-    public List<Reservation> submittedLimit(Integer orgId, List<LocalDate> configDate, boolean whole, Date yearMonth) {
-        return mapper.submittedLimit(orgId, whole, configDate, yearMonth);
+    public List<Reservation> submittedLimit(String orgName, List<LocalDate> configDate, boolean whole, LocalDate yearMonth) {
+        return mapper.submittedLimit(orgName, whole, configDate, yearMonth);
     }
 }

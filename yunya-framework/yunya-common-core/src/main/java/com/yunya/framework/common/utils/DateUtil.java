@@ -1223,6 +1223,12 @@ public class DateUtil {
     return Date.from(zonedDateTime.toInstant());
   }
 
+  public static boolean isCurrentMonth(LocalDate date) {
+    int currentMonth = LocalDate.now().getMonth().getValue();
+    int month = date.getMonth().getValue();
+    return currentMonth == month;
+  }
+
   public static void main(String[] args) {
     System.out.println(parse2Date("1941-09-04"));
   }

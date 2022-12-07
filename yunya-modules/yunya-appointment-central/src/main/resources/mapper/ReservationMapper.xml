@@ -82,7 +82,7 @@
     from reservation
     <where>
         status in (0, 1)
-        and org_id = #{orgId}
+        and org_name = #{orgName}
       <if test="whole != null and whole == true">
         and reservation_date &gt;= date_format(#{yearMonth}, '%Y-%m-%d')
         and date_format( reservation_date, '%Y-%m' ) = date_format(#{yearMonth}, '%Y-%m')

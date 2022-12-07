@@ -5,12 +5,12 @@ import com.yunya.models.appointment.ReservationRateLimit;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ReservationRateLimitMapper extends Mapper<ReservationRateLimit> {
 
     int reduceLimit(Integer reservationLimitId);
 
-    List<ReservationRateLimit> listRemaining(@Param("orgId") Integer orgId,@Param("configDate") Date configDate);
+    List<ReservationRateLimit> listRemaining(@Param("orgName") String orgName,@Param("configDate") LocalDate configDate);
 }

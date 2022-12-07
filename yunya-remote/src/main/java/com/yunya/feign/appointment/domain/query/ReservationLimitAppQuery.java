@@ -4,12 +4,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @ApiModel(value = "预约流量管理查询参数")
 @Data
 public class ReservationLimitAppQuery {
-    @ApiModelProperty(value = "门诊ID", required = true)
-    @NotNull(message = "门诊id不能为空")
-    private Integer orgId;
+    @ApiModelProperty(value = "门诊名称", required = true)
+    @NotBlank(message = "门诊不能为空")
+    private String orgName;
 }
