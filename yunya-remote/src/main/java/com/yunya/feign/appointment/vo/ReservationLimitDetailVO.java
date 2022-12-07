@@ -1,5 +1,6 @@
 package com.yunya.feign.appointment.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,6 +15,7 @@ public class ReservationLimitDetailVO {
     private Integer id;
 
     @ApiModelProperty(value = "配置日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date configDate;
 
     @ApiModelProperty(value = "配置数量限制")

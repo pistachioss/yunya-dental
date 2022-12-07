@@ -19,11 +19,13 @@ public class ReservationLimitLogBiz extends BaseBiz<ReservationLimitLogMapper, R
             limitLog.setOperate((byte)1);
             limitLog.setOperatePre(next);
             limitLog.setOperateNext(log.getConfigLimit());
+            limitLog.setCrtId(log.getUpdId());
         } else {
             limitLog = new ReservationLimitLog();
             limitLog.setOperate((byte)0);
             limitLog.setResConfigId(log.getId());
             limitLog.setOperatePre(log.getConfigLimit());
+            limitLog.setCrtId(log.getCrtId());
         }
         mapper.insertSelective(limitLog);
     }

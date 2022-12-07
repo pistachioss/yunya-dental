@@ -31,7 +31,6 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-import static com.yunya.framework.common.enums.ExceptionCode.BASE_VALID_PARAM;
 import static com.yunya.modules.appointment.code.AppointmentError.CONFIG_DATE_ERROR;
 import static java.util.stream.Collectors.*;
 
@@ -56,34 +55,44 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         }
         //查询已存在流量
         Map<Integer, Integer> existLimit = existLimit(details);
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
         List<CompletableFuture<Void>> insert = details.stream().filter(t -> Objects.isNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
-            log.info("新增登记流量线程id：{}", Thread.currentThread().getId());
             ReservationRateLimit limit = new ReservationRateLimit();
             limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
             limit.setConfigLimit(t.getConfigLimit());
-            limit.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-            limit.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+            limit.setOrgId(orgId);
+            limit.setCrtId(userId);
+            limit.setUpdId(userId);
             mapper.insertSelective(limit);
             limitLogBiz.saveLimitLog(false, limit, null);
-        }, executorService)).collect(toList());
+            log.info("新增登记流量完成");
+        }, executorService).exceptionally(e -> {throw new RuntimeException(e);} )).collect(toList());
         List<CompletableFuture<Void>> update = details.parallelStream().filter(t -> Objects.nonNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
-            log.info("更新登记流量线程id：{}", Thread.currentThread().getId());
             ReservationRateLimit limit = new ReservationRateLimit();
             limit.setId(t.getId());
             limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
             limit.setConfigLimit(t.getConfigLimit());
-            limit.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+            limit.setUpdId(userId);
             mapper.updateByPrimaryKeySelective(limit);
             limitLogBiz.saveLimitLog(true, limit, existLimit.get(t.getId()));
-        }, executorService)).collect(toList());
+            log.info("更新登记流量完成");
+        }, executorService).exceptionally(e -> {throw new RuntimeException(e);} )).collect(toList());
         update.addAll(insert);
+        log.info("需执行的任务数：{}", update.size());
         CompletableFuture.allOf(update.toArray(new CompletableFuture[0]))
-                                .whenComplete((r, e) -> log.info("预约登记流量更新完成"));
+                .whenComplete((r, e) -> {
+                    if (e == null) {
+                        log.info("预约登记流量更新完成");
+                    } else {
+                        throw new ClientServiceException(e);
+                    }
+                }).join();
     }
 
     public ReservationLimitVO list(ReservationLimitQuery query) throws ParseException {
         Integer orgId = query.getOrgId();
-        Date configDate = DateUtil.parse(query.getConfigDate(), "yyyy-MM");
+        Date configDate = query.getConfigDate();
         //已提交预约
         List<Reservation> submittedLimit = reservationBiz.submittedLimit(query.getOrgId(), null, true, configDate);
         Map<Integer, Long> limitMap = submittedLimit.stream().collect(groupingBy(Reservation::getReservationLimitId, counting()));
@@ -104,6 +113,7 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
 
     /**
      * 尝试获取剩余数
+     *
      * @param reservationLimitId id
      */
     public boolean tryAcquire(Integer reservationLimitId) {
@@ -114,6 +124,7 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         int count = mapper.reduceLimit(reservationLimitId);
         return count == 1;
     }
+
     private Map<Integer, Integer> existLimit(List<ReservationLimitDetailModel> details) {
         List<Integer> limitIds = details.stream().map(ReservationLimitDetailModel::getId).filter(Objects::nonNull).collect(toList());
         if (CollectionUtils.isNotEmpty(limitIds)) {

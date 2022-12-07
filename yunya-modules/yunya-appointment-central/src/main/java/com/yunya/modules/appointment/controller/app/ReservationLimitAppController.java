@@ -1,15 +1,12 @@
 package com.yunya.modules.appointment.controller.app;
 
-import com.yunya.feign.appointment.domain.model.ReservationLimitModel;
 import com.yunya.feign.appointment.domain.query.ReservationLimitQuery;
 import com.yunya.feign.appointment.vo.ReservationLimitVO;
-import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.web.ReservationLimitBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +23,7 @@ import java.text.ParseException;
 @RestController
 @RequestMapping("/reservation/limit")
 @Api(tags = "预约意向登记流量管理-app")
-public class ReservationLimitController {
+public class ReservationLimitAppController {
 
     @Resource
     private ReservationLimitBiz limitBiz;
