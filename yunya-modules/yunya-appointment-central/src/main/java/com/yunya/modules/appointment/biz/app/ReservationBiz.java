@@ -1,6 +1,5 @@
 package com.yunya.modules.appointment.biz.app;
 
-import com.google.common.collect.Lists;
 import com.yunya.feign.appointment.domain.model.ReservationModel;
 import com.yunya.feign.appointment.domain.query.ReservationCodeQuery;
 import com.yunya.feign.appointment.domain.query.ReservationQuery;
@@ -22,7 +21,6 @@ import com.yunya.modules.appointment.mapper.ReservationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
@@ -104,14 +102,6 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
      * @param yearMonth 整月
      */
     public List<Reservation> submittedLimit(Integer orgId, List<LocalDate> configDate, boolean whole, Date yearMonth) {
-        Example example = new Example(Reservation.class);
-        Example.Criteria criteria = example.createCriteria().andEqualTo("orgId", orgId)
-                .andIn("status", Lists.newArrayList(0, 1));
-        if (whole) {
-            criteria.andGreaterThan("reservationDate", yearMonth);
-        } else {
-            criteria.andIn("reservationDate", configDate);
-        }
-        return mapper.selectByExample(example);
+        return mapper.submittedLimit(orgId, whole, configDate, yearMonth);
     }
 }

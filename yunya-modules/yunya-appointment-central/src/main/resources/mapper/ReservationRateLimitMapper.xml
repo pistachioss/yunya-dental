@@ -23,4 +23,14 @@
           and config_limit > 0
     </update>
 
+    <select id="listRemaining" resultType="com.yunya.models.appointment.ReservationRateLimit">
+        select
+            id,org_id,config_date,config_limit
+        from
+            reservation_rate_limit
+        where org_id = #{orgId}
+          and config_date &gt;= date_format(#{configDate}, '%Y-%m-%d')
+          and date_format( config_date, '%Y-%m' ) = date_format(#{configDate}, '%Y-%m')
+    </select>
+
 </mapper>

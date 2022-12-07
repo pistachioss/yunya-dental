@@ -67,7 +67,9 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
             mapper.insertSelective(limit);
             limitLogBiz.saveLimitLog(false, limit, null);
             log.info("新增登记流量完成");
-        }, executorService).exceptionally(e -> {throw new RuntimeException(e);} )).collect(toList());
+        }, executorService).exceptionally(e -> {
+            throw new RuntimeException(e);
+        })).collect(toList());
         List<CompletableFuture<Void>> update = details.parallelStream().filter(t -> Objects.nonNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
             ReservationRateLimit limit = new ReservationRateLimit();
             limit.setId(t.getId());
@@ -76,8 +78,10 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
             limit.setUpdId(userId);
             mapper.updateByPrimaryKeySelective(limit);
             limitLogBiz.saveLimitLog(true, limit, existLimit.get(t.getId()));
-            log.info("更新登记流量完成");
-        }, executorService).exceptionally(e -> {throw new RuntimeException(e);} )).collect(toList());
+            log.info("更新登记流量完成id:{}, 更新数:{}", t.getId(), t.getConfigLimit());
+        }, executorService).exceptionally(e -> {
+            throw new RuntimeException(e);
+        })).collect(toList());
         update.addAll(insert);
         log.info("需执行的任务数：{}", update.size());
         CompletableFuture.allOf(update.toArray(new CompletableFuture[0]))
@@ -98,9 +102,7 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         Map<Integer, Long> limitMap = submittedLimit.stream().collect(groupingBy(Reservation::getReservationLimitId, counting()));
         //剩余库存
         Example example = new Example(ReservationRateLimit.class);
-        example.createCriteria().andEqualTo("orgId", orgId)
-                .andGreaterThan("configDate", configDate);
-        List<ReservationRateLimit> remaining = mapper.selectByExample(example);
+        List<ReservationRateLimit> remaining = mapper.listRemaining(orgId, configDate);
         ReservationLimitVO result = new ReservationLimitVO();
         result.setDetails(remaining.stream()
                 .map(t -> {
@@ -135,5 +137,4 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         }
         return Maps.newHashMap();
     }
-
 }

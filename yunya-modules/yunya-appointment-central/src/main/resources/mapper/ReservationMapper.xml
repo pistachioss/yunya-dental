@@ -74,4 +74,25 @@
     </where>
     order by oa.crt_time DESC
   </select>
+
+  <select id="submittedLimit" resultType="com.yunya.models.appointment.Reservation">
+    select
+        reservation_limit_id,
+        reservation_date
+    from reservation
+    <where>
+        status in (0, 1)
+        and org_id = #{orgId}
+      <if test="whole != null and whole == true">
+        and reservation_date &gt;= date_format(#{yearMonth}, '%Y-%m-%d')
+        and date_format( reservation_date, '%Y-%m' ) = date_format(#{yearMonth}, '%Y-%m')
+      </if>
+      <if test="whole != null and whole == false">
+        and reservation_date in
+        <foreach collection="configDate" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </select>
 </mapper>

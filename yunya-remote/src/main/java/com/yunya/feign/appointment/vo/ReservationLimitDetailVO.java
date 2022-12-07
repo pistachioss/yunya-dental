@@ -18,7 +18,7 @@ public class ReservationLimitDetailVO {
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date configDate;
 
-    @ApiModelProperty(value = "配置数量限制")
+    @ApiModelProperty(value = "剩余配置数量限制")
     private Integer configLimit;
 
     @ApiModelProperty(value = "已提交预约意向登记数")

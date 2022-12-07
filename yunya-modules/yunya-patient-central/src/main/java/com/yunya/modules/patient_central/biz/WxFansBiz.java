@@ -479,7 +479,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
                     });
                 });
         CompletableFuture.allOf(insertFuture, updateFuture)
-                .whenComplete((r, e) -> log.info("{}，当前时间同步完成", DateUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss")));
+                .whenComplete((r, e) -> log.info("{}，当前时间同步完成", DateUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss"))).join();
     }
 
     public List<WorkWxPatientBindVO> wechatRelateList(String unionId) {
