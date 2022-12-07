@@ -56,12 +56,11 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         //查询已存在流量
         Map<Integer, Integer> existLimit = existLimit(details);
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
         List<CompletableFuture<Void>> insert = details.stream().filter(t -> Objects.isNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
             ReservationRateLimit limit = new ReservationRateLimit();
             limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
             limit.setConfigLimit(t.getConfigLimit());
-            limit.setOrgId(orgId);
+            limit.setOrgId(model.getOrgId());
             limit.setCrtId(userId);
             limit.setUpdId(userId);
             mapper.insertSelective(limit);
