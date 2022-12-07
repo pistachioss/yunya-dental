@@ -26,12 +26,13 @@
 
     <select id="listRemaining" resultType="com.yunya.models.appointment.ReservationRateLimit">
         select
-            id,org_id,config_date,config_limit
+            id, org_id, org_name, config_date, config_limit
         from
             reservation_rate_limit
         where org_name = #{orgName}
           and config_date &gt;= date_format(#{configDate}, '%Y-%m-%d')
           and date_format( config_date, '%Y-%m' ) = date_format(#{configDate}, '%Y-%m')
+        order by config_date asc
     </select>
 
 </mapper>
