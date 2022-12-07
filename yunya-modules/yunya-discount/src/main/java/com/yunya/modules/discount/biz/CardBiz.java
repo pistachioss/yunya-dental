@@ -1049,6 +1049,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      */
     @Transactional
     public ResponseResult xihuActiveCard(Integer patientId, XihuCardActiveForm form) {
+        ReservationCodeQuery reservationCodeQuery = new ReservationCodeQuery();
+        reservationCodeQuery.setCode(form.getThirdCardNumber());
+        String check = remoteAppointmentFeign.checkReservatoinCode(reservationCodeQuery);
+        if(!check.equals("true")){
+            return ResponseUtil.error(check,null);
+        }
         boolean locked = false;
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         String cardNumber = form.getThirdCardNumber();
