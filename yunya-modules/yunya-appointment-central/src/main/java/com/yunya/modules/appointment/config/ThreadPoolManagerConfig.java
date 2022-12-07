@@ -22,7 +22,7 @@ public class ThreadPoolManagerConfig {
     /** 根据CPU数量动态配置核心线程数和最大线程数 */
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
     /** 核心线程数 =  CPU_COUNT + 1 */
-    private static final int CORE_POOL_SIZE = CPU_COUNT + 1;
+    public static final int CORE_POOL_SIZE = CPU_COUNT + 1;
     /** 最大线程数 =  CPU_COUNT * 2 + 1 */
     private static final int MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1;
     /** 闲置线程存活时间 1s */

@@ -19,7 +19,7 @@
         update
             reservation_rate_limit
         set config_limit = config_limit - 1
-        where `id` = {reservationLimitId}
+        where `id` = #{reservationLimitId}
           and config_limit > 0
           and config_date &gt;= date_format(now(),'%Y-%m-%d')
     </update>
