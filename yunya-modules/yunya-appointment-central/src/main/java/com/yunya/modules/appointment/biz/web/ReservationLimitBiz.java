@@ -45,19 +45,20 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
 
     @Transactional(rollbackFor = Exception.class)
     public void modify(ReservationLimitModel model) {
+        String orgName = model.getOrgName();
         List<ReservationLimitDetailModel> details = model.getDetails();
-        List<LocalDate> configDate = details.parallelStream()
+        List<LocalDate> configDate = details.stream()
                 .map(ReservationLimitDetailModel::getConfigDate).filter(Objects::nonNull).collect(toList());
-        boolean anyMatch = configDate.parallelStream().anyMatch(t -> t.isBefore(LocalDate.now()));
+        boolean anyMatch = configDate.stream().anyMatch(t -> t.isBefore(LocalDate.now()));
         if (anyMatch) {
             throw ClientServiceException.wrap(CONFIG_DATE_ERROR);
         }
         //查询已存在流量
-        List<ReservationRateLimit> existData = existData(model.getOrgName(), configDate);
+        List<ReservationRateLimit> existData = existData(orgName, configDate);
         //校验日期是否存在
-        Optional<LocalDate> checkMonthRepeat = checkMonthRepeat(configDate, existData);
+        Optional<LocalDate> checkMonthRepeat = checkMonthRepeat(details, existData);
         if (checkMonthRepeat.isPresent()) {
-            throw ClientServiceException.wrap(CONFIG_DATE_REPEAT, checkMonthRepeat.get());
+            throw ClientServiceException.wrap(CONFIG_DATE_REPEAT, orgName, checkMonthRepeat.get());
         }
         Map<Integer, Integer> existLimit = existData.stream().collect(toMap(ReservationRateLimit::getId, ReservationRateLimit::getConfigLimit));
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -66,7 +67,7 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
             limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
             limit.setConfigLimit(t.getConfigLimit());
 //            limit.setOrgId(model.getOrgId());
-            limit.setOrgName(model.getOrgName());
+            limit.setOrgName(orgName);
             limit.setCrtId(userId);
             limit.setUpdId(userId);
             mapper.insertSelective(limit);
@@ -75,7 +76,7 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         }, executorService).exceptionally(e -> {
             throw new RuntimeException(e);
         })).collect(toList());
-        List<CompletableFuture<Void>> update = details.parallelStream().filter(t -> Objects.nonNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
+        List<CompletableFuture<Void>> update = details.stream().filter(t -> Objects.nonNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
             ReservationRateLimit limit = new ReservationRateLimit();
             limit.setId(t.getId());
             limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
@@ -111,7 +112,8 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         result.setDetails(remaining.stream()
                 .map(t -> {
                     ReservationLimitDetailVO vo = BeanCopierUtils.generalCopyBean(t, ReservationLimitDetailVO.class);
-                    vo.setSubmitLimit(limitMap.get(t.getId()));
+                    Long submit = limitMap.get(t.getId());
+                    vo.setSubmitLimit(Objects.isNull(submit) ? 0 : submit);
                     return vo;
                 }).collect(toList()));
         return result;
@@ -131,7 +133,9 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         return count == 1;
     }
 
-    private Optional<LocalDate> checkMonthRepeat(List<LocalDate> configDate, List<ReservationRateLimit> existData) {
+    private Optional<LocalDate> checkMonthRepeat(List<ReservationLimitDetailModel> details, List<ReservationRateLimit> existData) {
+        List<LocalDate> configDate = details.stream().filter(t -> Objects.isNull(t.getId()))
+                .map(ReservationLimitDetailModel::getConfigDate).collect(toList());
         Set<Date> dates = existData.stream().map(ReservationRateLimit::getConfigDate).collect(toSet());
         return configDate.stream()
                 .filter(t -> dates.contains(DateUtil.localDateToDate(t)))
