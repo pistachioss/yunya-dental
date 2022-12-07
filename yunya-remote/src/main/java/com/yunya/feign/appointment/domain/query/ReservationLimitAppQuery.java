@@ -6,7 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 
-@ApiModel(value = "预约流量管理查询参数")
+@ApiModel(value = "预约流量管理查询app参数")
 @Data
 public class ReservationLimitAppQuery {
     @ApiModelProperty(value = "门诊名称", required = true)

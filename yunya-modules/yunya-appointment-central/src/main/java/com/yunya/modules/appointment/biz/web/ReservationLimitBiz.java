@@ -1,6 +1,6 @@
 package com.yunya.modules.appointment.biz.web;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
 import com.yunya.feign.appointment.domain.model.ReservationLimitDetailModel;
 import com.yunya.feign.appointment.domain.model.ReservationLimitModel;
 import com.yunya.feign.appointment.domain.query.ReservationLimitQuery;
@@ -24,13 +24,12 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 import static com.yunya.modules.appointment.code.AppointmentError.CONFIG_DATE_ERROR;
+import static com.yunya.modules.appointment.code.AppointmentError.CONFIG_DATE_REPEAT;
 import static java.util.stream.Collectors.*;
 
 @Service
@@ -47,13 +46,20 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
     @Transactional(rollbackFor = Exception.class)
     public void modify(ReservationLimitModel model) {
         List<ReservationLimitDetailModel> details = model.getDetails();
-        List<LocalDate> configDate = details.parallelStream().map(ReservationLimitDetailModel::getConfigDate).collect(toList());
+        List<LocalDate> configDate = details.parallelStream()
+                .map(ReservationLimitDetailModel::getConfigDate).filter(Objects::nonNull).collect(toList());
         boolean anyMatch = configDate.parallelStream().anyMatch(t -> t.isBefore(LocalDate.now()));
         if (anyMatch) {
             throw ClientServiceException.wrap(CONFIG_DATE_ERROR);
         }
         //查询已存在流量
-        Map<Integer, Integer> existLimit = existLimit(details);
+        List<ReservationRateLimit> existData = existData(model.getOrgName(), configDate);
+        //校验日期是否存在
+        Optional<LocalDate> checkMonthRepeat = checkMonthRepeat(configDate, existData);
+        if (checkMonthRepeat.isPresent()) {
+            throw ClientServiceException.wrap(CONFIG_DATE_REPEAT, checkMonthRepeat.get());
+        }
+        Map<Integer, Integer> existLimit = existData.stream().collect(toMap(ReservationRateLimit::getId, ReservationRateLimit::getConfigLimit));
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         List<CompletableFuture<Void>> insert = details.stream().filter(t -> Objects.isNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
             ReservationRateLimit limit = new ReservationRateLimit();
@@ -125,14 +131,19 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         return count == 1;
     }
 
-    private Map<Integer, Integer> existLimit(List<ReservationLimitDetailModel> details) {
-        List<Integer> limitIds = details.stream().map(ReservationLimitDetailModel::getId).filter(Objects::nonNull).collect(toList());
-        if (CollectionUtils.isNotEmpty(limitIds)) {
+    private Optional<LocalDate> checkMonthRepeat(List<LocalDate> configDate, List<ReservationRateLimit> existData) {
+        Set<Date> dates = existData.stream().map(ReservationRateLimit::getConfigDate).collect(toSet());
+        return configDate.stream()
+                .filter(t -> dates.contains(DateUtil.localDateToDate(t)))
+                .findFirst();
+    }
+
+    private List<ReservationRateLimit> existData(String orgName, List<LocalDate> configDate) {
+        if (CollectionUtils.isNotEmpty(configDate)) {
             Example example = new Example(ReservationRateLimit.class);
-            example.createCriteria().andIn("id", limitIds);
-            List<ReservationRateLimit> list = mapper.selectByExample(example);
-            return list.stream().collect(toMap(ReservationRateLimit::getId, ReservationRateLimit::getConfigLimit));
+            example.createCriteria().andEqualTo("orgName", orgName).andIn("configDate", configDate);
+            return mapper.selectByExample(example);
         }
-        return Maps.newHashMap();
+        return Lists.newArrayList();
     }
 }
