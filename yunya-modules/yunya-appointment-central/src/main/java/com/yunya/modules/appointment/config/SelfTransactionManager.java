@@ -9,7 +9,6 @@ import javax.annotation.Resource;
 
 @Component
 public class SelfTransactionManager {
-    private TransactionStatus transactionStatus;
     //获取事务源
     @Resource
     private PlatformTransactionManager platformTransactionManager;
@@ -20,21 +19,21 @@ public class SelfTransactionManager {
      * 手动开启事务
      */
     public TransactionStatus begin() {
-        transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
+        TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
         return transactionStatus;
     }
 
     /**
      * 提交事务
      */
-    public void commit() {
+    public void commit(TransactionStatus transactionStatus) {
         platformTransactionManager.commit(transactionStatus);
     }
 
     /**
      * 回滚事务
      */
-    public void rollBack() {
+    public void rollBack(TransactionStatus transactionStatus) {
         platformTransactionManager.rollback(transactionStatus);
     }
 }

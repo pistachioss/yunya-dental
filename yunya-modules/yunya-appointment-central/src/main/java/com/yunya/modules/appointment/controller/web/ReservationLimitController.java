@@ -35,7 +35,7 @@ public class ReservationLimitController {
     @CurrentUser
     @ApiOperation("编辑预约登记流量")
     @PostMapping
-    public ResponseResult<Boolean> addOnlineAppointment(@RequestBody @Validated ReservationLimitModel model) {
+    public ResponseResult<Boolean> modify(@RequestBody @Validated ReservationLimitModel model) {
         limitBiz.modify(model);
         return ResponseUtil.success();
     }

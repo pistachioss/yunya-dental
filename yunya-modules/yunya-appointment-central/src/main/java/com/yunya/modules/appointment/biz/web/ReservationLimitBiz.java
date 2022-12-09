@@ -14,11 +14,13 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.appointment.Reservation;
 import com.yunya.models.appointment.ReservationRateLimit;
 import com.yunya.modules.appointment.biz.app.ReservationBiz;
+import com.yunya.modules.appointment.config.SelfTransactionManager;
 import com.yunya.modules.appointment.mapper.ReservationRateLimitMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -26,7 +28,10 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.yunya.modules.appointment.code.AppointmentError.CONFIG_DATE_ERROR;
 import static com.yunya.modules.appointment.code.AppointmentError.CONFIG_DATE_REPEAT;
@@ -42,11 +47,20 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
     private ReservationLimitLogBiz limitLogBiz;
     @Resource(name = "poolExecutor")
     private ExecutorService executorService;
+    @Resource
+    private SelfTransactionManager selfTransactionManager;
+    @Resource
+    private PlatformTransactionManager transactionManager;
 
-    @Transactional(rollbackFor = Exception.class)
+    //    @Transactional(rollbackFor = Exception.class)
     public void modify(ReservationLimitModel model) {
-        String orgName = model.getOrgName();
         List<ReservationLimitDetailModel> details = model.getDetails();
+        final AtomicBoolean flag = new AtomicBoolean(true);
+        AtomicBoolean checkFlag = new AtomicBoolean(true);
+        CountDownLatch childDownLatch = new CountDownLatch(details.size());
+        CountDownLatch mainDownLatch = new CountDownLatch(1);
+        AtomicReference<Exception> ex = new AtomicReference<>();
+        String orgName = model.getOrgName();
         List<LocalDate> configDate = details.stream()
                 .map(ReservationLimitDetailModel::getConfigDate).filter(Objects::nonNull).collect(toList());
         boolean anyMatch = configDate.stream().anyMatch(t -> t.isBefore(LocalDate.now()));
@@ -63,41 +77,76 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         Map<Integer, Integer> existLimit = existData.stream().collect(toMap(ReservationRateLimit::getId, ReservationRateLimit::getConfigLimit));
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         List<CompletableFuture<Void>> insert = details.stream().filter(t -> Objects.isNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
-            ReservationRateLimit limit = new ReservationRateLimit();
-            limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
-            limit.setConfigLimit(t.getConfigLimit());
+            TransactionStatus transactionStatus = null;
+            try {
+                transactionStatus = selfTransactionManager.begin();
+                ReservationRateLimit limit = new ReservationRateLimit();
+                limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
+                limit.setConfigLimit(t.getConfigLimit());
 //            limit.setOrgId(model.getOrgId());
-            limit.setOrgName(orgName);
-            limit.setCrtId(userId);
-            limit.setUpdId(userId);
-            mapper.insertSelective(limit);
-            limitLogBiz.saveLimitLog(false, limit, null);
-            log.info("新增登记流量完成");
-        }, executorService).exceptionally(e -> {
-            throw new RuntimeException(e);
-        })).collect(toList());
+                limit.setOrgName(orgName);
+                limit.setCrtId(userId);
+                limit.setUpdId(userId);
+                mapper.insertSelective(limit);
+                limitLogBiz.saveLimitLog(false, limit, null);
+                childDownLatch.countDown();
+                mainDownLatch.await();
+                if (flag.get()) {
+                    log.info("所有新增任务正常完成,线程{}开始提交事务", Thread.currentThread().getName());
+                    selfTransactionManager.commit(transactionStatus);
+                } else {
+                    log.info("有其他任务出现异常, 新增业务开始回滚事务,线程{}", Thread.currentThread().getName());
+                    selfTransactionManager.rollBack(transactionStatus);
+                }
+            } catch (Exception e) {
+                checkFlag.set(false);
+                childDownLatch.countDown();
+                ex.set(e);
+                Objects.requireNonNull(log).info("线程{}新增任务出现异常,开始回滚事务", Thread.currentThread().getName(), e);
+                selfTransactionManager.rollBack(transactionStatus);
+            }
+        }, executorService)).collect(toList());
         List<CompletableFuture<Void>> update = details.stream().filter(t -> Objects.nonNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
-            ReservationRateLimit limit = new ReservationRateLimit();
-            limit.setId(t.getId());
-            limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
-            limit.setConfigLimit(t.getConfigLimit());
-            limit.setUpdId(userId);
-            mapper.updateByPrimaryKeySelective(limit);
-            limitLogBiz.saveLimitLog(true, limit, existLimit.get(t.getId()));
-            log.info("更新登记流量完成id:{}, 更新数:{}", t.getId(), t.getConfigLimit());
-        }, executorService).exceptionally(e -> {
-            throw new RuntimeException(e);
-        })).collect(toList());
-        update.addAll(insert);
-        log.info("需执行的任务数：{}", update.size());
-        CompletableFuture.allOf(update.toArray(new CompletableFuture[0]))
-                .whenComplete((r, e) -> {
-                    if (e == null) {
-                        log.info("预约登记流量更新完成");
-                    } else {
-                        throw new ClientServiceException(e);
-                    }
-                }).join();
+            TransactionStatus transactionStatus = null;
+            try {
+                transactionStatus = selfTransactionManager.begin();
+                ReservationRateLimit limit = new ReservationRateLimit();
+                limit.setId(t.getId());
+                limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
+                limit.setConfigLimit(t.getConfigLimit());
+                limit.setUpdId(userId);
+                mapper.updateByPrimaryKeySelective(limit);
+                limitLogBiz.saveLimitLog(true, limit, existLimit.get(t.getId()));
+                childDownLatch.countDown();
+                mainDownLatch.await();
+                if (flag.get()) {
+                    log.info("所有更新任务正常完成,线程{}开始提交事务", Thread.currentThread().getName());
+                    transactionManager.commit(transactionStatus);
+                } else {
+                    log.info("有其他任务出现异常, 更新业务开始回滚事务,线程{}", Thread.currentThread().getName());
+                    selfTransactionManager.rollBack(transactionStatus);
+                }
+            } catch (Exception e) {
+                checkFlag.set(false);
+                childDownLatch.countDown();
+                ex.set(e);
+                log.info("线程{}更新任务出现异常,开始回滚事务", Thread.currentThread().getName(), e);
+                selfTransactionManager.rollBack(transactionStatus);
+            }
+        }, executorService)).collect(toList());
+        log.info("开始执行，需执行的任务数：{}", update.size() + insert.size());
+        try {
+            childDownLatch.await();
+            if (!checkFlag.get()) {
+                flag.compareAndSet(true, false);
+                log.info("flag标志为更改为false，开始回滚");
+                throw ex.get();
+            }
+        } catch (Exception e) {
+            throw new ClientServiceException(e);
+        } finally {
+            mainDownLatch.countDown();
+        }
     }
 
     public ReservationLimitVO list(ReservationLimitQuery query) throws ParseException {
