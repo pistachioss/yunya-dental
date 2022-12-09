@@ -10,6 +10,10 @@ import java.util.List;
 
 public interface ReservationRateLimitMapper extends Mapper<ReservationRateLimit> {
 
+    void insertList(@Param("list") List<ReservationRateLimit> list);
+
+    void updateList(@Param("list") List<ReservationRateLimit> list);
+
     int reduceLimit(Integer reservationLimitId);
 
     List<ReservationRateLimit> listRemaining(@Param("orgName") String orgName,@Param("configDate") LocalDate configDate);

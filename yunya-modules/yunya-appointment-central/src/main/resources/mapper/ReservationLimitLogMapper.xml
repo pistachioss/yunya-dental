@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.appointment.mapper.ReservationLimitLogMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.appointment.ReservationLimitLog" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="res_config_id" property="resConfigId" jdbcType="INTEGER" />
-    <result column="operate" property="operate" jdbcType="TINYINT" />
-    <result column="operate_pre" property="operatePre" jdbcType="INTEGER" />
-    <result column="operate_next" property="operateNext" jdbcType="INTEGER" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.appointment.mapper.ReservationLimitLogMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.appointment.ReservationLimitLog">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="res_config_id" property="resConfigId" jdbcType="INTEGER"/>
+        <result column="operate" property="operate" jdbcType="TINYINT"/>
+        <result column="operate_pre" property="operatePre" jdbcType="INTEGER"/>
+        <result column="operate_next" property="operateNext" jdbcType="INTEGER"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="insertList" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        `reservation_limit_log`
+        (`res_config_id`, `operate`, `operate_pre`,`operate_next`, `crt_id`)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.resConfigId}, #{item.operate}, #{item.operatePre}, #{item.operateNext}, #{item.crtId})
+        </foreach>
+    </insert>
 </mapper>

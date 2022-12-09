@@ -15,6 +15,7 @@ import com.yunya.models.appointment.Reservation;
 import com.yunya.models.appointment.ReservationRateLimit;
 import com.yunya.modules.appointment.biz.app.ReservationBiz;
 import com.yunya.modules.appointment.config.SelfTransactionManager;
+import com.yunya.modules.appointment.config.ThreadPoolManagerConfig;
 import com.yunya.modules.appointment.mapper.ReservationRateLimitMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -45,7 +46,7 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
     private ReservationBiz reservationBiz;
     @Resource
     private ReservationLimitLogBiz limitLogBiz;
-    @Resource(name = "poolExecutor")
+    @Resource(name = "syncExecutor")
     private ExecutorService executorService;
     @Resource
     private SelfTransactionManager selfTransactionManager;
@@ -54,14 +55,13 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
 
     //    @Transactional(rollbackFor = Exception.class)
     public void modify(ReservationLimitModel model) {
-        List<ReservationLimitDetailModel> details = model.getDetails();
+        List<ReservationLimitDetailModel> detail = model.getDetails();
         final AtomicBoolean flag = new AtomicBoolean(true);
         AtomicBoolean checkFlag = new AtomicBoolean(true);
-        CountDownLatch childDownLatch = new CountDownLatch(details.size());
         CountDownLatch mainDownLatch = new CountDownLatch(1);
         AtomicReference<Exception> ex = new AtomicReference<>();
         String orgName = model.getOrgName();
-        List<LocalDate> configDate = details.stream()
+        List<LocalDate> configDate = detail.stream()
                 .map(ReservationLimitDetailModel::getConfigDate).filter(Objects::nonNull).collect(toList());
         boolean anyMatch = configDate.stream().anyMatch(t -> t.isBefore(LocalDate.now()));
         if (anyMatch) {
@@ -70,71 +70,75 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         //查询已存在流量
         List<ReservationRateLimit> existData = existData(orgName, configDate);
         //校验日期是否存在
-        Optional<LocalDate> checkMonthRepeat = checkMonthRepeat(details, existData);
+        Optional<LocalDate> checkMonthRepeat = checkMonthRepeat(detail, existData);
         if (checkMonthRepeat.isPresent()) {
             throw ClientServiceException.wrap(CONFIG_DATE_REPEAT, orgName, checkMonthRepeat.get());
         }
-        Map<Integer, Integer> existLimit = existData.stream().collect(toMap(ReservationRateLimit::getId, ReservationRateLimit::getConfigLimit));
+        Map<Integer, Integer> existLimit = existData.stream().collect(toMap(ReservationRateLimit::getId, ReservationRateLimit::getConfigLimit, (o, v) -> o));
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        List<CompletableFuture<Void>> insert = details.stream().filter(t -> Objects.isNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
-            TransactionStatus transactionStatus = null;
-            try {
-                transactionStatus = selfTransactionManager.begin();
-                ReservationRateLimit limit = new ReservationRateLimit();
-                limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
-                limit.setConfigLimit(t.getConfigLimit());
-//            limit.setOrgId(model.getOrgId());
-                limit.setOrgName(orgName);
-                limit.setCrtId(userId);
-                limit.setUpdId(userId);
-                mapper.insertSelective(limit);
-                limitLogBiz.saveLimitLog(false, limit, null);
-                childDownLatch.countDown();
-                mainDownLatch.await();
-                if (flag.get()) {
-                    log.info("所有新增任务正常完成,线程{}开始提交事务", Thread.currentThread().getName());
-                    selfTransactionManager.commit(transactionStatus);
-                } else {
-                    log.info("有其他任务出现异常, 新增业务开始回滚事务,线程{}", Thread.currentThread().getName());
-                    selfTransactionManager.rollBack(transactionStatus);
-                }
-            } catch (Exception e) {
-                checkFlag.set(false);
-                childDownLatch.countDown();
-                ex.set(e);
-                Objects.requireNonNull(log).info("线程{}新增任务出现异常,开始回滚事务", Thread.currentThread().getName(), e);
-                selfTransactionManager.rollBack(transactionStatus);
-            }
-        }, executorService)).collect(toList());
-        List<CompletableFuture<Void>> update = details.stream().filter(t -> Objects.nonNull(t.getId())).map(t -> CompletableFuture.runAsync(() -> {
-            TransactionStatus transactionStatus = null;
-            try {
-                transactionStatus = selfTransactionManager.begin();
-                ReservationRateLimit limit = new ReservationRateLimit();
-                limit.setId(t.getId());
-                limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
-                limit.setConfigLimit(t.getConfigLimit());
-                limit.setUpdId(userId);
-                mapper.updateByPrimaryKeySelective(limit);
-                limitLogBiz.saveLimitLog(true, limit, existLimit.get(t.getId()));
-                childDownLatch.countDown();
-                mainDownLatch.await();
-                if (flag.get()) {
-                    log.info("所有更新任务正常完成,线程{}开始提交事务", Thread.currentThread().getName());
-                    transactionManager.commit(transactionStatus);
-                } else {
-                    log.info("有其他任务出现异常, 更新业务开始回滚事务,线程{}", Thread.currentThread().getName());
-                    selfTransactionManager.rollBack(transactionStatus);
-                }
-            } catch (Exception e) {
-                checkFlag.set(false);
-                childDownLatch.countDown();
-                ex.set(e);
-                log.info("线程{}更新任务出现异常,开始回滚事务", Thread.currentThread().getName(), e);
-                selfTransactionManager.rollBack(transactionStatus);
-            }
-        }, executorService)).collect(toList());
-        log.info("开始执行，需执行的任务数：{}", update.size() + insert.size());
+        List<List<ReservationLimitDetailModel>> partition = Lists.partition(detail, (detail.size() / ThreadPoolManagerConfig.CORE_POOL_SIZE) + 1);
+        log.info("开始执行，需执行的任务数：{}", detail.size());
+        CountDownLatch childDownLatch = new CountDownLatch(partition.size());
+        for (List<ReservationLimitDetailModel> detailList : partition) {
+            CompletableFuture.supplyAsync(() -> detailList.parallelStream().filter(t -> Objects.isNull(t.getId())).collect(toList()), executorService)
+                    .thenAcceptAsync((details) -> {
+                        if (CollectionUtils.isEmpty(details)) {
+                            return;
+                        }
+                        TransactionStatus transactionStatus = null;
+                        try {
+                            log.info("该新增批次执行数:{}, 执行线程:{}", detailList.size(), Thread.currentThread().getName());
+                            transactionStatus = selfTransactionManager.begin();
+                            List<ReservationRateLimit> insertList = insertList(details, userId, orgName);
+                            mapper.insertList(insertList);
+                            limitLogBiz.saveLimitLog(false, insertList, null);
+                            childDownLatch.countDown();
+                            mainDownLatch.await();
+                            if (flag.get()) {
+                                log.info("所有新增任务正常完成,线程{}开始提交事务", Thread.currentThread().getName());
+                                selfTransactionManager.commit(transactionStatus);
+                            } else {
+                                log.info("有其他任务出现异常, 新增业务开始回滚事务,线程{}", Thread.currentThread().getName());
+                                selfTransactionManager.rollBack(transactionStatus);
+                            }
+                        } catch (Exception e) {
+                            checkFlag.set(false);
+                            childDownLatch.countDown();
+                            ex.set(e);
+                            Objects.requireNonNull(log).info("线程{}新增任务出现异常,开始回滚事务", Thread.currentThread().getName(), e);
+                            selfTransactionManager.rollBack(transactionStatus);
+                        }
+                    }, executorService);
+            CompletableFuture.supplyAsync(() -> detailList.parallelStream().filter(t -> Objects.nonNull(t.getId())).collect(toList()), executorService)
+                    .thenAcceptAsync((details) -> {
+                        if (CollectionUtils.isEmpty(details)) {
+                            return;
+                        }
+                        TransactionStatus transactionStatus = null;
+                        try {
+                            log.info("该更新批次执行数:{}, 执行线程:{}", detailList.size(), Thread.currentThread().getName());
+                            transactionStatus = selfTransactionManager.begin();
+                            List<ReservationRateLimit> updateList = updateList(detailList, userId);
+                            mapper.updateList(updateList);
+                            limitLogBiz.saveLimitLog(true, updateList, existLimit);
+                            childDownLatch.countDown();
+                            mainDownLatch.await();
+                            if (flag.get()) {
+                                log.info("所有更新任务正常完成,线程{}开始提交事务", Thread.currentThread().getName());
+                                transactionManager.commit(transactionStatus);
+                            } else {
+                                log.info("有其他任务出现异常, 更新业务开始回滚事务,线程{}", Thread.currentThread().getName());
+                                selfTransactionManager.rollBack(transactionStatus);
+                            }
+                        } catch (Exception e) {
+                            checkFlag.set(false);
+                            childDownLatch.countDown();
+                            ex.set(e);
+                            log.info("线程{}更新任务出现异常,开始回滚事务", Thread.currentThread().getName(), e);
+                            selfTransactionManager.rollBack(transactionStatus);
+                        }
+                    }, executorService);
+        }
         try {
             childDownLatch.await();
             if (!checkFlag.get()) {
@@ -199,4 +203,29 @@ public class ReservationLimitBiz extends BaseBiz<ReservationRateLimitMapper, Res
         }
         return Lists.newArrayList();
     }
+
+    private List<ReservationRateLimit> insertList(List<ReservationLimitDetailModel> details, Integer userId, String orgName) {
+        return details.stream().map(t -> {
+            ReservationRateLimit limit = new ReservationRateLimit();
+            limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
+            limit.setConfigLimit(t.getConfigLimit());
+//            limit.setOrgId(model.getOrgId());
+            limit.setOrgName(orgName);
+            limit.setCrtId(userId);
+            limit.setUpdId(userId);
+            return limit;
+        }).collect(toList());
+    }
+
+    private List<ReservationRateLimit> updateList(List<ReservationLimitDetailModel> details, Integer userId) {
+        return details.stream().map(t -> {
+            ReservationRateLimit limit = new ReservationRateLimit();
+            limit.setId(t.getId());
+            limit.setConfigDate(DateUtil.localDateToDate(t.getConfigDate()));
+            limit.setConfigLimit(t.getConfigLimit());
+            limit.setUpdId(userId);
+            return limit;
+        }).collect(toList());
+    }
 }
+

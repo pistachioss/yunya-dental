@@ -7,6 +7,7 @@
         -->
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="org_name" property="orgName" jdbcType="INTEGER"/>
         <result column="config_date" property="configDate" jdbcType="DATE"/>
         <result column="config_limit" property="configLimit" jdbcType="INTEGER"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
@@ -14,6 +15,61 @@
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
+
+    <insert id="insertList" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        `reservation_rate_limit`
+        (`org_id`, `org_name`, `config_date`, `config_limit`,`crt_id`, `upd_id`)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.orgId}, #{item.orgName}, #{item.configDate}, #{item.configLimit}, #{item.crtId}, #{item.updId})
+        </foreach>
+    </insert>
+
+    <update id="updateList" parameterType="java.util.List">
+        update `reservation_rate_limit`
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="org_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.orgId != null">
+                        when `id` = #{item.id} then #{item.orgId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="org_name = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.orgName != null">
+                        when `id` = #{item.id} then #{item.orgName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="config_date = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.configDate != null">
+                        when `id` = #{item.id} then #{item.configDate}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="config_limit = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.configLimit != null">
+                        when `id` = #{item.id} then #{item.configLimit}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.updId != null">
+                        when `id` = #{item.id} then #{item.updId}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where `id` in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </update>
 
     <update id="reduceLimit">
         update
