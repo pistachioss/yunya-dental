@@ -4641,19 +4641,25 @@
         <where>
             <if test="query.isConsulter == 0">
                 and bbd.executor_id > 0
+                <if test="query.employeeIds != null and query.employeeIds.length > 0">
+                    and bbd.executor_id in
+                    <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
             </if>
             <if test="query.isConsulter == 1">
                 and bbd.consulter_id > 0
+                <if test="query.employeeIds != null and query.employeeIds.length > 0">
+                    and bbd.consulter_id in
+                    <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
             </if>
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 and bbd.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.employeeIds != null and query.employeeIds.length > 0">
-                and bbd.executor_id in
-                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
@@ -4687,10 +4693,10 @@
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         <where>
             AND bb.bill_date IS NOT NULL
-            <if test="query.isConsulter == 0">
+            <if test="!query.isConsulter">
                 and bbd.executor_id > 0
             </if>
-            <if test="query.isConsulter == 1">
+            <if test="query.isConsulter">
                 and bbd.consulter_id > 0
             </if>
             <if test="query.orgIds != null and query.orgIds.length > 0">
