@@ -94,6 +94,7 @@ public enum AppointmentError implements RestError {
     APPOINT_REMAINING_LACK(71,"预约登记余号不足"),
     CONFIG_DATE_ERROR(72,"预约配置时间只能选择当日及以后"),
     CONFIG_DATE_REPEAT(73,"id主键缺少,%s,预约配置时间%s已存在"),
+    CONFIG_IS_EDITING(74,"配置冲突，%s正在修改%s%s预约流量"),
     ;
 
 
