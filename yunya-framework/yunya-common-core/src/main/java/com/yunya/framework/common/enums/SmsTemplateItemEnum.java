@@ -32,10 +32,17 @@ public enum SmsTemplateItemEnum {
     PRODUCT_MODEL(18, "产品型号", "product_model"),
     PRODUCT_NAME(19, "产品名称", "product_name"),
     COUPON_CARD_NUMBER(20, "卡券卡号", "coupon_card_number"),
-    COUPON_CARD_SECRET(21, "卡券卡密", "coupon_card_secret");
+    COUPON_CARD_SECRET(21, "卡券卡密", "coupon_card_secret"),
+    YILIANBAO_SERVICE_PACKAGE(22, "西湖益联保服务套餐", "yilianbao_service_package"),
+    ADDRESS_AND_WAY(23, "地址+路线", "address_and_ways"),
+    ;
 
+
+    /** 占位符简码 */
     private final Integer code;
+    /** 占位符描述 */
     private final String value;
+    /** 占位参数名 */
     private final String action;
 
     private static final Map<String, String> actions = new HashMap<>();

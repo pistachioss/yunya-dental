@@ -259,8 +259,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         if (StringHelper.isEmpty(signName)) {
             throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
-        try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+        redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
             if (surplusNum <= 0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
@@ -303,9 +302,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 log.error("update bizId error", e);
                 log.error("update bizId={}, surplusNum={}, orgId={}", bizId, surplusNum, orgId);
             }
-        } finally {
-            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
-        }
+            return null;
+        });
         return ResponseUtil.success();
     }
 
@@ -361,8 +359,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         if (StringHelper.isEmpty(signName)) {
             throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
-        try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+        redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
             if (surplusNum <= 0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
@@ -404,9 +401,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 log.error("update bizId error",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
             }
-        } finally {
-            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
-        }
+            return null;
+        });
         return ResponseUtil.success();
     }
 
@@ -425,8 +421,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         if (StringHelper.isEmpty(signName)) {
             throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
-        try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+        redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
             if (surplusNum <= 0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
@@ -465,9 +460,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 log.error("update bizId error",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
             }
-        } finally {
-            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
-        }
+            return null;
+        });
         return ResponseUtil.success();
     }
 
@@ -592,7 +586,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         smsSendRecord.setContentNum(getContentLength(content));
         int count = mapper.insert(smsSendRecord);
         if (count != 1) {
-            throw new ClientServiceException("插入数据失败", OperationCodeConstants.INSERT_MODEL);
+            throw new ClientServiceException("插入短信发送记录失败", OperationCodeConstants.INSERT_MODEL);
         }
         return smsSendRecord.getId();
     }
@@ -709,13 +703,6 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         }
         batchSendByTemplateId(templateId, Integer.parseInt(BaseContextHandler.getUserID()),
                 BaseContextHandler.getName(), orgId, models);
-//        SmsTemplateIdRecordModel smsModel = new SmsTemplateIdRecordModel();
-//        smsModel.setTemplateId(templateId);
-//        smsModel.setName(BaseContextHandler.getName());
-//        smsModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
-//        smsModel.setOrgId(orgId);
-//        smsModel.setModels(models);
-//        redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE, smsModel);
         return ResponseUtil.success(null);
     }
 

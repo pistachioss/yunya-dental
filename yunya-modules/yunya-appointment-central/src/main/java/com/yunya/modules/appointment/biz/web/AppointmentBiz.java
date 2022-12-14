@@ -26,6 +26,8 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
+import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
+import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
@@ -46,6 +48,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
+import com.yunya.framework.common.enums.YiLianBaoServicePackageEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
@@ -91,6 +94,8 @@ import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
 import static com.yunya.feign.wechat.enums.TemplateEnum.APPOINT_CANCEL;
 import static com.yunya.feign.wechat.enums.TemplateEnum.APPOINT_SUCCESS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.enums.SmsAutosendEventEnum.YILIANBAO_APPOINT_SUCCESS;
+import static com.yunya.framework.common.enums.SmsTemplateItemEnum.*;
 
 /**
  * 患者预约服务
@@ -166,6 +171,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @throws ParseException 日期转换异常
      */
     public ResponseResult addAppointment(AppointmentBaseModel form) throws ParseException {
+        String yilianbaoPackage = checkYilianbaoPackage(form.getAppointContent());
         // 检查预约当天预约的医生是否排班
         ResponseResult dentistSchedulingConflict = this.checkScheduling(form);
         if (null != dentistSchedulingConflict){
@@ -189,7 +195,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
             }
             rabbitMqServiceFeign.sendMessage(appointmentEntity.getId(),0,0, BaseTreatmentProcess);
-
+            smsMessage(yilianbaoPackage, form);
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             // 添加预约时长分解
             if (form.getSplitList() != null && !splitList.isEmpty()){
@@ -225,11 +231,63 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
+     * 检查西湖益联保套餐
+     *
+     * @param content
+     * @return
+     */
+    private String checkYilianbaoPackage(String content) {
+        if (StringHelper.isNotEmpty(content)) {
+            return YiLianBaoServicePackageEnum.contains(content);
+        }
+        return content;
+    }
+
+    /**
+     * 发送短信
+     *
+     * @param packageName 套餐名称
+     * @param form
+     */
+    private void smsMessage(String packageName, AppointmentBaseModel form) {
+        OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(form.getOrgId());
+        String patientName = form.getPatientName();
+        PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(form.getPatientId());
+        if (StringHelper.isAnyEmpty(patientName, packageName) && StringHelper.isAnyNull(patient, org)) {
+            return;
+        }
+        poolExecutor.submit(()->{
+            JSONObject templateParam = new JSONObject();
+            //患者姓名
+            templateParam.put(PATIENT_NAME.getAction(), patientName);
+            //益联保服务套餐
+            templateParam.put(YILIANBAO_SERVICE_PACKAGE.getAction(), packageName);
+            //预约时间
+            templateParam.put(APPOINTMENT.getAction(), DateUtil.format(form.getAppointDate()));
+            //地址+路线
+            templateParam.put(ADDRESS_AND_WAY.getAction(), org.getAddressAndWay());
+            SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
+            SmsCommonSendRecordModel model = new SmsCommonSendRecordModel();
+            model.setMobile(form.getPatientMobile());
+            model.setSendObject(patientName);
+            model.setTemplateParam(templateParam);
+            Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+            smsModel.setEventCode(YILIANBAO_APPOINT_SUCCESS.getCode());
+            smsModel.setModels(Collections.singletonList(model));
+            smsModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
+            smsModel.setOrgId(orgId);
+            smsModel.setName(BaseContextHandler.getName());
+            redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgId, smsModel);
+        });
+    }
+
+    /**
      *  添加预约（冲突后继续添加）
      * @param form  预约参数封装
      * @return  ResponseResult
      */
     public ResponseResult continueAddAppointment(AppointmentBaseModel form) {
+        String yilianbaoPackage = checkYilianbaoPackage(form.getAppointContent());
         // 检测预约分解参数是否正常
         List<AppointmentSplitBaseInfo> splits = this.checkAppointSplitField(form.getSplitList());
         if (!StringHelper.isEmpty(splits)) {
@@ -241,6 +299,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         int result = mapper.insertAppointment(build);
         if (result > 0) {
             rabbitMqServiceFeign.sendMessage(build.getId(),0,0, BaseTreatmentProcess);
+            smsMessage(yilianbaoPackage, form);
             // 添加预约时长分解
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             if (splitList != null && !splitList.isEmpty()){
@@ -3479,7 +3538,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     }
                     repeat.put(item, ++reNum);
                     Integer code = Integer.parseInt(item);
-                    if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {// 患者姓名
+                    if (PATIENT_NAME.getCode().equals(code)) {// 患者姓名
                         object.put(key, model.getSendObject());
                     } else if (SmsTemplateItemEnum.CLINIC_NAME.getCode().equals(code)) { // 诊所名称
                         object.put(key,code2);
@@ -3489,7 +3548,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                         object.put(key,code4);
                     } else if (SmsTemplateItemEnum.APPOINTMENT_DOCTOR.getCode().equals(code)) {// 预约医生姓名
                         object.put(key, model.getDentistName());
-                    } else if (SmsTemplateItemEnum.APPOINTMENT.getCode().equals(code)) { // 预约时间
+                    } else if (APPOINTMENT.getCode().equals(code)) { // 预约时间
                         String code7 = model.getAppointDate() + model.getAppointTime();
                         object.put(key, code7);
                     } else if (SmsTemplateItemEnum.APPELLATION.getCode().equals(code)) { // 先生/女士/小朋友
