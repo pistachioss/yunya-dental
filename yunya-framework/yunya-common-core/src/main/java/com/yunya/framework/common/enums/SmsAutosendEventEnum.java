@@ -25,7 +25,7 @@ public enum SmsAutosendEventEnum {
     ATTENDANCE_DEVICE_BINDING(1, "考勤设备绑定", "attendance_device_binding"),
     PATIENT_BIND_INVITE(1, "患者绑定邀请", "patient_bind_invite"),
     YILIANBAO_APPOINT_ORDER(1, "西湖益联保预约单提交成功", "yilianbao_appoint_order"),
-    YILIANBAO_APPOINT_SUCCESS(1, "西湖益联保正式预约预约成功", "yilianbao_appoint_success"),
+    YILIANBAO_APPOINT_SUCCESS(2, "西湖益联保正式预约预约成功", "yilianbao_appoint_success"),
     ;
 
     /*类型：0-公共（即公司端和门诊端都有），1-仅公司端，2-仅门诊端*/
