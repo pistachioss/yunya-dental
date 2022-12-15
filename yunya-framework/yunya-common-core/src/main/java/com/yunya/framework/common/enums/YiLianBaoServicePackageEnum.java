@@ -4,6 +4,8 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -52,21 +54,27 @@ public enum YiLianBaoServicePackageEnum {
         return this.code.equals(code);
     }
 
+    /**
+     * 枚举值被包含在，当包含两个及其以上枚举值时报错
+     *
+     * @param name
+     * @return
+     */
     public static String contains(String name) {
         String result = null;
         if (StringHelper.isNotEmpty(name)) {
             YiLianBaoServicePackageEnum[] values = values();
-            int count = 0;
+            List<String> names = new ArrayList<>();
             for (YiLianBaoServicePackageEnum item : values) {
                 if (StringHelper.contains(name, item.getName())) {
-                    result = item.getName();
-                    count++;
+                    names.add(item.getName());
                 }
             }
-            if (count == values.length - 1) {
+            if (names.size()>1 && names.size()==values.length) {
                 // 全部命中时
-                throw new ClientServiceException("【" + ADULT_ORALCARE_PACKAGE.getName() + "】和【" + CHILD_ORALCARE_PACKAGE.getName() + "】不能同时选择", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+                throw new ClientServiceException("【" + names.get(0) + "】和【" + names.get(1) + "】不能同时选择", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
             }
+            result = names.get(0);
         }
         return result;
     }

@@ -171,7 +171,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @throws ParseException 日期转换异常
      */
     public ResponseResult addAppointment(AppointmentBaseModel form) throws ParseException {
-        String yilianbaoPackage = checkYilianbaoPackage(form.getAppointContent());
+        String yilianbaoPackage = YiLianBaoServicePackageEnum.contains(form.getAppointContent());
         // 检查预约当天预约的医生是否排班
         ResponseResult dentistSchedulingConflict = this.checkScheduling(form);
         if (null != dentistSchedulingConflict){
@@ -195,7 +195,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
             }
             rabbitMqServiceFeign.sendMessage(appointmentEntity.getId(),0,0, BaseTreatmentProcess);
-            smsMessage(yilianbaoPackage, form);
+            sendMessage(yilianbaoPackage, form);
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             // 添加预约时长分解
             if (form.getSplitList() != null && !splitList.isEmpty()){
@@ -231,25 +231,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
-     * 检查西湖益联保套餐
-     *
-     * @param content
-     * @return
-     */
-    private String checkYilianbaoPackage(String content) {
-        if (StringHelper.isNotEmpty(content)) {
-            return YiLianBaoServicePackageEnum.contains(content);
-        }
-        return content;
-    }
-
-    /**
      * 发送短信
      *
      * @param packageName 套餐名称
      * @param form
      */
-    private void smsMessage(String packageName, AppointmentBaseModel form) {
+    private void sendMessage(String packageName, AppointmentBaseModel form) {
         OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(form.getOrgId());
         String patientName = form.getPatientName();
         PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(form.getPatientId());
@@ -266,6 +253,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             templateParam.put(APPOINTMENT.getAction(), DateUtil.format(form.getAppointDate()));
             //地址+路线
             templateParam.put(ADDRESS_AND_WAY.getAction(), org.getAddressAndWay());
+            //诊所电话
+            templateParam.put(CLINIC_PHONE.getAction(), org.getClinicMobile());
             SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
             SmsCommonSendRecordModel model = new SmsCommonSendRecordModel();
             model.setMobile(form.getPatientMobile());
@@ -287,7 +276,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return  ResponseResult
      */
     public ResponseResult continueAddAppointment(AppointmentBaseModel form) {
-        String yilianbaoPackage = checkYilianbaoPackage(form.getAppointContent());
+        String yilianbaoPackage = YiLianBaoServicePackageEnum.contains(form.getAppointContent());
         // 检测预约分解参数是否正常
         List<AppointmentSplitBaseInfo> splits = this.checkAppointSplitField(form.getSplitList());
         if (!StringHelper.isEmpty(splits)) {
@@ -299,7 +288,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         int result = mapper.insertAppointment(build);
         if (result > 0) {
             rabbitMqServiceFeign.sendMessage(build.getId(),0,0, BaseTreatmentProcess);
-            smsMessage(yilianbaoPackage, form);
+            sendMessage(yilianbaoPackage, form);
             // 添加预约时长分解
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             if (splitList != null && !splitList.isEmpty()){
