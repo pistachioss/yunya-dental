@@ -31,11 +31,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.enums.SmsAutosendEventEnum.YILIANBAO_APPOINT_ORDER;
 import static com.yunya.framework.common.enums.SmsTemplateItemEnum.*;
 
@@ -95,9 +97,6 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
             log.error("sms parameter missing：patientName={}, mobile={}, packageName={}, orgName={}", patientName, mobile, packageName, orgName);
             return;
         }
-        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-        String name = BaseContextHandler.getName();
         poolExecutor.submit(()->{
             try {
                 JSONObject templateParam = new JSONObject();
@@ -114,10 +113,10 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
                 model.setTemplateParam(templateParam);
                 smsModel.setEventCode(YILIANBAO_APPOINT_ORDER.getCode());
                 smsModel.setModels(Collections.singletonList(model));
-                smsModel.setUserId(userId);
-                smsModel.setOrgId(orgId);
-                smsModel.setName(name);
-                redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgId, smsModel);
+                smsModel.setUserId(ADMIN_ID);
+                smsModel.setOrgId(COMPANY_ORGID);
+                smsModel.setName(ADMIN_NAME);
+                redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + COMPANY_ORGID, smsModel);
                 log.info("generate sms message：{}", smsModel);
             } catch (Exception e) {
                 log.error("generate sms message error: ", e);
