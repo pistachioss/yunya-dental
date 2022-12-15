@@ -20,6 +20,7 @@
         <result column="addr_region" property="addrRegion" jdbcType="VARCHAR"/>
         <result column="address" property="address" jdbcType="VARCHAR"/>
         <result column="path" property="path" jdbcType="VARCHAR"/>
+        <result column="address_and_way" property="addressAndWay" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
@@ -52,7 +53,8 @@
           cei.addr_city AS addrCity,
           cei.addr_region AS addrRegion,
           cei.address,
-          cei.path
+          cei.path,
+          cei.address_and_way AS addressAndWay
       FROM
         clinic_ext_info cei
         LEFT JOIN company c ON cei.company_id = c.id
@@ -70,7 +72,8 @@
         tel,
         chair_quantity,
         business_start_time,
-        business_end_time
+        business_end_time,
+        address_and_way
       from
         clinic_ext_info
       where
