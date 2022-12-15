@@ -259,12 +259,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 templateParam.put(ADDRESS_AND_WAY.getAction(), org.getAddressAndWay());
                 //诊所电话
                 templateParam.put(CLINIC_PHONE.getAction(), org.getClinicMobile());
+                //诊所名称
+                templateParam.put(CLINIC_NAME.getAction(), org.getAbbreviation());
                 SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
                 SmsCommonSendRecordModel model = new SmsCommonSendRecordModel();
                 model.setMobile(form.getPatientMobile());
                 model.setSendObject(patientName);
                 model.setTemplateParam(templateParam);
-
                 smsModel.setEventCode(YILIANBAO_APPOINT_SUCCESS.getCode());
                 smsModel.setModels(Collections.singletonList(model));
                 smsModel.setUserId(userId);
