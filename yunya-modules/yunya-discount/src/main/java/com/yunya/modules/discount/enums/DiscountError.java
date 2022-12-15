@@ -75,6 +75,7 @@ public enum DiscountError implements RestError {
     MINI_CARD_DELETE_ERROR(65, "小程序卡券不可删除"),
     XIHU_CARD_IS_ACTIVATED(66, "西湖益联保平台卡券已激活"),
     XIHU_ALLOW_ACTIVE_OWN(67, "自有平台卡券不允许在西湖益联保平台激活"),
+    XIHU_ALLOW_ACTIVE_WRONG(68, "权益码错误、已使用或不在有效期内，请重新输入"),
     ;
     private Integer code;
     private String value;

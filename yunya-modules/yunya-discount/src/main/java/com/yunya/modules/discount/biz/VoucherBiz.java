@@ -129,6 +129,8 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
             couponCommonInfo.setAvailableSaleStartDate(discountUpdateForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(discountUpdateForm.getAvailableSaleEndDate());
             couponCommonInfo.setIsOnlineSale(discountUpdateForm.getIsOnlineSale());
+            //-----修改来源id
+            //couponCommonInfo.setSalesSourceId(discountUpdateForm.getSalesSourceId());
             //更新基础信息
             couponCommonInfoBiz.updateById(couponCommonInfo);
             couponCommonInfoBiz.removeHot(copy, discountUpdateForm.getIsOnlineSale());

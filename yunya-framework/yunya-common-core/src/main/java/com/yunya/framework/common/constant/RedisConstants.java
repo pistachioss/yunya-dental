@@ -81,6 +81,7 @@ public class RedisConstants implements Serializable {
   public static final String REDIS_KEY_APPOINT_DENTIST_DIMENSION = "appoint_dentist_dimension_";
   public static final String REDIS_KEY_APPOINT_PATIENT_DIMENSION = "appoint_patient_dimension_";
   public static final String REDIS_KEY_APPOINT_LIST = "appoint_list_";
+  public static final String LOCK_LIMIT_MODIFY = "lock:limit:modify";
 
   /** ------------------------------ 随访管理 ------------------------------------------------- */
   public static final String LOCK_VISITING_RECORD = "lock:visiting:record";

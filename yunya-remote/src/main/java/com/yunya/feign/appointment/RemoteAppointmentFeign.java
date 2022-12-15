@@ -217,8 +217,8 @@ public interface RemoteAppointmentFeign {
    * @param model
    * @return
    */
-  @GetMapping("api/reservation/code/valid")
-  boolean checkReservatoinCode(@RequestBody ReservationCodeQuery model);
+  @PostMapping("api/reservation/code/valid")
+  String checkReservatoinCode(@RequestBody ReservationCodeQuery model);
 
   /**
    * 激活使用权益码

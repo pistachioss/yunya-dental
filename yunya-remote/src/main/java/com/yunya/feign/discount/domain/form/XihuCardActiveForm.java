@@ -25,7 +25,7 @@ public class XihuCardActiveForm implements Serializable {
     @ApiModelProperty(value = "销售来源", required = true)
     private Integer salesSourceId;
     @ApiModelProperty(value = "卡号", required = true)
-    @NotBlank
+    @NotNull(message = "权益码为空")
     private String thirdCardNumber;
     @ApiModelProperty(value = "售出对象")
     private String soldTarget;

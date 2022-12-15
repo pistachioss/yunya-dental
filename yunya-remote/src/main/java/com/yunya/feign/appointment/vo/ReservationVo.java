@@ -35,6 +35,11 @@ public class ReservationVo implements Serializable {
     private String reservationSourceName;
 
     /**
+     * 预约意向时间
+     */
+    private String reservationDate;
+
+    /**
      * 预约项目
      */
     private String appointItemName;

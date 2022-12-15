@@ -58,4 +58,8 @@ public class ClientServiceException extends BaseException {
     return new ClientServiceException(code, message, args);
   }
 
+  @Override
+  public String toString() {
+    return super.getMessage();
+  }
 }

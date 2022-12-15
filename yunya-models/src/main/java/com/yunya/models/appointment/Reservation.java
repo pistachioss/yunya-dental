@@ -2,8 +2,10 @@ package com.yunya.models.appointment;
 
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 
 @Table(name = "reservation")
@@ -20,6 +22,12 @@ public class Reservation {
      */
     @Column(name = "reservation_source_id")
     private Integer reservationSourceId;
+
+    /**
+     * 流量登记管理id
+     */
+    @Column(name = "reservation_limit_id")
+    private Integer reservationLimitId;
 
     /**
      * 预约项目
@@ -74,6 +82,12 @@ public class Reservation {
      */
     @Column(name = "code")
     private String code;
+
+    /**
+     * 预约意向日期
+     */
+    @Column(name = "reservation_date")
+    private Date reservationDate;
 
     /**
      * 是否有效，是否删除(默认有效) 1-有效；0删除

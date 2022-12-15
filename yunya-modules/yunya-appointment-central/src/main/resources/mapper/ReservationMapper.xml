@@ -7,6 +7,7 @@
     -->
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="reservation_source_id" jdbcType="INTEGER" property="reservationSourceId" />
+    <result column="reservation_limit_id" jdbcType="INTEGER" property="reservationLimitId" />
     <result column="appoint_item_name" jdbcType="VARCHAR" property="appointItemName" />
     <result column="org_id" jdbcType="INTEGER" property="orgId" />
     <result column="patient_name" jdbcType="VARCHAR" property="patientName" />
@@ -15,6 +16,7 @@
     <result column="status" jdbcType="TINYINT" property="status" />
     <result column="remarks" jdbcType="VARCHAR" property="remarks" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="reservation_date" property="reservationDate" jdbcType="DATE" />
     <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
     <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
     <result column="upd_name" jdbcType="VARCHAR" property="updName" />
@@ -28,6 +30,7 @@
       , oa.org_name as 'orgName'
       , oa.reservation_source_id as 'reservationSourceId'
       , rr.source_name as 'reservationSourceName'
+      , oa.reservation_date as 'reservationDate'
       , oa.appoint_item_name as 'appointItemName'
       , oa.patient_name as 'patientName'
       , oa.patient_phone as 'patientPhone'
@@ -71,5 +74,26 @@
       </if>
     </where>
     order by oa.crt_time DESC
+  </select>
+
+  <select id="submittedLimit" resultType="com.yunya.models.appointment.Reservation">
+    select
+        reservation_limit_id,
+        reservation_date
+    from reservation
+    <where>
+        status in (0, 1)
+        and org_name = #{orgName}
+      <if test="whole != null and whole == true">
+        and reservation_date &gt;= date_format(#{yearMonth}, '%Y-%m-%d')
+        and date_format( reservation_date, '%Y-%m' ) = date_format(#{yearMonth}, '%Y-%m')
+      </if>
+      <if test="whole != null and whole == false">
+        and reservation_date in
+        <foreach collection="configDate" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>
   </select>
 </mapper>

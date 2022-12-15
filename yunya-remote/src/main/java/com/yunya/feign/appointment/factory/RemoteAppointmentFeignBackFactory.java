@@ -131,8 +131,8 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
     }
 
     @Override
-    public boolean checkReservatoinCode(ReservationCodeQuery model) {
-        return false;
+    public String checkReservatoinCode(ReservationCodeQuery model) {
+        return null;
     }
 
     @Override

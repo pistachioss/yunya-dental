@@ -20,9 +20,9 @@ import java.util.List;
 @Service
 public class ReservationCodeBiz extends BaseBiz<ReservationCodeMapper, ReservationCode> {
 
-  public boolean find(ReservationCodeQuery query) {
+  public String find(ReservationCodeQuery query) {
     if ( Strings.isNullOrEmpty(query.getCode())) {
-      return false;
+      return "凭证单号不能为空";
     }
     Example example = new Example(ReservationCode.class);
     Example.Criteria criteria = example.createCriteria();
@@ -31,17 +31,17 @@ public class ReservationCodeBiz extends BaseBiz<ReservationCodeMapper, Reservati
     if (reservationCodeList.size() == 1) {
       ReservationCode reservationCode = reservationCodeList.get(0);
       if (reservationCode.getCodeStatus() > 1) {
-        return false;
+        return "该凭证单号已被消耗";
       }
       if (reservationCode.getCodeStartDate().after(new Date())) {
-        return false;
+        return "该凭证单号已过期";
       }
       if (reservationCode.getCodeEndDate().before(new Date())) {
-        return false;
+        return "该凭证单号已过期";
       }
-      return true;
+      return "true";
     } else {
-      return false;
+      return "未查询到该凭证单号，请重新输入";
     }
   }
 

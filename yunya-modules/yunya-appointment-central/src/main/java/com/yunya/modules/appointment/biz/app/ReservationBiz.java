@@ -21,14 +21,16 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Reservation;
+import com.yunya.modules.appointment.biz.web.ReservationLimitBiz;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.ReservationMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -43,6 +45,8 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
 
     @Autowired
     private RemoteSystemServiceFeign systemServiceFeign;
+    @Resource
+    private ReservationLimitBiz limitBiz;
 
     @Autowired
     private ReservationCodeBiz reservationCodeBiz;
@@ -53,18 +57,24 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
+    @Transactional(rollbackFor = Exception.class)
     public ResponseResult add(ReservationModel model) {
         String packageName = YiLianBaoServicePackageEnum.contains(model.getAppointItemName());
         ReservationCodeQuery query = new ReservationCodeQuery();
         query.setCode(model.getCode());
-        if (!reservationCodeBiz.find(query)) {
-            ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
+        String rst = reservationCodeBiz.find(query);
+        if (!"true".equals(rst)) {
+            return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
         }
         Reservation build = EntityUtils.build(model, Reservation.class);
         build.setCrtName(BaseContextHandler.getUsername());
+        //获取剩余号失败
+        if (!limitBiz.tryAcquire(build.getReservationLimitId())) {
+            throw ClientServiceException.wrap(AppointmentError.APPOINT_REMAINING_LACK);
+        }
         int status = mapper.insertSelective(build);
         if (status <= 0) {
-            ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
+            return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
         }
         sendMessage(packageName, model);
         return ResponseUtil.success(build.getId());
@@ -149,5 +159,16 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
                 ReservationVo.setOrgName(orgInfo.getBrandName() + "(" + orgInfo.getAbbreviation() + ")");
             });
         }
+    }
+
+    /**
+     *  查询已提交预约
+     * @param orgName 门诊
+     * @param configDate 配置日期
+     * @param whole 是否查询整月
+     * @param yearMonth 整月
+     */
+    public List<Reservation> submittedLimit(String orgName, List<LocalDate> configDate, boolean whole, LocalDate yearMonth) {
+        return mapper.submittedLimit(orgName, whole, configDate, yearMonth);
     }
 }

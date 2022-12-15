@@ -22,7 +22,7 @@ public class ThreadPoolManagerConfig {
     /** 根据CPU数量动态配置核心线程数和最大线程数 */
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
     /** 核心线程数 =  CPU_COUNT + 1 */
-    private static final int CORE_POOL_SIZE = CPU_COUNT + 1;
+    public static final int CORE_POOL_SIZE = CPU_COUNT + 1;
     /** 最大线程数 =  CPU_COUNT * 2 + 1 */
     private static final int MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1;
     /** 闲置线程存活时间 1s */
@@ -33,6 +33,8 @@ public class ThreadPoolManagerConfig {
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     /** 缓冲队列 */
     private static final BlockingQueue<Runnable> blockQueue = new LinkedBlockingQueue<>();
+    /** 同步队列 */
+    private static final BlockingQueue<Runnable> syncQueue = new SynchronousQueue<>();
     /** 缓冲队列大小 = (CORE_POOL_SIZE / 每个任务花费时间) * 系统允许容忍的最大响应时间 */
     private static final int QUEUE_CAPACITY = (int) (CORE_POOL_SIZE / 0.1 * 5);
 
@@ -73,6 +75,25 @@ public class ThreadPoolManagerConfig {
                 blockQueue,
                 customizeThreadFactory(),
                 customizeRejectedHandler());
+    }
+
+    @Bean("syncExecutor")
+    public ThreadPoolExecutor syncExecutor() {
+        /*
+         * corePoolSize:核心线程数
+         * maximumPoolSize：线程池所容纳最大线程数(workQueue队列满了之后才开启)
+         * keepAliveTime：非核心线程闲置时间超时时长
+         * unit：keepAliveTime的单位
+         * workQueue：等待队列，存储还未执行的任务
+         * threadFactory：线程创建的工厂
+         * handler：异常处理机制
+         *
+         */
+        return new ThreadPoolExecutor(CORE_POOL_SIZE,MAXIMUM_POOL_SIZE,KEEP_ALIVE,
+                TimeUnit.SECONDS,
+                syncQueue,
+                customizeThreadFactory(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     /**
