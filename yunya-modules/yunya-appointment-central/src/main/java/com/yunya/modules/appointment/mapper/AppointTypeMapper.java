@@ -22,4 +22,10 @@ public interface AppointTypeMapper extends Mapper<AppointType> {
      */
     List<AppointTypeListVo> findAppointTypeList();
 
+    /**
+     * 查询最大排序号
+     *
+     * @return
+     */
+    Integer selectMaxSort();
 }
