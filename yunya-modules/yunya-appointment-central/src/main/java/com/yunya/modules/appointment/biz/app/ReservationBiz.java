@@ -23,6 +23,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Reservation;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.ReservationMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 import static com.yunya.framework.common.enums.SmsAutosendEventEnum.YILIANBAO_APPOINT_ORDER;
 import static com.yunya.framework.common.enums.SmsTemplateItemEnum.*;
 
+@Slf4j
 @Service
 public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
 
@@ -80,28 +82,36 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
         String orgName = form.getOrgName();
         String patientName = form.getPatientName();
         if (StringHelper.isAnyEmpty(patientName, mobile, packageName, orgName)) {
+            log.error("sms parameter missing：patientName={}, mobile={}, packageName={}, orgName={}", patientName, mobile, packageName, orgName);
             return;
         }
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        String name = BaseContextHandler.getName();
         poolExecutor.submit(()->{
-            JSONObject templateParam = new JSONObject();
-            //患者姓名
-            templateParam.put(PATIENT_NAME.getAction(), patientName);
-            //诊所名称
-            templateParam.put(CLINIC_NAME.getAction(), orgName);
-            //益联保服务套餐
-            templateParam.put(YILIANBAO_SERVICE_PACKAGE.getAction(), packageName);
-            SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
-            SmsCommonSendRecordModel model = new SmsCommonSendRecordModel();
-            model.setMobile(mobile);
-            model.setSendObject(patientName);
-            model.setTemplateParam(templateParam);
-            Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-            smsModel.setEventCode(YILIANBAO_APPOINT_ORDER.getCode());
-            smsModel.setModels(Collections.singletonList(model));
-            smsModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
-            smsModel.setOrgId(orgId);
-            smsModel.setName(BaseContextHandler.getName());
-            redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgId, smsModel);
+            try {
+                JSONObject templateParam = new JSONObject();
+                //患者姓名
+                templateParam.put(PATIENT_NAME.getAction(), patientName);
+                //诊所名称
+                templateParam.put(CLINIC_NAME.getAction(), orgName);
+                //益联保服务套餐
+                templateParam.put(YILIANBAO_SERVICE_PACKAGE.getAction(), packageName);
+                SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
+                SmsCommonSendRecordModel model = new SmsCommonSendRecordModel();
+                model.setMobile(mobile);
+                model.setSendObject(patientName);
+                model.setTemplateParam(templateParam);
+                smsModel.setEventCode(YILIANBAO_APPOINT_ORDER.getCode());
+                smsModel.setModels(Collections.singletonList(model));
+                smsModel.setUserId(userId);
+                smsModel.setOrgId(orgId);
+                smsModel.setName(name);
+                redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgId, smsModel);
+                log.info("generate sms message：{}", smsModel);
+            } catch (Exception e) {
+                log.error("generate sms message error: ", e);
+            }
         });
     }
 
