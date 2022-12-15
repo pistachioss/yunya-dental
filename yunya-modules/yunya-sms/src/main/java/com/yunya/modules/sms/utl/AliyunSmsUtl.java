@@ -247,7 +247,8 @@ public class AliyunSmsUtl {
         if (StringHelper.isNotEmpty(bodyParams)) {
             bodyParams.forEach((key, value) -> request.putBodyParameter(key, value));
         }
-        log.info("{} requestParam: {}", action, request.getSysQueryParameters());
+        log.info("{} queryParam: {}, bodyParam: {}, headParam: {}, pathParam: {}", action,
+                request.getSysQueryParameters(), request.getSysBodyParameters(), request.getSysHeadParameters(), request.getSysPathParameters());
         CommonResponse response = client.getCommonResponse(request);
         String data = response.getData();
         log.info("{} response: {}", action, data);
