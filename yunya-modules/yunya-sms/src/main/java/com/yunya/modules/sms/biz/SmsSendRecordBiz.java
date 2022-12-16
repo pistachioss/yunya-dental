@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.sms.model.*;
 import com.yunya.feign.sms.query.SmsSendRecordQueryForm;
 import com.yunya.feign.sms.vo.SmsSendRecordVO;
@@ -17,11 +18,13 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
+import com.yunya.framework.common.enums.YiLianBaoServicePackageEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.appointment.Appointment;
 import com.yunya.models.sms.SmsSendBatch;
 import com.yunya.models.sms.SmsSendRecord;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
@@ -41,9 +44,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.enums.SmsTemplateItemEnum.*;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介：短信发送记录业务层
@@ -66,6 +72,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     private SmsOrgStatisticsBiz smsOrgStatisticsBiz;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Autowired
+    private RemoteAppointmentFeign remoteAppointmentFeign;
     @Autowired
     private RedisUtils redisUtils;
 
@@ -636,6 +644,9 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 code3 = medicalOrganizationInfoVO.getTel();
                 code4 = medicalOrganizationInfoVO.getAddress();
             }
+            List<Integer> appointIds = models.stream().map(AppointmentSmsSendRecordModel::getAppointId).collect(Collectors.toList());
+            List<Appointment> appointments = remoteAppointmentFeign.findAppointmentListByIds(appointIds);
+            Map<Integer, String> appointMap = appointments.stream().collect(toMap(Appointment::getId, Appointment::getAppointContent));
             String[] items = templateItem.split(",");
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             for (AppointmentSmsSendRecordModel model : models) {
@@ -651,17 +662,17 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                     }
                     repeat.put(item, ++reNum);
                     Integer code = Integer.parseInt(item);
-                    if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {// 患者姓名
+                    if (PATIENT_NAME.equals(code)) {// 患者姓名
                         object.put(key, model.getSendObject());
-                    } else if (SmsTemplateItemEnum.CLINIC_NAME.getCode().equals(code)) { // 诊所名称
+                    } else if (CLINIC_NAME.equals(code)) { // 诊所名称
                         object.put(key,code2);
-                    } else if (SmsTemplateItemEnum.CLINIC_PHONE.getCode().equals(code)) {// 诊所电话
+                    } else if (CLINIC_PHONE.equals(code)) {// 诊所电话
                         object.put(key,code3);
-                    } else if (SmsTemplateItemEnum.CLINIC_ADDRESS.getCode().equals(code)) {// 诊所地址
+                    } else if (CLINIC_ADDRESS.equals(code)) {// 诊所地址
                         object.put(key,code4);
-                    } else if (SmsTemplateItemEnum.APPOINTMENT_DOCTOR.getCode().equals(code)) {// 预约医生姓名
+                    } else if (APPOINTMENT_DOCTOR.equals(code)) {// 预约医生姓名
                         object.put(key, model.getDentistName());
-                    } else if (SmsTemplateItemEnum.APPOINTMENT.getCode().equals(code)) { // 预约时间
+                    } else if (APPOINTMENT.getCode().equals(code)) { // 预约时间
                         String code7 = model.getAppointDate() + " " + model.getAppointTime();
                         object.put(key, code7);
                     } else if (SmsTemplateItemEnum.APPELLATION.getCode().equals(code)) { // 先生/女士/小朋友
@@ -679,7 +690,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                             }
                         }
                         object.put(key, code7);
-                    } else if (SmsTemplateItemEnum.MORNING_AFTERNOON.getCode().equals(code)) {// 上午/下午
+                    } else if (MORNING_AFTERNOON.equals(code)) {// 上午/下午
                         String code7 = model.getAppointDate() + " " + model.getAppointTime() + ":59";
                         String middleStr = model.getAppointDate() + " 12:00:00";
                         String lastStr = model.getAppointDate() + " 00:00:00";
@@ -695,6 +706,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                         } catch (ParseException e) {
                             throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                         }
+                    } else if (YILIANBAO_SERVICE_PACKAGE.equals(code)) {
+                        String content = appointMap.get(model.getAppointId());
+                        String packageName = YiLianBaoServicePackageEnum.contains(content);
+                        object.put(key, packageName);
                     } else { // 其他
                         throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
                     }

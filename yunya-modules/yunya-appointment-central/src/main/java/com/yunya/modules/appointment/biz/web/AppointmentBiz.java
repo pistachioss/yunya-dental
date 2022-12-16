@@ -3502,6 +3502,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param models 短信预约提醒列表
      * @return ResponseResult
      */
+    @Deprecated
     public ResponseResult<T> sendAppointmentBatchSms(Integer templateId, List<AppointmentSmsSendRecordModel> models) {
         Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         SmsTemplateSetVO smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateById(templateId);
