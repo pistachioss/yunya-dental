@@ -17,7 +17,7 @@ import java.io.Serializable;
  */
 @ApiModel("短信自动发送事件数据模型")
 @Data
-@ToString
+@ToString(callSuper = true)
 public class SmsAutoEventSendRecordModel extends SmsModel implements Serializable {
     /**
      * 自动发送事件

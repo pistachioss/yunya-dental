@@ -31,8 +31,8 @@ public class RedisUtils {
   private static final String DEFAULT_LOCK_VALUE = "lock";
   /** 锁的过期时长：10秒 */
   private static final Integer DEFAULT_LOCK_EXPIRE = 10;
-  /** 等待获取锁的时长：2秒 */
-  private static final Integer DEFAULT_LOCK_WAIT = 2;
+  /** 等待下次获取锁的时长：1秒 */
+  private static final Integer DEFAULT_LOCK_WAIT = 1;
   /** 锁定时长的默认单位：秒 */
   private static final TimeUnit DEFAULT_LOCK_UNIT = TimeUnit.SECONDS;
   @Autowired private RedisTemplate<String, Object> redisTemplate;
@@ -245,7 +245,7 @@ public class RedisUtils {
   /**
    * 锁保护下的方法执行
    *  1、锁的默认过期时长10秒
-   *  2、在未获取锁的轮询中，下次尝试获取锁的等待时长为2秒
+   *  2、在获取锁的轮询中，尝试下次获取锁的等待时长默认为1秒
    *
    * @param key 锁key
    * @param func 待被锁保护的方法
@@ -272,7 +272,7 @@ public class RedisUtils {
         try {
           TimeUnit.SECONDS.sleep(wait.longValue());
         } catch (InterruptedException e) {
-          log.error("locked error: ", e);
+          log.error("lockedFunc error: ", e);
           throw new RuntimeException(e);
         }
       }

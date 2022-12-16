@@ -21,9 +21,9 @@ import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
@@ -254,7 +254,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 //益联保服务套餐
                 templateParam.put(YILIANBAO_SERVICE_PACKAGE.getAction(), packageName);
                 //预约时间
-                templateParam.put(APPOINTMENT.getAction(), DateUtil.format(form.getAppointDate()));
+                templateParam.put(APPOINTMENT.getAction(), StringHelper.joinWith(" ", DateUtil.format(form.getAppointDate()), form.getAppointTime()));
                 //地址+路线
                 templateParam.put(ADDRESS_AND_WAY.getAction(), org.getAddressAndWay());
                 //诊所电话

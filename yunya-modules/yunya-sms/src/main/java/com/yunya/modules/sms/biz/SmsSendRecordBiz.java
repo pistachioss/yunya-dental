@@ -41,7 +41,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -151,30 +150,25 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     public ResponseResult sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
         Integer orgId = COMPANY_ORGID;
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(smsVerifyCodeModel.getEventCode(), null, orgId);
-        if (smsTemplateSetVO == null) {
+        if (StringHelper.isNull(smsTemplateSetVO)) {
             throw new ClientServiceException("短信模板暂不可用！", OPERATION_NOT_ALLOW);
         }
         String signName = smsTemplateSetVO.getSignName();
         if (StringHelper.isEmpty(signName)) {
             throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
-        try {
-            Integer userId = smsVerifyCodeModel.getUserId();
-            String name = smsVerifyCodeModel.getName();
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+        Integer userId = smsVerifyCodeModel.getUserId();
+        String name = smsVerifyCodeModel.getName();
+        redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
-            if (surplusNum <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum);
             Integer batchId = smsSendBatchBiz.insertEntity(orgId, smsTemplateSetVO.getId(),
                     SmsTypeEnum.VERIFY_CODE.getCode(), 1, userId, name);
             String content = smsTemplateSetVO.getTemplateContent();
             int count = StringHelper.countChild("@", content);
-            String templateItem = smsTemplateSetVO.getTemplateItem();
             JSONObject param = new JSONObject();
-            String[] items = null;
-            if (StringHelper.isNotEmpty(templateItem)) {
-                items = templateItem.split(",");
+            String[] items = splitTemplateItem(smsTemplateSetVO.getTemplateItem());
+            if (StringHelper.isNotEmpty(items)) {
                 param.put(SmsTemplateItemEnum.getAction(items[0]), smsVerifyCodeModel.getVerifyCode());
             }
             if (param.size() != count) {
@@ -183,9 +177,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             StringBuilder builder = parseSmsContent(items,
                     content.split("@"), signName, param);
             int len = getContentLength(builder);
-            if (surplusNum <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum - len);
             String mobile = smsVerifyCodeModel.getMobile();
             Integer recordId = insertSelective(orgId, batchId, builder, mobile,
                     userId, name, userId, name);
@@ -193,12 +185,11 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             try {
                 updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, Arrays.asList(recordId));
             } catch (Exception e) {
-                log.error("update bizId error", e);
+                log.error("update bizId error: ", e);
                 log.error("update bizId={}, surplusNum={}, orgId={}", bizId, surplusNum, orgId);
             }
-        } finally {
-            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
-        }
+            return null;
+        });
         return ResponseUtil.success();
     }
 
@@ -261,18 +252,12 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         }
         redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
-            if (surplusNum <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum);
             Integer batchId = smsSendBatchBiz.insertEntity(orgId, templateId, SmsTypeEnum.SMS_NOTIFY.getCode(), models.size(), userId, name);
             String content = smsTemplateSetVO.getTemplateContent();
             int count = StringHelper.countChild("@", content);
             String[] contents = content.split("@");
-            String templateItem = smsTemplateSetVO.getTemplateItem();
-            String[] items = null;
-            if (StringHelper.isNotEmpty(templateItem)) {
-                items = templateItem.split(",");
-            }
+            String[] items = splitTemplateItem(smsTemplateSetVO.getTemplateItem());
             JSONArray mobiles = new JSONArray();
             JSONArray signNames = new JSONArray();
             JSONArray templateParamJson = new JSONArray();
@@ -292,9 +277,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 templateParamJson.add(param);
                 recordIds.add(recordId);
             }
-            if (surplusNum - len <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum - len);
             String bizId = AliyunSmsUtl.sendBatchSms(mobiles, signNames, smsTemplateSetVO.getTemplateCode(), templateParamJson);
             try {
                 updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, recordIds);
@@ -305,6 +288,20 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             return null;
         });
         return ResponseUtil.success();
+    }
+
+    /**
+     * 分割模板参数
+     *
+     * @param templateItem
+     * @return
+     */
+    private String[] splitTemplateItem(String templateItem) {
+        String[] items = null;
+        if (StringHelper.isNotEmpty(templateItem)) {
+            items = templateItem.split(",");
+        }
+        return items;
     }
 
     /**
@@ -352,7 +349,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      */
     public ResponseResult batchSend(Integer orgId, Integer userId, String name, SmsBatchSendRecordModel model) {
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId(), orgId);
-        if (smsTemplateSetVO == null) {
+        if (StringHelper.isNull(smsTemplateSetVO)) {
             throw new ClientServiceException("短信模板暂不可用！", OPERATION_NOT_ALLOW);
         }
         String signName = smsTemplateSetVO.getSignName();
@@ -361,9 +358,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         }
         redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
-            if (surplusNum <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum);
             String[] mobiles = model.getMobiles().split(",");
             JSONArray templateParamJson = model.getTemplateParamJson();
             Map<Integer, List<StringBuilder>> res = parseSmsContent(mobiles, smsTemplateSetVO, templateParamJson);
@@ -391,14 +386,12 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 phoneNumberJson.add(mobile);
                 recordIds.add(recordId);
             }
-            if (surplusNum-len <=0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum - len);
             String bizId = AliyunSmsUtl.sendBatchSms(phoneNumberJson, signNameJson, smsTemplateSetVO.getTemplateCode(), templateParamJson);
             try {
                 updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, recordIds);
             } catch (Exception e) {
-                log.error("update bizId error",e);
+                log.error("update bizId error: ",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
             }
             return null;
@@ -423,9 +416,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         }
         redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
-            if (surplusNum <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum);
             String[] mobiles = model.getMobiles().split(",");
             JSONArray templateParamJson = new JSONArray();
             templateParamJson.add(model.getTemplateParamJson());
@@ -442,7 +433,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             for (int i = 0; i < mobiles.length; i++) {
                 String mobile = mobiles[i];
                 Integer uptId = null;
-                if (userIds != null && !userIds.isEmpty()) {
+                if (StringHelper.isNotEmpty(userIds)) {
                     uptId = userIds.get(i);
                 }
                 StringBuilder content = builders.get(0);
@@ -450,19 +441,29 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 Integer recordId = insertSelective(orgId, batchId, content, mobile, uptId, sendObjects.get(i), userId, name);
                 recordIds.add(recordId);
             }
-            if (surplusNum <=0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum - len);
             String bizId = AliyunSmsUtl.sendSms(model.getMobiles(), signName, smsTemplateSetVO.getTemplateCode(), model.getTemplateParamJson());
             try {
                 updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, recordIds);
             } catch (Exception e) {
-                log.error("update bizId error",e);
+                log.error("update bizId error: ",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
             }
             return null;
         });
         return ResponseUtil.success();
+    }
+
+
+    /**
+     * 检查短信余额
+     *
+     * @param surplusNum
+     */
+    private void checkSmsBalance(int surplusNum) {
+        if (surplusNum <= 0) {
+            throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
+        }
     }
 
     /**
@@ -756,8 +757,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             }
         }
         //发送失败，返补短信
-        if (!rebates.isEmpty()) {
-            rebates.forEach((orgId, rebate)-> smsOrgStatisticsBiz.incrByOrgId(null, rebate,null,orgId));
+        if (StringHelper.isNotEmpty(rebates)) {
+            rebates.forEach((orgId, rebate)-> smsOrgStatisticsBiz.incrByOrgId(null, rebate,null, orgId));
         }
     }
 

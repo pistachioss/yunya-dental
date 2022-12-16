@@ -36,13 +36,13 @@ public class StringHelper extends StringUtils {
   private static final char SEPARATOR = '_';
 
   /**
-   * 获取参数不为空值
+   * 获取参数，空值时返回默认值
    *
    * @param value defaultValue 要判断的value
    * @return value 返回值
    */
   public static <T> T nvl(T value, T defaultValue) {
-    return value != null ? value : defaultValue;
+    return isNotNull(value) ? value : defaultValue;
   }
 
   /**

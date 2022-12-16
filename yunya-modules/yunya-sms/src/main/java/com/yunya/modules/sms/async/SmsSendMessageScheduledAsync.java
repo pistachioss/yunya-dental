@@ -1,7 +1,6 @@
 package com.yunya.modules.sms.async;
 
 import com.alibaba.fastjson.JSONObject;
-import com.aliyun.oss.ServiceException;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsTemplateIdRecordModel;
 import com.yunya.feign.sms.model.SmsVerifyCodeModel;
@@ -13,10 +12,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.sms.biz.SmsSendRecordBiz;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -72,7 +68,7 @@ public class SmsSendMessageScheduledAsync {
             try {
                 smsSendRecordBiz.batchSendByEventCode(smsAutoEventSendRecordModel);
             } catch (Exception e) {
-                log.error("smsSendMessageAsync error: {}", e);
+                log.error("smsSendMessageAsync error: ", e);
             } finally {
                 log.info("处理短信完成");
             }
@@ -88,7 +84,7 @@ public class SmsSendMessageScheduledAsync {
     public void smsSendMessageAsyncByTemplateId() {
         SmsTemplateIdRecordModel smsTemplateIdRecordModel = redisUtils.rPop(
                 RedisConstants.SMS_SEND_MESSAGE_QUEUE, SmsTemplateIdRecordModel.class);
-        if (smsTemplateIdRecordModel == null) {
+        if (StringHelper.isNull(smsTemplateIdRecordModel)) {
             return;
         }
         log.info("开始处理短信：{}", JSONObject.toJSONString(smsTemplateIdRecordModel));
@@ -96,7 +92,7 @@ public class SmsSendMessageScheduledAsync {
             try {
                 smsSendRecordBiz.batchSendByTemplateId(smsTemplateIdRecordModel);
             } catch (Exception e) {
-                log.error("smsSendMessageAsync error: {}", e);
+                log.error("smsSendMessageAsync error: ", e);
             } finally {
                 log.info("处理短信完成");
             }
@@ -109,14 +105,14 @@ public class SmsSendMessageScheduledAsync {
     public void smsSendVerifyCodeAsync() {
         SmsVerifyCodeModel smsVerifyCodeModel = redisUtils.rPop(
                 RedisConstants.SMS_SEND_VERIFYCODE_QUEUE + COMPANY_ORGID, SmsVerifyCodeModel.class);
-        if (smsVerifyCodeModel == null) {
+        if (StringHelper.isNull(smsVerifyCodeModel)) {
             return;
         }
         log.info("开始处理短信验证码：{}", JSONObject.toJSONString(smsVerifyCodeModel));
         try {
             smsSendRecordBiz.sendVerifyCode(smsVerifyCodeModel);
         } catch (Exception e) {
-            log.error("smsSendVerifyCodeAsync error: {}", e);
+            log.error("smsSendVerifyCodeAsync error: ", e);
         } finally {
             log.info("处理短信验证码完成");
         }

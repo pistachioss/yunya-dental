@@ -721,7 +721,7 @@ public class DateUtil {
     try {
       return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date);
     } catch (ParseException e) {
-      log.error("parse date error: {}", e);
+      log.error("parse date error: ", e);
     }
     return null;
   }
