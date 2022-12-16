@@ -44,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
@@ -644,9 +645,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 code3 = medicalOrganizationInfoVO.getTel();
                 code4 = medicalOrganizationInfoVO.getAddress();
             }
-            List<Integer> appointIds = models.stream().map(AppointmentSmsSendRecordModel::getAppointId).collect(Collectors.toList());
-            List<Appointment> appointments = remoteAppointmentFeign.findAppointmentListByIds(appointIds);
-            Map<Integer, String> appointMap = appointments.stream().collect(toMap(Appointment::getId, Appointment::getAppointContent));
+            Map<Integer, Appointment> appointMap = findAppointment(models);
             String[] items = templateItem.split(",");
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             for (AppointmentSmsSendRecordModel model : models) {
@@ -707,9 +706,11 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                             throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                         }
                     } else if (YILIANBAO_SERVICE_PACKAGE.equals(code)) {
-                        String content = appointMap.get(model.getAppointId());
-                        String packageName = YiLianBaoServicePackageEnum.contains(content);
-                        object.put(key, packageName);
+                        Appointment appointment = appointMap.get(model.getAppointId());
+                        if (StringHelper.isNotNull(appointment)) {
+                            String packageName = YiLianBaoServicePackageEnum.contains(appointment.getAppointContent());
+                            object.put(key, packageName);
+                        }
                     } else { // 其他
                         throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
                     }
@@ -720,6 +721,19 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         batchSendByTemplateId(templateId, Integer.parseInt(BaseContextHandler.getUserID()),
                 BaseContextHandler.getName(), orgId, models);
         return ResponseUtil.success(null);
+    }
+
+    /**
+     * 查询预约列表
+     *
+     * @param models
+     * @return
+     */
+    private Map<Integer, Appointment> findAppointment(List<AppointmentSmsSendRecordModel> models) {
+        List<Integer> appointIds = models.stream().map(AppointmentSmsSendRecordModel::getAppointId).collect(Collectors.toList());
+        List<Appointment> appointments = remoteAppointmentFeign.findAppointmentListByIds(appointIds);
+        return Optional.ofNullable(appointments).orElseGet(ArrayList::new)
+                .stream().collect(toMap(Appointment::getId, Function.identity()));
     }
 
     /**
