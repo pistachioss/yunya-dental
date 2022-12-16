@@ -238,9 +238,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private void sendMessage(String packageName, AppointmentBaseModel form) {
         OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(form.getOrgId());
-        String patientName = form.getPatientName();
-        if (StringHelper.isAnyEmpty(patientName, packageName) || StringHelper.isAnyNull(org)) {
-            log.error("sms parameter missing：patientName={}, packageName={}, org={}", patientName, packageName, org);
+        PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(form.getPatientId());
+        if (StringHelper.isEmpty(packageName) || StringHelper.isAnyNull(patient, org)) {
+            log.error("sms parameter missing：patient={}, packageName={}, org={}", patient, packageName, org);
             return;
         }
         Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
@@ -250,7 +250,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             try {
                 JSONObject templateParam = new JSONObject();
                 //患者姓名
-                templateParam.put(PATIENT_NAME.getAction(), patientName);
+                templateParam.put(PATIENT_NAME.getAction(), patient.getName());
                 //益联保服务套餐
                 templateParam.put(YILIANBAO_SERVICE_PACKAGE.getAction(), packageName);
                 //预约时间
@@ -263,8 +263,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 templateParam.put(CLINIC_NAME.getAction(), org.getAbbreviation());
                 SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
                 SmsCommonSendRecordModel model = new SmsCommonSendRecordModel();
-                model.setMobile(form.getPatientMobile());
-                model.setSendObject(patientName);
+                model.setMobile(patient.getMobile());
+                model.setSendObject(patient.getName());
                 model.setTemplateParam(templateParam);
                 smsModel.setEventCode(YILIANBAO_APPOINT_SUCCESS.getCode());
                 smsModel.setModels(Collections.singletonList(model));
