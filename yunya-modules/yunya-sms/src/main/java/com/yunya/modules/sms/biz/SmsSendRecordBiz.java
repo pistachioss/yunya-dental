@@ -637,6 +637,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             String code2 = null;
             String code3 = null;
             String code4 = null;
+            String addressAndWay = null;
             if (templateItem.indexOf(SmsTemplateItemEnum.CLINIC_NAME.getCode()+"")!=-1
                     ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_PHONE.getCode()+"")!=-1
                     ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_ADDRESS.getCode()+"")!=-1) {
@@ -644,6 +645,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 code2 = medicalOrganizationInfoVO.getAbbreviation();
                 code3 = medicalOrganizationInfoVO.getTel();
                 code4 = medicalOrganizationInfoVO.getAddress();
+                addressAndWay = medicalOrganizationInfoVO.getAddressAndWay();
             }
             Map<Integer, Appointment> appointMap = findAppointment(models);
             String[] items = templateItem.split(",");
@@ -711,6 +713,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                             String packageName = YiLianBaoServicePackageEnum.contains(appointment.getAppointContent());
                             object.put(key, packageName);
                         }
+                    } else if (ADDRESS_AND_WAY.equals(code)) {
+                        object.put(key, addressAndWay);
                     } else { // 其他
                         throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
                     }
