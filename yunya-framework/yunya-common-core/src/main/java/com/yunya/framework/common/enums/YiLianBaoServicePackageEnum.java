@@ -74,7 +74,9 @@ public enum YiLianBaoServicePackageEnum {
                 // 全部命中时
                 throw new ClientServiceException("【" + names.get(0) + "】和【" + names.get(1) + "】不能同时选择", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
             }
-            result = names.get(0);
+            if (StringHelper.isNotEmpty(names)) {
+                result = names.get(0);
+            }
         }
         return result;
     }
