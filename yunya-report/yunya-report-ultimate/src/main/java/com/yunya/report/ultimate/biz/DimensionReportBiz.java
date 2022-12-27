@@ -1335,12 +1335,14 @@ public class DimensionReportBiz {
         List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(clinicQuery);
         Map<String, BigDecimal> workloadMap = clinicEmployeeWorkload(query, null, vo->{
             // 门诊+月份分组统计
-            String key = vo.getOrgId()+","+vo.getBillDate();
+            String key = StringHelper.joinWith(",", vo.getOrgId(), vo.getBillDate());
             return key.substring(0, key.length()-2);
         });
         Future<Map<String, StatEmpTreat>> firstVisitFuture = multiFindClinicTreatVisitNum(query, query.getOrgIds(), null);
         Future<Map<String, Set<Integer>>> treatVisitFuture = multiFindTreatVisitPatientList(query, query.getOrgIds(), null);
-        return mergeClinicWorkloadVisitStatistice(query, orgs, workloadMap, firstVisitFuture.get(), treatVisitFuture.get());
+        // 非工作量
+        Map<String, BigDecimal> nonPerformanWorkload = clinicMonthNonPerformanWorkload(query);
+        return mergeClinicWorkloadVisitStatistice(query, orgs, workloadMap, nonPerformanWorkload, firstVisitFuture.get(), treatVisitFuture.get());
     }
 
     private Map<String, BigDecimal> clinicEmployeeWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds, Function<BillExecutorItemVO, String> keyFunc) throws ExecutionException, InterruptedException {
@@ -1398,7 +1400,7 @@ public class DimensionReportBiz {
      * @return
      */
     private DynamicHeaderPageInfo<JSONObject> mergeClinicWorkloadVisitStatistice(DateRangeQueryForm query, List<BaseOrganization> orgs,
-             Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> firstVisitMap, Map<String, Set<Integer>> treatVisitMap) {
+             Map<String, BigDecimal> workloadMap, Map<String, BigDecimal> nonWorkload, Map<String, StatEmpTreat> firstVisitMap, Map<String, Set<Integer>> treatVisitMap) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(orgs);
         if (StringHelper.isNotEmpty(orgs)) {
             String startDate = query.getStartDate();
@@ -1407,8 +1409,8 @@ public class DimensionReportBiz {
             int size = Integer.parseInt(endDate) - Integer.parseInt(startDate) + 1;
             List<JSONObject> list = new ArrayList<>();
             Map<String, String> title = new LinkedHashMap<>(16);
-            BigDecimal[][] total = new BigDecimal[13][years.size() * 3];
-            orgs.forEach(vo -> putObject(vo.getOrgId(), vo.getAbbreviation(), size, years, workloadMap, firstVisitMap, treatVisitMap, title, list, total));
+            BigDecimal[][] total = new BigDecimal[13][years.size() * 4];
+            orgs.forEach(o-> putObject(o.getOrgId(), o.getAbbreviation(), size, years, workloadMap, nonWorkload, firstVisitMap, treatVisitMap, title, list, total));
             putTotalObj(total, years, list);
             pageInfo.setMap(title);
             pageInfo.setList(list);
@@ -1433,6 +1435,34 @@ public class DimensionReportBiz {
                 month = "合计";
             }
             JSONObject obj = initMonthObj("合计", month);
+            int nInx = years.size();
+            int fInx = years.size() * 2;
+            int rInx = years.size() * 2 + 1;
+            for (int wInx = 0; wInx < years.size();) {
+                String year = years.get(wInx);
+                obj.put("W" + year, total[i][wInx++]);
+                obj.put("N" + year, total[i][nInx++]);
+                obj.put("F" + year, total[i][fInx++]);
+                obj.put("R" + year, total[i][rInx++]);
+            }
+            list.add(obj);
+        }
+    }
+
+    /**
+     * 统计员工在指定年份下的工作量、初诊人数、就诊人数的总计
+     *
+     * @param total
+     * @param years
+     * @param list
+     */
+    private void putEmpTotalObj(BigDecimal[][] total, List<String> years, List<JSONObject> list) {
+        for (int i = 0; i < total.length; i++) {
+            String month = String.valueOf(i + 1);
+            if (i == total.length-1) {
+                month = "合计";
+            }
+            JSONObject obj = initMonthObj("合计", month);
             int fInx = years.size();
             int rInx = years.size() * 2;
             for (int wInx = 0; wInx < years.size();) {
@@ -1445,8 +1475,85 @@ public class DimensionReportBiz {
         }
     }
 
-    private BigDecimal[][] putObject(Integer keyId, String name, int size, List<String> years, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap,
-                 Map<String, Set<Integer>> treatVisitMap, Map<String, String> title, List<JSONObject> list, BigDecimal[][] total) {
+    private BigDecimal[][] putObject(Integer keyId, String name, int size, List<String> years, Map<String, BigDecimal> workloadMap, Map<String, BigDecimal> nonWorkloadMap, Map<String, StatEmpTreat> treatNumMap,
+                                        Map<String, Set<Integer>> treatVisitMap, Map<String, String> title, List<JSONObject> list, BigDecimal[][] total) {
+        BigDecimal[] totalWorkload = new BigDecimal[size];
+        BigDecimal[] nonTotalWorkload = new BigDecimal[size];
+        for (int i = 0; i < size; i++) {
+            totalWorkload[i] = new BigDecimal("0.00");
+            nonTotalWorkload[i] = new BigDecimal("0.00");
+        }
+        int[] totalFirstVisitCount = new int[size];
+        int[] totalTreatVisitCount = new int[size];
+        // 门诊的每年每月统计
+        for (int i = 1; i <=12; i++) {
+            JSONObject obj = initMonthObj(name, i+"");
+            int nInx = years.size();
+            int fInx = years.size() * 2;
+            int rInx = years.size() * 2 + 1;
+            for (int wInx = 0; wInx < years.size(); wInx++,nInx++,fInx++,rInx++) {
+                String year = years.get(wInx);
+                String key = keyId + "," + year;
+                if (i < 10) {
+                    key += "0" + i;
+                } else {
+                    key += i;
+                }
+                BigDecimal workload = defaultValue(workloadMap.get(key));
+                obj.put("W"+year, workload);
+                BigDecimal nonWorkload = defaultValue(nonWorkloadMap.get(key));
+                obj.put("N"+year, nonWorkload);
+                StatEmpTreat statEmpTreat = treatNumMap.get(key);
+                int firstVisitCount = 0;
+                int treatVisitCount = 0;
+                Set<Integer> patientIds = treatVisitMap.get(key);
+                if (StringHelper.isNotEmpty(patientIds)) {
+                    treatVisitCount = patientIds.size();
+                }
+                if (!ObjectUtils.isEmpty(statEmpTreat)) {
+                    firstVisitCount = statEmpTreat.getFirstVisitCount();
+                }
+                obj.put("F"+year, firstVisitCount);
+                obj.put("R"+year, treatVisitCount);
+                totalWorkload[wInx] = totalWorkload[wInx].add(workload);
+                nonTotalWorkload[wInx] = nonTotalWorkload[wInx].add(nonWorkload);
+                totalFirstVisitCount[wInx] += firstVisitCount;
+                totalTreatVisitCount[wInx] += treatVisitCount;
+                cumulation(i-1, wInx, nInx, fInx, rInx, total, workload, nonWorkload, firstVisitCount, treatVisitCount);
+            }
+            list.add(obj);
+        }
+        title.put("name", "门诊");
+        title.put("Wmonth", "月份");
+        years.forEach(year-> title.put("W"+year, year));
+        title.put("Nmonth", "月份");
+        years.forEach(year-> title.put("N"+year, year));
+        title.put("Fmonth", "月份");
+        years.forEach(year-> title.put("F"+year, year));
+        title.put("Rmonth", "月份");
+        years.forEach(year-> title.put("R"+year, year));
+        JSONObject totalObj = initMonthObj(defaultValue(name), "合计");
+        int nInx = years.size();
+        int fInx = years.size() * 2;
+        int rInx = years.size() * 2 + 1;
+        for (int wInx = 0; wInx < years.size(); wInx++,nInx++,fInx++,rInx++) {
+            String year = years.get(wInx);
+            BigDecimal workload = defaultValue(totalWorkload[wInx]);
+            totalObj.put("W"+year, workload);
+            BigDecimal nonWorkload = defaultValue(nonTotalWorkload[wInx]);
+            totalObj.put("N"+year, nonWorkload);
+            int firstVisitCount = defaultValue(totalFirstVisitCount[wInx]);
+            totalObj.put("F"+year, firstVisitCount);
+            int treatVisitCount = defaultValue(totalTreatVisitCount[wInx]);
+            totalObj.put("R"+year, treatVisitCount);
+            cumulation(12, wInx, nInx, fInx, rInx, total, workload, nonWorkload, firstVisitCount, treatVisitCount);
+        }
+        list.add(totalObj);
+        return total;
+    }
+
+    private BigDecimal[][] putEmpObject(Integer keyId, String name, int size, List<String> years, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap,
+                                        Map<String, Set<Integer>> treatVisitMap, Map<String, String> title, List<JSONObject> list, BigDecimal[][] total) {
         BigDecimal[] totalWorkload = new BigDecimal[size];
         for (int i = 0; i < size; i++) {
             totalWorkload[i] = new BigDecimal("0.00");
@@ -1455,7 +1562,7 @@ public class DimensionReportBiz {
         int[] totalTreatVisitCount = new int[size];
         // 门诊的每年每月统计
         for (int i = 1; i <=12; i++) {
-            JSONObject obj = initMonthObj(name, i+"");
+            JSONObject obj = initEmpMonthObj(name, i+"");
             int fInx = years.size();
             int rInx = years.size() * 2;
             for (int wInx = 0; wInx < years.size(); wInx++,fInx++,rInx++) {
@@ -1514,31 +1621,75 @@ public class DimensionReportBiz {
     /**
      * 累加12个月的工作量、就诊次数
      *
-     * @param col
-     * @param wInx
-     * @param fInx
-     * @param rInx
-     * @param total
-     * @param workload
-     * @param firstVisitCount
-     * @param treatVisitCount
+     * @param line 行索引
+     * @param wInx 工作量列的索引
+     * @param nInx 非工作量列的索引
+     * @param fInx 初诊人数列的索引
+     * @param rInx 就诊人数列的索引
+     * @param total 总计
+     * @param workload 工作量总计
+     * @param nonWorkload 非工作量总计
+     * @param firstVisitCount 初诊人数总计
+     * @param treatVisitCount 就诊人数总计
      */
-    private void cumulation(int col, int wInx, int fInx, int rInx, BigDecimal[][] total, BigDecimal workload, int firstVisitCount, int treatVisitCount) {
-        if (total[col][wInx] == null) {
-            total[col][wInx] = new BigDecimal("0.00");
+    private void cumulation(int line, int wInx, int nInx, int fInx, int rInx, BigDecimal[][] total, BigDecimal workload, BigDecimal nonWorkload, int firstVisitCount, int treatVisitCount) {
+        if (StringHelper.isNull(total[line][wInx])) {
+            total[line][wInx] = new BigDecimal("0.00");
         }
-        if (total[col][fInx] == null) {
-            total[col][fInx] = new BigDecimal("0");
+        if (StringHelper.isNull(total[line][nInx])) {
+            total[line][nInx] = new BigDecimal("0.00");
         }
-        if (total[col][rInx] == null) {
-            total[col][rInx] = new BigDecimal("0");
+        if (StringHelper.isNull(total[line][fInx])) {
+            total[line][fInx] = new BigDecimal("0");
         }
-        total[col][wInx] = total[col][wInx].add(workload);
-        total[col][fInx] = total[col][fInx].add(new BigDecimal(firstVisitCount));
-        total[col][rInx] = total[col][rInx].add(new BigDecimal(treatVisitCount));
+        if (StringHelper.isNull(total[line][rInx])) {
+            total[line][rInx] = new BigDecimal("0");
+        }
+        total[line][wInx] = total[line][wInx].add(workload);
+        total[line][nInx] = total[line][nInx].add(nonWorkload);
+        total[line][fInx] = total[line][fInx].add(new BigDecimal(firstVisitCount));
+        total[line][rInx] = total[line][rInx].add(new BigDecimal(treatVisitCount));
     }
 
+    /**
+     * 累加12个月的工作量、就诊次数
+     *
+     * @param line 行索引
+     * @param wInx 工作量列的索引
+     * @param fInx 初诊人数列的索引
+     * @param rInx 就诊人数列的索引
+     * @param total 总计
+     * @param workload 工作量总计
+     * @param firstVisitCount 初诊人数总计
+     * @param treatVisitCount 就诊人数总计
+     */
+    private void cumulation(int line, int wInx, int fInx, int rInx, BigDecimal[][] total, BigDecimal workload, int firstVisitCount, int treatVisitCount) {
+        if (StringHelper.isNull(total[line][wInx])) {
+            total[line][wInx] = new BigDecimal("0.00");
+        }
+        if (StringHelper.isNull(total[line][fInx])) {
+            total[line][fInx] = new BigDecimal("0");
+        }
+        if (StringHelper.isNull(total[line][rInx])) {
+            total[line][rInx] = new BigDecimal("0");
+        }
+        total[line][wInx] = total[line][wInx].add(workload);
+        total[line][fInx] = total[line][fInx].add(new BigDecimal(firstVisitCount));
+        total[line][rInx] = total[line][rInx].add(new BigDecimal(treatVisitCount));
+    }
+
+
     private JSONObject initMonthObj(String name, String month) {
+        JSONObject obj = new JSONObject();
+        obj.put("name", defaultValue(name));
+        obj.put("Wmonth", month);
+        obj.put("Nmonth", month);
+        obj.put("Fmonth", month);
+        obj.put("Rmonth", month);
+        return obj;
+    }
+
+    private JSONObject initEmpMonthObj(String name, String month) {
         JSONObject obj = new JSONObject();
         obj.put("name", defaultValue(name));
         obj.put("Wmonth", month);
@@ -1650,14 +1801,15 @@ public class DimensionReportBiz {
         List<CellRangeAddress> crds = workloadVisitMergeRegiion(
                 pageInfo,
                 query,
-                "门诊","工作量","初诊人数","就诊人数");
+                "门诊", "工作量", "非工作量", "初诊人数", "就诊人数");
         excelUtil.setMergeRegion(crds);
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "门诊统计表");
         excelUtil.exportExcel(response, result, "门诊统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
 
+
     /**
-     * 门诊统计表/医生统计表单元格合并
+     * 门诊or医生统计表单元格合并
      * @param pageInfo
      * @param query
      * @param title
@@ -1669,7 +1821,7 @@ public class DimensionReportBiz {
         int size = Integer.parseInt(query.getEndDate()) - Integer.parseInt(query.getStartDate()) + 2;
         List<JSONObject> list = pageInfo.getList();
         Map<String, String> map = pageInfo.getMap();
-        String[] header = new String[size*3 + 1];
+        String[] header = new String[size * (title.length-1) + 1];
         // 工作量、初诊人数、复诊人数横向表头
         result.add(new CellRangeAddress(0,1,0,0));
         result.add(new CellRangeAddress(0,0,1,1 + size - 1));
@@ -1687,7 +1839,7 @@ public class DimensionReportBiz {
                 header[index] = "";
             }
         }
-        // 门诊/医生纵向表头
+        // 门诊or医生纵向表头
         if (StringHelper.isNotEmpty(list)) {
             for (int i = 2; i < list.size(); ++i) {
                 result.add(new CellRangeAddress(i, i+=12, 0, 0));
@@ -1753,8 +1905,8 @@ public class DimensionReportBiz {
             List<JSONObject> list = new ArrayList<>();
             Map<String, String> title = new LinkedHashMap<>(16);
             BigDecimal[][] total = new BigDecimal[13][years.size() * 3];
-            employees.forEach(vo -> putObject(vo.getEmployeeId(), vo.getEmployeeName(), size, years, workloadMap, firstVisit, treatVisitMap, title, list, total));
-            putTotalObj(total, years, list);
+            employees.forEach(o-> putEmpObject(o.getEmployeeId(), o.getEmployeeName(), size, years, workloadMap, firstVisit, treatVisitMap, title, list, total));
+            putEmpTotalObj(total, years, list);
             pageInfo.setMap(title);
             pageInfo.setList(list);
             pageInfo.setTotal(pageInfo.getTotal());
@@ -2330,7 +2482,7 @@ public class DimensionReportBiz {
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 初诊人数、复诊人数
         Future<Map<String, StatEmpTreat>> treatNumFuture = multiFindClinicTreatVisitNum(query, query.getOrgIds(), null);
-        Future<Map<Integer, Set<Integer>>> treatVisitNumFuture = multiFindCampusTreatVisitNum(query, (vo)->vo.getOrgId());
+        Future<Map<Integer, Set<Integer>>> treatVisitNumFuture = multiFindCampusTreatVisitNum(query, vo->vo.getOrgId());
         // 项目数量
         Future<List<StatEmpBill>> itemNumFuture = multiFindClinicBillItemNum(query);
         // 专科项目
@@ -2342,22 +2494,49 @@ public class DimensionReportBiz {
         return mergeCampusAchievementStatistics(orgFuture.get(), workloadMap, nonWorkloadMap, treatNumFuture.get(), itemNumFuture.get(), treatVisitNumFuture.get(), specialFuture.get());
     }
 
+    private Map<String, BigDecimal> clinicMonthNonPerformanWorkload(MultiClinicDateRangeQueryForm query) {
+        Map<String, BigDecimal> result = new HashMap<>();
+        DataStatisticsQuery queryForm = new DataStatisticsQuery();
+        BeanUtils.copyProperties(query, queryForm);
+        queryForm.setDateType((byte) 1);
+        queryForm.setStartDate(DateUtil.yearStart(query.getStartDate() + "-01"));
+        queryForm.setEndDate(DateUtil.yearEnd(query.getEndDate() + "-01"));
+        queryForm.setOrgIds(query.getOrgIds().toArray(new Integer[0]));
+        List<BillWorkloadVO> workloads = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(queryForm);
+        Map<String, Map<Integer, BigDecimal>> nonWorkloadDateMap
+                = baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(workloads);
+        if (StringHelper.isNotEmpty(nonWorkloadDateMap)) {
+            nonWorkloadDateMap.forEach((date, workloadMap)->{
+                workloadMap.forEach((orgId, workload)->{
+                    String key = StringHelper.joinWith(",", orgId, date.replaceAll("-", ""));
+                    BigDecimal total = result.get(key);
+                    if (total == null) {
+                        total = BigDecimal.ZERO;
+                    }
+                    result.put(key, total.add(workload));
+                });
+            });
+        }
+        return result;
+    }
+
     private Map<String, BigDecimal> clinicNonPerformanWorkload(MultiClinicDateRangeQueryForm query) {
-       Map<String, BigDecimal> result = new HashMap<>();
-       DataStatisticsQuery queryForm = new DataStatisticsQuery();
-       BeanUtils.copyProperties(query, queryForm);
-       queryForm.setOrgIds(query.getOrgIds().toArray(new Integer[0]));
-       List<BillWorkloadVO> workloads = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(queryForm);
-       Map<String, Map<Integer, BigDecimal>> nonWorkloadDateMap
+        Map<String, BigDecimal> result = new HashMap<>();
+        DataStatisticsQuery queryForm = new DataStatisticsQuery();
+        BeanUtils.copyProperties(query, queryForm);
+        queryForm.setOrgIds(query.getOrgIds().toArray(new Integer[0]));
+        List<BillWorkloadVO> workloads = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(queryForm);
+        Map<String, Map<Integer, BigDecimal>> nonWorkloadDateMap
                 = baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(workloads);
        if (StringHelper.isNotEmpty(nonWorkloadDateMap)) {
          nonWorkloadDateMap.forEach((date, workloadMap)->{
            workloadMap.forEach((orgId, workload)->{
-             BigDecimal total = result.get(orgId+"");
+             String key = orgId.toString();
+             BigDecimal total = result.get(key);
              if (total == null) {
                total = BigDecimal.ZERO;
              }
-             result.put(orgId+"", total.add(workload));
+             result.put(key, total.add(workload));
            });
          });
        }
