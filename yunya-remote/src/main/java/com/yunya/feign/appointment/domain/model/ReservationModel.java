@@ -5,8 +5,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -16,7 +14,7 @@ import java.util.Date;
  * @program: yunya-dental
  * @description: 预约意向登记申请参数
  **/
-@ApiModel(value = "ReservationResourceModel",description = "预约意向登记申请参数")
+@ApiModel(value = "ReservationModel",description = "预约意向登记申请参数")
 @Data
 public class ReservationModel implements Serializable {
 
@@ -32,6 +30,13 @@ public class ReservationModel implements Serializable {
     @ApiModelProperty(value = "预约意向渠道ID",required = true)
     @NotNull(message = "预约意向渠道ID不能为空")
     private Integer reservationSourceId;
+
+    /**
+     * 预约意向渠道ID
+     */
+    @ApiModelProperty(value = "预约登记流量ID",required = true)
+    @NotNull(message = "预约登记流量ID不能为空")
+    private Integer reservationLimitId;
 
     /**
      * 预约项目
@@ -98,4 +103,8 @@ public class ReservationModel implements Serializable {
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
+
+    @ApiModelProperty(value = "预约意向日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private Date reservationDate;
 }

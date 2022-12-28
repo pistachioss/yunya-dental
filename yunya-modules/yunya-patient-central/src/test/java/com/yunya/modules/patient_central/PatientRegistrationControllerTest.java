@@ -12,6 +12,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientRegistrationVO;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.patient_central.biz.CustomerRegistrationBiz;
 import com.yunya.modules.patient_central.controller.web.CustomerRegistrationController;
 import com.yunya.modules.patient_central.controller.web.PatientBaseInfoController;
@@ -51,6 +52,8 @@ public class PatientRegistrationControllerTest {
     private RemoteOssServiceFeign remoteOssServiceFeign;
     @Autowired
     private PatientExpInfoMapper patientExpInfoMapper;
+    @Autowired
+    private RedisUtils redisUtils;
 
     @Test
     public void testAdultAddPatient() {

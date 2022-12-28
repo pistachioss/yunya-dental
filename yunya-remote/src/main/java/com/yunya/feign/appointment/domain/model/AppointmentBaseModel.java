@@ -1,4 +1,5 @@
 package com.yunya.feign.appointment.domain.model;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import io.swagger.annotations.ApiModel;
@@ -6,10 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
@@ -45,6 +44,10 @@ public class AppointmentBaseModel implements Serializable {
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名",hidden = true)
     private String patientName;
+
+    /** 患者手机号 */
+    @ApiModelProperty(value = "患者手机号")
+    private String patientMobile;
 
     /** 预约日期 */
     @ApiModelProperty(value = "预约日期",required = true)
@@ -113,4 +116,8 @@ public class AppointmentBaseModel implements Serializable {
     @ApiModelProperty(value = "时长分解列表")
     @Valid
     private List<AppointmentSplitBaseInfo> splitList;
+
+    /** 西湖益联保服务套餐: 1-成人口腔护理套餐; 2-儿童口腔护理套餐 */
+    @ApiModelProperty("西湖益联保服务套餐: 1-成人口腔护理套餐; 2-儿童口腔护理套餐")
+    private Integer yilianbaoServicePackage;
 }

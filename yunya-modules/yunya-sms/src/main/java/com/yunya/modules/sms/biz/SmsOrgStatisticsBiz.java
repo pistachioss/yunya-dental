@@ -5,6 +5,7 @@ import com.yunya.feign.sms.vo.SmsOrgStatisticsVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.sms.SmsOrgStatistics;
 import com.yunya.modules.sms.mapper.SmsOrgStatisticsMapper;
@@ -15,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.BALANCE_INSUFFICIENT;
 
@@ -86,42 +86,31 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
      * @param orgId 门诊id
      */
     public void incrByOrgId(Integer smsNum, Integer surplus, BigDecimal price, Integer orgId) {
-        Date now = new Date(System.currentTimeMillis());
-        try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
-                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+        redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
+            Date now = new Date(System.currentTimeMillis());
             SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
             SmsOrgStatistics entity = new SmsOrgStatistics();
-            if (smsOrgStatisticsVO != null) {
+            if (StringHelper.isNotNull(smsOrgStatisticsVO)) {
                 BeanUtil.copyProperties(smsOrgStatisticsVO, entity);
                 entity.setCrtId(-999);
                 entity.setCrtTime(now);
             }
-            BigDecimal chargeMoney = entity.getChargeMoney();
-            Integer chargeNum = entity.getChargeNum();
-            Integer surplusNum = entity.getSurplusNum();
-            if (chargeMoney == null) {
-                chargeMoney = new BigDecimal(0);
-            }
-            if (chargeNum == null) {
-                chargeNum = 0;
-            }
-            if (surplusNum == null) {
-                surplusNum = 0;
-            }
+            BigDecimal chargeMoney = StringHelper.nvl(entity.getChargeMoney(), new BigDecimal(0));
+            Integer chargeNum = StringHelper.nvl(entity.getChargeNum(), 0);
+            Integer surplusNum = StringHelper.nvl(entity.getSurplusNum(), 0);
             entity.setOrgId(orgId);
-            if (smsNum != null) {
+            if (StringHelper.isNotNull(smsNum)) {
                 entity.setChargeNum(chargeNum + smsNum);
             }
-            if (surplus != null) {
+            if (StringHelper.isNotNull(surplus)) {
                 entity.setSurplusNum(surplusNum + surplus);
             }
-            if (price != null) {
+            if (StringHelper.isNotNull(price)) {
                 entity.setChargeMoney(chargeMoney.add(price));
             }
             entity.setUptId(-999);
             entity.setUptTime(now);
-            if (smsOrgStatisticsVO == null) {
+            if (StringHelper.isNull(smsOrgStatisticsVO)) {
                 entity.setCrtId(-999);
                 entity.setCrtTime(now);
                 mapper.insertSelective(entity);
@@ -129,43 +118,32 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
                 mapper.updateByPrimaryKeySelective(entity);
             }
             redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
-        } finally {
-            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
-        }
+            return null;
+        });
     }
 
     /**
      * 短信余额扣费
      *
-     * @param usedNum：扣费条数
+     * @param usedNum：扣费后的短信余额
      * @param orgId 门诊
      */
     public void decrByOrgId(int usedNum, Integer orgId, Integer userId) {
-        Date now = new Date(System.currentTimeMillis());
-        try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
-                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
-            SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
-            SmsOrgStatistics entity = new SmsOrgStatistics();
-            if (smsOrgStatisticsVO == null) {
-                redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
-            Integer surplusNum = smsOrgStatisticsVO.getSurplusNum();
-            if (surplusNum == null) {
-                surplusNum = 0;
-            }
-            if (usedNum > surplusNum) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
-            entity.setId(smsOrgStatisticsVO.getId());
-            entity.setSurplusNum(usedNum);
-            entity.setUptId(userId);
-            entity.setUptTime(now);
-            mapper.updateByPrimaryKeySelective(entity);
+        SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
+        SmsOrgStatistics entity = new SmsOrgStatistics();
+        if (StringHelper.isNull(smsOrgStatisticsVO)) {
             redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
-        } finally {
-            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
+            throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
         }
+        Integer surplusNum = StringHelper.nvl(smsOrgStatisticsVO.getSurplusNum(), 0);
+        if (usedNum > surplusNum) {
+            throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
+        }
+        entity.setId(smsOrgStatisticsVO.getId());
+        entity.setSurplusNum(usedNum);
+        entity.setUptId(userId);
+        entity.setUptTime(new Date(System.currentTimeMillis()));
+        mapper.updateByPrimaryKeySelective(entity);
+        redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
     }
 }

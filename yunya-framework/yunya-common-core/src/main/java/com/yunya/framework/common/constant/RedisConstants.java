@@ -81,6 +81,7 @@ public class RedisConstants implements Serializable {
   public static final String REDIS_KEY_APPOINT_DENTIST_DIMENSION = "appoint_dentist_dimension_";
   public static final String REDIS_KEY_APPOINT_PATIENT_DIMENSION = "appoint_patient_dimension_";
   public static final String REDIS_KEY_APPOINT_LIST = "appoint_list_";
+  public static final String LOCK_LIMIT_MODIFY = "lock:limit:modify";
 
   /** ------------------------------ 随访管理 ------------------------------------------------- */
   public static final String LOCK_VISITING_RECORD = "lock:visiting:record";
@@ -113,8 +114,6 @@ public class RedisConstants implements Serializable {
   public static final String SMS_STATISTICS_SURPLUS_ORG = "sms:statistics:surplus:org:";
   /** 短信统计锁 */
   public static final String LOCK_SMS_ORG_STATISTICS = "lock:sms:statistics:org:";
-  /** 短信统计锁时长 */
-  public static final Long SMS_STATISTICS_LOCK_SEC = 600L;
   /** 短信发送的消息队列 */
   public static final String SMS_SEND_MESSAGE_QUEUE = "sms:send:message:queue:";
   /** 短信验证码发送的消息队列 */
@@ -129,6 +128,11 @@ public class RedisConstants implements Serializable {
   /** -----------------------------------患者信息--------------------------------------- */
   /** 患者信息 patient_base_info_{患者ID} */
   public static final String PATIENT_BASE_INFO = "patient_base_info_{}";
+
+  /** 会员卡卡号生成锁 */
+  public static final String MEMBER_GENERAT_LOCK = "lock:member:generate:";
+  /** 预付款卡号生成锁 */
+  public static final String PREPAYMENT_GENERAT_LOCK = "lock:prepayment:generate:";
 
   /** ---------------------------------积分商城------------------------------------------ */
   public static final String CREDITS_SHOP_ORDER = "credits:shop:order:";

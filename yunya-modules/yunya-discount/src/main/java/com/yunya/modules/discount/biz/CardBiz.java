@@ -9,6 +9,8 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.yunya.feign.appointment.RemoteAppointmentFeign;
+import com.yunya.feign.appointment.domain.query.ReservationCodeQuery;
 import com.yunya.feign.discount.domain.bo.*;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.ClinicAllocateModel;
@@ -18,6 +20,8 @@ import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.ivy_mini.RemoteIvyMiniServiceFeign;
 import com.yunya.feign.ivy_mini.domain.form.VirtualActiveForm;
+import com.yunya.feign.oss.RemoteOssServiceFeign;
+import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
@@ -166,6 +170,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Resource
     private RemoteIvyMiniServiceFeign ivyMiniServiceFeign;
+    @Resource
+    private RemoteAppointmentFeign remoteAppointmentFeign;
     @Value("${cardSold.selfChannel}")
     private String selfChannel;
     /**
@@ -175,6 +181,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private String serverPort;
     @Autowired
     private CouponFileInfoBiz couponFileInfoBiz;
+    @Autowired
+    private RemoteOssServiceFeign remoteOssServiceFeign;
+    @Value("${domainUrl}")
+    private String domainUrl;
 
     /**
      * 加密加密生成卡券密码
@@ -1030,7 +1040,68 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             }
         }
     }
+    /**
+     * 西湖益联保平台激活卡券
+     *
+     * @param patientId patientId
+     * @param form      form
+     * @return res
+     */
+    @Transactional
+    public ResponseResult xihuActiveCard(Integer patientId, XihuCardActiveForm form) {
+        ReservationCodeQuery reservationCodeQuery = new ReservationCodeQuery();
+        reservationCodeQuery.setCode(form.getThirdCardNumber());
+        String check = remoteAppointmentFeign.checkReservatoinCode(reservationCodeQuery);
+        if(!check.equals("true")){
+            return ResponseUtil.error(check,null);
+        }
+        boolean locked = false;
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        String cardNumber = form.getThirdCardNumber();
+        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CARD_ACTIVE, form.getCouponId(), form.getSalesSourceId(), cardNumber);
+        String lockVal = String.valueOf(loginUserId);
+        log.info("西湖益联保平台卡券激活开始提交：[{}]", cardNumber);
+        try {
+            // 1. 锁定激活西湖益联保平台卡券
+            locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+            if (!locked) {
+                log.warn("【锁定失败】西湖益联保平台卡券[{}]正在激活中，无法提交", cardNumber);
+                return ResponseUtil.error(DiscountError.CARD_ACTIVE_IS_LOCKED);
+            }
+            log.info("【锁定成功】准备提交西湖益联保平台卡券激活...");
 
+            RestErrorBo errorBo;
+            //1. 检查卡券
+            errorBo = checkCardForXihuActive(form);
+            if (errorBo.getError() != null) {
+                return ResponseUtil.error(errorBo.getError());
+            }
+            //2. 检查优惠券
+            errorBo = checkCouponForActive(form.getCouponId(), DiscountError.CARD_BEYOND_DEADLINE);
+            if (errorBo.getError() != null) {
+                return ResponseUtil.error(errorBo.getError());
+            }
+            //3.校验产品是否可以共享
+            errorBo = this.checkCouponShare(form.getCouponId(), form.getSharerIdStr());
+            if (errorBo.getError() != null) {
+                return ResponseUtil.error(errorBo.getError());
+            }
+            //4. 西湖益联保平台卡券激活
+            Card activeCard = insertXihuActiveCard(patientId, form, loginUserId);
+            ReservationCodeQuery model = new ReservationCodeQuery();
+            model.setCode(form.getThirdCardNumber());
+            remoteAppointmentFeign.editReservatoinCode(model);
+            mqServiceFeign.sendMessage(activeCard.getId(), ADD, BaseCardSingle);
+            log.info("【西湖益联保激活发送消息成功】：卡券id[{}]", activeCard.getId());
+            cardActivedSendSms(activeCard);
+            return ResponseUtil.success();
+        } finally {
+            if (locked) {
+                log.info("【解锁成功】");
+                redisUtils.unlock(lockKey, lockVal);
+            }
+        }
+    }
     /**
      * 配置共享人
      *
@@ -2328,7 +2399,36 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         mapper.insertSelective(insertOtherCard);
         return insertOtherCard;
     }
-
+    /**
+     * 西湖益联保平台卡券激活
+     *
+     * @param patientId   患者id
+     * @param form        参数
+     * @param loginUserId 登录人
+     */
+    private Card insertXihuActiveCard(Integer patientId, XihuCardActiveForm form, Integer loginUserId) {
+        Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
+        Card insertOtherCard = BeanCopierUtils.generalCopyBean(form, Card.class);
+        insertOtherCard.setOrgId(0);
+        insertOtherCard.setThirdCardNumber(form.getThirdCardNumber());
+        insertOtherCard.setActiveOrgId(activeOrgId);
+        insertOtherCard.setActiveUserId(loginUserId);
+        insertOtherCard.setCouponAllocateId(0);
+        insertOtherCard.setPatientId(patientId);
+        insertOtherCard.setStatus(ACTIVATED.getCode());
+        insertOtherCard.setSharer(form.getSharerIdStr());
+        insertOtherCard.setCrtId(loginUserId);
+        insertOtherCard.setUpdId(loginUserId);
+        LocalDateTime now = LocalDateTime.now();
+        if (isAiYa(form.getCouponId())) {
+            insertOtherCard.setActiveDate(LocalDateTime.of(LocalDate.now().with(TemporalAdjusters.firstDayOfYear())
+                    , LocalTime.MIN));
+        } else {
+            insertOtherCard.setActiveDate(LocalDateTime.now());
+        }
+        mapper.insertSelective(insertOtherCard);
+        return insertOtherCard;
+    }
     private boolean isAiYa(Integer couponId) {
         CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
         ProductType productType = productTypeMapper.selectByPrimaryKey(couponInfo.getProductTypeId());
@@ -2524,6 +2624,33 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         example.createCriteria().andEqualTo("thirdCardNumber", form.getThirdCardNumber())
                 .andEqualTo("couponId", form.getCouponId())
                 .andEqualTo("saleChannelId", form.getSaleChannelId());
+        return mapper.selectByExample(example);
+    }
+    private RestErrorBo checkCardForXihuActive(XihuCardActiveForm form) {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
+        String cardNumber = form.getThirdCardNumber();
+        Example example = new Example(Card.class);
+        example.createCriteria().andEqualTo("cardNumber", cardNumber);
+//				.andNotEqualTo("orgId", ZERO);
+        Card card = mapper.selectOneByExample(example);
+        if (card != null) {
+            log.warn("【西湖益联保平台激活失败】自有平台卡券{}不允许在西湖益联保平台激活", cardNumber);
+            errorBo.setError(DiscountError.XIHU_ALLOW_ACTIVE_OWN);
+            return errorBo;
+        }
+        List<Card> thirdCards = this.getXihuCard(form);
+        if (CollectionUtils.isNotEmpty(thirdCards)) {
+            log.warn("【西湖益联保平台激活失败】西湖益联保平台卡券已激活", cardNumber);
+            errorBo.setError(DiscountError.XIHU_CARD_IS_ACTIVATED);
+            return errorBo;
+        }
+        return errorBo;
+    }
+
+    private List<Card> getXihuCard(XihuCardActiveForm form) {
+        Example example = new Example(Card.class);
+        example.createCriteria().andEqualTo("thirdCardNumber", form.getThirdCardNumber())
+                .andEqualTo("couponId", form.getCouponId());
         return mapper.selectByExample(example);
     }
 
@@ -3533,13 +3660,27 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     public PatientCardBaseVo findPatientLastestActivedCardInfo(Integer patientId) {
         List<PatientCardBaseVo> activedCards = findPatientActivedCardList(patientId);
         if (StringHelper.isNotEmpty(activedCards)) {
-            PatientCardBaseVo lastestActivedCard = activedCards.get(0);
-            Integer couponId = lastestActivedCard.getCouponId();
+            PatientCardBaseVo lastestCard = activedCards.get(0);
+            Integer couponId = lastestCard.getCouponId();
             List<CouponFileInfo> files = couponFileInfoBiz.listByCouponIds(Collections.singletonList(couponId), 0);
             if (StringHelper.isNotEmpty(files)) {
-                lastestActivedCard.setCouponLogo(files.get(0).getPath());
+                lastestCard.setCouponLogo(findLogoUrl(files.get(0).getPath()));
             }
-            return lastestActivedCard;
+            return lastestCard;
+        }
+        return null;
+    }
+
+    private String findLogoUrl(String fileName) {
+        if (StringUtils.isNotEmpty(fileName)) {
+            OssUrlForm form = new OssUrlForm();
+            form.setOssFilename(fileName);
+            form.setCompanyId(0);
+            form.setIsThumb(false);
+            form.setOssCategory(4);
+            form.setObjectId(111111);
+            String path = (String) remoteOssServiceFeign.getUrl(form).getData();
+            return domainUrl + "/" + path;
         }
         return null;
     }

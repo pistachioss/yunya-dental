@@ -21,6 +21,10 @@ import java.io.Serializable;
 @ToString
 @Data
 public class AppointmentSmsSendRecordModel extends SmsCommonSendRecordModel implements Serializable{
+    /** 预约id列表不能为空 */
+    @ApiModelProperty(value = "预约id", required = true)
+    @NotNull(message = "预约id不能为空")
+    private Integer appointId;
 
     /**
      * 预约医生姓名

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.appointment.mapper.ReservationRateLimitMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.appointment.ReservationRateLimit">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="org_name" property="orgName" jdbcType="INTEGER"/>
+        <result column="config_date" property="configDate" jdbcType="DATE"/>
+        <result column="config_limit" property="configLimit" jdbcType="INTEGER"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="insertList" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        insert into
+        `reservation_rate_limit`
+        (`org_id`, `org_name`, `config_date`, `config_limit`,`crt_id`, `upd_id`)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.orgId}, #{item.orgName}, #{item.configDate}, #{item.configLimit}, #{item.crtId}, #{item.updId})
+        </foreach>
+    </insert>
+
+    <update id="updateList" parameterType="java.util.List">
+        update `reservation_rate_limit`
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="org_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.orgId != null">
+                        when `id` = #{item.id} then #{item.orgId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="org_name = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.orgName != null">
+                        when `id` = #{item.id} then #{item.orgName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="config_date = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.configDate != null">
+                        when `id` = #{item.id} then #{item.configDate}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="config_limit = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.configLimit != null">
+                        when `id` = #{item.id} then #{item.configLimit}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.updId != null">
+                        when `id` = #{item.id} then #{item.updId}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where `id` in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="reduceLimit">
+        update
+            reservation_rate_limit
+        set config_limit = config_limit - 1
+        where `id` = #{reservationLimitId}
+          and config_limit > 0
+          and config_date &gt;= date_format(now(),'%Y-%m-%d')
+    </update>
+
+    <select id="listRemaining" resultType="com.yunya.models.appointment.ReservationRateLimit">
+        select
+            id, org_id, org_name, config_date, config_limit
+        from
+            reservation_rate_limit
+        where org_name = #{orgName}
+          and config_date &gt;= date_format(#{configDate}, '%Y-%m-%d')
+          and date_format( config_date, '%Y-%m' ) = date_format(#{configDate}, '%Y-%m')
+        order by config_date asc
+    </select>
+
+</mapper>

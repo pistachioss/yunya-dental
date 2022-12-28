@@ -7,7 +7,6 @@ import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.PatientCardBaseVo;
 import com.yunya.feign.middle.RemoteMiddleServiceFeign;
-import com.yunya.feign.patient_central.domain.query.CustomerBindPatientQueryForm;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
@@ -31,9 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
-
-import static java.util.stream.Collectors.toMap;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author: chenlin
@@ -90,7 +90,7 @@ public class CustomerPatientBiz {
         if (StringHelper.isNotNull(birthday)) {
             // 计算年龄
             Integer age = DateUtil.differFromDate(birthday, new Date(System.currentTimeMillis()));
-            patientBaseInfo.setAge(age);
+            result.setAge(age);
             String timeStr = new DateTime(birthday).toString("yyyy-MM-dd");
             result.setBirthday(timeStr);
         }
@@ -107,6 +107,9 @@ public class CustomerPatientBiz {
         getTypeName(result);
         PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectByPatientId(patientId);
         if (StringHelper.isNotNull(patientExpInfoVo)) {
+            result.setProvince(patientExpInfoVo.getProvince());
+            result.setCity(patientExpInfoVo.getCity());
+            result.setCountry(patientExpInfoVo.getCountry());
             result.setAddress(patientExpInfoVo.getAddress());
         }
         CreditsShop creditsShop = remoteMiddleServiceFeign.lastPatientCredits(patientId).getData();
@@ -289,38 +292,6 @@ public class CustomerPatientBiz {
     }
 
     /**
-     * 根据unionid查询绑定患者列表
-     *
-     * @param query
-     * @return
-     */
-    public PageInfo<CustomerBindPatientVO> findBindPatientList(CustomerBindPatientQueryForm query) {
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        }
-        List<CustomerBindPatientVO> result = new ArrayList<>();
-        List<WxWechatbindAppListVO> list = wxFansBindMapper.findPatientBaseInfo(query.getUnionid());
-        PageInfo page = new PageInfo(list);
-        if (StringHelper.isNotEmpty(list)) {
-            List<DictionaryItem> items = remoteSystemServiceFeign.findDictItemByTypeName(QIN_SHU_GUAN_XI);
-            Map<Integer, String> itemNameMap = items.stream().collect(toMap(DictionaryItem::getId, DictionaryItem::getName));
-            list.forEach(vo -> {
-                CustomerBindPatientVO bindPatient = new CustomerBindPatientVO();
-                BeanUtil.copyProperties(vo, bindPatient);
-                Integer dictionaryId = vo.getDictionaryId();
-                String itemName = itemNameMap.get(dictionaryId);
-                if (StringHelper.isNotEmpty(itemName)) {
-                    bindPatient.setBindShipName(itemName);
-                    bindPatient.setShipId(dictionaryId);
-                }
-                result.add(bindPatient);
-            });
-            page.setList(result);
-        }
-        return page;
-    }
-
-    /**
      * 根据unionid查询微信用户已关注公众号和小程序信息
      *
      * @param unionid
@@ -333,10 +304,11 @@ public class CustomerPatientBiz {
         List<WxFansVo> fans = wxFansMapper.selectWxFansSubscibedList(unionid);
         fans.forEach(fan->{
             Integer sourceType = fan.getSourceType();
+            String subscribe = fan.getSubscribe();
             if (StringHelper.isNotNull(sourceType)) {
-                if (sourceType == 0) {// 公众号
+                 if (sourceType==0 && "1".equals(subscribe)) {// 公众号，要求处于关注状态
                     result.put("wxPubAccount", true);
-                } else if (sourceType == 1) {// 小程序
+                } else if (sourceType == 1) {// 小程序，只需授权登录过即可
                     result.put("wxApplet", true);
                 }
             }

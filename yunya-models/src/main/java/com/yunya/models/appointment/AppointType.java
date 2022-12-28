@@ -1,7 +1,9 @@
 package com.yunya.models.appointment;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "appoint_type")
 public class AppointType {
@@ -26,6 +28,12 @@ public class AppointType {
      * 备注 备注
      */
     private String remarks;
+
+    /**
+     * 排序号
+     */
+    @Column(name = "sort_num")
+    private Integer sortNum;
 
     /**
      * 是否启用 是否有效
@@ -120,6 +128,23 @@ public class AppointType {
      */
     public void setRemarks(String remarks) {
         this.remarks = remarks;
+    }
+
+    /**
+     * 获取排序号
+     *
+     * @return
+     */
+    public Integer getSortNum() {
+        return sortNum;
+    }
+
+    /**
+     * 设置排序号
+     * @param sortNum
+     */
+    public void setSortNum(Integer sortNum) {
+        this.sortNum = sortNum;
     }
 
     /**

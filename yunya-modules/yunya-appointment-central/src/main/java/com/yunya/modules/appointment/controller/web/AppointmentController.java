@@ -297,6 +297,7 @@ public class AppointmentController {
    * @param models 短信预约提醒列表
    * @return
    */
+  @Deprecated
   @ApiOperation(value = "发送预约短信")
   @PostMapping("/sendAppointmentBatchSms/{templateId}")
   @CurrentUser

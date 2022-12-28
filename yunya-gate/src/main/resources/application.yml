@@ -266,9 +266,9 @@ gate:
                /smsChargeOrder/redirectUrl,/wxVip,/duiba/shop,/appointment/online/,/wxFans/getOwnWxFans,/wxFansBind/bindPatientList,/organization/list,/apidoc,
                /registration/permit/adult/add,/registration/permit/children/add,/origin/originalTypeAndChildren,/user/list,/central/likePatient,/clinicLiveCode/list,
                /permit/registration/one,/wxUser/info,/clinicLiveCodeVisit/click,/reservation,
-               /customer/wxFans/subscribe,/customer/bound/patient,/customer/patientBase,/customer/patient/referer,/recommend/list,/customer/patient/trajectory,/patientMember/relatedInformation,/patientMember/basicInformation,/patientMember/bindMembershipCard,
+               /customer/wxFans/subscribe,/customer/patientBase,/customer/patient/referer,/recommend/list,/customer/patient/trajectory,/patientMember/relatedInformation,/patientMember/basicInformation,/patientMember/bindMembershipCard,
                /prepayment/prepaidAccountBaseInfo,/prepayment/sharedAccount,/prepayment/findPrepaymentLink,/ownProduct/activedCard,/bill/count,/admission/patient/list,/bill/detail,
-               /medical_common/one,/appoint/count,/appoint/next,/visiting/record/patient,/returnVisit/find,/customer/vipRightInterest,/patient/lastTreatment
+               /medical_common/one,/medical_common/findList,/appoint/count,/appoint/next,/visiting/record/patient,/returnVisit/find,/customer/vipRightInterest,/patient/lastTreatment
 
 auth:
   serviceId: yunya-auth

@@ -61,6 +61,10 @@ public class ClinicExtInfo {
   /** 医疗机构图片地址 */
   private String path;
 
+  /** 地址及路线 */
+  @Column(name = "address_and_way")
+  private String addressAndWay;
+
   /** 是否启用 */
   private Boolean inservice;
 
@@ -355,6 +359,23 @@ public class ClinicExtInfo {
    */
   public void setPath(String path) {
     this.path = path;
+  }
+
+  /**
+   * 获取地址及路线
+   * @return
+   */
+  public String getAddressAndWay() {
+    return addressAndWay;
+  }
+
+  /**
+   * 设置地址及路线
+   *
+   * @param addressAndWay 地址及路线
+   */
+  public void setAddressAndWay(String addressAndWay) {
+    this.addressAndWay = addressAndWay;
   }
 
   /**

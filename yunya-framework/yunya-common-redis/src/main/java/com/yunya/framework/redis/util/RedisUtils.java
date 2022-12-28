@@ -13,8 +13,11 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * Redis工具类
@@ -24,7 +27,14 @@ import java.util.concurrent.TimeUnit;
 @Component
 @Slf4j
 public class RedisUtils {
-
+  /** 锁的默认值 */
+  private static final String DEFAULT_LOCK_VALUE = "lock";
+  /** 锁的过期时长：10秒 */
+  private static final Integer DEFAULT_LOCK_EXPIRE = 10;
+  /** 等待下次获取锁的时长：1秒 */
+  private static final Integer DEFAULT_LOCK_WAIT = 1;
+  /** 锁定时长的默认单位：秒 */
+  private static final TimeUnit DEFAULT_LOCK_UNIT = TimeUnit.SECONDS;
   @Autowired private RedisTemplate<String, Object> redisTemplate;
 
   @Autowired private StringRedisTemplate stringRedisTemplate;
@@ -230,6 +240,68 @@ public class RedisUtils {
    */
   public Boolean expire(String key, long timeout, TimeUnit unit) {
     return redisTemplate.expire(key, timeout, unit);
+  }
+
+  /**
+   * 锁保护下的方法执行
+   *  1、锁的默认过期时长10秒
+   *  2、在获取锁的轮询中，尝试下次获取锁的等待时长默认为1秒
+   *
+   * @param key 锁key
+   * @param func 待被锁保护的方法
+   * @return
+   * @param <R> func方法的返回值
+   */
+  public <R> R lockedFunc(String key, Function<Object, R> func) {
+    return lockedFunc(key, DEFAULT_LOCK_EXPIRE, DEFAULT_LOCK_WAIT, func);
+  }
+
+  /**
+   * 锁保护下的方法执行
+   *
+   * @param key 锁key
+   * @param expire 锁的最大保护时长，超过时长后释放锁，锁失效，单位为秒
+   * @param wait 等待轮询时长，在未获取锁的轮询中，下次尝试获取锁的等待时长，单位为秒
+   * @param func 待被锁保护的方法
+   * @return
+   * @param <R> func方法的返回值
+   */
+  public <R> R lockedFunc(String key, Integer expire, Integer wait, Function<Object, R> func) {
+    try {
+      while (!setLock(key, expire.longValue())) {
+        try {
+          TimeUnit.SECONDS.sleep(wait.longValue());
+        } catch (InterruptedException e) {
+          log.error("lockedFunc error: ", e);
+          throw new RuntimeException(e);
+        }
+      }
+      return func.apply(key);
+    } finally {
+      unlock(key, DEFAULT_LOCK_VALUE);
+    }
+  }
+
+  /**
+   * 加锁
+   * @param key
+   * @param expire
+   * @return
+   */
+  public boolean setLock(String key, long expire) {
+    return setLock(key, DEFAULT_LOCK_VALUE, expire, DEFAULT_LOCK_UNIT);
+  }
+
+
+  /**
+   * 加锁
+   * @param key
+   * @param expire
+   * @param timeUnit
+   * @return
+   */
+  public boolean setLock(String key, long expire, TimeUnit timeUnit) {
+    return setLock(key, DEFAULT_LOCK_VALUE, expire, timeUnit);
   }
 
   /**

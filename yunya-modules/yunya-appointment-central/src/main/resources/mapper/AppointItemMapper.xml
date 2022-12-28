@@ -69,7 +69,7 @@
         <if test="form.name != null">
             and citem.name like concat('%',#{form.name},'%')
         </if>
-
+        ORDER BY atype.sort_num
     </select>
 
     <!--查询预约分类列表-->

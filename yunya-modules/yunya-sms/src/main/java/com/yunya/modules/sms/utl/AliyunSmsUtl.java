@@ -7,6 +7,7 @@ import com.aliyuncs.CommonRequest;
 import com.aliyuncs.CommonResponse;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
+import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.profile.DefaultProfile;
 import com.google.common.io.Files;
@@ -22,7 +23,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_FAIL;
 
@@ -77,34 +80,27 @@ public class AliyunSmsUtl {
      * @return
      */
     public static JSONObject addSmsSign(SmsSignatureSetModel model, List<MultipartFile> files) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("AddSmsSign");
-        request.putQueryParameter("SignName", model.getSignName());
-        request.putQueryParameter("SignSource", model.getSignSource()+"");
-        request.putBodyParameter("Remark", model.getRemark());
+        Map<String, String> queryParams = new HashMap<>(16);
+        Map<String, Object> bodyParams = new HashMap<>(1);
+        queryParams.put("SignName", model.getSignName());
+        queryParams.put("SignSource", model.getSignSource()+"");
+        bodyParams.put("Remark", model.getRemark());
         JSONObject result = null;
         try {
-            if (files!=null && !files.isEmpty()) {
-                int i = 1;
-                for (MultipartFile file : files) {
-                    String encode = BinaryUtil.toBase64String(file.getBytes());
-                    String type = Files.getFileExtension(file.getOriginalFilename());
-                    request.putQueryParameter("SignFileList." + i + ".FileSuffix", type);
-                    request.putBodyParameter("SignFileList." + i + ".FileContents", encode);
-                    i++;
+            if (StringHelper.isNotEmpty(files)) {
+                for (int i = 0; i < files.size(); i++) {
+                    MultipartFile file = files.get(i);
+                    queryParams.put("SignFileList." + (i+1) + ".FileSuffix", Files.getFileExtension(file.getOriginalFilename()));
+                    bodyParams.put("SignFileList." + (i+1) + ".FileContents", BinaryUtil.toBase64String(file.getBytes()));
                 }
             }
-            log.info("addSmsSign requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("addSmsSign response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("AddSmsSign", queryParams, bodyParams);
         } catch (Exception e) {
             log.error("AliyunSmsUtl addSmsSign error", e);
             throw new ClientServiceException("添加短信签名失败！", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
-            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+            throw new ClientServiceException("添加短信签名失败", OPERATION_FAIL);
         }
         return result;
     }
@@ -116,32 +112,27 @@ public class AliyunSmsUtl {
      * @return
      */
     public static JSONObject modifySmsSign(SmsSignatureSetForm model, List<MultipartFile> files) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("ModifySmsSign");
-        request.putQueryParameter("SignName", model.getSignName());
-        request.putQueryParameter("SignSource", model.getSignSource()+"");
-        request.putBodyParameter("Remark", model.getRemark());
+        Map<String, String> queryParams = new HashMap<>(16);
+        Map<String, Object> bodyParams = new HashMap<>(1);
+        queryParams.put("SignName", model.getSignName());
+        queryParams.put("SignSource", model.getSignSource()+"");
+        bodyParams.put("Remark", model.getRemark());
         JSONObject result = null;
         try {
-            if (files!=null && !files.isEmpty()) {
-                int i = 1;
-                for (MultipartFile file : files) {
-                    String encode = BinaryUtil.toBase64String(file.getBytes());
-                    request.putQueryParameter("SignFileList." + i + ".FileSuffix", Files.getFileExtension(file.getOriginalFilename()));
-                    request.putBodyParameter("SignFileList." + i + ".FileContents", encode);
+            if (StringHelper.isNotEmpty(files)) {
+                for (int i = 0; i < files.size(); i++) {
+                    MultipartFile file = files.get(i);
+                    queryParams.put("SignFileList." + (i+1) + ".FileSuffix", Files.getFileExtension(file.getOriginalFilename()));
+                    bodyParams.put("SignFileList." + (i+1) + ".FileContents", BinaryUtil.toBase64String(file.getBytes()));
                 }
             }
-            log.info("modifySmsSign requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("modifySmsSign response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("ModifySmsSign", queryParams, bodyParams);
         } catch (Exception e) {
             log.error("AliyunSmsUtl modifySmsSign error", e);
             throw new ClientServiceException("修改短信签名失败", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
-            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+            throw new ClientServiceException("修改短信签名失败", OPERATION_FAIL);
         }
         return result;
     }
@@ -153,22 +144,17 @@ public class AliyunSmsUtl {
      * @return
      */
     public static JSONObject deleteSmsSign(String signName) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("DeleteSmsSign");
-        request.putQueryParameter("SignName", signName);
+        Map<String, String> queryParams = new HashMap<>(1);
+        queryParams.put("SignName", signName);
         JSONObject result = null;
         try {
-            log.info("deleteSmsSign requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("deleteSmsSign response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("DeleteSmsSign", queryParams, null);
         } catch (Exception e) {
             log.error("删除短信签名失败", e);
             throw new ClientServiceException("AliyunSmsUtl deleteSmsSign error", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
-            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+            throw new ClientServiceException("删除短信签名失败", OPERATION_FAIL);
         }
         return result;
     }
@@ -181,22 +167,17 @@ public class AliyunSmsUtl {
      * @return
      */
     public static JSONObject querySmsSign(String signName) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("QuerySmsSign");
-        request.putQueryParameter("SignName", signName);
+        Map<String, String> queryParams = new HashMap<>(1);
+        queryParams.put("SignName", signName);
         JSONObject result = null;
         try {
-            log.info("querySmsSign requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("querySmsSign response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("QuerySmsSign", queryParams, null);
         } catch (Exception e) {
             log.error("AliyunSmsUtl querySmsSign error", e);
             throw new ClientServiceException("查询短信签名失败", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
-            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+            throw new ClientServiceException("查询短信签名失败", OPERATION_FAIL);
         }
         return result;
     }
@@ -208,26 +189,70 @@ public class AliyunSmsUtl {
      * @return
      */
     public static JSONObject addSmsTemplate(SmsTemplateSet model) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("AddSmsTemplate");
-        request.putQueryParameter("TemplateType", model.getTemplateType() + "");
-        request.putQueryParameter("TemplateName", model.getTemplateName());
-        request.putBodyParameter("TemplateContent", model.getTemplateContent());
-        request.putBodyParameter("Remark", model.getRemark());
+        Map<String, String> queryParams = new HashMap<>(2);
+        Map<String, Object> bodyParams = new HashMap<>(2);
+        queryParams.put("TemplateType", model.getTemplateType() + "");
+        queryParams.put("TemplateName", model.getTemplateName());
+        bodyParams.put("TemplateContent", model.getTemplateContent());
+        bodyParams.put("Remark", model.getRemark());
         JSONObject result = null;
         try {
-            log.info("addSmsTemplate requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("addSmsTemplate response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("AddSmsTemplate", queryParams, bodyParams);
         } catch (Exception e) {
             log.error("AliyunSmsUtl addSmsTemplate error", e);
             throw new ClientServiceException("添加短信模板失败", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
-            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+            throw new ClientServiceException("添加短信模板失败", OPERATION_FAIL);
         }
+        return result;
+    }
+
+    /**
+     * 调用阿里云短信接口
+     *
+     * @param action
+     * @param queryParams
+     * @param bodyParams
+     * @return
+     * @throws ClientException
+     */
+    public static JSONObject aliyunSmsClient(String action, Map<String, String> queryParams, Map<String, Object> bodyParams) throws ClientException {
+        return aliyunSmsClient(action, null, null, queryParams, bodyParams);
+    }
+
+    /**
+     * 调用阿里云短信接口
+     *
+     * @param action
+     * @param pathParams
+     * @param headParams
+     * @param queryParams
+     * @param bodyParams
+     * @return
+     * @throws ClientException
+     */
+    public static JSONObject aliyunSmsClient(String action, Map<String, String> pathParams, Map<String, String> headParams, Map<String, String> queryParams, Map<String, Object> bodyParams) throws ClientException {
+        CommonRequest request = commonRequest();
+        request.setSysAction(action);
+        if (StringHelper.isNotEmpty(pathParams)) {
+            pathParams.forEach((key, value) -> request.putHeadParameter(key, value));
+        }
+        if (StringHelper.isNotEmpty(headParams)) {
+            headParams.forEach((key, value) -> request.putHeadParameter(key, value));
+        }
+        if (StringHelper.isNotEmpty(queryParams)) {
+            queryParams.forEach((key, value) -> request.putQueryParameter(key, value));
+        }
+        if (StringHelper.isNotEmpty(bodyParams)) {
+            bodyParams.forEach((key, value) -> request.putBodyParameter(key, value));
+        }
+        log.info("{} queryParam: {}, bodyParam: {}, headParam: {}, pathParam: {}", action,
+                request.getSysQueryParameters(), request.getSysBodyParameters(), request.getSysHeadParameters(), request.getSysPathParameters());
+        CommonResponse response = client.getCommonResponse(request);
+        String data = response.getData();
+        log.info("{} response: {}", action, data);
+        JSONObject result = JSONObject.parseObject(data);
         return result;
     }
 
@@ -238,26 +263,22 @@ public class AliyunSmsUtl {
      * @return
      */
     public static JSONObject modifySmsTemplate(SmsTemplateSet model) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("ModifySmsTemplate");
-        request.putQueryParameter("TemplateType", model.getTemplateType() + "");
-        request.putQueryParameter("TemplateName", model.getTemplateName());
-        request.putBodyParameter("TemplateContent", model.getTemplateContent());
-        request.putBodyParameter("Remark", model.getRemark());
-        request.putQueryParameter("TemplateCode", model.getTemplateCode());
+        Map<String, String> queryParams = new HashMap<>(3);
+        Map<String, Object> bodyParams = new HashMap<>(2);
+        queryParams.put("TemplateType", model.getTemplateType() + "");
+        queryParams.put("TemplateCode", model.getTemplateCode());
+        queryParams.put("TemplateName", model.getTemplateName());
+        bodyParams.put("TemplateContent", model.getTemplateContent());
+        bodyParams.put("Remark", model.getRemark());
         JSONObject result = null;
         try {
-            log.info("modifySmsTemplate requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("modifySmsTemplate response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("ModifySmsTemplate", queryParams, bodyParams);
         } catch (Exception e) {
             log.error("AliyunSmsUtl modifySmsSign error", e);
             throw new ClientServiceException("修改短信模板失败", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
-            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+            throw new ClientServiceException("修改短信模板失败", OPERATION_FAIL);
         }
         return result;
     }
@@ -269,22 +290,17 @@ public class AliyunSmsUtl {
      * @return
      */
     public static JSONObject deleteSmsTemplate(String templateCode) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("DeleteSmsTemplate");
-        request.putQueryParameter("TemplateCode", templateCode);
+        Map<String, String> queryParams = new HashMap<>(1);
+        queryParams.put("TemplateCode", templateCode);
         JSONObject result = null;
         try {
-            log.info("deleteSmsTemplate requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("deleteSmsTemplate response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("DeleteSmsTemplate", queryParams, null);
         } catch (Exception e) {
             log.error("AliyunSmsUtl deleteSmsTemplate error", e);
             throw new ClientServiceException("删除短信模板失败！", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
-            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+            throw new ClientServiceException("删除短信模板失败！", OPERATION_FAIL);
         }
         return result;
     }
@@ -296,22 +312,17 @@ public class AliyunSmsUtl {
      * @return
      */
     public static JSONObject querySmsTemplate(String templateCode) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("QuerySmsTemplate");
-        request.putQueryParameter("TemplateCode", templateCode);
+        Map<String, String> queryParams = new HashMap<>(1);
+        queryParams.put("TemplateCode", templateCode);
         JSONObject result = null;
         try {
-            log.info("querySmsTemplate requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("querySmsTemplate response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("QuerySmsTemplate", queryParams, null);
         } catch (Exception e) {
             log.error("AliyunSmsUtl querySmsTemplate error", e);
             throw new ClientServiceException("查询短信模板失败", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
-            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+            throw new ClientServiceException("查询短信模板失败", OPERATION_FAIL);
         }
         return result;
     }
@@ -326,26 +337,21 @@ public class AliyunSmsUtl {
      * @return BizId 回执id
      */
     public static String sendSms(String mobiles, String signName, String templateCode, JSONObject templateParam) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("sendSms");
-        request.putQueryParameter("RegionId", "cn-hangzhou");
-        request.putBodyParameter("PhoneNumbers", mobiles);
-        request.putQueryParameter("SignName", signName);
-        request.putQueryParameter("TemplateCode", templateCode);
-        request.putBodyParameter("TemplateParam", templateParam.toJSONString());
+        Map<String, String> queryParams = new HashMap<>(3);
+        Map<String, Object> bodyParams = new HashMap<>(2);
+        queryParams.put("SignName", signName);
+        queryParams.put("TemplateCode", templateCode);
+        bodyParams.put("PhoneNumbers", mobiles);
+        bodyParams.put("TemplateParam", templateParam.toJSONString());
         JSONObject result = null;
         try {
-            log.info("sendSms requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("sendSms response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("sendSms", queryParams, bodyParams);
         } catch (Exception e) {
             log.error("AliyunSmsUtl sendSms error", e);
             throw new ClientServiceException("短信发送失败！", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
-            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+            throw new ClientServiceException("短信发送失败！", OPERATION_FAIL);
         }
         return result.getString("BizId");
     }
@@ -359,26 +365,21 @@ public class AliyunSmsUtl {
      * @return BizId 回执id
      */
     public static String sendBatchSms(JSONArray mobiles, JSONArray signNameJson, String templateCode, JSONArray templateParamJson) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("SendBatchSms");
-        request.putQueryParameter("RegionId", "cn-hangzhou");
-        request.putBodyParameter("PhoneNumberJson", mobiles.toJSONString());
-        request.putBodyParameter("SignNameJson", signNameJson.toJSONString());
-        request.putQueryParameter("TemplateCode", templateCode);
-        request.putBodyParameter("TemplateParamJson", templateParamJson.toJSONString());
+        Map<String, String> queryParams = new HashMap<>(2);
+        Map<String, Object> bodyParams = new HashMap<>(3);
+        queryParams.put("TemplateCode", templateCode);
+        bodyParams.put("PhoneNumberJson", mobiles.toJSONString());
+        bodyParams.put("SignNameJson", signNameJson.toJSONString());
+        bodyParams.put("TemplateParamJson", templateParamJson.toJSONString());
         JSONObject result = null;
         try {
-            log.info("SendBatchSms requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("SendBatchSms response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("SendBatchSms", queryParams, bodyParams);
         } catch (Exception e) {
             log.error("AliyunSmsUtl SendBatchSms error", e);
-            throw new ClientServiceException("短信发送失败！", OPERATION_FAIL);
+            throw new ClientServiceException("短信批量发送失败！", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
-            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+            throw new ClientServiceException("短信批量发送失败！", OPERATION_FAIL);
         }
         return result.getString("BizId");
     }
@@ -394,26 +395,21 @@ public class AliyunSmsUtl {
      * @return
      */
     public static JSONObject querySendDetails(String mobile, String sendDate, String currentPage, String pageSize, String bizId) {
-        CommonRequest request = commonRequest();
-        request.setSysAction("QuerySendDetails");
-        request.putQueryParameter("PhoneNumber", mobile);
-        request.putQueryParameter("SendDate", sendDate);
-        request.putQueryParameter("CurrentPage", currentPage);
-        request.putQueryParameter("PageSize", pageSize);
-        if (StringHelper.isEmpty(bizId)) {
-            bizId = "";
-        }
-        request.putQueryParameter("BizId", bizId);
+        Map<String, String> queryParams = new HashMap<>(5);
+        queryParams.put("PhoneNumber", mobile);
+        queryParams.put("SendDate", sendDate);
+        queryParams.put("CurrentPage", currentPage);
+        queryParams.put("PageSize", pageSize);
+        queryParams.put("BizId", StringHelper.defaultString(bizId));
         JSONObject result = null;
         try {
-            log.info("querySendDetails requestParam: {}", request.getSysQueryParameters());
-            CommonResponse response = client.getCommonResponse(request);
-            String data = response.getData();
-            log.info("querySendDetails response: {}", data);
-            result = JSONObject.parseObject(data);
+            result = aliyunSmsClient("QuerySendDetails", queryParams, null);
         } catch (Exception e) {
             log.error("AliyunSmsUtl querySendDetails error", e);
             throw new ClientServiceException("查询短信发送详情失败", OPERATION_FAIL);
+        }
+        if (result==null || !"OK".equals(result.getString("Code"))) {
+            throw new ClientServiceException("查询短信发送详情失败！", OPERATION_FAIL);
         }
         return result;
     }

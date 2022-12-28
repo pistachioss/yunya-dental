@@ -4,6 +4,7 @@ import cn.hutool.core.text.StrFormatter;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.yunya.framework.common.constant.StringPool;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
@@ -35,13 +36,13 @@ public class StringHelper extends StringUtils {
   private static final char SEPARATOR = '_';
 
   /**
-   * 获取参数不为空值
+   * 获取参数，空值时返回默认值
    *
    * @param value defaultValue 要判断的value
    * @return value 返回值
    */
   public static <T> T nvl(T value, T defaultValue) {
-    return value != null ? value : defaultValue;
+    return isNotNull(value) ? value : defaultValue;
   }
 
   /**
@@ -527,5 +528,24 @@ public class StringHelper extends StringUtils {
 
   public static String splitFirst(String str) {
     return StringUtils.isNotBlank(str) ? Lists.newArrayList(Splitter.on(",").split(str).iterator()).get(0) : null;
+  }
+
+  /**
+   * 判断是否存在任意一个元素为null
+   *
+   * @param objs
+   * @return
+   */
+  public static boolean isAnyNull(Object...objs) {
+    if (!ArrayUtils.isEmpty(objs)) {
+      int size = objs.length;
+      for (int i = 0; i < size; ++i) {
+        Object obj = objs[i];
+        if (isNull(obj)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }

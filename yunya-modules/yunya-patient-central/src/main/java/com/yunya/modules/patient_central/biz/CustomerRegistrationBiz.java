@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.domain.model.AdultPatientRegistrationMode
 import com.yunya.feign.patient_central.domain.model.ChildrenPatientRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.CustomerRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.PatientRegistrationModel;
+import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
@@ -18,6 +19,7 @@ import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
@@ -36,11 +38,10 @@ import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.BusinessConstants.UNKNOWN_ORIGIN_TYPE;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.enums.FileSourceTypeEnum.PATIENT_SIGNATURE;
 
 /**
@@ -61,11 +62,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     /** 注入患者来源Mapper */
     @Autowired private PatientOriginMapper patientOriginMapper;
 
-    @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
-
     @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
-
-    @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
 
     @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
@@ -83,12 +80,10 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
 
     @Autowired private RemoteOssServiceFeign remoteOssServiceFeign;
 
-    /** 多线程 */
-    @Resource(name = "customizeThreadPool")
-    private ExecutorService executorService;
-
     @Value("${domainUrl}")
     private String domainUrl;
+    @Autowired
+    private PatientMemberInfoBiz patientMemberInfoBiz;
 
     /**
      * 添加客户登记
@@ -100,6 +95,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         BeanUtils.copyProperties(customerRegistrationModel, patientBaseInfo);
         Integer originId = patientBaseInfo.getOriginId();
         checkOriginSource(originId, patientBaseInfo.getOriginType(), originId, originId);
+        defaultOriginType(patientBaseInfo);
         // 设置患者登记默认的门诊为总院
         patientBaseInfo.setOrgId(findRecentlyOrgId(39));
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
@@ -113,8 +109,29 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         }
         // 创建预付款 并发送消息
         patientBaseInfoBiz.sendMessages(patientBaseInfo.getId(), 0);
-        addPatientPrepaymentsInfo(patientBaseInfo, null);
+        if (!ObjectUtils.isEmpty(patientBaseInfo.getId())) {
+            patientMemberInfoBiz.addPatientPrepaymentsInfo(patientBaseInfo);
+        }
         return patientBaseInfoVo;
+    }
+
+    /**
+     * 设置默认患者来源为未知来源
+     *
+     * @param patientBaseInfo
+     */
+    private void defaultOriginType(PatientBaseInfo patientBaseInfo) {
+        Integer originType = patientBaseInfo.getOriginType();
+        Integer originId = patientBaseInfo.getOriginId();
+        if (StringHelper.isNull(originType)) {
+            patientBaseInfo.setOriginType(UNKNOWN_ORIGIN_TYPE);
+        }
+        if (UNKNOWN_ORIGIN_TYPE.equals(originType) && StringHelper.isNull(originId)) {
+            PatientOrigin origin = patientOriginMapper.getTypeName(originType);
+            if (StringHelper.isNotNull(origin)) {
+                patientBaseInfo.setOriginId(origin.getId());
+            }
+        }
     }
 
     /**
@@ -191,47 +208,6 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     }
 
     /**
-     * 添加患者时,创建预付款账户
-     *
-     * @param patientBaseInfo 患者信息
-     * @param id
-     */
-    public void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo, Integer id) {
-        if (ObjectUtils.isEmpty(id) && !ObjectUtils.isEmpty(patientBaseInfo.getId())) {
-            PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
-            patientPrepaymentsInfo.setOrgId(patientBaseInfo.getOrgId());
-            patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
-            // 预付款卡号生成规则 开通Y
-            patientPrepaymentsInfo.setPrepaymentNumber(
-                    this.generateCardNumber("Y",patientBaseInfo.getOrgId()));
-            patientPrepaymentsInfo.setCrtId(1);
-            patientPrepaymentsInfo.setCrtName("管理员");
-            this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
-            remoteRabbitMqServiceFeign.sendMessage(
-                    patientPrepaymentsInfo.getId(), 1, 0, MsgCategoryEnum.BasePatientMember);
-        }
-    }
-
-
-    /**
-     * 生产预付款卡号
-     *
-     * @param mark 会员号标识 H：会员卡，Y：预付款
-     * @return String 卡号
-     */
-    public String generateCardNumber(String mark, Integer orgId) {
-        String number = this.patientMemberInfoMapper.generateCardNumber4Prepay(orgId);
-        String suffix = String.format("%06d", Integer.parseInt(number) + 1);
-        // 获取门诊简称
-        OrganizationInfo organizationInfo =
-                this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-        if (organizationInfo != null) {
-            return mark + organizationInfo.getClinicNumber() + suffix;
-        }
-        return null;
-    }
-
-    /**
      * 添加成人患者登记
      * @param model  客户登记
      * @return PatientBaseInfoVo
@@ -261,7 +237,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         }
         patientBaseInfoBiz.sendMessages(patientId, 0);
         // 创建预付款 并发送消息
-        addPatientPrepaymentsInfo(patientBaseInfo, model.getId());
+        if (ObjectUtils.isEmpty(model.getId()) && !ObjectUtils.isEmpty(patientBaseInfo.getId())) {
+            patientMemberInfoBiz.addPatientPrepaymentsInfo(patientBaseInfo);
+        }
         savePatientSignature(model, userId, patientId);
     }
 
@@ -402,6 +380,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      */
     private PatientBaseInfo savePatientBaseInfo(PatientRegistrationModel model, int userId, String userName,
                                                 Integer mobileOwner, Integer originType, Integer originId) {
+        if (patientNameMobileExist(model)) {
+            throw new ClientServiceException("该患者姓名和手机号已存在", DATA_EXIST);
+        }
         Date now = new Date(System.currentTimeMillis());
         PatientBaseInfo baseInfo = new PatientBaseInfo();
         baseInfo.setAge(model.getAge());
@@ -417,6 +398,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         baseInfo.setUptId(userId);
         baseInfo.setUpdName(userName);
         baseInfo.setUpdTime(now);
+        defaultOriginType(baseInfo);
         Integer id = model.getId();
         if (!ObjectUtils.isEmpty(id)) {
             baseInfo.setId(id);
@@ -432,6 +414,21 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     }
 
     /**
+     * 判断患者姓名和手机号是否存在
+     *
+     * @param model
+     * @return
+     */
+    private boolean patientNameMobileExist(PatientRegistrationModel model) {
+        PatientBaseInfoQueryForm query = new PatientBaseInfoQueryForm();
+        query.setMobile(model.getMobile());
+        query.setName(model.getName());
+        query.setId(model.getId());
+        ResponseResult result = patientBaseInfoBiz.findUserExists(query);
+        return result.getStatus() == DATA_EXIST;
+    }
+
+    /**
      * 添加儿童患者登记
      * @param model  客户登记
      * @return PatientBaseInfoVo
@@ -440,7 +437,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 儿童患者登记
         final int userId = -777;
         final String userName = "患者自主登记";
-        PatientBaseInfo patientBaseInfo = savePatientBaseInfo(model, userId, userName, null, null, null);
+        PatientBaseInfo patientBaseInfo = savePatientBaseInfo(model, userId, userName, null, UNKNOWN_ORIGIN_TYPE, null);
         int patientId = patientBaseInfo.getId();
         addPatientExpInfoByChild(model, userId, userName, patientId);
         addPatientExtInfo(model, userId, userName, patientId);
@@ -452,7 +449,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         }
         patientBaseInfoBiz.sendMessages(patientId, 0);
         // 创建预付款 并发送消息
-        addPatientPrepaymentsInfo(patientBaseInfo, model.getId());
+        if (ObjectUtils.isEmpty(model.getId()) && !ObjectUtils.isEmpty(patientBaseInfo.getId())) {
+            patientMemberInfoBiz.addPatientPrepaymentsInfo(patientBaseInfo);
+        }
         savePatientSignature(model, userId, patientId);
     }
 

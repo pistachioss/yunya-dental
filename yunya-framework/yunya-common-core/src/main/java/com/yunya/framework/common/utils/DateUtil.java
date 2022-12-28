@@ -721,7 +721,7 @@ public class DateUtil {
     try {
       return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date);
     } catch (ParseException e) {
-      log.error("parse date error: {}", e);
+      log.error("parse date error: ", e);
     }
     return null;
   }
@@ -1212,6 +1212,21 @@ public class DateUtil {
     ZonedDateTime zonedDateTime = time.atZone(zoneId);
     //获取时刻
     return Date.from(zonedDateTime.toInstant());
+  }
+
+  public static Date localDateToDate(LocalDate time) {
+    //获取系统默认时区
+    ZoneId zoneId = ZoneId.systemDefault();
+    //时区的日期
+    ZonedDateTime zonedDateTime = time.atStartOfDay().atZone(zoneId);
+    //获取时刻
+    return Date.from(zonedDateTime.toInstant());
+  }
+
+  public static boolean isCurrentMonth(LocalDate date) {
+    int currentMonth = LocalDate.now().getMonth().getValue();
+    int month = date.getMonth().getValue();
+    return currentMonth == month;
   }
 
   public static void main(String[] args) {

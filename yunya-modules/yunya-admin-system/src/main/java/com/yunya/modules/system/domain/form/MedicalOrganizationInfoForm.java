@@ -55,4 +55,7 @@ public class MedicalOrganizationInfoForm implements Serializable {
   private String address;
   @ApiModelProperty("医疗机构图片地址")
   private String path;
+  /** 地址及路线 */
+  @ApiModelProperty("地址及路线")
+  private String addressAndWay;
 }

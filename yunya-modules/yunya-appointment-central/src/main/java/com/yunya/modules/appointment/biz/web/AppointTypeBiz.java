@@ -33,6 +33,7 @@ public class AppointTypeBiz extends BaseBiz<AppointTypeMapper, AppointType> {
     public Integer insertAppointType(AppointTypeModel model){
         AppointType build = EntityUtils.build(model, AppointType.class);
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        build.setSortNum(mapper.selectMaxSort() + 1);
         return mapper.insertSelective(build);
     }
 

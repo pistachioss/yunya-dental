@@ -47,6 +47,7 @@
            cei.tel as clinicMobile,
            cei.business_start_time as businessStartTime,
            cei.business_end_time as businessEndTime,
+           cei.address_and_way as addressAndWay,
            case
                c.type
            when 0 then

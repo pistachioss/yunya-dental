@@ -7,6 +7,7 @@ import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
+import com.yunya.feign.appointment.domain.query.ReservationCodeQuery;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
@@ -127,6 +128,16 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
     @Override
     public List<PatientEventVO> findPatientAppointTrajectory(Integer patientId) {
         return null;
+    }
+
+    @Override
+    public String checkReservatoinCode(ReservationCodeQuery model) {
+        return null;
+    }
+
+    @Override
+    public boolean editReservatoinCode(ReservationCodeQuery model) {
+        return false;
     }
 
 }

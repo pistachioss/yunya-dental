@@ -2,17 +2,22 @@ package com.yunya.modules.patient_central.controller.web;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.query.CustomerBindPatientQueryForm;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleInfoVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleRefererVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientTrajectoryVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientVipRightInterestVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.patient_central.biz.CustomerPatientBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: chenlin
@@ -64,27 +69,14 @@ public class CustomerPatientController {
     }
 
     /**
-     * 根据unionid查询绑定患者列表
-     *
-     * @param query
-     * @return
-     */
-    @ApiOperation("根据unionid查询绑定患者列表")
-    @PostMapping("/bound/patient")
-    public ResponseResult<PageInfo<CustomerBindPatientVO>> findBindPatientList(@RequestBody @Validated CustomerBindPatientQueryForm query) {
-        PageInfo<CustomerBindPatientVO> page = customerPatientBiz.findBindPatientList(query);
-        return ResponseUtil.success(page);
-    }
-
-    /**
      * 根据unionid查询微信用户已关注公众号和小程序信息
      *
      * @param unionid
      * @return
      */
     @ApiOperation("根据unionid查询微信用户关注公众号和小程序信息")
-    @GetMapping("/wxFans/subscribe/{unionid}")
-    public ResponseResult<JSONObject> findWxFansSubscribeInfo(@PathVariable(value = "unionid") String unionid) {
+    @GetMapping("/wxFans/subscribe")
+    public ResponseResult<JSONObject> findWxFansSubscribeInfo(@RequestParam(value = "unionid") String unionid) {
         JSONObject result = customerPatientBiz.findWxFansSubscribeInfo(unionid);
         return ResponseUtil.success(result);
     }
@@ -100,5 +92,37 @@ public class CustomerPatientController {
     public ResponseResult<PatientVipRightInterestVO> findPatientVipRightInterest(@PathVariable(value = "patientId") Integer patientId) {
         PatientVipRightInterestVO result = customerPatientBiz.findPatientVipRightInterest(patientId);
         return ResponseUtil.success(result);
+    }
+
+    @Autowired
+    private RedisUtils redisUtils;
+
+    @GetMapping("/locked")
+    public ResponseResult redisLock() {
+        System.out.println(Thread.currentThread().getName());
+        Thread[] threads = new Thread[100];
+        for (int i = 0; i < threads.length; i++) {
+            Thread t = new Thread(()->{
+                redisUtils.lockedFunc("key", o->{
+                    String name = Thread.currentThread().getName();
+                    System.out.println(name + "-进入: " + System.currentTimeMillis());
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                        System.out.println(name + "，正在执行任务");
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    System.out.println(name + "-退出: " + System.currentTimeMillis());
+                    return null;
+                });
+            });
+            t.setName("线程" + (i+1));
+            threads[i] = t;
+        }
+        for (int i = 0; i < threads.length; i++) {
+            threads[i].start();
+            System.out.println(threads[i].getName()+"启动");
+        }
+        return ResponseUtil.success();
     }
 }

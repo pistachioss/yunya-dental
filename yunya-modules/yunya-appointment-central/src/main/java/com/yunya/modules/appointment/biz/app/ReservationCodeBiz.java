@@ -15,22 +15,52 @@ import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class ReservationCodeBiz extends BaseBiz<ReservationCodeMapper, ReservationCode> {
 
-  public boolean find(ReservationCodeQuery query) {
+  public String find(ReservationCodeQuery query) {
+    if ( Strings.isNullOrEmpty(query.getCode())) {
+      return "凭证单号不能为空";
+    }
+    Example example = new Example(ReservationCode.class);
+    Example.Criteria criteria = example.createCriteria();
+    criteria.andEqualTo("code", query.getCode());
+    List<ReservationCode> reservationCodeList = mapper.selectByExample(example);
+    if (reservationCodeList.size() == 1) {
+      ReservationCode reservationCode = reservationCodeList.get(0);
+      if (reservationCode.getCodeStatus() > 1) {
+        return "该凭证单号已被消耗";
+      }
+      if (reservationCode.getCodeStartDate().after(new Date())) {
+        return "该凭证单号已过期";
+      }
+      if (reservationCode.getCodeEndDate().before(new Date())) {
+        return "该凭证单号已过期";
+      }
+      return "true";
+    } else {
+      return "未查询到该凭证单号，请重新输入";
+    }
+  }
+
+  public boolean use(ReservationCodeQuery query) {
     if ( Strings.isNullOrEmpty(query.getCode())) {
       return false;
     }
     Example example = new Example(ReservationCode.class);
     Example.Criteria criteria = example.createCriteria();
     criteria.andEqualTo("code", query.getCode());
-    int count = mapper.selectCountByExample(example);
-    if (count > 0) {
-      return true;
-    } else {
-      return false;
+    List<ReservationCode> reservationCodeList = mapper.selectByExample(example);
+    if (reservationCodeList.size() == 1 && reservationCodeList.get(0).getCodeStatus() < 2) {
+      ReservationCode reservationCode = new ReservationCode();
+      reservationCode.setCodeStatus((byte)2);
+      int i = mapper.updateByExampleSelective(reservationCode, example);
+      if (i > 0) {
+        return true;
+      }
     }
+    return false;
   }
 }

@@ -377,6 +377,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     public void punch(AttendancePunchRecordForm attendancePunchRecordForm) {
         Date now = new Date(System.currentTimeMillis());
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        System.out.println(StringHelper.format("=======打卡人：{}， 打卡时间：{}，请求参数：{}",
+                userId, now, JSONObject.toJSONString(attendancePunchRecordForm)));
         if (attendanceDeviceBindingBiz.findEmployeeBindingDevice(userId) == null) {
             log.error("设备未绑定，请先绑定", JSONObject.toJSONString(attendancePunchRecordForm));
             throw new ClientServiceException("设备未绑定，请先绑定", OPERATION_NOT_ALLOW);
@@ -486,12 +488,14 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         attendancePunchRecord.setIsInScope(isInScope);
         attendancePunchRecord.setUptTime(now);
         attendancePunchRecord.setUptId(userId);
-        mapper.updateByPrimaryKeySelective(attendancePunchRecord);
+        int count = mapper.updateByPrimaryKeySelective(attendancePunchRecord);
+        System.out.println(StringHelper.format("打卡记录id:{}, 更新成功数：{}", attendancePunchRecord.getId(), count));
         if (isInScope.equals(AttendanceIsInScopeEnum.BELONG.getCode())) {
             AttendancePunchRecord onEntity = new AttendancePunchRecord();
             onEntity.setId(onPunchRecord.getId());
             onEntity.setIsInScope(AttendanceIsInScopeEnum.BELONG.getCode());
-            mapper.updateByPrimaryKeySelective(onEntity);
+            int size = mapper.updateByPrimaryKeySelective(onEntity);
+            System.out.println(StringHelper.format("上班打卡记录id:{}, 更新成功数：{}", onEntity.getId(), size));
         }
     }
 

@@ -20,12 +20,14 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
@@ -223,7 +225,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
               patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
     }
     // 创建预付款 并发送消息
-    this.addPatientPrepaymentsInfo(patientBaseInfo);
+    patientMemberInfoBiz.addPatientPrepaymentsInfo(patientBaseInfo);
     sendMessages(patientBaseInfo.getId(), 0);
     return patientBaseInfoVo;
   }
@@ -241,27 +243,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     messageModel.setOperateType(operateType);
     messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatient);
     remoteRabbitMqServiceFeign.sendMessage(messageModel);
-  }
-
-  /**
-   * 添加患者时,创建预付款账户
-   *
-   * @param patientBaseInfo 患者信息
-   */
-  public void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo) {
-    if (patientBaseInfo.getId() != null) {
-      PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
-      patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
-      // 预付款卡号生成规则 开通Y
-      String cardNumberStr = this.patientMemberInfoBiz.generateCardNumber("Y");
-      patientPrepaymentsInfo.setPrepaymentNumber(cardNumberStr);
-      patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
-      this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
-      remoteRabbitMqServiceFeign.sendMessage(
-              patientPrepaymentsInfo.getId(), 1, 0, MsgCategoryEnum.BasePatientMember);
-    }
   }
 
   /**

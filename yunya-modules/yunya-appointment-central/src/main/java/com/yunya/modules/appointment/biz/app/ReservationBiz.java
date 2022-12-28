@@ -1,52 +1,129 @@
 package com.yunya.modules.appointment.biz.app;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.appointment.domain.model.ReservationModel;
 import com.yunya.feign.appointment.domain.query.ReservationCodeQuery;
 import com.yunya.feign.appointment.domain.query.ReservationQuery;
 import com.yunya.feign.appointment.vo.ReservationVo;
+import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
+import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.YiLianBaoServicePackageEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Reservation;
+import com.yunya.modules.appointment.biz.web.ReservationLimitBiz;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.ReservationMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.framework.common.enums.SmsAutosendEventEnum.YILIANBAO_APPOINT_ORDER;
+import static com.yunya.framework.common.enums.SmsTemplateItemEnum.*;
+
+@Slf4j
 @Service
 public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
 
     @Autowired
     private RemoteSystemServiceFeign systemServiceFeign;
+    @Resource
+    private ReservationLimitBiz limitBiz;
 
     @Autowired
     private ReservationCodeBiz reservationCodeBiz;
+    @Autowired
+    private RedisUtils redisUtils;
+    @Resource(name = "poolExecutor")
+    private ExecutorService poolExecutor;
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
+    @Transactional(rollbackFor = Exception.class)
     public ResponseResult add(ReservationModel model) {
+        String packageName = YiLianBaoServicePackageEnum.contains(model.getAppointItemName());
         ReservationCodeQuery query = new ReservationCodeQuery();
         query.setCode(model.getCode());
-        if (!reservationCodeBiz.find(query)) {
-            ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
+        String rst = reservationCodeBiz.find(query);
+        if (!"true".equals(rst)) {
+            return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
         }
         Reservation build = EntityUtils.build(model, Reservation.class);
         build.setCrtName(BaseContextHandler.getUsername());
+        //获取剩余号失败
+        if (!limitBiz.tryAcquire(build.getReservationLimitId())) {
+            throw ClientServiceException.wrap(AppointmentError.APPOINT_REMAINING_LACK);
+        }
         int status = mapper.insertSelective(build);
         if (status <= 0) {
-            ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
+            return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
         }
+        sendMessage(packageName, model);
         return ResponseUtil.success(build.getId());
     }
+
+
+    /**
+     * 发送短信
+     *
+     * @param packageName 套餐名称
+     * @param form
+     */
+    private void sendMessage(String packageName, ReservationModel form) {
+        String mobile = form.getPatientPhone();
+        String orgName = form.getOrgName();
+        String patientName = form.getPatientName();
+        if (StringHelper.isAnyEmpty(patientName, mobile, packageName, orgName)) {
+            log.error("sms parameter missing：patientName={}, mobile={}, packageName={}, orgName={}", patientName, mobile, packageName, orgName);
+            return;
+        }
+        poolExecutor.submit(()->{
+            try {
+                JSONObject templateParam = new JSONObject();
+                //患者姓名
+                templateParam.put(PATIENT_NAME.getAction(), patientName);
+                //诊所名称
+                templateParam.put(CLINIC_NAME.getAction(), orgName);
+                //益联保服务套餐
+                templateParam.put(YILIANBAO_SERVICE_PACKAGE.getAction(), packageName);
+                SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
+                SmsCommonSendRecordModel model = new SmsCommonSendRecordModel();
+                model.setMobile(mobile);
+                model.setSendObject(patientName);
+                model.setTemplateParam(templateParam);
+                smsModel.setEventCode(YILIANBAO_APPOINT_ORDER.getCode());
+                smsModel.setModels(Collections.singletonList(model));
+                smsModel.setUserId(ADMIN_ID);
+                smsModel.setOrgId(COMPANY_ORGID);
+                smsModel.setName(ADMIN_NAME);
+                redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + COMPANY_ORGID, smsModel);
+                log.info("generate sms message：{}", smsModel);
+            } catch (Exception e) {
+                log.error("generate sms message error: ", e);
+            }
+        });
+    }
+
 
     public ResponseResult update(ReservationModel model) {
         Reservation build1 = mapper.selectByPrimaryKey(model.getId());
@@ -81,5 +158,16 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
                 ReservationVo.setOrgName(orgInfo.getBrandName() + "(" + orgInfo.getAbbreviation() + ")");
             });
         }
+    }
+
+    /**
+     *  查询已提交预约
+     * @param orgName 门诊
+     * @param configDate 配置日期
+     * @param whole 是否查询整月
+     * @param yearMonth 整月
+     */
+    public List<Reservation> submittedLimit(String orgName, List<LocalDate> configDate, boolean whole, LocalDate yearMonth) {
+        return mapper.submittedLimit(orgName, whole, configDate, yearMonth);
     }
 }

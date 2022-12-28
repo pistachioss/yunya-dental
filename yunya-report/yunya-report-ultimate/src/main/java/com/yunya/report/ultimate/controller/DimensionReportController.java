@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 /**
  * 简介：维度报表控制层
@@ -244,8 +243,8 @@ public class DimensionReportController {
                     @ApiResponse(
                             code = 200,
                             message =
-                                    "响应格式：{\"msg\":\"success\",\"data\":{\"lastPage\":0,\"startRow\":0,\"hasNextPage\":false,\"prePage\":0,\"nextPage\":0,\"endRow\":0,\"pageSize\":0,\"list\":[{\"Wmonth\":1,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":1,\"Rmonth\":1},{\"Wmonth\":2,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":2,\"Rmonth\":2},{\"Wmonth\":3,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":3,\"Rmonth\":3},{\"Wmonth\":4,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":4,\"Rmonth\":4},{\"Wmonth\":5,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":5,\"Rmonth\":5},{\"Wmonth\":6,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":6,\"Rmonth\":6},{\"Wmonth\":7,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":7,\"Rmonth\":7},{\"Wmonth\":8,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":8,\"Rmonth\":8},{\"Wmonth\":9,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":9,\"Rmonth\":9},{\"Wmonth\":10,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":10,\"Rmonth\":10},{\"Wmonth\":11,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":11,\"Rmonth\":11},{\"Wmonth\":12,\"F2021\":1,\"W2021\":2000,\"R2021\":2,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":12,\"Rmonth\":12},{\"Wmonth\":\"总计\",\"F2021\":1,\"W2021\":2000,\"R2021\":2,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":\"总计\",\"Rmonth\":\"总计\"}],\"pageNum\":0,\"navigatePages\":0,\"navigateFirstPage\":0,\"total\":0,\"pages\":0,\"firstPage\":0,\"size\":0,\"isLastPage\":false,\"hasPreviousPage\":false,\"navigateLastPage\":0,\"isFirstPage\":false,\"map\":{\"abbreviation\":\"门诊\",\"Wmonth\":\"月份\",\"W2021\":\"2021\",\"Fmonth\":\"月份\",\"F2021\":\"2021\",\"Rmonth\":\"月份\",\"R2021\":\"2021\"}},\"audit\":true,\"status\":0}; "
-                                            + "\n W前缀-工作量； F前缀-初诊人数；R前缀-就诊人数")
+                                    "响应格式：{\"msg\":\"success\",\"data\":{\"lastPage\":0,\"startRow\":0,\"hasNextPage\":false,\"prePage\":0,\"nextPage\":0,\"endRow\":0,\"pageSize\":0,\"list\":[{\"Wmonth\":1,\"W2021\":0,\"Nmonth\":1,\"N2021\":0,\"Fmonth\":1,\"F2021\":0,\"Rmonth\":1,\"R2021\":0,\"abbreviation\":\"古墩路门诊\"},{\"Wmonth\":\"总计\",\"Nmonth\":1,\"N2021\":0,\"F2021\":1,\"W2021\":2000,\"R2021\":2,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":\"总计\",\"Rmonth\":\"总计\"}],\"pageNum\":0,\"navigatePages\":0,\"navigateFirstPage\":0,\"total\":0,\"pages\":0,\"firstPage\":0,\"size\":0,\"isLastPage\":false,\"hasPreviousPage\":false,\"navigateLastPage\":0,\"isFirstPage\":false,\"map\":{\"abbreviation\":\"门诊\",\"Wmonth\":\"月份\",\"W2021\":\"2021\",\"Nmonth\":\"月份\",\"N2021\":\"2021\",\"Fmonth\":\"月份\",\"F2021\":\"2021\",\"Rmonth\":\"月份\",\"R2021\":\"2021\"}},\"audit\":true,\"status\":0}; "
+                                            + "\n W前缀-工作量；N前缀-非工作量； F前缀-初诊人数；R前缀-就诊人数")
             })
     @PostMapping(value = "/clinic/workloadVisit/statistics", name = "公司端报表-报表统计-运营报表-门诊统计表")
     public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicWorkloadVisitStatistics(

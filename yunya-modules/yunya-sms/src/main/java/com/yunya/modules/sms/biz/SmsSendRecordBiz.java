@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.sms.model.*;
 import com.yunya.feign.sms.query.SmsSendRecordQueryForm;
 import com.yunya.feign.sms.vo.SmsSendRecordVO;
@@ -17,11 +18,13 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
+import com.yunya.framework.common.enums.YiLianBaoServicePackageEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.appointment.Appointment;
 import com.yunya.models.sms.SmsSendBatch;
 import com.yunya.models.sms.SmsSendRecord;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
@@ -41,10 +44,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.enums.SmsTemplateItemEnum.*;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介：短信发送记录业务层
@@ -67,6 +73,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     private SmsOrgStatisticsBiz smsOrgStatisticsBiz;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Autowired
+    private RemoteAppointmentFeign remoteAppointmentFeign;
     @Autowired
     private RedisUtils redisUtils;
 
@@ -151,30 +159,25 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     public ResponseResult sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
         Integer orgId = COMPANY_ORGID;
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(smsVerifyCodeModel.getEventCode(), null, orgId);
-        if (smsTemplateSetVO == null) {
+        if (StringHelper.isNull(smsTemplateSetVO)) {
             throw new ClientServiceException("短信模板暂不可用！", OPERATION_NOT_ALLOW);
         }
         String signName = smsTemplateSetVO.getSignName();
         if (StringHelper.isEmpty(signName)) {
             throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
-        try {
-            Integer userId = smsVerifyCodeModel.getUserId();
-            String name = smsVerifyCodeModel.getName();
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+        Integer userId = smsVerifyCodeModel.getUserId();
+        String name = smsVerifyCodeModel.getName();
+        redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
-            if (surplusNum <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum);
             Integer batchId = smsSendBatchBiz.insertEntity(orgId, smsTemplateSetVO.getId(),
                     SmsTypeEnum.VERIFY_CODE.getCode(), 1, userId, name);
             String content = smsTemplateSetVO.getTemplateContent();
             int count = StringHelper.countChild("@", content);
-            String templateItem = smsTemplateSetVO.getTemplateItem();
             JSONObject param = new JSONObject();
-            String[] items = null;
-            if (StringHelper.isNotEmpty(templateItem)) {
-                items = templateItem.split(",");
+            String[] items = splitTemplateItem(smsTemplateSetVO.getTemplateItem());
+            if (StringHelper.isNotEmpty(items)) {
                 param.put(SmsTemplateItemEnum.getAction(items[0]), smsVerifyCodeModel.getVerifyCode());
             }
             if (param.size() != count) {
@@ -183,9 +186,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             StringBuilder builder = parseSmsContent(items,
                     content.split("@"), signName, param);
             int len = getContentLength(builder);
-            if (surplusNum <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum - len);
             String mobile = smsVerifyCodeModel.getMobile();
             Integer recordId = insertSelective(orgId, batchId, builder, mobile,
                     userId, name, userId, name);
@@ -193,12 +194,11 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             try {
                 updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, Arrays.asList(recordId));
             } catch (Exception e) {
-                log.error("update bizId error", e);
+                log.error("update bizId error: ", e);
                 log.error("update bizId={}, surplusNum={}, orgId={}", bizId, surplusNum, orgId);
             }
-        } finally {
-            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
-        }
+            return null;
+        });
         return ResponseUtil.success();
     }
 
@@ -259,21 +259,14 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         if (StringHelper.isEmpty(signName)) {
             throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
-        try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+        redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
-            if (surplusNum <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum);
             Integer batchId = smsSendBatchBiz.insertEntity(orgId, templateId, SmsTypeEnum.SMS_NOTIFY.getCode(), models.size(), userId, name);
             String content = smsTemplateSetVO.getTemplateContent();
             int count = StringHelper.countChild("@", content);
             String[] contents = content.split("@");
-            String templateItem = smsTemplateSetVO.getTemplateItem();
-            String[] items = null;
-            if (StringHelper.isNotEmpty(templateItem)) {
-                items = templateItem.split(",");
-            }
+            String[] items = splitTemplateItem(smsTemplateSetVO.getTemplateItem());
             JSONArray mobiles = new JSONArray();
             JSONArray signNames = new JSONArray();
             JSONArray templateParamJson = new JSONArray();
@@ -293,9 +286,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 templateParamJson.add(param);
                 recordIds.add(recordId);
             }
-            if (surplusNum - len <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum - len);
             String bizId = AliyunSmsUtl.sendBatchSms(mobiles, signNames, smsTemplateSetVO.getTemplateCode(), templateParamJson);
             try {
                 updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, recordIds);
@@ -303,10 +294,23 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 log.error("update bizId error", e);
                 log.error("update bizId={}, surplusNum={}, orgId={}", bizId, surplusNum, orgId);
             }
-        } finally {
-            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
-        }
+            return null;
+        });
         return ResponseUtil.success();
+    }
+
+    /**
+     * 分割模板参数
+     *
+     * @param templateItem
+     * @return
+     */
+    private String[] splitTemplateItem(String templateItem) {
+        String[] items = null;
+        if (StringHelper.isNotEmpty(templateItem)) {
+            items = templateItem.split(",");
+        }
+        return items;
     }
 
     /**
@@ -354,19 +358,16 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      */
     public ResponseResult batchSend(Integer orgId, Integer userId, String name, SmsBatchSendRecordModel model) {
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId(), orgId);
-        if (smsTemplateSetVO == null) {
+        if (StringHelper.isNull(smsTemplateSetVO)) {
             throw new ClientServiceException("短信模板暂不可用！", OPERATION_NOT_ALLOW);
         }
         String signName = smsTemplateSetVO.getSignName();
         if (StringHelper.isEmpty(signName)) {
             throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
-        try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+        redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
-            if (surplusNum <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum);
             String[] mobiles = model.getMobiles().split(",");
             JSONArray templateParamJson = model.getTemplateParamJson();
             Map<Integer, List<StringBuilder>> res = parseSmsContent(mobiles, smsTemplateSetVO, templateParamJson);
@@ -394,19 +395,16 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 phoneNumberJson.add(mobile);
                 recordIds.add(recordId);
             }
-            if (surplusNum-len <=0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum - len);
             String bizId = AliyunSmsUtl.sendBatchSms(phoneNumberJson, signNameJson, smsTemplateSetVO.getTemplateCode(), templateParamJson);
             try {
                 updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, recordIds);
             } catch (Exception e) {
-                log.error("update bizId error",e);
+                log.error("update bizId error: ",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
             }
-        } finally {
-            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
-        }
+            return null;
+        });
         return ResponseUtil.success();
     }
 
@@ -425,12 +423,9 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         if (StringHelper.isEmpty(signName)) {
             throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
-        try {
-            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+        redisUtils.lockedFunc(RedisConstants.LOCK_SMS_ORG_STATISTICS + orgId, sms->{
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
-            if (surplusNum <= 0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum);
             String[] mobiles = model.getMobiles().split(",");
             JSONArray templateParamJson = new JSONArray();
             templateParamJson.add(model.getTemplateParamJson());
@@ -447,7 +442,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             for (int i = 0; i < mobiles.length; i++) {
                 String mobile = mobiles[i];
                 Integer uptId = null;
-                if (userIds != null && !userIds.isEmpty()) {
+                if (StringHelper.isNotEmpty(userIds)) {
                     uptId = userIds.get(i);
                 }
                 StringBuilder content = builders.get(0);
@@ -455,20 +450,29 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 Integer recordId = insertSelective(orgId, batchId, content, mobile, uptId, sendObjects.get(i), userId, name);
                 recordIds.add(recordId);
             }
-            if (surplusNum <=0) {
-                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
-            }
+            checkSmsBalance(surplusNum - len);
             String bizId = AliyunSmsUtl.sendSms(model.getMobiles(), signName, smsTemplateSetVO.getTemplateCode(), model.getTemplateParamJson());
             try {
                 updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, recordIds);
             } catch (Exception e) {
-                log.error("update bizId error",e);
+                log.error("update bizId error: ",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
             }
-        } finally {
-            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
-        }
+            return null;
+        });
         return ResponseUtil.success();
+    }
+
+
+    /**
+     * 检查短信余额
+     *
+     * @param surplusNum
+     */
+    private void checkSmsBalance(int surplusNum) {
+        if (surplusNum <= 0) {
+            throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
+        }
     }
 
     /**
@@ -592,7 +596,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         smsSendRecord.setContentNum(getContentLength(content));
         int count = mapper.insert(smsSendRecord);
         if (count != 1) {
-            throw new ClientServiceException("插入数据失败", OperationCodeConstants.INSERT_MODEL);
+            throw new ClientServiceException("插入短信发送记录失败", OperationCodeConstants.INSERT_MODEL);
         }
         return smsSendRecord.getId();
     }
@@ -633,6 +637,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             String code2 = null;
             String code3 = null;
             String code4 = null;
+            String addressAndWay = null;
             if (templateItem.indexOf(SmsTemplateItemEnum.CLINIC_NAME.getCode()+"")!=-1
                     ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_PHONE.getCode()+"")!=-1
                     ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_ADDRESS.getCode()+"")!=-1) {
@@ -640,7 +645,9 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 code2 = medicalOrganizationInfoVO.getAbbreviation();
                 code3 = medicalOrganizationInfoVO.getTel();
                 code4 = medicalOrganizationInfoVO.getAddress();
+                addressAndWay = medicalOrganizationInfoVO.getAddressAndWay();
             }
+            Map<Integer, Appointment> appointMap = findAppointment(models);
             String[] items = templateItem.split(",");
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             for (AppointmentSmsSendRecordModel model : models) {
@@ -656,17 +663,17 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                     }
                     repeat.put(item, ++reNum);
                     Integer code = Integer.parseInt(item);
-                    if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {// 患者姓名
+                    if (PATIENT_NAME.equals(code)) {// 患者姓名
                         object.put(key, model.getSendObject());
-                    } else if (SmsTemplateItemEnum.CLINIC_NAME.getCode().equals(code)) { // 诊所名称
+                    } else if (CLINIC_NAME.equals(code)) { // 诊所名称
                         object.put(key,code2);
-                    } else if (SmsTemplateItemEnum.CLINIC_PHONE.getCode().equals(code)) {// 诊所电话
+                    } else if (CLINIC_PHONE.equals(code)) {// 诊所电话
                         object.put(key,code3);
-                    } else if (SmsTemplateItemEnum.CLINIC_ADDRESS.getCode().equals(code)) {// 诊所地址
+                    } else if (CLINIC_ADDRESS.equals(code)) {// 诊所地址
                         object.put(key,code4);
-                    } else if (SmsTemplateItemEnum.APPOINTMENT_DOCTOR.getCode().equals(code)) {// 预约医生姓名
+                    } else if (APPOINTMENT_DOCTOR.equals(code)) {// 预约医生姓名
                         object.put(key, model.getDentistName());
-                    } else if (SmsTemplateItemEnum.APPOINTMENT.getCode().equals(code)) { // 预约时间
+                    } else if (APPOINTMENT.getCode().equals(code)) { // 预约时间
                         String code7 = model.getAppointDate() + " " + model.getAppointTime();
                         object.put(key, code7);
                     } else if (SmsTemplateItemEnum.APPELLATION.getCode().equals(code)) { // 先生/女士/小朋友
@@ -684,7 +691,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                             }
                         }
                         object.put(key, code7);
-                    } else if (SmsTemplateItemEnum.MORNING_AFTERNOON.getCode().equals(code)) {// 上午/下午
+                    } else if (MORNING_AFTERNOON.equals(code)) {// 上午/下午
                         String code7 = model.getAppointDate() + " " + model.getAppointTime() + ":59";
                         String middleStr = model.getAppointDate() + " 12:00:00";
                         String lastStr = model.getAppointDate() + " 00:00:00";
@@ -700,6 +707,14 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                         } catch (ParseException e) {
                             throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                         }
+                    } else if (YILIANBAO_SERVICE_PACKAGE.equals(code)) {
+                        Appointment appointment = appointMap.get(model.getAppointId());
+                        if (StringHelper.isNotNull(appointment)) {
+                            String packageName = YiLianBaoServicePackageEnum.contains(appointment.getAppointContent());
+                            object.put(key, packageName);
+                        }
+                    } else if (ADDRESS_AND_WAY.equals(code)) {
+                        object.put(key, addressAndWay);
                     } else { // 其他
                         throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
                     }
@@ -709,14 +724,20 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         }
         batchSendByTemplateId(templateId, Integer.parseInt(BaseContextHandler.getUserID()),
                 BaseContextHandler.getName(), orgId, models);
-//        SmsTemplateIdRecordModel smsModel = new SmsTemplateIdRecordModel();
-//        smsModel.setTemplateId(templateId);
-//        smsModel.setName(BaseContextHandler.getName());
-//        smsModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
-//        smsModel.setOrgId(orgId);
-//        smsModel.setModels(models);
-//        redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE, smsModel);
         return ResponseUtil.success(null);
+    }
+
+    /**
+     * 查询预约列表
+     *
+     * @param models
+     * @return
+     */
+    private Map<Integer, Appointment> findAppointment(List<AppointmentSmsSendRecordModel> models) {
+        List<Integer> appointIds = models.stream().map(AppointmentSmsSendRecordModel::getAppointId).collect(Collectors.toList());
+        List<Appointment> appointments = remoteAppointmentFeign.findAppointmentListByIds(appointIds);
+        return Optional.ofNullable(appointments).orElseGet(ArrayList::new)
+                .stream().collect(toMap(Appointment::getId, Function.identity()));
     }
 
     /**
@@ -769,8 +790,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             }
         }
         //发送失败，返补短信
-        if (!rebates.isEmpty()) {
-            rebates.forEach((orgId, rebate)-> smsOrgStatisticsBiz.incrByOrgId(null, rebate,null,orgId));
+        if (StringHelper.isNotEmpty(rebates)) {
+            rebates.forEach((orgId, rebate)-> smsOrgStatisticsBiz.incrByOrgId(null, rebate,null, orgId));
         }
     }
 

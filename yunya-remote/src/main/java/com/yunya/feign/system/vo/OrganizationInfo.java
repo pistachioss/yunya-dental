@@ -48,4 +48,6 @@ public class OrganizationInfo implements Serializable {
   /** 营业结束时间 */
   @ApiModelProperty("营业结束时间")
   private String businessEndTime;
+  @ApiModelProperty("地址及路线")
+  private String addressAndWay;
 }
