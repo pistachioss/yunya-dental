@@ -201,12 +201,15 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
   private void assembleOrigin(List<PatientManageVo> list) {
     Map<String, List<PatientManageVo>> originMap = list.stream()
             .filter(obj -> StringUtils.isNotBlank(obj.getPatientOrionTypeName()))
+            .filter(obj -> StringUtils.isNotBlank(obj.getPatientOrionName()))
             .collect(Collectors
                     .groupingBy(PatientManageVo::getPatientOrionTypeName, Collectors.toList()));
     originMap.forEach((k, v) -> {
       Example example;
       Map<Integer, String> collect;
-      Set<Integer> originIds = v.stream().map(obj -> Integer.valueOf(obj.getPatientOrionName())).collect(Collectors.toSet());
+      Set<Integer> originIds = v.stream()
+              .map(obj -> Integer.valueOf(obj.getPatientOrionName()))
+              .collect(Collectors.toSet());
       if ("员工转介绍".equals(k)) {
         example = new Example(BaseEmployee.class);
         example.selectProperties("userId","employeeName");

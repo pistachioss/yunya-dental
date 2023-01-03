@@ -3,6 +3,9 @@ logging:
     com.yunya: DEBUG
     com.yunya365: DEBUG
 
+sysconfig:
+  executorAndconsulterCanSame: false
+
 spring:
   application:
     name: yunya-treatment

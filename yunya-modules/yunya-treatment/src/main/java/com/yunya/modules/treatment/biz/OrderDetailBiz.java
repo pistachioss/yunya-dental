@@ -64,6 +64,7 @@ import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
+import com.yunya.modules.treatment.config.SysConfig;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.BillRecordMapper;
 import com.yunya.modules.treatment.mapper.OrderDetailMapper;
@@ -150,6 +151,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
   @Resource(name = "treatmentThreadPool")
   private ExecutorService executorService;
+
+  @Autowired private SysConfig sysConfig;
 
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
@@ -639,7 +642,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       ClinicOralTariff oralTariff = new ClinicOralTariff();
       BigDecimal price = BigDecimal.valueOf(0);
       for (OrderDetailModel model : models) {
-        model.compareParams();
+        if (!sysConfig.getExecutorAndconsulterCanSame()){
+          model.compareParams();
+        }
         OrderDetail entity = new OrderDetail();
         entity.setOrgId(orgId);
         entity.setTreatmentRecordId(treatmentRecordId);
