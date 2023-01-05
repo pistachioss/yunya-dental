@@ -632,7 +632,7 @@
                 and bp.last_visit_outpatient = #{query.lastOrgId}
             </if>
             <if test="query.birthday != null">
-                and date_format(bp.birthday, '%m-%d') = date_format(#{query.birthday}, '%m-%d')
+                and date_format(bp.birthday, '%m-%d') = #{query.birthday}
             </if>
             <if test="query.firstDentistName != null and query.firstDentistName !=''">
                 and be.employee_name like concat('%', #{query.firstDentistName}, '%')

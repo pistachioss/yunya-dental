@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * @description:
@@ -64,5 +63,5 @@ public class PatientManageQuery extends PageQuery {
     @ApiModelProperty(value = "末诊门诊")
     private Integer lastOrgId;
     @ApiModelProperty(value = "生日时间")
-    private Date birthday;
+    private String birthday;
 }
