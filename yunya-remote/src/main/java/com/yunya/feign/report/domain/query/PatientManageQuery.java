@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * @description:
@@ -60,4 +61,8 @@ public class PatientManageQuery extends PageQuery {
     /** 患者分组Id*/
     @ApiModelProperty("患者分组id")
     private Integer patientGroupId;
+    @ApiModelProperty(value = "末诊门诊")
+    private Integer lastOrgId;
+    @ApiModelProperty(value = "生日时间")
+    private Date birthday;
 }

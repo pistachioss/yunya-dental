@@ -74,6 +74,9 @@ public class PatientManageVo {
     @ApiModelProperty(value = "末诊日期")
     @ExcelProperty(value = "末诊日期")
     private String lastVisitDate;
+    @ApiModelProperty(value = "末诊门诊")
+//    @ExcelProperty(value = "末诊门诊")
+    private String lastVisitOutpatient;
     @ApiModelProperty(value = "末诊医生")
     @ExcelProperty(value = "末诊医生")
     private String lastVisitDoctors;

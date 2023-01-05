@@ -185,6 +185,41 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
     return new PageInfo<>(page);
   }
 
+  public PageInfo<PatientBirthdayVo> getPatientBirthdayPage(PatientManageQuery query) {
+    LocalDate now = LocalDate.now();
+    Integer startAge = null;
+    Integer endAge = null;
+    if (query.getStartAge() != null && query.getEndAge() != null) {
+      startAge = now.minusYears(query.getEndAge()).getYear();
+      endAge = now.minusYears(query.getStartAge()).getYear();
+    }
+    Page<PatientManageVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    mapper.listPatientByKeys(query, startAge, endAge);
+    this.assembleOrigin(page.getResult());
+
+    List<PatientBirthdayVo> patientBirthdayVoList = new ArrayList<>();
+    for (PatientManageVo patientManageVo : page.getResult()) {
+      PatientBirthdayVo patientBirthdayVo = new PatientBirthdayVo();
+      patientBirthdayVo.setPatientId(patientManageVo.getPatientId());
+      patientBirthdayVo.setLastVisitOutpatient(patientManageVo.getLastVisitOutpatient());
+      patientBirthdayVo.setPatientName(patientManageVo.getPatientName());
+      patientBirthdayVo.setGender(patientManageVo.getGender());
+      patientBirthdayVo.setAge(patientManageVo.getAge());
+      patientBirthdayVo.setMobile(patientManageVo.getMobile());
+      patientBirthdayVo.setPatientOrionTypeName(patientManageVo.getPatientOrionTypeName());
+      patientBirthdayVo.setPatientOrionName(patientManageVo.getPatientOrionName());
+      patientBirthdayVo.setLastVisitDate(patientManageVo.getLastVisitDate());
+      patientBirthdayVo.setLastVisitDoctors(patientManageVo.getLastVisitDoctors());
+      patientBirthdayVoList.add(patientBirthdayVo);
+    }
+    PageInfo<PatientBirthdayVo> page1 = new PageInfo<PatientBirthdayVo>();
+    page1.setList(patientBirthdayVoList);
+    page1.setTotal(page.getTotal());
+    page1.setPageSize(page.getPageSize());
+    page1.setPageNum(page.getPageNum());
+    return page1;
+  }
+
   public List<PatientManageVo> listPatientManage(PatientManageQuery query) {
     LocalDate now = LocalDate.now();
     Integer startAge = null;
