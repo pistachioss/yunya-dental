@@ -268,7 +268,7 @@ public class PatientBaseInfoController {
   }
 
   @ApiOperation("生日报表确认日期")
-  @GetMapping("/birthday/check/{patientId}")
+  @PostMapping("/birthday/check/{patientId}")
   public ResponseResult birthdayCheck(@PathVariable("patientId") Integer patientId) {
     return ResponseUtil.success(this.patientBaseInfoBiz.birthdayCheck(patientId));
   }
