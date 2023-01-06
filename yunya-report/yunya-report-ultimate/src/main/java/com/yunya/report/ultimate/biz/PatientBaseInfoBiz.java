@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -215,11 +216,12 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
       patientBirthdayVo.setLastVisitDoctors(patientManageVo.getLastVisitDoctors());
       Date dt = remotePatientCentralServiceFeign.getPatientBirthdayCheck(patientManageVo.getPatientId());
       if (dt != null && patientManageVo.getBirthday() != null){
+        SimpleDateFormat yearMonthDayFormat = new SimpleDateFormat("yyyy-MM-dd");
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
         c.add(Calendar.YEAR, -1);
         Date year1 = c.getTime();
-        Date year2 = new Date();
+        Date year2 = new Date(yearMonthDayFormat.format(new Date()));
 
         Calendar c2 = Calendar.getInstance();
         c2.set(dt.getYear(), patientManageVo.getBirthday().getMonth(), patientManageVo.getBirthday().getDate());
@@ -227,7 +229,7 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
           c2.add(Calendar.YEAR, -1);
         }
         dt = c2.getTime();
-        if (dt.after(year1) && dt.before(year2)) {
+        if (dt.after(year1) && dt.compareTo(year2) <= 0) {
           patientBirthdayVo.setBirthdayCheck(true);
         }
       }
