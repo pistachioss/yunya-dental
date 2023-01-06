@@ -214,7 +214,9 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
       patientBirthdayVo.setLastVisitDate(patientManageVo.getLastVisitDate());
       patientBirthdayVo.setLastVisitDoctors(patientManageVo.getLastVisitDoctors());
       Date dt = remotePatientCentralServiceFeign.getPatientBirthdayCheck(patientManageVo.getPatientId());
-      patientBirthdayVo.setBirthdayCheck(dt.toString());
+      if (dt != null){
+        patientBirthdayVo.setBirthdayCheck(dt.toString());
+      }
       patientBirthdayVoList.add(patientBirthdayVo);
     }
     PageInfo<PatientBirthdayVo> page1 = new PageInfo<PatientBirthdayVo>();
