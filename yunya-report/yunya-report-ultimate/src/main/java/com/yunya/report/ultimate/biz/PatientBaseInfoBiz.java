@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
@@ -52,6 +53,8 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
   @Resource private BaseEmployeeMapper baseEmployeeMapper;
 
   @Resource private BasePatientOriginMapper basePatientOriginMapper;
+
+  @Resource private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
 
   public CreditsShop lastPatientCredits(Integer patientId) {
     return mapper.lastPatientCredits(patientId);
@@ -210,6 +213,8 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
       patientBirthdayVo.setPatientOrionName(patientManageVo.getPatientOrionName());
       patientBirthdayVo.setLastVisitDate(patientManageVo.getLastVisitDate());
       patientBirthdayVo.setLastVisitDoctors(patientManageVo.getLastVisitDoctors());
+      Date dt = remotePatientCentralServiceFeign.getPatientBirthdayCheck(patientManageVo.getPatientId());
+      patientBirthdayVo.setBirthdayCheck(dt.toString());
       patientBirthdayVoList.add(patientBirthdayVo);
     }
     PageInfo<PatientBirthdayVo> page1 = new PageInfo<PatientBirthdayVo>();

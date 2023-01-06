@@ -154,6 +154,12 @@ public class PatientBaseInfo {
     private Boolean hasDied;
 
     /**
+     * 生日报表确认日期
+     */
+    @Column(name = "birthday_check")
+    private Date birthdayCheck;
+
+    /**
      * 获取主键
      *
      * @return id - 主键
@@ -570,6 +576,14 @@ public class PatientBaseInfo {
 
     public void setHasDied(Boolean hasDied) {
         this.hasDied = hasDied;
+    }
+
+    public Date getBirthdayCheck() {
+        return birthdayCheck;
+    }
+
+    public void setBirthdayCheck(Date birthdayCheck) {
+        this.birthdayCheck = birthdayCheck;
     }
 
     @Override

@@ -11,8 +11,10 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.patient_central.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -248,6 +250,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
 
     @Override
     public void saveOrUpdate(WxFans wxFans) {
+
+    }
+
+    public Date getPatientBirthdayCheck(@PathVariable("patientId") Integer patientId) {
+        return null;
 
     }
 }
