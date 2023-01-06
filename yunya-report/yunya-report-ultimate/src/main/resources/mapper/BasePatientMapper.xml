@@ -570,6 +570,7 @@
         bp.patient_id as patientId,
         bp.`name` as patientName,
         bp.medical_number as medicalNumber,
+        bp.birthday,
         timestampdiff(year, bp.birthday, curdate()) as age,
         case
         when bp.gender = 0 then '男'
@@ -586,7 +587,7 @@
         bp.origin_id as patientOrionName,
         bp.origin_type_name as patientOrionTypeName,
         bpgr.patientGroupName,
-        date_format(bp.first_visit_date, '%Y/%m/%d')as firstVisitDate,
+        date_format(bp.first_visit_date, '%Y/%m/%d') as firstVisitDate,
         bo.abbreviation as firstVisitOutpatient,
         be.employee_name as firstVisitDoctors,
         date_format(bp.last_visit_date, '%Y/%m/%d') as lastVisitDate,

@@ -48,5 +48,5 @@ public class PatientBirthdayVo {
     private String lastVisitDoctors;
     @ExcelIgnore
     @ApiModelProperty(value = "生日确认日期")
-    private String birthdayCheck;
+    private boolean birthdayCheck;
 }

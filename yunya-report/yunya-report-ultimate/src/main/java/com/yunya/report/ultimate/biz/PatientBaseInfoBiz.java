@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -215,9 +214,22 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
       patientBirthdayVo.setLastVisitDate(patientManageVo.getLastVisitDate());
       patientBirthdayVo.setLastVisitDoctors(patientManageVo.getLastVisitDoctors());
       Date dt = remotePatientCentralServiceFeign.getPatientBirthdayCheck(patientManageVo.getPatientId());
-      if (dt != null){
-        SimpleDateFormat yearMonthDayFormat = new SimpleDateFormat("yyyy-MM-dd");
-        patientBirthdayVo.setBirthdayCheck(yearMonthDayFormat.format(dt));
+      if (dt != null && patientManageVo.getBirthday() != null){
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        c.add(Calendar.YEAR, -1);
+        Date year1 = c.getTime();
+        Date year2 = new Date();
+
+        Calendar c2 = Calendar.getInstance();
+        c2.set(dt.getYear(), patientManageVo.getBirthday().getMonth(), patientManageVo.getBirthday().getDate());
+        if (dt.before(c2.getTime())) {
+          c2.add(Calendar.YEAR, -1);
+        }
+        dt = c2.getTime();
+        if (dt.after(year1) && dt.before(year2)) {
+          patientBirthdayVo.setBirthdayCheck(true);
+        }
       }
       patientBirthdayVoList.add(patientBirthdayVo);
     }
