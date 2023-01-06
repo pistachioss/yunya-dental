@@ -1012,6 +1012,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     PatientBaseInfo pat = new PatientBaseInfo();
     pat.setBirthdayCheck(DateTime.now().toDate());
+    pat.setId(patientId);
     return patientBaseInfoMapper.updateByPrimaryKeySelective(pat);
   }
 
