@@ -225,12 +225,14 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
         Date year2 = new Date(nn.getYear(), nn.getMonth(), nn.getDate());
 
         Calendar c2 = Calendar.getInstance();
-        c2.set(dt.getYear(), patientManageVo.getBirthday().getMonth(), patientManageVo.getBirthday().getDate());
+        c2.setTime(dt);
+        c2.set(Calendar.MONTH, patientManageVo.getBirthday().getMonth());
+        c2.set(Calendar.DATE, patientManageVo.getBirthday().getDate());
         if (dt.before(c2.getTime())) {
           c2.add(Calendar.YEAR, -1);
         }
-        dt = c2.getTime();
-        if (dt.after(year1) && dt.compareTo(year2) <= 0) {
+        Date dt2 = c2.getTime();
+        if (dt2.after(year1) && dt2.compareTo(year2) <= 0) {
           patientBirthdayVo.setBirthdayCheck(true);
         }
       }
