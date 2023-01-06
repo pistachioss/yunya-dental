@@ -221,7 +221,8 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
         c.setTime(new Date());
         c.add(Calendar.YEAR, -1);
         Date year1 = c.getTime();
-        Date year2 = new Date(yearMonthDayFormat.format(new Date()));
+        Date nn = new Date();
+        Date year2 = new Date(nn.getYear(), nn.getMonth(), nn.getDate());
 
         Calendar c2 = Calendar.getInstance();
         c2.set(dt.getYear(), patientManageVo.getBirthday().getMonth(), patientManageVo.getBirthday().getDate());
