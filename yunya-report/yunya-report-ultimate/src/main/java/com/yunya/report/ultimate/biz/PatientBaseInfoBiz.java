@@ -198,11 +198,11 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
       endAge = now.minusYears(query.getStartAge()).getYear();
     }
     Page<PatientManageVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-    mapper.listPatientByKeys(query, startAge, endAge);
-    this.assembleOrigin(page.getResult());
+    List<PatientManageVo> list = mapper.listPatientByKeys(query, startAge, endAge);
+    this.assembleOrigin(list);
 
     List<PatientBirthdayVo> patientBirthdayVoList = new ArrayList<>();
-    for (PatientManageVo patientManageVo : page.getResult()) {
+    for (PatientManageVo patientManageVo : list) {
       PatientBirthdayVo patientBirthdayVo = new PatientBirthdayVo();
       patientBirthdayVo.setPatientId(patientManageVo.getPatientId());
       patientBirthdayVo.setLastVisitOutpatient(patientManageVo.getLastVisitOutpatient());
@@ -217,22 +217,15 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
       Date dt = remotePatientCentralServiceFeign.getPatientBirthdayCheck(patientManageVo.getPatientId());
       if (dt != null && patientManageVo.getBirthday() != null){
         SimpleDateFormat yearMonthDayFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        c.add(Calendar.YEAR, -1);
-        Date year1 = c.getTime();
         Date nn = new Date();
+        Date year1 = new Date(nn.getYear() - 1, nn.getMonth(), nn.getDate());
         Date year2 = new Date(nn.getYear(), nn.getMonth(), nn.getDate());
 
-        Calendar c2 = Calendar.getInstance();
-        c2.setTime(dt);
-        c2.set(Calendar.MONTH, patientManageVo.getBirthday().getMonth());
-        c2.set(Calendar.DATE, patientManageVo.getBirthday().getDate());
-        if (dt.before(c2.getTime())) {
-          c2.add(Calendar.YEAR, -1);
+        Date dt2 = new Date(dt.getYear(), patientManageVo.getBirthday().getMonth(), patientManageVo.getBirthday().getDate());
+        if (dt.before(dt2)) {
+          dt2.setYear(dt2.getYear() - 1);
         }
-        Date dt2 = c2.getTime();
-        if (dt2.after(year1) && dt2.compareTo(year2) <= 0) {
+        if (dt2.compareTo(year1) > 0 && dt2.compareTo(year2) <= 0) {
           patientBirthdayVo.setBirthdayCheck(true);
         }
       }
