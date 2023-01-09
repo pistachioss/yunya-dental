@@ -630,7 +630,7 @@
                 and bp.first_visit_outpatient = #{query.firstOrgId}
             </if>
             <if test="query.lastOrgId != null and query.lastOrgId.length > 0">
-                and p.last_visit_outpatient in
+                and bp.last_visit_outpatient in
                 <foreach collection="query.lastOrgId" item="item" index="index" open="(" close=")"
                          separator=",">
                     #{item}
