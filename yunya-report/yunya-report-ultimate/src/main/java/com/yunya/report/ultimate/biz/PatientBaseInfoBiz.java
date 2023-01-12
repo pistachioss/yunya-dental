@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,6 +54,8 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
   @Resource private BaseEmployeeMapper baseEmployeeMapper;
 
   @Resource private BasePatientOriginMapper basePatientOriginMapper;
+
+  @Resource private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
 
   public CreditsShop lastPatientCredits(Integer patientId) {
     return mapper.lastPatientCredits(patientId);
@@ -185,6 +189,56 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
     return new PageInfo<>(page);
   }
 
+  public PageInfo<PatientBirthdayVo> getPatientBirthdayPage(PatientManageQuery query) {
+    LocalDate now = LocalDate.now();
+    Integer startAge = null;
+    Integer endAge = null;
+    if (query.getStartAge() != null && query.getEndAge() != null) {
+      startAge = now.minusYears(query.getEndAge()).getYear();
+      endAge = now.minusYears(query.getStartAge()).getYear();
+    }
+    Page<PatientManageVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    List<PatientManageVo> list = mapper.listPatientByKeys(query, startAge, endAge);
+    this.assembleOrigin(list);
+
+    List<PatientBirthdayVo> patientBirthdayVoList = new ArrayList<>();
+    for (PatientManageVo patientManageVo : list) {
+      PatientBirthdayVo patientBirthdayVo = new PatientBirthdayVo();
+      patientBirthdayVo.setPatientId(patientManageVo.getPatientId());
+      patientBirthdayVo.setLastVisitOutpatient(patientManageVo.getLastVisitOutpatient());
+      patientBirthdayVo.setPatientName(patientManageVo.getPatientName());
+      patientBirthdayVo.setGender(patientManageVo.getGender());
+      patientBirthdayVo.setAge(patientManageVo.getAge());
+      patientBirthdayVo.setMobile(patientManageVo.getMobile());
+      patientBirthdayVo.setPatientOrionTypeName(patientManageVo.getPatientOrionTypeName());
+      patientBirthdayVo.setPatientOrionName(patientManageVo.getPatientOrionName());
+      patientBirthdayVo.setLastVisitDate(patientManageVo.getLastVisitDate());
+      patientBirthdayVo.setLastVisitDoctors(patientManageVo.getLastVisitDoctors());
+      Date dt = remotePatientCentralServiceFeign.getPatientBirthdayCheck(patientManageVo.getPatientId());
+      if (dt != null && patientManageVo.getBirthday() != null){
+        SimpleDateFormat yearMonthDayFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date nn = new Date();
+        Date year1 = new Date(nn.getYear() - 1, nn.getMonth(), nn.getDate());
+        Date year2 = new Date(nn.getYear(), nn.getMonth(), nn.getDate());
+
+        Date dt2 = new Date(dt.getYear(), patientManageVo.getBirthday().getMonth(), patientManageVo.getBirthday().getDate());
+        if (dt.before(dt2)) {
+          dt2.setYear(dt2.getYear() - 1);
+        }
+        if (dt2.compareTo(year1) > 0 && dt2.compareTo(year2) <= 0) {
+          patientBirthdayVo.setBirthdayCheck(true);
+        }
+      }
+      patientBirthdayVoList.add(patientBirthdayVo);
+    }
+    PageInfo<PatientBirthdayVo> page1 = new PageInfo<PatientBirthdayVo>();
+    page1.setList(patientBirthdayVoList);
+    page1.setTotal(page.getTotal());
+    page1.setPageSize(page.getPageSize());
+    page1.setPageNum(page.getPageNum());
+    return page1;
+  }
+
   public List<PatientManageVo> listPatientManage(PatientManageQuery query) {
     LocalDate now = LocalDate.now();
     Integer startAge = null;
@@ -201,12 +255,15 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
   private void assembleOrigin(List<PatientManageVo> list) {
     Map<String, List<PatientManageVo>> originMap = list.stream()
             .filter(obj -> StringUtils.isNotBlank(obj.getPatientOrionTypeName()))
+            .filter(obj -> StringUtils.isNotBlank(obj.getPatientOrionName()))
             .collect(Collectors
                     .groupingBy(PatientManageVo::getPatientOrionTypeName, Collectors.toList()));
     originMap.forEach((k, v) -> {
       Example example;
       Map<Integer, String> collect;
-      Set<Integer> originIds = v.stream().map(obj -> Integer.valueOf(obj.getPatientOrionName())).collect(Collectors.toSet());
+      Set<Integer> originIds = v.stream()
+              .map(obj -> Integer.valueOf(obj.getPatientOrionName()))
+              .collect(Collectors.toSet());
       if ("员工转介绍".equals(k)) {
         example = new Example(BaseEmployee.class);
         example.selectProperties("userId","employeeName");

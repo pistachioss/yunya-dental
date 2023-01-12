@@ -421,7 +421,7 @@
     <select id="selectClinicTariffCategoryOriginalAmount"
             resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffOrderVO">
         SELECT
-            od.org_id AS orgId,
+            br.org_id AS orgId,
             od.type,
             od.billing_item_id AS billingItemId,
             IFNULL(SUM(od.price*od.quantity),0) amount
@@ -454,7 +454,7 @@
         <if test="query.endDate != null and query.endDate != ''">
             AND DATE_FORMAT(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
         </if>
-        GROUP BY od.org_id, od.type, od.billing_item_id
+        GROUP BY br.org_id, od.type, od.billing_item_id
     </select>
 
     <!--查询门诊下开单项目的应收-->
@@ -493,10 +493,6 @@
             </if>
             <if test="query.orgIds != null and query.orgIds.size() > 0">
                 AND br.org_id IN
-                <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-                AND odpr.org_id IN
                 <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
                     #{item}
                 </foreach>

@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * @description:
@@ -74,6 +75,14 @@ public class PatientManageVo {
     @ApiModelProperty(value = "末诊日期")
     @ExcelProperty(value = "末诊日期")
     private String lastVisitDate;
+    @ExcelIgnore
+    @ApiModelProperty(value = "末诊门诊")
+//    @ExcelProperty(value = "末诊门诊")
+    private String lastVisitOutpatient;
+    @ExcelIgnore
+    @ApiModelProperty(value = "生日")
+//    @ExcelProperty(value = "生日")
+    private Date birthday;
     @ApiModelProperty(value = "末诊医生")
     @ExcelProperty(value = "末诊医生")
     private String lastVisitDoctors;

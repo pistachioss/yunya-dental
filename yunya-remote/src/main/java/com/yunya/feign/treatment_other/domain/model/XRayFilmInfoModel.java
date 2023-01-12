@@ -19,7 +19,7 @@ import java.util.Date;
 @ApiModel(value = "XRayFilmInfoModel",description = "图片信息")
 @Data
 public class XRayFilmInfoModel implements Serializable {
-    @ApiModelProperty(value = "图片类型 0-照片；1-根尖片；2-全景片；3-正位片；4-侧位片；5-关节片；6-正畸片；7-其他片",
+    @ApiModelProperty(value = "图片类型 0-照片；1-根尖片；2-全景片；3-正位片；4-侧位片；5-关节片；6-正畸片；7-其他片；20-文件资料",
             required = true)
     @NotNull(message = "图片类型不能为空")
     private Byte type;

@@ -1001,6 +1001,22 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   }
 
   /**
+   * 更新患者生日的确认日期；
+   * @param patientId
+   * @return
+   */
+  public int birthdayCheck(Integer patientId) {
+    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(patientId);
+    if (patientBaseInfo == null) {
+      return 0;
+    }
+    PatientBaseInfo pat = new PatientBaseInfo();
+    pat.setBirthdayCheck(DateTime.now().toDate());
+    pat.setId(patientId);
+    return patientBaseInfoMapper.updateByPrimaryKeySelective(pat);
+  }
+
+  /**
    * 根据患者id查询患者信息
    *
    * @param id 患者id

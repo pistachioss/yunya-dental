@@ -16,7 +16,9 @@ import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
-import com.yunya.models.report.*;
+import com.yunya.models.report.BaseBill;
+import com.yunya.models.report.BaseBillPay;
+import com.yunya.models.report.BaseBillPayDetail;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.OrderDetail;
@@ -24,11 +26,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -134,7 +138,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     BaseBill bill = new BaseBill();
     bill.setBillId(billId);
     BaseBill baseBill = baseBillMapper.selectOne(bill);
-    if (!ObjectUtils.isEmpty(baseBill.getBillDate())) {
+    if (StringHelper.isNotNull(baseBill)) {
       statEmpPayBiz.statisticsEmployeeByPayDate(orderDetails, baseBill, baseBillPay);
     }
   }
