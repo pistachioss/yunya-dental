@@ -352,4 +352,8 @@ import java.util.*;
   @ApiOperation("保存更新微信用户信息")
   @PostMapping(value = "/api/mini/fans/modify")
   void saveOrUpdate(@RequestBody WxFans wxFans);
+
+  @ApiOperation("获取患者生日确认日期")
+  @GetMapping(value = "/api/birthday/check/{patientId}")
+  Date getPatientBirthdayCheck(@PathVariable("patientId") Integer patientId);
 }

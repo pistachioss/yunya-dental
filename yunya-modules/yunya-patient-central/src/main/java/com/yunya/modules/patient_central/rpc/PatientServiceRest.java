@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
@@ -391,5 +392,16 @@ public class PatientServiceRest {
   @PostMapping(value = "/mini/fans/modify")
   public void saveOrUpdate(@RequestBody WxFans wxFans) {
     wxFansBiz.saveOrUpdate(wxFans);
+  }
+
+
+  @ApiOperation("获取患者生日确认日期")
+  @GetMapping(value = "/birthday/check/{patientId}")
+  public Date getPatientBirthdayCheck(@PathVariable("patientId") Integer patientId) {
+    PatientBaseInfo patientBaseInfo = patientBaseInfoBiz.selectById(patientId);
+    if (patientBaseInfo == null) {
+      return null;
+    }
+    return patientBaseInfo.getBirthdayCheck();
   }
 }

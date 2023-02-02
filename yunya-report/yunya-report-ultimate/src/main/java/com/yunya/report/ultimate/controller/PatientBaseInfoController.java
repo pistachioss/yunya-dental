@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 简介:
@@ -69,12 +71,28 @@ public class PatientBaseInfoController {
     return ResponseUtil.success(page);
   }
 
+  @ApiOperation("患者报表-患者生日表")
+  @PostMapping("/manage/birthday")
+  public ResponseResult<PageInfo<PatientBirthdayVo>> patientBirthdayInfo(@RequestBody PatientManageQuery query) {
+    PageInfo<PatientBirthdayVo> page = patientBaseInfoBiz.getPatientBirthdayPage(query);
+    return ResponseUtil.success(page);
+  }
+
   @ApiOperation(value = "客服中心-患者管理-导出")
   @PostMapping("/manage/page/export")
   public void exportPatientManage(HttpServletResponse response, @RequestBody PatientManageQuery query) throws IOException {
     patientBaseInfoBiz.buildResponse(response, "患者报表");
     EasyExcel.write(response.getOutputStream(), PatientManageVo.class)
             .sheet("sheet").doWrite(patientBaseInfoBiz.listPatientManage(query));
+
+  }
+
+  @ApiOperation(value = "患者报表-患者生日表-导出")
+  @PostMapping("/manage/birthday/export")
+  public void exportPatientBirthday(HttpServletResponse response, @RequestBody PatientManageQuery query) throws IOException {
+    patientBaseInfoBiz.buildResponse(response, "患者生日表");
+    EasyExcel.write(response.getOutputStream(), PatientBirthdayVo.class)
+            .sheet("sheet").doWrite(patientBaseInfoBiz.getPatientBirthdayPage(query).getList());
 
   }
 

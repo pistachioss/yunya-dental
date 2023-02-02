@@ -570,6 +570,7 @@
         bp.patient_id as patientId,
         bp.`name` as patientName,
         bp.medical_number as medicalNumber,
+        bp.birthday,
         timestampdiff(year, bp.birthday, curdate()) as age,
         case
         when bp.gender = 0 then '男'
@@ -586,16 +587,18 @@
         bp.origin_id as patientOrionName,
         bp.origin_type_name as patientOrionTypeName,
         bpgr.patientGroupName,
-        date_format(bp.first_visit_date, '%Y/%m/%d')as firstVisitDate,
+        date_format(bp.first_visit_date, '%Y/%m/%d') as firstVisitDate,
         bo.abbreviation as firstVisitOutpatient,
         be.employee_name as firstVisitDoctors,
         date_format(bp.last_visit_date, '%Y/%m/%d') as lastVisitDate,
+        bo2.abbreviation as lastVisitOutpatient,
         be1.employee_name as lastVisitDoctors,
         pm.number_of_visits as treatQuantity
         from base_patient bp
         left join base_employee be on be.user_id = bp.first_visit_doctors
         left join base_employee be1 on be1.user_id = bp.last_visit_doctors
         left join base_organization bo on bo.org_id = bp.first_visit_outpatient
+        left join base_organization bo2 on bo2.org_id = bp.last_visit_outpatient
         left join patient_manage pm on bp.patient_id = pm.patient_id
         left join (
             SELECT patient_id, GROUP_CONCAT(group_name) AS patientGroupName
@@ -625,6 +628,16 @@
             </if>
             <if test="query.firstOrgId != null">
                 and bp.first_visit_outpatient = #{query.firstOrgId}
+            </if>
+            <if test="query.lastOrgId != null and query.lastOrgId.length > 0">
+                and bp.last_visit_outpatient in
+                <foreach collection="query.lastOrgId" item="item" index="index" open="(" close=")"
+                         separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.birthday != null">
+                and date_format(bp.birthday, '%m-%d') = #{query.birthday}
             </if>
             <if test="query.firstDentistName != null and query.firstDentistName !=''">
                 and be.employee_name like concat('%', #{query.firstDentistName}, '%')
