@@ -1,8 +1,11 @@
 package com.yunya.models.patient_central;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 /**
  * @author WY
@@ -55,6 +58,11 @@ public class PatientPrepaymentsInfo {
      * 是否启用 是否有效
      */
     private Boolean inservice;
+
+    /**
+     * 类型：1-普通，2-正畸专项，3-美白专项
+     */
+    private Integer type;
 
     /**
      * 创建人ID
@@ -234,6 +242,25 @@ public class PatientPrepaymentsInfo {
      */
     public void setInservice(Boolean inservice) {
         this.inservice = inservice;
+    }
+
+
+    /**
+     * 获取类型：1-普通，2-正畸专项，3-美白专项
+     *
+     * @return
+     */
+    public Integer getType() {
+        return type;
+    }
+
+    /**
+     * 设置类型：1-普通，2-正畸专项，3-美白专项
+     *
+     * @param type
+     */
+    public void setType(Integer type) {
+        this.type = type;
     }
 
     /**

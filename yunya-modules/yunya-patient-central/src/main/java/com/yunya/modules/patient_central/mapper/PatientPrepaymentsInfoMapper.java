@@ -18,7 +18,9 @@ public interface PatientPrepaymentsInfoMapper extends Mapper<PatientPrepaymentsI
      * @param patientId 患者id
      * @return PatientPrepaymentRelationVo
      */
-    PatientPrepaymentsInfoVo findPrepaymentInfo(@Param("patientId") Integer patientId);
+    PatientPrepaymentsInfoVo findPrepaymentInfo(
+            @Param("type") Integer type,
+            @Param("patientId") Integer patientId);
 
     /**
      * 根据预付款卡号和患者id查询预付款信息
@@ -34,19 +36,30 @@ public interface PatientPrepaymentsInfoMapper extends Mapper<PatientPrepaymentsI
      */
     List<PatientPrepaymentsInfoVo> selectPrepaymentRelationByMasterPatientId(@Param("patientId") Integer patientId);
 
-
     /**
      * 根据预付款账号查询预付款信息
+     *
      * @param prepaidId 预付款账号
      * @return PatientPrepaymentsInfo
      */
     PatientPrepaymentsInfo selectOneByCardNumber(@Param("prepaidId") String prepaidId);
 
+    /**
+     * 根据患者id和预付款类型查询预付款信息
+     *
+     * @param patientId
+     * @param type
+     * @return PatientPrepaymentsInfo
+     */
+    PatientPrepaymentsInfo selectOneByPatientId(@Param("patientId") Integer patientId, @Param("type") Integer type);
 
     /**
      * 根据门诊id获取最新预付款号后六位
+     * @param prefix 前缀
      * @param orgId 门诊id
      * @return String
      */
-    String generateCardNumber4Prepay(@Param("orgId") Integer orgId);
+    String generateCardNumber4Prepay(
+            @Param("prefix") String prefix,
+            @Param("orgId") Integer orgId);
 }

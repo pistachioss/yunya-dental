@@ -13,6 +13,7 @@
         <result column="prepayment_bonus" property="prepaymentBonus" jdbcType="DECIMAL"/>
         <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="type" property="type" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
         <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
@@ -23,17 +24,25 @@
 
     <sql id="Column_List">
       ppio.id,ppio.org_id orgId,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.prepayment_principal prepaymentPrincipal,ppio.prepayment_bonus prepaymentBonus,
-      ppio.remarks,ppio.inservice,ppio.crt_id crtId,ppio.crt_name crtName,ppio.crt_time crtTime,ppio.upt_id uptId,ppio.upd_name updName,ppio.upd_time updTime
+      ppio.remarks,ppio.inservice,ppio.crt_id crtId,ppio.crt_name crtName,ppio.crt_time crtTime,ppio.upt_id uptId,ppio.upd_name updName,ppio.upd_time updTime, type
     </sql>
 
     <!-- 根据患者id患者预付款基本信息查询 -->
     <select id="findPrepaymentInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo">
-       select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.crt_time crtTime,pbio.name name,
-        CAST(IFNULL((ppio.prepayment_principal+ppio.prepayment_bonus),0) AS decimal(15,2)) prepaymentMoneySum,
-        CAST(IFNULL(ppio.prepayment_bonus,0) AS decimal(15,2)) prepaymentBonus,
-		CAST(IFNULL(ppio.prepayment_principal,0) AS decimal(15,2)) prepaymentPrincipal
-        from patient_prepayments_info ppio join patient_base_info pbio on ppio.patient_id = pbio.id
+       select
+           ppio.id id,
+           ppio.org_id orgid,
+           ppio.patient_id patientId,
+           ppio.prepayment_number prepaymentNumber,
+           ppio.crt_time crtTime,
+           pbio.name name,
+           CAST(IFNULL((ppio.prepayment_principal+ppio.prepayment_bonus),0) AS decimal(15,2)) prepaymentMoneySum,
+           CAST(IFNULL(ppio.prepayment_bonus,0) AS decimal(15,2)) prepaymentBonus,
+           CAST(IFNULL(ppio.prepayment_principal,0) AS decimal(15,2)) prepaymentPrincipal
+        from patient_prepayments_info ppio
+        join patient_base_info pbio on ppio.patient_id = pbio.id
         where ppio.patient_id = #{patientId}
+        and ppio.type = #{type}
     </select>
 
     <!-- 根据预付款卡号和患者id查询预付款信息 -->
@@ -71,17 +80,17 @@
             IFNULL( ppi.prepayment_principal, 0 ) AS DECIMAL ( 15, 2 )) prepaymentPrincipal,
             CAST(
             IFNULL( ppi.prepayment_bonus, 0 ) AS DECIMAL ( 15, 2 )) prepaymentBonus
-        FROM
-            (
+        FROM (
             SELECT
                 ppr.master_card_id
             FROM patient_prepayment_relation ppr
             WHERE
                 ppr.secondary_card_id = #{patientId}
             GROUP BY
-                ppr.master_card_id ) ppr
-            LEFT JOIN patient_prepayments_info ppi ON ppr.master_card_id = ppi.patient_id
-            LEFT JOIN patient_base_info pbi ON ppr.master_card_id = pbi.id
+                ppr.master_card_id
+        ) ppr
+        LEFT JOIN patient_prepayments_info ppi ON ppr.master_card_id = ppi.patient_id AND ppi.type = 1
+        LEFT JOIN patient_base_info pbi ON ppr.master_card_id = pbi.id
     </select>
 
     <!-- 根据预付款卡号查询预付款信息 -->
@@ -92,13 +101,22 @@
         where ppio.prepayment_number = #{prepaidId}
     </select>
 
+    <!-- 根据患者id和预付款类型查询预付款信息 -->
+    <select id="selectOneByPatientId" resultType="com.yunya.models.patient_central.PatientPrepaymentsInfo">
+        select
+        <include refid="Column_List"/>
+        from patient_prepayments_info ppio
+        where ppio.patient_id = #{patientId}
+        and ppio.type = #{type}
+    </select>
+
     <!-- 根据门诊id获取病历号后六位 -->
     <select id="generateCardNumber4Prepay" resultType="java.lang.String">
         select
             IF(prepayment_number is null,'000000',substr( MAX(prepayment_number), -6, 6 )) as maxnum
         from patient_prepayments_info
         where
-            left(prepayment_number,1)='Y'
-          and org_id = #{orgId}
+        left(prepayment_number,1) = #{prefix}
+        and org_id = #{orgId}
     </select>
 </mapper>

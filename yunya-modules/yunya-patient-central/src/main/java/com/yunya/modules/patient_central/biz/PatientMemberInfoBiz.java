@@ -28,10 +28,12 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.PatientPrepaymentTypeEnum;
 import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -104,8 +106,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
   /** 会员卡卡号前缀：H */
   private final static String MEMBER_PREFIX = "H";
-  /** 预付款账号前缀：Y */
-  private final static String PREPAYMENT_PREFIX = "Y";
 
   public List<MasertMemberRechargeRecordDetailVo> findMemberRechargeRecordInfo(MemberExpendRecordQueryForm form) {
       return mapper.findMemberRechargeRecordInfo(form);
@@ -302,10 +302,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
     patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientMemberInfo.setCrtName(BaseContextHandler.getName());
-    redisUtils.lockedFunc(MEMBER_GENERAT_LOCK, o->{
-      generateCardNumber(patientMemberInfo);
-      return null;
-    });
+    generateCardNumber(patientMemberInfo);
     this.cardLog(patientMemberInfo, "开卡", "");
     remoteRabbitMqServiceFeign.sendMessage(
         patientMemberInfo.getId(), 0, 0, MsgCategoryEnum.BasePatientMember);
@@ -335,19 +332,22 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     log.info("==>开始生成预付款账号...");
     Integer orgId = patientMemberInfo.getOrgId();
     if (StringHelper.isNotNull(orgId)) {
-      String number = mapper.generateCardNumber(orgId);
-      String suffix = String.format("%06d", Integer.parseInt(number) + 1);
-      // 获取门诊简称
-      OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-      if (StringHelper.isNotNull(org)) {
-        // 生成规则：Y + 门诊编号 + 6位递增值（数据库）
-        patientMemberInfo.setCardNumber(MEMBER_PREFIX + org.getClinicNumber() + suffix);
-        mapper.insertSelective(patientMemberInfo);
-        log.info("==========预付款账号生成结束===========");
-        return;
-      }
+      redisUtils.lockedFunc(MEMBER_GENERAT_LOCK, o-> {
+        String number = mapper.generateCardNumber(orgId);
+        String suffix = String.format("%06d", Integer.parseInt(number) + 1);
+        // 获取门诊简称
+        OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+        if (StringHelper.isNotNull(org)) {
+          // 生成规则：Y + 门诊编号 + 6位递增值（数据库）
+          patientMemberInfo.setCardNumber(MEMBER_PREFIX + org.getClinicNumber() + suffix);
+          mapper.insertSelective(patientMemberInfo);
+          log.info("==========预付款账号生成结束===========");
+        }
+        return null;
+      });
+    } else {
+      throw new ClientServiceException("【开卡失败，门诊不存在，请重写登录后重试】", OperationCodeConstants.DATA_EXIST);
     }
-    throw new ClientServiceException("【开卡失败，门诊不存在，请重写登录后重试】",OperationCodeConstants.DATA_EXIST);
   }
 
   /**
@@ -363,13 +363,39 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientPrepaymentsInfo.setPatientId(patientId);
       patientPrepaymentsInfo.setCrtId(patientBaseInfo.getCrtId());
       patientPrepaymentsInfo.setCrtName(patientBaseInfo.getCrtName());
-      redisUtils.lockedFunc(PREPAYMENT_GENERAT_LOCK, 10, 2, o->{
-        generateCardNumber(patientPrepaymentsInfo);
-        return null;
-      });
+      generateCardNumber(patientPrepaymentsInfo);
       remoteRabbitMqServiceFeign.sendMessage(
               patientPrepaymentsInfo.getId(), 1, 0, MsgCategoryEnum.BasePatientMember);
     }
+  }
+
+  /**
+   * 开通
+   *
+   * @param model
+   * @return
+   */
+  public PatientPrepaymentsInfo openIfAbsent(PrepaidRechargeModel model) {
+    Integer patientId = model.getPatientId();
+    Integer type = model.getType();
+    PatientPrepaymentsInfo info = patientPrepaymentsInfoMapper.selectOneByPatientId(patientId, type);
+    if (StringHelper.isNull(info)) {
+      Date now = DateUtil.getCurrentDate();
+      int optId = Integer.parseInt(BaseContextHandler.getUserID());
+      String optName = BaseContextHandler.getName();
+      info = new PatientPrepaymentsInfo();
+      info.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      info.setCrtId(optId);
+      info.setCrtName(optName);
+      info.setCrtTime(now);
+      info.setUptId(optId);
+      info.setUpdName(optName);
+      info.setUpdTime(now);
+      info.setPatientId(patientId);
+      info.setType(type);
+      generateCardNumber(info);
+    }
+    return info;
   }
 
   /**
@@ -381,19 +407,24 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     log.info("==>开始生成预付款账号...");
     Integer orgId = prepaymentsInfo.getOrgId();
     if (StringHelper.isNotNull(orgId)) {
-      String number = patientPrepaymentsInfoMapper.generateCardNumber4Prepay(orgId);
-      String suffix = String.format("%06d", Integer.parseInt(number) + 1);
-      // 获取门诊简称
-      OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-      if (StringHelper.isNotNull(org)) {
-        // 生成规则：H + 门诊编号 + 6位递增值（数据库）
-        prepaymentsInfo.setPrepaymentNumber(PREPAYMENT_PREFIX + org.getClinicNumber() + suffix);
-        patientPrepaymentsInfoMapper.insertSelective(prepaymentsInfo);
-        log.info("==========预付款账号生成结束===========");
-        return;
-      }
+      Integer type = prepaymentsInfo.getType();
+      String prefix = PatientPrepaymentTypeEnum.getTypeEnum(type).getPrefix();
+      redisUtils.lockedFunc(PREPAYMENT_GENERAT_LOCK + type, o-> {
+        String number = patientPrepaymentsInfoMapper.generateCardNumber4Prepay(prefix, orgId);
+        String suffix = String.format("%06d", Integer.parseInt(number) + 1);
+        // 获取门诊简称
+        OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+        if (StringHelper.isNotNull(org)) {
+          // 生成规则：预付款类型前缀 + 门诊编号 + 6位递增值（数据库）
+          prepaymentsInfo.setPrepaymentNumber(prefix + org.getClinicNumber() + suffix);
+          patientPrepaymentsInfoMapper.insertSelective(prepaymentsInfo);
+          log.info("==========预付款账号生成结束===========");
+        }
+        return null;
+      });
+    } else {
+      throw new ClientServiceException("【开通失败，门诊不存在，请重写登录后重试】", OperationCodeConstants.DATA_NOT_EXIST);
     }
-    throw new ClientServiceException("【开卡失败，门诊不存在，请重写登录后重试】",OperationCodeConstants.DATA_NOT_EXIST);
   }
 
   /**

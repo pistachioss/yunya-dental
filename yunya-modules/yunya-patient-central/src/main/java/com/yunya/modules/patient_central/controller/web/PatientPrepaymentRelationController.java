@@ -52,7 +52,7 @@ public class PatientPrepaymentRelationController {
   @ApiOperation("账户基本信息")
   @GetMapping("/prepaidAccountBaseInfo/{id}")
   public ResponseResult<PatientPrepaymentsInfoVo> findPrepaymentInfo(@PathVariable("id") Integer id) {
-    return ResponseUtil.success(this.patientPrepaymentBiz.findPrepaymentInfo(id));
+    return ResponseUtil.success(this.patientPrepaymentBiz. findPrepaymentInfo(id));
   }
 
   /**

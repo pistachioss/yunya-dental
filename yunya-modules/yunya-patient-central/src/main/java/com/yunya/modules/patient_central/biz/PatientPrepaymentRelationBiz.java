@@ -34,7 +34,6 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.modules.patient_central.mapper.*;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +45,7 @@ import java.util.*;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ZERO;
 import static com.yunya.framework.common.constant.RedisConstants.SMS_SEND_MESSAGE_QUEUE;
+import static com.yunya.framework.common.enums.PatientPrepaymentTypeEnum.NORMAL;
 
 /**
  * 简单介绍:</br> 患者预付款
@@ -102,7 +102,7 @@ public class PatientPrepaymentRelationBiz
    * @return PatientPrepaymentRelationVo
    */
   public PatientPrepaymentsInfoVo findPrepaymentInfo(Integer id) {
-    return patientPrepaymentsInfoMapper.findPrepaymentInfo(id);
+    return patientPrepaymentsInfoMapper.findPrepaymentInfo(NORMAL.getType(),id);
   }
 
   /**
@@ -654,7 +654,7 @@ public class PatientPrepaymentRelationBiz
    */
   public List<PatientPrepaymentsInfoVo> balancePayment(Integer patientId) {
     List<PatientPrepaymentsInfoVo> resultList = new ArrayList<>();
-    PatientPrepaymentsInfoVo prepaymentInfo = patientPrepaymentsInfoMapper.findPrepaymentInfo(patientId);
+    PatientPrepaymentsInfoVo prepaymentInfo = patientPrepaymentsInfoMapper.findPrepaymentInfo(NORMAL.getType(), patientId);
     if (null != prepaymentInfo) {
       resultList.add(prepaymentInfo);
     }

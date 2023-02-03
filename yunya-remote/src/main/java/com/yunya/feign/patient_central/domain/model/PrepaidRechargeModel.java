@@ -4,9 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -23,6 +21,11 @@ import java.math.BigDecimal;
 @ToString
 @ApiModel(value = "预付款充值Model")
 public class PrepaidRechargeModel implements Serializable {
+
+    /** 预付款账号分类 */
+    @ApiModelProperty(value = "预付款账号分类", required = true)
+    @NotNull(message = "预付款账号分类不能为空")
+    private Integer type;
 
     /**
      * 患者id
