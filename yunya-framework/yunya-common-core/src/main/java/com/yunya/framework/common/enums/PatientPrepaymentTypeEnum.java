@@ -14,10 +14,13 @@ import java.util.stream.Stream;
  * @since: 1.0.0
  */
 public enum PatientPrepaymentTypeEnum {
-
+    /** 预付款 */
     NORMAL(false, 1, "预付款", "Y"),
+    /** 正畸预付款 */
     ORTHADANTIC(true, 2, "正畸预付款", "ZY"),
+    /** 美白预付款 */
     WHITENING(true, 3, "美白预付款", "MY"),
+    /** 种植预付款 */
     IMPLANT(true,4, "种植预付款", "ZZY"),
     ;
 

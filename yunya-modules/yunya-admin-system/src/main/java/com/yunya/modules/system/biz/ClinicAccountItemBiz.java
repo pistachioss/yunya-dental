@@ -4,10 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.yunya.feign.system.form.ClinicAccountItemConfigureQueryForm;
-import com.yunya.feign.system.vo.AccountItemVO;
-import com.yunya.feign.system.vo.ClinicAccountItemListVO;
-import com.yunya.feign.system.vo.ClinicAccountItemVO;
-import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -19,6 +16,7 @@ import com.yunya.modules.system.domain.model.ClinicAccountItemModel;
 import com.yunya.modules.system.domain.query.AccountItemQueryForm;
 import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
 import com.yunya.modules.system.domain.query.OrganizationQueryForm;
+import com.yunya.modules.system.enums.AccountItemTypeEnum;
 import com.yunya.modules.system.mapper.AccountItemMapper;
 import com.yunya.modules.system.mapper.ClinicAccountItemMapper;
 import com.yunya.modules.system.mapper.CompanyMapper;
@@ -275,5 +273,25 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
       result.setUpdName(BaseContextHandler.getName());
       mapper.updateByPrimaryKeySelective(result);
     }
+  }
+
+  /**
+   * 根据门诊id和患者id查询门诊可用的收费入账方式
+   *
+   * @param orgId
+   * @param patientId
+   * @return
+   */
+  public ClinicChargeItemVO findClinicAccountCharge(Integer orgId, Integer patientId) {
+    ClinicChargeItemVO result = new ClinicChargeItemVO();
+    ClinicAccountItemQueryForm query = new ClinicAccountItemQueryForm();
+    query.setOrgId(orgId);
+    query.setInservice(true);
+    List<ClinicAccountItemVO> otherAccountItems = mapper.selectClinicAccountItemList(query);
+    if (StringHelper.isEmpty(otherAccountItems)) {
+      return result;
+    }
+    result.setOtherAccountItems(otherAccountItems);
+    return result;
   }
 }
