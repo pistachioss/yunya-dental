@@ -370,7 +370,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   }
 
   /**
-   * 开通
+   * 查找预付款账号，如果还未开通则先开通账号
    *
    * @param model
    * @return
@@ -378,9 +378,12 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public PatientPrepaymentsInfo openIfAbsent(PrepaidRechargeModel model) {
     Integer patientId = model.getPatientId();
     Integer type = model.getType();
+    if (PatientPrepaymentTypeEnum.isPrepaymentType(type)) {
+      throw new ClientServiceException("无效的预付款账号类型", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+    }
     PatientPrepaymentsInfo info = patientPrepaymentsInfoMapper.selectOneByPatientId(patientId, type);
     if (StringHelper.isNull(info)) {
-      Date now = DateUtil.getCurrentDate();
+      Date now = DateUtil.now();
       int optId = Integer.parseInt(BaseContextHandler.getUserID());
       String optName = BaseContextHandler.getName();
       info = new PatientPrepaymentsInfo();
@@ -394,6 +397,12 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       info.setPatientId(patientId);
       info.setType(type);
       generateCardNumber(info);
+      remoteRabbitMqServiceFeign.sendMessage(
+              info.getId(), 1, 0, MsgCategoryEnum.BasePatientMember);
+    } else {
+      if (!info.getPrepaymentNumber().equals(model.getPrepaidCard())) {
+        throw new ClientServiceException("无效的预付款账号", OperationCodeConstants.DATA_ERROR);
+      }
     }
     return info;
   }

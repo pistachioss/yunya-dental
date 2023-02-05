@@ -26,6 +26,7 @@ import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -34,6 +35,7 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.modules.patient_central.mapper.*;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -95,6 +97,7 @@ public class PatientPrepaymentRelationBiz
 
   /** redis消息队列 */
   @Resource private RedisUtils redisUtils;
+  @Autowired private PatientMemberInfoBiz patientMemberInfoBiz;
 
   /**
    * 患者预付款基本信息查询
@@ -235,9 +238,8 @@ public class PatientPrepaymentRelationBiz
             OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!", null);
       }
     }
+    PatientPrepaymentsInfo patientPrepaymentsInfo = patientMemberInfoBiz.openIfAbsent(model);
     // 查询预付款余额 增加余额
-    PatientPrepaymentsInfo patientPrepaymentsInfo =
-        patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
     if (patientPrepaymentsInfo != null) {
       BigDecimal rechargePrincipal = model.getRechargePrincipal();
       if (rechargePrincipal == null) {
@@ -247,24 +249,33 @@ public class PatientPrepaymentRelationBiz
       if (rechargeBonus == null) {
         rechargeBonus = new BigDecimal(0);
       }
+      Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+      Integer optId = Integer.parseInt(BaseContextHandler.getUserID());
+      String optName = BaseContextHandler.getName();
+      Date now = DateUtil.now();
       patientPrepaymentsInfo.setPrepaymentPrincipal(
           patientPrepaymentsInfo.getPrepaymentPrincipal().add(rechargePrincipal));
       patientPrepaymentsInfo.setPrepaymentBonus(
           patientPrepaymentsInfo.getPrepaymentBonus().add(rechargeBonus));
+      patientPrepaymentsInfo.setUptId(optId);
+      patientPrepaymentsInfo.setUpdName(optName);
+      patientPrepaymentsInfo.setUpdTime(now);
       patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
 
       // 添加预付款充值记录
       PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
       BeanUtils.copyProperties(model, prepaidRechargeRecord);
       prepaidRechargeRecord.setPrepaidId(model.getPrepaidCard());
-      prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
+      prepaidRechargeRecord.setOrgId(orgId);
+      prepaidRechargeRecord.setCrtId(optId);
+      prepaidRechargeRecord.setCrtName(optName);
+      prepaidRechargeRecord.setCrtTime(now);
       prepaidRechargeRecord.setCurrentRechargePrincipal(
           patientPrepaymentsInfo.getPrepaymentPrincipal());
       prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
-      prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-      prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
+      prepaidRechargeRecord.setUptId(optId);
+      prepaidRechargeRecord.setUpdName(optName);
+      prepaidRechargeRecord.setUpdTime(now);
       prepaidRechargeRecord.setRemarks(model.getPrepaidRechargeTollRecordModel().getRemarks());
       prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
 
@@ -276,9 +287,13 @@ public class PatientPrepaymentRelationBiz
         prepaidRechargeRecord.setRechargeBonus(new BigDecimal(0));
       }
       prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
-      prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
+      prepaidRechargeTollRecord.setOrgId(orgId);
+      prepaidRechargeTollRecord.setCrtId(optId);
+      prepaidRechargeTollRecord.setCrtName(optName);
+      prepaidRechargeTollRecord.setCrtTime(now);
+      prepaidRechargeTollRecord.setUptId(optId);
+      prepaidRechargeTollRecord.setUpdName(optName);
+      prepaidRechargeTollRecord.setUpdTime(now);
       prepaidRechargeTollRecord.setCreditAmount(model.getRechargePrincipal());
       prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
       if (model.getRechargeType() == 1) {

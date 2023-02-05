@@ -41,7 +41,17 @@ public enum PatientPrepaymentTypeEnum {
     }
 
     public static List<PatientPrepaymentTypeEnum> values(boolean isSpecial) {
-        return Stream.of(values()).filter(type->type.isSpecial).collect(Collectors.toList());
+        return Stream.of(values()).filter(item->item.isSpecial.equals(isSpecial)).collect(Collectors.toList());
+    }
+
+    /**
+     * 是否属于预付款账号类型
+     *
+     * @param type
+     * @return
+     */
+    public static boolean isPrepaymentType(Integer type) {
+        return Stream.of(values()).filter(item->item.equals(type)).findAny().isPresent();
     }
 
     public String getName() {

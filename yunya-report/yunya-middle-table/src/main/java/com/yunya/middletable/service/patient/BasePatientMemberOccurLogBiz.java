@@ -623,7 +623,7 @@ public class BasePatientMemberOccurLogBiz
         basePatientMemberOccurLog.setCardId(patientPrepaymentsInfo.getId());
       }
       basePatientMemberOccurLog.setPatientId(patientPrepaymentsInfo.getPatientId());
-      basePatientMemberOccurLog.setType((byte) type.intValue());
+      basePatientMemberOccurLog.setType(patientPrepaymentsInfo.getType().byteValue());
       basePatientMemberOccurLog.setOccurType((byte) operationType.intValue());
       basePatientMemberOccurLog.setPrincipalAmount(prepaidRechargeRecord.getRechargePrincipal());
       basePatientMemberOccurLog.setBonusAmount(prepaidRechargeRecord.getRechargeBonus());

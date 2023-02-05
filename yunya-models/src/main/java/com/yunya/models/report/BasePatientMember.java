@@ -20,7 +20,7 @@ public class BasePatientMember {
     private String cardNumber;
 
     /**
-     * 卡类型(0：会员卡；１：预付款)
+     * 卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      */
     private Integer type;
 
@@ -113,18 +113,18 @@ public class BasePatientMember {
     }
 
     /**
-     * 获取卡类型(0：会员卡；１：预付款)
+     * 获取卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      *
-     * @return type - 卡类型(0：会员卡；１：预付款)
+     * @return type - 卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      */
     public Integer getType() {
         return type;
     }
 
     /**
-     * 设置卡类型(0：会员卡；１：预付款)
+     * 设置卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      *
-     * @param type 卡类型(0：会员卡；１：预付款)
+     * @param type 卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      */
     public void setType(Integer type) {
         this.type = type;
