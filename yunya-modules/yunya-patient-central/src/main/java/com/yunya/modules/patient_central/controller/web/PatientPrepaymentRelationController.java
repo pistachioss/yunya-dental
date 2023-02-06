@@ -258,5 +258,14 @@ public class PatientPrepaymentRelationController {
     return ResponseUtil.success(patientCardOwnerInfoVos);
   }
 
-
+  /**
+   * 查询预付款账户类型类别
+   *
+   * @return
+   */
+  @ApiOperation("查询预付款账户类型")
+  @GetMapping("/type/list")
+  public ResponseResult<List<PatientPrepaymentTypeVO>> findPatientPrepaymentTypeList() {
+    return ResponseUtil.success(patientPrepaymentBiz.findPatientPrepaymentTypeList());
+  }
 }

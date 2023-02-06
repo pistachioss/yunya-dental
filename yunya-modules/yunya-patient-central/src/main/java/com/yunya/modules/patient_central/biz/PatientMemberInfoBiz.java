@@ -280,14 +280,13 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    *
    * @param id 操作LogId
    * @param operateType 操作类型
-   * @param type 会员类型
    * @param operationType Log类型
    */
   public void sendMemberLogMessages(
-      Integer id, Integer operateType, Integer type, Integer operationType) {
+      Integer id, Integer operateType, Integer operationType) {
     Map<String, Object> paramMap = new HashMap<String, Object>();
     paramMap.put("id", id);
-    paramMap.put("type", type);
+    paramMap.put("type", MEMBER.getType());
     paramMap.put("operationType", operationType);
     remoteRabbitMqServiceFeign.sendMessage(
         paramMap, operateType, MsgCategoryEnum.BasePatientMemberOccurLog);
@@ -308,7 +307,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     generateCardNumber(patientMemberInfo);
     this.cardLog(patientMemberInfo, "开卡", "");
     remoteRabbitMqServiceFeign.sendMessage(
-        patientMemberInfo.getId(), 0, 0, MsgCategoryEnum.BasePatientMember);
+        patientMemberInfo.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
     remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
     return ResponseUtil.success();
   }
@@ -368,7 +367,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientPrepaymentsInfo.setCrtName(patientBaseInfo.getCrtName());
       generateCardNumber(patientPrepaymentsInfo);
       remoteRabbitMqServiceFeign.sendMessage(
-              patientPrepaymentsInfo.getId(), 1, 0, MsgCategoryEnum.BasePatientMember);
+              patientPrepaymentsInfo.getId(), NORMAL_PREPAYMENT.getType(), 0, MsgCategoryEnum.BasePatientMember);
     }
   }
 
@@ -401,7 +400,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       info.setType(type);
       generateCardNumber(info);
       remoteRabbitMqServiceFeign.sendMessage(
-              info.getId(), 1, 0, MsgCategoryEnum.BasePatientMember);
+              info.getId(), type, 0, MsgCategoryEnum.BasePatientMember);
     } else {
       if (!info.getPrepaymentNumber().equals(model.getPrepaidCard())) {
         throw new ClientServiceException("无效的预付款账号", OperationCodeConstants.DATA_ERROR);
@@ -560,7 +559,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     this.mapper.updateByPrimaryKeySelective(patientMember);
     this.cardLog(patientMember, "变更", "更新");
     remoteRabbitMqServiceFeign.sendMessage(
-        patientMember.getId(), 0, 1, MsgCategoryEnum.BasePatientMember);
+        patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
   }
 
   /**
@@ -606,7 +605,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         memberRechargeRecord.setType(0);
         memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
         // 发送会员充值消息
-        sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 1);
+        sendMemberLogMessages(memberRechargeRecord.getId(), 0, 1);
         // 添加会员卡充值收费记录
         AccountedWayModel accountedWayModel = model.getAccountedWayModel();
         if (StringHelper.isNotNull(accountedWayModel)) {
@@ -839,7 +838,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberReturnRecord.setActualReturnAmount(model.getReturnPayAmount());
       memberReturnRecord.setRemarks(model.getReturnReason());
       memberReturnRecordMapper.insertSelective(memberReturnRecord);
-      sendMemberLogMessages(memberReturnRecord.getId(), 0, 0, 3);
+      sendMemberLogMessages(memberReturnRecord.getId(), 0,3);
       return ResponseUtil.success();
     }
     return ResponseUtil.fail(
@@ -992,7 +991,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     memberExpendRecord.setType(0);
     memberExpendRecordMapper.insertSelective(memberExpendRecord);
     // 发送预付款消费消息
-    sendMemberLogMessages(memberExpendRecord.getId(), 0, 0, 2);
+    sendMemberLogMessages(memberExpendRecord.getId(), 0, 2);
     // 会员卡充值发送短信 type:0充值 1消费
     memberSendMessages(memberExpendRecord, 1);
   }
@@ -1122,7 +1121,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberRechargeRecord.setOrderRecordId(model.getOrderRecordId());
       memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
       // 发送消息 账单退费
-      sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 5);
+      sendMemberLogMessages(memberRechargeRecord.getId(), 0, 5);
     }
   }
 
@@ -1175,10 +1174,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         Integer expendId = updPatientMemberInfo(model);
         if (expendId != null) {
           remoteRabbitMqServiceFeign.sendMessage(
-              expendId, 0, 2, 2, MsgCategoryEnum.BasePatientMemberOccurLog);
+              expendId, MEMBER.getType(), 2, 2, MsgCategoryEnum.BasePatientMemberOccurLog);
         }
         // 发送会员卡撤销收费消息
-        sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 4);
+        sendMemberLogMessages(memberRechargeRecord.getId(), 0, 4);
         return ResponseUtil.success();
       } else {
         return ResponseUtil.fail(

@@ -24,6 +24,8 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import java.util.List;
 
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.MEMBER;
+
 /**
  * 简介: 报表服务患者会员/预付款信息同步
  *
@@ -68,7 +70,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
         }
         break;
       case 2:
-        if (type == 0) {
+        if (MEMBER.equals(type)) {
           BasePatientMember member = getPatientMemberInfo(id, type);
           PatientMemberInfo memberInfo = patientMemberInfoMapper.selectByPrimaryKey(id);
           if (StringHelper.isNotNull(memberInfo) && StringHelper.isNotNull(member)) {
@@ -77,7 +79,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
           }
           mapper.delete(member);
         }
-        if (type == 1) {
+        if (PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
           BasePatientMember prepayments = getPatientMemberInfo(id, type);
           PatientPrepaymentsInfo patientPrepaymentsInfo =
               patientPrepaymentsInfoMapper.selectByPrimaryKey(id);
@@ -102,7 +104,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
    */
   public void pullMemberData(PullForm form) {
     Integer dataType = form.getDataType();
-    if (dataType == 0) {
+    if (MEMBER.equals(dataType)) {
       String startDate = form.getStartDate();
       String endDate = form.getEndDate();
       Example emp = new Example(PatientBaseInfo.class);
@@ -121,7 +123,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
       }
     }
 
-    if (dataType == 1) {
+    if (PatientDepositAccountTypeEnum.isPrepaymentType(dataType)) {
       String startDate = form.getStartDate();
       String endDate = form.getEndDate();
       Example emp = new Example(PatientBaseInfo.class);
@@ -151,7 +153,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
     Integer type = (Integer) msg.getParamMap().get("type");
     Integer id = (Integer) msg.getParamMap().get("id");
     // 会员卡
-    if (type == 0) {
+    if (MEMBER.equals(type)) {
       BasePatientMember basePatientMember = getPatientMemberInfo(id, type);
       mapper.deleteByPrimaryKey(basePatientMember);
       mapper.insert(basePatientMember);
@@ -173,7 +175,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
   public BasePatientMember getPatientMemberInfo(Integer id, Integer type) {
     BasePatientMember basePatientMember = new BasePatientMember();
     // 会员卡信息
-    if (type == 0) {
+    if (MEMBER.equals(type)) {
       PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectByPrimaryKey(id);
       basePatientMember.setCardId(patientMemberInfo.getId());
       basePatientMember.setCardNumber(patientMemberInfo.getCardNumber());
@@ -198,7 +200,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
           patientPrepaymentsInfoMapper.selectByPrimaryKey(id);
       basePatientMember.setCardId(patientPrepaymentsInfo.getId());
       basePatientMember.setCardNumber(patientPrepaymentsInfo.getPrepaymentNumber());
-      basePatientMember.setType(patientPrepaymentsInfo.getType());
+      basePatientMember.setType(type);
       basePatientMember.setPrincipalAmount(patientPrepaymentsInfo.getPrepaymentPrincipal());
       basePatientMember.setBonusAmount(patientPrepaymentsInfo.getPrepaymentBonus());
       basePatientMember.setPatientId(patientPrepaymentsInfo.getPatientId());

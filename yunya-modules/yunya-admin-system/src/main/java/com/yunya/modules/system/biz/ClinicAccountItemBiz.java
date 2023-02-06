@@ -298,9 +298,9 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
     List<Integer> types = new ArrayList<>();
     otherAccountItems = otherAccountItems.stream().filter(item->{
       Integer accountItemId = item.getAccountItemId();
-      Integer type = PatientDepositAccountTypeEnum.getTypeRelId(accountItemId);
-      if (StringHelper.isNotNull(type)) {
-        types.add(type);
+      PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+      if (StringHelper.isNotNull(typeEnum)) {
+        types.add(typeEnum.getType());
       }
       return !PRE_SOLE.equals(item.getType());
     }).collect(Collectors.toList());

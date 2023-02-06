@@ -22,8 +22,8 @@ public enum PatientDepositAccountTypeEnum {
     ORTHADANTIC_PREPAYMENT(true, 2, "正畸预付款", "ZY", 30),
     /** 美白预付款 */
     WHITENING_PREPAYMENT(true, 3, "美白预付款", "MY", 31),
-    /** 种植预付款 */
-    IMPLANT_PREPAYMENT(true,4, "种植预付款", "ZZY", null),
+//    /** 种植预付款 */
+//    IMPLANT_PREPAYMENT(true,4, "种植预付款", "ZZY", null),
     ;
 
     /** 是否专项 */
@@ -74,20 +74,37 @@ public enum PatientDepositAccountTypeEnum {
     }
 
     /**
-     * 根据accountItemId返回对应的type
+     * 根据accountItemId返回关联的储蓄账号类型
      *
      * @param accountItemId
      * @return
      */
-    public static Integer getTypeRelId(Integer accountItemId) {
+    public static PatientDepositAccountTypeEnum getTypeEnumRelId(Integer accountItemId) {
         if (StringHelper.isNotNull(accountItemId)) {
             for (PatientDepositAccountTypeEnum item : values()) {
                 if (accountItemId.equals(item.getAccountItemId())) {
-                    return item.getType();
+                    return item;
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * 判断给定的accountItemId是否关联预付款类型type
+     *
+     * @param accountItemId
+     * @return
+     */
+    public static Boolean isRelTypeId(Integer accountItemId) {
+        if (StringHelper.isNotNull(accountItemId)) {
+            for (PatientDepositAccountTypeEnum item : values()) {
+                if (accountItemId.equals(item.getAccountItemId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public String getName() {

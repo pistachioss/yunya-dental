@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ZERO;
 import static com.yunya.framework.common.constant.RedisConstants.SMS_SEND_MESSAGE_QUEUE;
@@ -172,7 +173,7 @@ public class PatientPrepaymentRelationBiz
    *
    * @param id 操作LogId
    * @param operateType 操作类型
-   * @param type 会员类型
+   * @param type 预付款账户类型
    * @param operationType Log类型
    */
   public void sendPrepaidLogMessages(
@@ -315,7 +316,7 @@ public class PatientPrepaymentRelationBiz
         }
       }
       // 发送消息 预付款充值
-      sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
+      sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, patientPrepaymentsInfo.getType(), 1);
       // 预付款充值 短信发送
       memberSendMessages(prepaidRechargeRecord, 0);
     } else {
@@ -511,7 +512,7 @@ public class PatientPrepaymentRelationBiz
       prepaidReturnRecordMapper.insertSelective(prepaidReturnRecord);
 
       // 发送消息 退费
-      sendPrepaidLogMessages(prepaidReturnRecord.getId(), 0, 1, 3);
+      sendPrepaidLogMessages(prepaidReturnRecord.getId(), 0, patientPrepaymentsInfo.getType(), 3);
     }
   }
 
@@ -662,7 +663,7 @@ public class PatientPrepaymentRelationBiz
     prepaidExpendRecord.setType(0);
     prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
     // 发送消息 预付款消费
-    sendPrepaidLogMessages(prepaidExpendRecord.getId(), 0, 1, 2);
+    sendPrepaidLogMessages(prepaidExpendRecord.getId(), 0, patientPrepaymentsInfo.getType(), 2);
     // 预付款消费 短信发送
     memberSendMessages(prepaidExpendRecord, 1);
   }
@@ -756,7 +757,7 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeRecord.setOrderRecordId(model.getOrderRecordId());
       prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
       // 发送消息 账单退费
-      sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 5);
+      sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, patientPrepaymentsInfo.getType(), 5);
     }
   }
 
@@ -811,10 +812,10 @@ public class PatientPrepaymentRelationBiz
         Integer expendId = updPatientPrepaidInfo(model);
         if (expendId != null) {
           remoteRabbitMqServiceFeign.sendMessage(
-              expendId, 1, 2, 2, MsgCategoryEnum.BasePatientMemberOccurLog);
+              expendId, patientPrepaymentsInfo.getType(), 2, 2, MsgCategoryEnum.BasePatientMemberOccurLog);
         }
         // 发送消息 撤销收费
-        sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 4);
+        sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, patientPrepaymentsInfo.getType(), 4);
         return ResponseUtil.success();
       } else {
         return ResponseUtil.fail(
@@ -897,5 +898,22 @@ public class PatientPrepaymentRelationBiz
             new ExcelUtil<>(PrepaidMeturnRecordVo.class);
     String fileName =  "退费记录";
     excelUtil.exportExcel(response, resultList, "退费记录", fileName);
+  }
+
+  /**
+   * 查询预付款账户类型类别
+   *
+   * @return
+   */
+  public List<PatientPrepaymentTypeVO> findPatientPrepaymentTypeList() {
+    List<PatientPrepaymentTypeVO> result = new ArrayList<>();
+    Stream<PatientDepositAccountTypeEnum> items = PatientDepositAccountTypeEnum.values(true);
+    items.forEach(item->{
+      PatientPrepaymentTypeVO vo = new PatientPrepaymentTypeVO();
+      vo.setType(item.getType());
+      vo.setName(item.getName());
+      result.add(vo);
+    });
+    return result;
   }
 }
