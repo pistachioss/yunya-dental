@@ -1087,7 +1087,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       resultList.removeIf(vo -> null == vo.getId());
     }
     resultList.forEach(vo->vo.setRemark(
-            StringHelper.format("%d的会员卡（账户余额：%.2f）", vo.getName(), vo.getMemberCardMoneySum())
+            String.format("%s的会员卡（账户余额：%.2f）", vo.getName(), vo.getMemberCardMoneySum())
     ));
     return resultList;
   }

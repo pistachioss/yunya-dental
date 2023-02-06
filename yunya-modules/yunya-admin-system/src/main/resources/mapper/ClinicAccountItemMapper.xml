@@ -58,32 +58,32 @@
         cai.inservice
         FROM
         (
-        SELECT
-        cai.id,
-        ifnull(cai.company_id, cei.company_id) AS orgId,
-        ifnull( cei.abbreviation, '公司' ) AS orgName,
-        ai.accountTypeId,
-        ai.accountTypeName,
-        ifnull(cai.account_item_id, ai.accountItemId) AS accountItemId,
-        ai.accountItemName,
-        ai.type,
-        ifnull(cai.inservice, 1) as inservice
-        FROM
-        clinic_account_item cai
-        LEFT JOIN (
-        SELECT
-        ai.id AS accountItemId,
-        ai.`name` AS accountItemName,
-        ai.type,
-        a.id AS accountTypeId,
-        a.`name` AS accountTypeName
-        FROM
-        account_item ai
-        LEFT JOIN account_type a ON ai.account_type_id = a.id
-        ) ai ON cai.account_item_id = ai.accountItemId
-        LEFT JOIN clinic_ext_info cei ON cai.company_id = cei.company_id
+            SELECT
+                cai.id,
+                ai.orgId,
+                ifnull( cei.abbreviation, '公司' ) AS orgName,
+                ai.accountTypeId,
+                ai.accountTypeName,
+                ai.accountItemId,
+                ai.accountItemName,
+                ai.type,
+                ifnull(cai.inservice, 1) as inservice
+            FROM  (
+                SELECT
+                    ${queryForm.orgId} AS orgId,
+                    ai.id AS accountItemId,
+                    ai.`name` AS accountItemName,
+                    ai.type,
+                    a.id AS accountTypeId,
+                    a.`name` AS accountTypeName
+                FROM account_item ai
+                LEFT JOIN account_type a ON ai.account_type_id = a.id
+            ) ai
+            LEFT JOIN clinic_ext_info cei ON ai.orgId = cei.company_id
+            LEFT JOIN clinic_account_item cai ON cai.account_item_id=ai.accountItemId AND ai.orgId=cai.company_id
         ) cai
         <where>
+            and cai.orgId = #{queryForm.orgId}
             <if test="queryForm.id != null">
                 and cai.id = #{queryForm.id}
             </if>
@@ -92,9 +92,6 @@
             </if>
             <if test="queryForm.accountItemId != null">
                 and cai.accountItemId = #{queryForm.accountItemId}
-            </if>
-            <if test="queryForm.orgId != null">
-                and cai.orgId = #{queryForm.orgId}
             </if>
             <if test="queryForm.inservice != null">
                 and cai.inservice = #{queryForm.inservice}

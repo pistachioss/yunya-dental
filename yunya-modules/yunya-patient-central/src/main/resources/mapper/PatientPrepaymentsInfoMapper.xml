@@ -81,7 +81,7 @@
             ppi.id,
             ppr.master_card_id AS patientId,
             pbi.`name`,
-            ppi.type,
+            IFNULL(ppi.type, 1) AS type,
             ppi.prepayment_number AS prepaymentNumber,
             CAST(
             IFNULL( ppi.prepayment_principal + ppi.prepayment_bonus, 0 ) AS DECIMAL ( 15, 2 )) prepaymentMoneySum,

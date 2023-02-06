@@ -80,14 +80,14 @@ public enum PatientDepositAccountTypeEnum {
      * @return
      */
     public static Integer getTypeRelId(Integer accountItemId) {
-        if (StringHelper.isNull(accountItemId)) {
-            return null;
+        if (StringHelper.isNotNull(accountItemId)) {
+            for (PatientDepositAccountTypeEnum item : values()) {
+                if (accountItemId.equals(item.getAccountItemId())) {
+                    return item.getType();
+                }
+            }
         }
-        PatientDepositAccountTypeEnum typeEnum = Stream.of(values()).filter(item -> accountItemId.equals(item.getAccountItemId())).findFirst().get();
-        if (StringHelper.isNull(typeEnum)) {
-            return null;
-        }
-        return typeEnum.getType();
+        return null;
     }
 
     public String getName() {

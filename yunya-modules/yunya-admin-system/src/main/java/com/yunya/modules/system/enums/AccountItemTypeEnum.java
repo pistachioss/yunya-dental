@@ -1,9 +1,6 @@
 package com.yunya.modules.system.enums;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @description: 入账方式类型枚举
@@ -12,16 +9,16 @@ import java.util.stream.Stream;
  */
 public enum AccountItemTypeEnum {
 
-    CASH("现金", 0),
-    PRE_SOLE("预售", 1),
-    DISCOUNT("优惠", 2),
-    PLATFORM_SETTLEMENT("平台结算", 3),
+    CASH("现金", (byte)0),
+    PRE_SOLE("预售", (byte)1),
+    DISCOUNT("优惠", (byte)2),
+    PLATFORM_SETTLEMENT("平台结算", (byte)3),
     ;
 
     private final String value;
-    private final Integer type;
+    private final Byte type;
 
-    AccountItemTypeEnum(String value, Integer code) {
+    AccountItemTypeEnum(String value, Byte code) {
         this.value = value;
         this.type = code;
     }
@@ -30,11 +27,11 @@ public enum AccountItemTypeEnum {
         return value;
     }
 
-    public Integer getType() {
+    public Byte getType() {
         return type;
     }
 
-    public static String getValue(Integer type) {
+    public static String getValue(Byte type) {
         if (type != null) {
             for (AccountItemTypeEnum item : values()) {
                 if (Objects.equals(item.getType(), type)) {
@@ -45,19 +42,7 @@ public enum AccountItemTypeEnum {
         return null;
     }
 
-    /**
-     * 不含预售类型列表
-     *
-     * @return
-     */
-    public static List<Integer> unPreSoldTypes() {
-        return Stream.of(values())
-                .filter(item->!PRE_SOLE.equals(item.type))
-                .map(AccountItemTypeEnum::getType)
-                .collect(Collectors.toList());
-    }
-
-    public boolean equals(Integer type)
+    public boolean equals(Byte type)
     {
         return this.type.equals(type);
     }

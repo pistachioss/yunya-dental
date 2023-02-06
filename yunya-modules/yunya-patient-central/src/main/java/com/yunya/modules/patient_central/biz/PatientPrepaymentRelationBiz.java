@@ -674,7 +674,9 @@ public class PatientPrepaymentRelationBiz
    * @return PatientPrepaymentBalanceVo
    */
   public List<PatientPrepaymentsInfoVo> balancePayment(Integer patientId) {
-    return balancePayment(patientId, Collections.singletonList(NORMAL_PREPAYMENT.getType()));
+    List<Integer> types = new ArrayList<>();
+    types.add(NORMAL_PREPAYMENT.getType());
+    return balancePayment(patientId, types);
   }
 
   /**
@@ -701,7 +703,7 @@ public class PatientPrepaymentRelationBiz
       Integer type = vo.getType();
       types.remove(type);
       vo.setRemark(
-              StringHelper.format("%d的%d（账户余额：%.2f）", vo.getName(),
+              String.format("%s的%s（账户余额：%.2f）", vo.getName(),
                       PatientDepositAccountTypeEnum.getTypeEnum(type).getName(),
                       vo.getPrepaymentMoneySum())
       );
@@ -715,7 +717,7 @@ public class PatientPrepaymentRelationBiz
         vo.setPatientId(patientId);
         vo.setName(name);
         vo.setRemark(
-            StringHelper.format("%d的%d（未开通账户）", name,
+            String.format("%s的%s（未开通账户）", name,
                     PatientDepositAccountTypeEnum.getTypeEnum(type).getName())
         );
         result.add(vo);
