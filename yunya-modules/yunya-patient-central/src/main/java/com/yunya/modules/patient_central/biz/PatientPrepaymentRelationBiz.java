@@ -22,6 +22,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -47,7 +48,7 @@ import java.util.*;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ZERO;
 import static com.yunya.framework.common.constant.RedisConstants.SMS_SEND_MESSAGE_QUEUE;
-import static com.yunya.framework.common.enums.PatientPrepaymentTypeEnum.NORMAL;
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
 
 /**
  * 简单介绍:</br> 患者预付款
@@ -75,7 +76,7 @@ public class PatientPrepaymentRelationBiz
   @Resource PrepaidRechargeRecordMapper prepaidRechargeRecordMapper;
 
   /** 注入患者信息Mapper */
-  @Resource PatientBaseInfoMapper patientBaseInfoMapper;
+  @Resource PatientBaseInfoBiz patientBaseInfoBiz;
 
   /** 注入系统服务 */
   @Resource RemoteSystemServiceFeign remoteSystemServiceFeign;
@@ -105,7 +106,12 @@ public class PatientPrepaymentRelationBiz
    * @return PatientPrepaymentRelationVo
    */
   public PatientPrepaymentsInfoVo findPrepaymentInfo(Integer id) {
-    return patientPrepaymentsInfoMapper.findPrepaymentInfo(NORMAL.getType(),id);
+    List<PatientPrepaymentsInfoVo> result = patientPrepaymentsInfoMapper.selectPrepaymentInfoList(
+            Collections.singletonList(NORMAL_PREPAYMENT.getType()), id);
+    if (StringHelper.isNotEmpty(result)) {
+      return result.get(0);
+    }
+    return null;
   }
 
   /**
@@ -191,7 +197,7 @@ public class PatientPrepaymentRelationBiz
     if (!StringHelper.isEmpty(prepaymentLinkList)) {
       for (PatientPrepaymentRelationVo patientPrepaymentRelationVo : prepaymentLinkList) {
         PatientBaseInfo patientBaseInfo =
-            patientBaseInfoMapper.selectByPrimaryKey(
+            patientBaseInfoBiz.findPatientInfoById(
                 patientPrepaymentRelationVo.getSecondaryCardId());
         if (patientBaseInfo != null) {
           patientPrepaymentRelationVo.setSecondaryCardName(patientBaseInfo.getName());
@@ -338,7 +344,7 @@ public class PatientPrepaymentRelationBiz
       PatientPrepaymentsInfo patientPrepaymentsInfoVo =
           patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
       patientBaseInfo =
-          patientBaseInfoMapper.selectByPrimaryKey(patientPrepaymentsInfoVo.getPatientId());
+          patientBaseInfoBiz.findPatientInfoById(patientPrepaymentsInfoVo.getPatientId());
     } else {
       eventCode = SmsAutosendEventEnum.PREPAY_CONSUME.getCode();
       prepaidExpendRecord = (PrepaidExpendRecord) object;
@@ -347,7 +353,7 @@ public class PatientPrepaymentRelationBiz
       PatientPrepaymentsInfo patientPrepaymentsInfoVo =
           patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
       patientBaseInfo =
-          patientBaseInfoMapper.selectByPrimaryKey(patientPrepaymentsInfoVo.getPatientId());
+          patientBaseInfoBiz.findPatientInfoById(patientPrepaymentsInfoVo.getPatientId());
     }
 
     if (patientBaseInfo != null) {
@@ -668,15 +674,54 @@ public class PatientPrepaymentRelationBiz
    * @return PatientPrepaymentBalanceVo
    */
   public List<PatientPrepaymentsInfoVo> balancePayment(Integer patientId) {
-    List<PatientPrepaymentsInfoVo> resultList = new ArrayList<>();
-    PatientPrepaymentsInfoVo prepaymentInfo = patientPrepaymentsInfoMapper.findPrepaymentInfo(NORMAL.getType(), patientId);
-    if (null != prepaymentInfo) {
-      resultList.add(prepaymentInfo);
+    return balancePayment(patientId, Collections.singletonList(NORMAL_PREPAYMENT.getType()));
+  }
+
+  /**
+   * 预付款账户余额查询
+   *
+   * @param patientId 患者id
+   * @param types 预付款账号类型
+   * @return
+   */
+  public List<PatientPrepaymentsInfoVo> balancePayment(Integer patientId, List<Integer> types) {
+    List<PatientPrepaymentsInfoVo> result = new ArrayList<>();
+    List<PatientPrepaymentsInfoVo> infos = patientPrepaymentsInfoMapper.selectPrepaymentInfoList(types, patientId);
+    if (StringHelper.isNotEmpty(infos)) {
+      result.addAll(infos);
     }
-    List<PatientPrepaymentsInfoVo> prepaymentsInfoVoList =
-            patientPrepaymentsInfoMapper.selectPrepaymentRelationByMasterPatientId(patientId);
-    resultList.addAll(prepaymentsInfoVoList);
-    return resultList;
+    types.forEach(type->{
+      if (NORMAL_PREPAYMENT.equals(type)) {
+        List<PatientPrepaymentsInfoVo> slaveInfos =
+                patientPrepaymentsInfoMapper.selectPrepaymentRelationByMasterPatientId(patientId);
+        result.addAll(slaveInfos);
+      }
+    });
+    result.forEach(vo->{
+      Integer type = vo.getType();
+      types.remove(type);
+      vo.setRemark(
+              StringHelper.format("%d的%d（账户余额：%.2f）", vo.getName(),
+                      PatientDepositAccountTypeEnum.getTypeEnum(type).getName(),
+                      vo.getPrepaymentMoneySum())
+      );
+    });
+    if (StringHelper.isNotEmpty(types)) {
+      PatientBaseInfo patient = patientBaseInfoBiz.findPatientInfoById(patientId);
+      String name = patient.getName();
+      // 补充 未开通账户
+      types.forEach(type->{
+        PatientPrepaymentsInfoVo vo = new PatientPrepaymentsInfoVo();
+        vo.setPatientId(patientId);
+        vo.setName(name);
+        vo.setRemark(
+            StringHelper.format("%d的%d（未开通账户）", name,
+                    PatientDepositAccountTypeEnum.getTypeEnum(type).getName())
+        );
+        result.add(vo);
+      });
+    }
+    return result;
   }
 
   /**

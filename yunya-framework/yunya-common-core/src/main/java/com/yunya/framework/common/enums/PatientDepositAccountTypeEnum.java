@@ -1,0 +1,124 @@
+package com.yunya.framework.common.enums;
+
+import com.yunya.framework.common.utils.StringHelper;
+
+import java.util.Objects;
+import java.util.stream.Stream;
+
+/**
+ * 患者储蓄账号（会员卡or预付款）分类枚举
+ *
+ * @author: chenlin
+ * @date: 2023/2/3 19:48
+ * @description:
+ * @since: 1.0.0
+ */
+public enum PatientDepositAccountTypeEnum {
+    /** 会员卡 */
+    MEMBER(false, 0, "会员卡", "H", 5),
+    /** 预付款 */
+    NORMAL_PREPAYMENT(false, 1, "预付款", "Y", 6),
+    /** 正畸预付款 */
+    ORTHADANTIC_PREPAYMENT(true, 2, "正畸预付款", "ZY", 30),
+    /** 美白预付款 */
+    WHITENING_PREPAYMENT(true, 3, "美白预付款", "MY", 31),
+    /** 种植预付款 */
+    IMPLANT_PREPAYMENT(true,4, "种植预付款", "ZZY", null),
+    ;
+
+    /** 是否专项 */
+    private Boolean isSpecial;
+
+    /** 分类类型 */
+    private Integer type;
+
+    /** 分类名称 */
+    private String name;
+
+    /** 生成编号时使用的前缀 */
+    private String prefix;
+    
+    /** 关联入账方式id */
+    private Integer accountItemId;
+
+    PatientDepositAccountTypeEnum(Boolean isSpecial, Integer type, String name, String prefix, Integer accountItemId) {
+        this.isSpecial = isSpecial;
+        this.type = type;
+        this.name = name;
+        this.prefix = prefix;
+        this.accountItemId = accountItemId;
+    }
+
+    public static Stream<PatientDepositAccountTypeEnum> values(boolean isSpecial) {
+        return Stream.of(values()).filter(item->item.isSpecial.equals(isSpecial));
+    }
+
+    /**
+     * 是否属于预付款账号类型
+     *
+     * @param type
+     * @return
+     */
+    public static boolean isPrepaymentType(Integer type) {
+        return Stream.of(values()).filter(item-> !MEMBER.equals(type) && item.equals(type)).findAny().isPresent();
+    }
+
+    /**
+     * 是否属于专项预付款账号类型
+     *
+     * @param type
+     * @return
+     */
+    public static boolean isSpPrepaymentType(Integer type) {
+        return values(true).filter(item->item.equals(type)).findAny().isPresent();
+    }
+
+    /**
+     * 根据accountItemId返回对应的type
+     *
+     * @param accountItemId
+     * @return
+     */
+    public static Integer getTypeRelId(Integer accountItemId) {
+        if (StringHelper.isNull(accountItemId)) {
+            return null;
+        }
+        PatientDepositAccountTypeEnum typeEnum = Stream.of(values()).filter(item -> accountItemId.equals(item.getAccountItemId())).findFirst().get();
+        if (StringHelper.isNull(typeEnum)) {
+            return null;
+        }
+        return typeEnum.getType();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public Integer getAccountItemId() {
+        return accountItemId;
+    }
+
+    public static PatientDepositAccountTypeEnum getTypeEnum(Integer type) {
+        if (type != null) {
+            for (PatientDepositAccountTypeEnum item : values()) {
+                if (Objects.equals(item.getType(), type)) {
+                    return item;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean equals(Integer type)
+    {
+        return this.type.equals(type);
+    }
+}

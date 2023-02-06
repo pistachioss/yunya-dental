@@ -17,6 +17,7 @@ import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.ClinicChargeItemVO;
 import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
@@ -28,7 +29,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.enums.PatientPrepaymentTypeEnum;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -61,6 +62,8 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NO
 import static com.yunya.framework.common.constant.OperationCodeConstants.RETURN_VALUE_ISNULL;
 import static com.yunya.framework.common.constant.RedisConstants.MEMBER_GENERAT_LOCK;
 import static com.yunya.framework.common.constant.RedisConstants.PREPAYMENT_GENERAT_LOCK;
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.MEMBER;
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 业务层
@@ -104,8 +107,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   /** 预付款Mapper */
   @Autowired
   private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
-  /** 会员卡卡号前缀：H */
-  private final static String MEMBER_PREFIX = "H";
+  @Autowired
+  private PatientPrepaymentRelationBiz patientPrepaymentRelationBiz;
 
   public List<MasertMemberRechargeRecordDetailVo> findMemberRechargeRecordInfo(MemberExpendRecordQueryForm form) {
       return mapper.findMemberRechargeRecordInfo(form);
@@ -339,7 +342,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
         if (StringHelper.isNotNull(org)) {
           // 生成规则：Y + 门诊编号 + 6位递增值（数据库）
-          patientMemberInfo.setCardNumber(MEMBER_PREFIX + org.getClinicNumber() + suffix);
+          patientMemberInfo.setCardNumber(MEMBER.getPrefix() + org.getClinicNumber() + suffix);
           mapper.insertSelective(patientMemberInfo);
           log.info("==========预付款账号生成结束===========");
         }
@@ -378,7 +381,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public PatientPrepaymentsInfo openIfAbsent(PrepaidRechargeModel model) {
     Integer patientId = model.getPatientId();
     Integer type = model.getType();
-    if (PatientPrepaymentTypeEnum.isPrepaymentType(type)) {
+    if (PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
       throw new ClientServiceException("无效的预付款账号类型", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
     }
     PatientPrepaymentsInfo info = patientPrepaymentsInfoMapper.selectOneByPatientId(patientId, type);
@@ -417,7 +420,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     Integer orgId = prepaymentsInfo.getOrgId();
     if (StringHelper.isNotNull(orgId)) {
       Integer type = prepaymentsInfo.getType();
-      String prefix = PatientPrepaymentTypeEnum.getTypeEnum(type).getPrefix();
+      String prefix = PatientDepositAccountTypeEnum.getTypeEnum(type).getPrefix();
       redisUtils.lockedFunc(PREPAYMENT_GENERAT_LOCK + type, o-> {
         String number = patientPrepaymentsInfoMapper.generateCardNumber4Prepay(prefix, orgId);
         String suffix = String.format("%06d", Integer.parseInt(number) + 1);
@@ -1083,6 +1086,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.removeIf(vo -> null == vo.getId());
     }
+    resultList.forEach(vo->vo.setRemark(
+            StringHelper.format("%d的会员卡（账户余额：%.2f）", vo.getName(), vo.getMemberCardMoneySum())
+    ));
     return resultList;
   }
 
@@ -1321,5 +1327,35 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             new ExcelUtil<>(MemberReturnRecordVo.class);
     String fileName =  "退费记录";
     excelUtil.exportExcel(response, resultList, "退费记录", fileName);
+  }
+
+  /**
+   * 查询患者储蓄账号（会员卡or预付款）信息列表
+   *
+   * @param query
+   * @return
+   */
+  public ClinicChargeItemVO findDepositAccountList(PatientDepositAccountQueryForm query) {
+    ClinicChargeItemVO result = new ClinicChargeItemVO();
+    Integer patientId = query.getPatientId();
+    List<Integer> types = query.getTypes();
+    List<Integer> spTypes = new ArrayList<>();
+    types.forEach(type->{
+      if (MEMBER.equals(type)) {
+        // 会员卡
+        result.setMemberItems(balancePayment(patientId));
+      } else if (NORMAL_PREPAYMENT.equals(type)) {
+        // 预付款
+        result.setPrepaymentItems(patientPrepaymentRelationBiz.balancePayment(patientId));
+      } else if (PatientDepositAccountTypeEnum.isSpPrepaymentType(type)) {
+        spTypes.add(type);
+      }
+    });
+    if (StringHelper.isNotEmpty(spTypes)) {
+      // 专项预付款
+      List<PatientPrepaymentsInfoVo> spPrepayments = patientPrepaymentRelationBiz.balancePayment(patientId, spTypes);
+      result.setSpPrepaymentItems(spPrepayments);
+    }
+    return result;
   }
 }

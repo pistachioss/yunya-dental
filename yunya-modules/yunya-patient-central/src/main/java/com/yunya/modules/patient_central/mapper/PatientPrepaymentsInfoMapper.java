@@ -18,8 +18,8 @@ public interface PatientPrepaymentsInfoMapper extends Mapper<PatientPrepaymentsI
      * @param patientId 患者id
      * @return PatientPrepaymentRelationVo
      */
-    PatientPrepaymentsInfoVo findPrepaymentInfo(
-            @Param("type") Integer type,
+    List<PatientPrepaymentsInfoVo> selectPrepaymentInfoList(
+            @Param("types") List<Integer> types,
             @Param("patientId") Integer patientId);
 
     /**

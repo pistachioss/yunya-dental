@@ -74,4 +74,14 @@ public class PatientPrepaymentsInfoVo implements Serializable {
      */
     @ApiModelProperty("开户日期")
     private Date crtTime;
+
+    /** 预付款类型：1-预付款，2-正畸预付款，3-美白预付款 */
+    @ApiModelProperty("预付款类型：1-预付款，2-正畸预付款，3-美白预付款")
+    private Integer type;
+
+    /**
+     * 备注（账户余额 or 未开通账户）
+     */
+    @ApiModelProperty("备注（账户余额 or 未开通账户）")
+    private String remark;
 }

@@ -3,7 +3,7 @@ package com.yunya.middletable.service.patient;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.enums.PatientPrepaymentTypeEnum;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.PatientMemberInfoMapper;
 import com.yunya.middletable.dao.patient.PatientPrepaymentsInfoMapper;
@@ -156,7 +156,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
       mapper.deleteByPrimaryKey(basePatientMember);
       mapper.insert(basePatientMember);
     }
-    if (PatientPrepaymentTypeEnum.isPrepaymentType(type)) {
+    if (PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
       BasePatientMember basePatientMember = getPatientMemberInfo(id, type);
       mapper.delete(basePatientMember);
       mapper.insert(basePatientMember);
@@ -193,7 +193,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
       return basePatientMember;
     }
     // 预付款信息
-    if (PatientPrepaymentTypeEnum.isPrepaymentType(type)) {
+    if (PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
       PatientPrepaymentsInfo patientPrepaymentsInfo =
           patientPrepaymentsInfoMapper.selectByPrimaryKey(id);
       basePatientMember.setCardId(patientPrepaymentsInfo.getId());

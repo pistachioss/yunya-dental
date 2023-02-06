@@ -28,21 +28,29 @@
     </sql>
 
     <!-- 根据患者id患者预付款基本信息查询 -->
-    <select id="findPrepaymentInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo">
+    <select id="selectPrepaymentInfoList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo">
        select
            ppio.id id,
            ppio.org_id orgid,
            ppio.patient_id patientId,
            ppio.prepayment_number prepaymentNumber,
            ppio.crt_time crtTime,
+           ppio.type,
            pbio.name name,
            CAST(IFNULL((ppio.prepayment_principal+ppio.prepayment_bonus),0) AS decimal(15,2)) prepaymentMoneySum,
            CAST(IFNULL(ppio.prepayment_bonus,0) AS decimal(15,2)) prepaymentBonus,
            CAST(IFNULL(ppio.prepayment_principal,0) AS decimal(15,2)) prepaymentPrincipal
         from patient_prepayments_info ppio
         join patient_base_info pbio on ppio.patient_id = pbio.id
-        where ppio.patient_id = #{patientId}
-        and ppio.type = #{type}
+        <where>
+            ppio.patient_id = #{patientId}
+            <if test="types!=null and types.size()>0">
+                AND ppio.type IN
+                <foreach collection="types" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <!-- 根据预付款卡号和患者id查询预付款信息 -->
@@ -73,6 +81,7 @@
             ppi.id,
             ppr.master_card_id AS patientId,
             pbi.`name`,
+            ppi.type,
             ppi.prepayment_number AS prepaymentNumber,
             CAST(
             IFNULL( ppi.prepayment_principal + ppi.prepayment_bonus, 0 ) AS DECIMAL ( 15, 2 )) prepaymentMoneySum,
