@@ -106,9 +106,9 @@ public class PatientPrepaymentRelationBiz
    *
    * @return PatientPrepaymentRelationVo
    */
-  public PatientPrepaymentsInfoVo findPrepaymentInfo(Integer id) {
+  public PatientPrepaymentsInfoVo findPrepaymentInfo(Integer id, Integer type) {
     List<PatientPrepaymentsInfoVo> result = patientPrepaymentsInfoMapper.selectPrepaymentInfoList(
-            Collections.singletonList(NORMAL_PREPAYMENT.getType()), id);
+            Collections.singletonList(type), id);
     if (StringHelper.isNotEmpty(result)) {
       return result.get(0);
     }

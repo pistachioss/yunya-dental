@@ -6,7 +6,10 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
 
 /**
  * 简单介绍:</br> 预付款消费QueryForm
@@ -45,4 +48,8 @@ public class PrepaidExpendRecordQueryForm implements Serializable {
     @ApiModelProperty(value = "患者id",required = true)
     private Integer patientId;
 
+    /** 预付款类型：1-预付款，2-正畸预付款，3-美白预付款 */
+    @ApiModelProperty(value = "预付款类型：1-预付款，2-正畸预付款，3-美白预付款", required = true)
+    @NotNull(message = "预付款类型不能为空")
+    private Integer type = NORMAL_PREPAYMENT.getType();
 }

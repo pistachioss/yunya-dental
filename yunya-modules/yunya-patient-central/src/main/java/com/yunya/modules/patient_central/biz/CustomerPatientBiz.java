@@ -35,6 +35,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
+
 /**
  * @author: chenlin
  * @date: 2022/11/7 10:46
@@ -339,7 +341,7 @@ public class CustomerPatientBiz {
             result.setMemberCardMoneySum(memberBaseInfo.getMemberCardMoneySum());
         }
         // 预付款信息
-        PatientPrepaymentsInfoVo prepaymentInfo = patientPrepaymentBiz.findPrepaymentInfo(patientId);
+        PatientPrepaymentsInfoVo prepaymentInfo = patientPrepaymentBiz.findPrepaymentInfo(patientId, NORMAL_PREPAYMENT.getType());
         if (StringHelper.isNotNull(prepaymentInfo)) {
             result.setPrepaymentMoneySum(prepaymentInfo.getPrepaymentMoneySum());
         }
