@@ -14,8 +14,11 @@ import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
 
 /**
  * 简单介绍:</br> 患者预付款 控制层
@@ -50,8 +55,24 @@ public class PatientPrepaymentRelationController {
    * @return ResponseResult<PatientPrepaymentsInfoVo>
    */
   @ApiOperation("账户基本信息")
+  @ApiImplicitParams(value = {
+          @ApiImplicitParam(
+                  name = "id",
+                  value = "患者id",
+                  required = true,
+                  dataType = "int",
+                  paramType = "path"),
+          @ApiImplicitParam(
+                  name = "prepaymentType",
+                  value = "预付款账号类型",
+                  required = true,
+                  defaultValue = "1",
+                  dataType = "int")})
   @GetMapping("/prepaidAccountBaseInfo/{id}")
-  public ResponseResult<PatientPrepaymentsInfoVo> findPrepaymentInfo(@PathVariable("id") Integer id, @RequestParam("prepaymentType") Integer prepaymentType) {
+  public ResponseResult<PatientPrepaymentsInfoVo> findPrepaymentInfo(@PathVariable("id") Integer id, Integer prepaymentType) {
+    if (StringHelper.isNull(prepaymentType)) {
+      prepaymentType = NORMAL_PREPAYMENT.getType();
+    }
     return ResponseUtil.success(this.patientPrepaymentBiz.findPrepaymentInfo(id, prepaymentType));
   }
 

@@ -13,6 +13,7 @@ import com.yunya.feign.treatment.domain.vo.BillRefundOrderDetailVO;
 import com.yunya.feign.treatment.domain.vo.BillRefundPaymentVO;
 import com.yunya.feign.treatment.domain.vo.BillRefundRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.tariff.BaseOralTariff;
@@ -241,7 +242,7 @@ public class BillRefundRecordBiz extends BaseBiz<BillRefundRecordMapper, BillRef
             vo.setAccountItemId(accountItemId);
             AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
             if (null != accountItem) {
-              vo.setAccountItemName(accountItem.getName());
+              vo.setAccountItemName(convertName(accountItem, refundPayDetailRecord.getRemark()));
             }
             vo.setRefundPayAmount(refundPayDetailRecord.getRefundPayAmount());
             vo.setPrincipalAmount(refundPayDetailRecord.getPrincipalAmount());
@@ -252,6 +253,23 @@ public class BillRefundRecordBiz extends BaseBiz<BillRefundRecordMapper, BillRef
     }
     return billRefundPayments;
   }
+
+    /**
+     * 转换成名称
+     *
+     * @param item
+     * @param cardNumber
+     * @return
+     */
+    private String convertName(AccountItem item, String cardNumber) {
+        Integer accountItemId = item.getId();
+        PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+        String name = item.getName();
+        if (StringHelper.isNotNull(typeEnum)) {
+            name = String.format("%s（%s账号：%s）", typeEnum.getName(), typeEnum.getName(), cardNumber);
+        }
+        return name;
+    }
 
   /**
    * 根据条件查询退费现金之和

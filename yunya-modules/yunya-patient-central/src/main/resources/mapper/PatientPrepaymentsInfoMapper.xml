@@ -68,7 +68,8 @@
             ppio.crt_time crtTime,
             ppio.upt_id uptId,
             ppio.upd_name updName,
-            ppio.upd_time updTime
+            ppio.upd_time updTime,
+            ppio.type
         FROM
             patient_prepayments_info ppio
         where ppio.prepayment_number =#{prepaymentNumber}

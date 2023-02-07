@@ -69,7 +69,7 @@
         from patient_base_info pbi
         left join patient_prepayments_info ppi on pbi.id = ppi.patient_id
         left join patient_member_info pmi      on pbi.id = pmi.patient_id
-        where pbi.id = #{id}
+        where pbi.id = #{id} and ppi.type = 1
     </select>
 
     <!-- 查询推荐关系 -->
