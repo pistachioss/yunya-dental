@@ -337,7 +337,7 @@ public class TollBiz {
    * @param model 收费参数
    */
   public TollConfirmVO confirmCharge(TollModel model) {
-    checkPrepayments(model);
+    checkPrepayments(model.getPrepaymentAccountModels(), model.getSpPrepaymentAccountModels());
     Integer orderRecordId = model.getOrderRecordId();
     Byte discountType = model.getDiscountType();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
@@ -482,14 +482,13 @@ public class TollBiz {
   /**
    * 检查预付款账户
    *
-   * @param model
+   * @param prepayments
+   * @param spPrepayments
    */
-  private void checkPrepayments(TollModel model) {
-    Set<PrepaymentAccountModel> prepayments = model.getPrepaymentAccountModels();
+  private void checkPrepayments(Set<PrepaymentAccountModel> prepayments, Set<PrepaymentAccountModel> spPrepayments) {
     if (StringHelper.isEmpty(prepayments)) {
       prepayments = new HashSet<>();
     }
-    Set<PrepaymentAccountModel> spPrepayments = model.getSpPrepaymentAccountModels();
     if (StringHelper.isNotEmpty(spPrepayments)) {
       prepayments.addAll(spPrepayments);
     }
@@ -498,7 +497,6 @@ public class TollBiz {
         throw new ClientServiceException("无效的预付款账户类型", PARAMETERS_IS_ILLEGAL);
       }
     });
-    model.setPrepaymentAccountModels(prepayments);
   }
 
   /**
@@ -1402,6 +1400,7 @@ public class TollBiz {
    * @param model 收费参数
    */
   public TollConfirmVO collectDebt(TollDebtModel model) {
+    checkPrepayments(model.getPrepaymentAccountModels(), model.getSpPrepaymentAccountModels());
     Integer treatmentId = model.getTreatmentRecordId();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
     //    // TODO: bug3210 未收费走收欠费流程

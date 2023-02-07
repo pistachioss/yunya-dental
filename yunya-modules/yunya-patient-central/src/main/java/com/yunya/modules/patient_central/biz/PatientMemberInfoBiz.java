@@ -380,7 +380,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public PatientPrepaymentsInfo openIfAbsent(PrepaidRechargeModel model) {
     Integer patientId = model.getPatientId();
     Integer type = model.getType();
-    if (PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
+    if (!PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
       throw new ClientServiceException("无效的预付款账号类型", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
     }
     PatientPrepaymentsInfo info = patientPrepaymentsInfoMapper.selectOneByPatientId(patientId, type);
