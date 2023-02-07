@@ -379,7 +379,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public PatientPrepaymentsInfo openIfAbsent(PrepaidRechargeModel model) {
     Integer patientId = model.getPatientId();
-    Integer type = model.getType();
+    Integer type = model.getPrepaymentType();
     if (!PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
       throw new ClientServiceException("无效的预付款账号类型", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
     }
@@ -389,6 +389,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       int optId = Integer.parseInt(BaseContextHandler.getUserID());
       String optName = BaseContextHandler.getName();
       info = new PatientPrepaymentsInfo();
+      info.setPrepaymentPrincipal(BigDecimal.ZERO);
+      info.setPrepaymentBonus(BigDecimal.ZERO);
       info.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       info.setCrtId(optId);
       info.setCrtName(optName);

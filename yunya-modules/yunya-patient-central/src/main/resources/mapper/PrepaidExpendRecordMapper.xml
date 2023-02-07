@@ -53,8 +53,8 @@
             <if test="form.prepaidId != null || form.prepaidId != ''">
                 and per.prepaid_id = #{form.prepaidId}
             </if>
-            <if test="form.type != null">
-                and ppi.type = #{form.type}
+            <if test="form.prepaymentType != null">
+                and ppi.type = #{form.prepaymentType}
             </if>
             <if test="form.prepaidId == null">
                 and per.prepaid_id  is null
@@ -90,8 +90,8 @@
             <if test="form.patientId != null">
                 and per.patient_id = #{form.patientId}
             </if>
-            <if test="form.type != null">
-                and ppi.type = #{form.type}
+            <if test="form.prepaymentType != null">
+                and ppi.type = #{form.prepaymentType}
             </if>
             <if test="form.patientId == null">
                 and per.patient_id is null

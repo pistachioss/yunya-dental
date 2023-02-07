@@ -272,7 +272,7 @@ public class PatientPrepaymentRelationBiz
       // 添加预付款充值记录
       PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
       BeanUtils.copyProperties(model, prepaidRechargeRecord);
-      prepaidRechargeRecord.setPrepaidId(model.getPrepaidCard());
+      prepaidRechargeRecord.setPrepaidId(patientPrepaymentsInfo.getPrepaymentNumber());
       prepaidRechargeRecord.setOrgId(orgId);
       prepaidRechargeRecord.setCrtId(optId);
       prepaidRechargeRecord.setCrtName(optName);

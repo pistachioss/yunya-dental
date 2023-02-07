@@ -25,7 +25,7 @@ public class PrepaidRechargeModel implements Serializable {
     /** 预付款账号分类 */
     @ApiModelProperty(value = "预付款账号分类", required = true)
     @NotNull(message = "预付款账号分类不能为空")
-    private Integer type;
+    private Integer prepaymentType;
 
     /**
      * 患者id

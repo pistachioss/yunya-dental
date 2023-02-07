@@ -51,5 +51,5 @@ public class PrepaidExpendRecordQueryForm implements Serializable {
     /** 预付款类型：1-预付款，2-正畸预付款，3-美白预付款 */
     @ApiModelProperty(value = "预付款类型：1-预付款，2-正畸预付款，3-美白预付款", required = true)
     @NotNull(message = "预付款类型不能为空")
-    private Integer type = NORMAL_PREPAYMENT.getType();
+    private Integer prepaymentType = NORMAL_PREPAYMENT.getType();
 }

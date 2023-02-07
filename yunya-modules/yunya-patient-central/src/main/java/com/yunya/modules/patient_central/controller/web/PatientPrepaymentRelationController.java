@@ -51,8 +51,8 @@ public class PatientPrepaymentRelationController {
    */
   @ApiOperation("账户基本信息")
   @GetMapping("/prepaidAccountBaseInfo/{id}")
-  public ResponseResult<PatientPrepaymentsInfoVo> findPrepaymentInfo(@PathVariable("id") Integer id, @RequestParam("type") Integer type) {
-    return ResponseUtil.success(this.patientPrepaymentBiz. findPrepaymentInfo(id, type));
+  public ResponseResult<PatientPrepaymentsInfoVo> findPrepaymentInfo(@PathVariable("id") Integer id, @RequestParam("prepaymentType") Integer prepaymentType) {
+    return ResponseUtil.success(this.patientPrepaymentBiz.findPrepaymentInfo(id, prepaymentType));
   }
 
   /**
