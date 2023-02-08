@@ -395,7 +395,7 @@
         bp.name,
         bp.pinyin_name pinyinName,
         bp.mobile,
-        case a.type when 1 then '普通预付款' when 2 then '正畸预付款' when 3 then '美白预付款' end as 'type',
+        case bpmol.type when 1 then '普通预付款' when 2 then '正畸预付款' when 3 then '美白预付款' end as 'type',
         bpm.card_number cardNumber,
         bpm.member_level_name memberLevelName,
         IFNULL((
