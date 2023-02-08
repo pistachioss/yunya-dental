@@ -2,7 +2,9 @@ package com.yunya.framework.common.enums;
 
 import com.yunya.framework.common.utils.StringHelper;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -51,6 +53,10 @@ public enum PatientDepositAccountTypeEnum {
 
     public static Stream<PatientDepositAccountTypeEnum> values(boolean isSpecial) {
         return Stream.of(values()).filter(item->item.isSpecial.equals(isSpecial));
+    }
+
+    public static List<PatientDepositAccountTypeEnum> prepaymentValues() {
+        return Stream.of(values()).filter(item-> !MEMBER.equals(item.getType())).collect(Collectors.toList());
     }
 
     /**

@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.vo.BaseAccountItemVO;
 import com.yunya.feign.report.domain.vo.ClinicInboundAndOutboundVO;
 import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseAccountItem;
@@ -48,47 +49,25 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   public List<BaseAccountItemVO> findAllPaymentList() {
     List<BaseAccountItemVO> resultList = mapper.selectAllPaymentList();
     if (StringHelper.isNotEmpty(resultList)) {
-      Integer[] memberAccountItem = new Integer[1];
-      Integer[] prePaymentAccountItem = new Integer[1];
-      resultList.forEach(
-          vo -> {
-            String accountItemName = vo.getAccountItemName();
-            if (ACCOUNT_ITEM_OF_MEMBER.equals(accountItemName)) {
-              memberAccountItem[0] = vo.getAccountItemId();
-            }
-            if (ACCOUNT_ITEM_OF_PREPARE.equals(accountItemName)) {
-              prePaymentAccountItem[0] = vo.getAccountItemId();
-            }
-          });
-      Iterator<BaseAccountItemVO> iterator = resultList.iterator();
-      while (iterator.hasNext()) {
-        BaseAccountItemVO vo = iterator.next();
-        String accountItemName = vo.getAccountItemName();
-        if (ACCOUNT_ITEM_OF_MEMBER.equals(accountItemName)
-            || ACCOUNT_ITEM_OF_PREPARE.equals(accountItemName)) {
-          iterator.remove();
+      List<BaseAccountItemVO> depositAccounts = new ArrayList<>();
+      Iterator<BaseAccountItemVO> it = resultList.iterator();
+      while (it.hasNext()) {
+        BaseAccountItemVO vo = it.next();
+        Integer accountItemId = vo.getAccountItemId();
+        PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+        if (StringHelper.isNotNull(typeEnum)) {
+          it.remove();
+          BaseAccountItemVO principal = new BaseAccountItemVO();
+          principal.setAccountItemId(accountItemId);
+          principal.setAccountItemName(typeEnum.getName() + "本金");
+          BaseAccountItemVO bouns = new BaseAccountItemVO();
+          bouns.setAccountItemId(accountItemId);
+          bouns.setAccountItemName(typeEnum.getName() + "赠金");
+          depositAccounts.add(principal);
+          depositAccounts.add(bouns);
         }
       }
-      if (memberAccountItem[0] != null) {
-        BaseAccountItemVO memberPrincipal = new BaseAccountItemVO();
-        memberPrincipal.setAccountItemId(memberAccountItem[0]);
-        memberPrincipal.setAccountItemName("会员卡本金");
-        resultList.add(0, memberPrincipal);
-        BaseAccountItemVO memberBonus = new BaseAccountItemVO();
-        memberBonus.setAccountItemId(memberAccountItem[0]);
-        memberBonus.setAccountItemName("会员卡赠金");
-        resultList.add(1, memberBonus);
-      }
-      if (prePaymentAccountItem[0] != null) {
-        BaseAccountItemVO prePaymentPrincipal = new BaseAccountItemVO();
-        prePaymentPrincipal.setAccountItemId(prePaymentAccountItem[0]);
-        prePaymentPrincipal.setAccountItemName("预付款本金");
-        resultList.add(2, prePaymentPrincipal);
-        BaseAccountItemVO prePaymentBonus = new BaseAccountItemVO();
-        prePaymentBonus.setAccountItemId(prePaymentAccountItem[0]);
-        prePaymentBonus.setAccountItemName("预付款赠金");
-        resultList.add(3, prePaymentBonus);
-      }
+      resultList.addAll(0, depositAccounts);
     }
     return resultList;
   }
@@ -563,7 +542,16 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void prePaidCharge(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> prePaidChargeResult = findPrePaidChargePaymentInfo(query);
+    List<PatientDepositAccountTypeEnum> typeEnums = PatientDepositAccountTypeEnum.prepaymentValues();
+    for (int i = 0; i < typeEnums.size(); i++) {
+      // 预付款 + 专项预付款
+      prePaidCharge(query, typeEnums.get(i), i+4, resultList);
+    }
+  }
+
+    private void prePaidCharge(
+            InboundAndOutboundStatementQuery query, PatientDepositAccountTypeEnum typeEnum, Integer index, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> prePaidChargeResult = findPrePaidChargePaymentInfo(query, typeEnum.getType());
     List<BaseAccountItemVO> paymentList = mapper.selectAllPaymentList();
     List<StatementPaymentVO> prePaidCharge = new ArrayList<>();
     if (StringHelper.isNotEmpty(paymentList)) {
@@ -585,10 +573,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
     prePaidCharge = reBuildStatementsPaymentList(prePaidCharge);
     ClinicInboundAndOutboundVO prePaidChargeVO = new ClinicInboundAndOutboundVO();
-    prePaidChargeVO.setType((byte) 4);
-    prePaidChargeVO.setName("预付款充值");
+    prePaidChargeVO.setType((byte) index.intValue());
+    prePaidChargeVO.setName(typeEnum.getName() + "充值");
     prePaidChargeVO.setPaymentInfoList(prePaidCharge);
-    resultList.add(4, prePaidChargeVO);
+    resultList.add(index, prePaidChargeVO);
   }
 
   /**
@@ -741,9 +729,9 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   /**
    * 重构支付方式汇总列表
    *
-   * @param type "收支明细分类:0-账单收费（本期）；1-收欠费（本期）；2-收欠费（非本期）；3-会员充值；4-预付款充值；5-产品售出；"
-   *     "6-诊所代收（本期）；7-诊所代收（非本期）；8-账单退费（本期）；9-账单退费（非本期）；"
-   *     "10-会员卡退费；11-预付款退费；12-诊所被代收账（本期）；13-诊所被代收帐（非本期）"
+   * @param type "收支明细分类:0-账单收费（本期）；1-收欠费（本期）；2-收欠费（非本期）；3-会员充值；4-预付款充值；5-正畸预付款；6-美白预付款；7-产品售出；"
+   *     "8-诊所代收（本期）；9-诊所代收（非本期）；10-账单退费（本期）；11-账单退费（非本期）；"
+   *     "12-会员卡退费；13-预付款退费；14-诊所被代收账（本期）；15-诊所被代收帐（非本期）"
    * @param list 支付方式列表
    * @param query 会员卡/预付款本金赠金查询参数
    */
@@ -1019,11 +1007,12 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * 根据条件查询门诊预付款充值的入账方式分组信息
    *
    * @param query 查询条件
+   * @param type
    * @return List<ClinicInboundAndOutboundVO>
    */
   private List<StatementPaymentVO> findPrePaidChargePaymentInfo(
-      InboundAndOutboundStatementQuery query) {
-    List<StatementPaymentVO> resultList = mapper.selectPaidChargePaymentInfo(query);
+          InboundAndOutboundStatementQuery query, Integer type) {
+    List<StatementPaymentVO> resultList = mapper.selectPaidChargePaymentInfo(query, type);
     return resultList;
   }
 
