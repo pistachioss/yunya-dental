@@ -596,6 +596,7 @@
         bpmor.patientId,
         bpmor.patientName,
         bpmor.patientMobile,
+        bpmor.type,
         bpmor.patientCardId,
         bpmor.patientCardNumber,
         bpmor.cardTypeName,
