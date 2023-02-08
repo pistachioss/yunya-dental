@@ -17,6 +17,7 @@ import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.PaymentRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -87,6 +88,9 @@ public class BillPayDetailRecordBiz
     BillPayRecord billPayRecord = billPayRecordMapper.selectByPrimaryKey(billPayRecordId);
     if (null != billPayRecord) {
       if (billPayRecord.getInservice()) {
+        List<BillPayDetailRecordVO> detailRecords = getBillPayDetailRecordList(billPayRecordId);
+        checkPaymentType(detailRecords);
+        resultData.setBillPayDetailRecords(detailRecords);
         resultData.setBillPayRecordId(billPayRecordId);
         resultData.setChargeDate(new DateTime(billPayRecord.getCrtTime()).toString("yyyy-MM-dd"));
         Integer orgId = billPayRecord.getOrgId();
@@ -101,11 +105,24 @@ public class BillPayDetailRecordBiz
         resultData.setPayeeName(employee.getName());
         resultData.setReceivedAmount(billPayRecord.getReceivedAmount());
         resultData.setStillOweAmount(billPayRecord.getStillOweAmount());
-        List<BillPayDetailRecordVO> detailRecords = getBillPayDetailRecordList(billPayRecordId);
-        resultData.setBillPayDetailRecords(detailRecords);
       }
     }
     return resultData;
+  }
+
+  /**
+   * 检查入账方式
+   *
+   * @param detailRecords
+   */
+  private void checkPaymentType(List<BillPayDetailRecordVO> detailRecords) {
+    detailRecords.forEach(detail->{
+      Integer accountItemId = detail.getAccountItemId();
+      PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+      if (StringHelper.isNotNull(typeEnum)) {
+        throw new ClientServiceException("该条收费记录中有会员卡或预付款支付方式，不可以调整收费方式！", OPERATION_NOT_ALLOW);
+      }
+    });
   }
 
   /**
