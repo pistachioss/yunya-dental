@@ -1224,6 +1224,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   static void setStatementPaymentValue(
           List<StatementPaymentVO> statementPaymentResult, List<StatementPaymentVO> statementPayments) {
     if (StringHelper.isNotEmpty(statementPayments)) {
+      int index = 0;
       for (StatementPaymentVO payment : statementPayments) {
         Integer accountItemId = payment.getAccountItemId();
         // 将支付方式名称为：会员卡或预付款的支付港式拆分为-会员卡本金/赠金；预付款本金/赠金
@@ -1231,14 +1232,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         if (StringHelper.isNotNull(typeEnum)) {
           String name = typeEnum.getName();
           payment.setAccountItemName(name + "本金");
-          statementPaymentResult.add(payment);
+          statementPaymentResult.add(index++, payment);
 
           StatementPaymentVO bouns = new StatementPaymentVO();
           bouns.setAccountItemId(accountItemId);
           bouns.setAccountItemName(name + "赠金");
           bouns.setTotalAmount(payment.getBonusAmount());
+          statementPaymentResult.add(index++, bouns);
+        } else {
+          statementPaymentResult.add(payment);
         }
-        statementPaymentResult.add(payment);
       }
     }
   }
