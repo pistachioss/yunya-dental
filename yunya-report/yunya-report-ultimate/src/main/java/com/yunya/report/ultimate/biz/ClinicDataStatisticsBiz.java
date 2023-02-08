@@ -83,15 +83,20 @@ public class ClinicDataStatisticsBiz {
         memberBiz.findClinicMemberDataStatistic(query);
     resultData.setMemberDataStatistic(clinicMemberDataStatistic);
     // 门诊预付款数据总览
+    List<PrepaymentsDataStatisticVO> prepaymentsDataStatisticVOList = new ArrayList<>();
     PrepaymentsDataStatisticVO clinicPrepaymentsDataStatistic =
         memberBiz.findClinicPrepaymentsDataStatistic(query, 1);
-    resultData.setPrepaymentsDataStatistic(clinicPrepaymentsDataStatistic);
+    clinicPrepaymentsDataStatistic.setTypeName("普通预付款");
+    prepaymentsDataStatisticVOList.add(clinicPrepaymentsDataStatistic);
     PrepaymentsDataStatisticVO clinicPrepaymentsDataStatistic2 =
             memberBiz.findClinicPrepaymentsDataStatistic(query, 2);
-    resultData.setPrepaymentsDataStatistic(clinicPrepaymentsDataStatistic2);
+    clinicPrepaymentsDataStatistic.setTypeName("正畸预付款");
+    prepaymentsDataStatisticVOList.add(clinicPrepaymentsDataStatistic2);
     PrepaymentsDataStatisticVO clinicPrepaymentsDataStatistic3 =
             memberBiz.findClinicPrepaymentsDataStatistic(query, 3);
-    resultData.setPrepaymentsDataStatistic(clinicPrepaymentsDataStatistic3);
+    clinicPrepaymentsDataStatistic.setTypeName("美白预付款");
+    prepaymentsDataStatisticVOList.add(clinicPrepaymentsDataStatistic3);
+    resultData.setPrepaymentsDataStatistic(prepaymentsDataStatisticVOList);
     return resultData;
   }
 
@@ -462,11 +467,13 @@ public class ClinicDataStatisticsBiz {
             memberDataStatistic.getTotalMemberRefundAmount().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
     resultList.add(crtEmptyObj());
 
-    PrepaymentsDataStatisticVO prepaymentsDataStatistic = clinicDataStatisticsInfoVO.getPrepaymentsDataStatistic();
-    resultList.add(crtObj("预付款充值(本金+赠金)","预付款消费(本金+赠金)","预付款退费(本金+赠金)","","",""));
-    resultList.add(crtObj(prepaymentsDataStatistic.getTotalPrepaymentsRechargeAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
-            prepaymentsDataStatistic.getTotalPrepaymentsExpendAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
-            prepaymentsDataStatistic.getTotalPrepaymentsRefundAmount().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
+    List<PrepaymentsDataStatisticVO> prepaymentsDataStatisticVOList = clinicDataStatisticsInfoVO.getPrepaymentsDataStatistic();
+    prepaymentsDataStatisticVOList.forEach(prepaymentsDataStatistic -> {
+      resultList.add(crtObj(prepaymentsDataStatistic.getTypeName()+"充值(本金+赠金)",prepaymentsDataStatistic.getTypeName()+"消费(本金+赠金)","prepaymentsDataStatistic.getTypeName()+退费(本金+赠金)","","",""));
+      resultList.add(crtObj(prepaymentsDataStatistic.getTotalPrepaymentsRechargeAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+              prepaymentsDataStatistic.getTotalPrepaymentsExpendAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+              prepaymentsDataStatistic.getTotalPrepaymentsRefundAmount().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
+    });
     return resultList;
   }
 

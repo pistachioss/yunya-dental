@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简介: 门诊数据总览组合信息VO
@@ -30,9 +31,5 @@ public class ClinicDataStatisticsInfoVO implements Serializable {
   /** 会员数据 */
   private MemberDataStatisticVO memberDataStatistic;
   /** 预付款数据 */
-  private PrepaymentsDataStatisticVO prepaymentsDataStatistic;
-  /** 正畸预付款数据 */
-  private PrepaymentsDataStatisticVO prepaymentsDataStatistic2;
-  /** 美白预付款数据 */
-  private PrepaymentsDataStatisticVO prepaymentsDataStatistic3;
+  private List<PrepaymentsDataStatisticVO> prepaymentsDataStatistic;
 }
