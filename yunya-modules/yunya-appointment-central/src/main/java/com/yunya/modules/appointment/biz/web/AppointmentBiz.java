@@ -628,7 +628,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 生成修改预约操作记录
         appointOperateRecordBiz.saveAppointOperationRecord(appointment,appointmentForm);
-        return ResponseUtil.success();
+        return ResponseUtil.success(new ArrayList<>());
     }
 
 
