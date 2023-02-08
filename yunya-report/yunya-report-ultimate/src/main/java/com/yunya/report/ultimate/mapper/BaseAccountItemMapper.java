@@ -124,10 +124,12 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * 根据条件查询门诊预付款退费的入账方式分组信息
    *
    * @param query 查询条件
+   * @param type
    * @return List<ClinicInboundAndOutboundVO>
    */
   List<StatementPaymentVO> selectPrepaidRefundPaymentInfo(
-      @Param("query") InboundAndOutboundStatementQuery query);
+          @Param("query") InboundAndOutboundStatementQuery query,
+          @Param("type") Integer type);
 
   /**
    * 根据条件查询门诊本月被代收的入账方式分组信息

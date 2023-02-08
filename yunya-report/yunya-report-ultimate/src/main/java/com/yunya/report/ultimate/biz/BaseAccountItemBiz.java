@@ -164,10 +164,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
 
     ClinicInboundAndOutboundVO inboundAndOutboundVO = new ClinicInboundAndOutboundVO();
-    inboundAndOutboundVO.setType((byte) 12);
+    inboundAndOutboundVO.setType((byte) 16);
     inboundAndOutboundVO.setName("合计");
     inboundAndOutboundVO.setPaymentInfoList(inboundPaymentResult);
-    resultList.add(12, inboundAndOutboundVO);
+    resultList.add(16, inboundAndOutboundVO);
   }
 
   /**
@@ -236,10 +236,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
     clinicIsAcceptedNotThisMonth = reBuildStatementsPaymentList(clinicIsAcceptedNotThisMonth);
     ClinicInboundAndOutboundVO clinicIsAcceptedNotThisMonthVO = new ClinicInboundAndOutboundVO();
-    clinicIsAcceptedNotThisMonthVO.setType((byte) 14);
+    clinicIsAcceptedNotThisMonthVO.setType((byte) 18);
     clinicIsAcceptedNotThisMonthVO.setName("诊所被代收（非本期）");
     clinicIsAcceptedNotThisMonthVO.setPaymentInfoList(clinicIsAcceptedNotThisMonth);
-    resultList.add(14, clinicIsAcceptedNotThisMonthVO);
+    resultList.add(18, clinicIsAcceptedNotThisMonthVO);
   }
 
   /**
@@ -273,10 +273,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
     clinicIsAcceptedThisMonth = reBuildStatementsPaymentList(clinicIsAcceptedThisMonth);
     ClinicInboundAndOutboundVO clinicIsAcceptedThisMonthVO = new ClinicInboundAndOutboundVO();
-    clinicIsAcceptedThisMonthVO.setType((byte) 13);
+    clinicIsAcceptedThisMonthVO.setType((byte) 17);
     clinicIsAcceptedThisMonthVO.setName("诊所被代收（本期）");
     clinicIsAcceptedThisMonthVO.setPaymentInfoList(clinicIsAcceptedThisMonth);
-    resultList.add(13, clinicIsAcceptedThisMonthVO);
+    resultList.add(17, clinicIsAcceptedThisMonthVO);
   }
 
   /**
@@ -286,8 +286,16 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param resultList 结果集
    */
   private void prepaidRefund(
-      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> prepaidRefundResult = findPrepaidRefundPaymentInfo(query);
+          InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<PatientDepositAccountTypeEnum> typeEnums = PatientDepositAccountTypeEnum.prepaymentValues();
+    for (int i = 0; i < typeEnums.size(); i++) {
+      prepaidRefund(query, typeEnums.get(i), i+13, resultList);
+    }
+  }
+
+  private void prepaidRefund(
+      InboundAndOutboundStatementQuery query, PatientDepositAccountTypeEnum typeEnum, Integer index, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> prepaidRefundResult = findPrepaidRefundPaymentInfo(query, typeEnum.getType());
     List<BaseAccountItemVO> paymentList = mapper.selectAllPaymentList();
     List<StatementPaymentVO> prepaidRefund = new ArrayList<>();
     if (StringHelper.isNotEmpty(paymentList)) {
@@ -309,10 +317,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
     prepaidRefund = reBuildStatementsPaymentList(prepaidRefund);
     ClinicInboundAndOutboundVO prepaidRefundVO = new ClinicInboundAndOutboundVO();
-    prepaidRefundVO.setType((byte) 11);
-    prepaidRefundVO.setName("预付款退费");
+    prepaidRefundVO.setType((byte) index.intValue());
+    prepaidRefundVO.setName(typeEnum.getName() + "退费");
     prepaidRefundVO.setPaymentInfoList(prepaidRefund);
-    resultList.add(11, prepaidRefundVO);
+    resultList.add(index, prepaidRefundVO);
   }
 
   /**
@@ -345,10 +353,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
     memberRefund = reBuildStatementsPaymentList(memberRefund);
     ClinicInboundAndOutboundVO memberRefundVO = new ClinicInboundAndOutboundVO();
-    memberRefundVO.setType((byte) 10);
+    memberRefundVO.setType((byte) 12);
     memberRefundVO.setName("会员卡退费");
     memberRefundVO.setPaymentInfoList(memberRefund);
-    resultList.add(10, memberRefundVO);
+    resultList.add(12, memberRefundVO);
   }
 
   /**
@@ -382,10 +390,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
     billRefundNotThisMonth = reBuildStatementsPaymentList(billRefundNotThisMonth);
     ClinicInboundAndOutboundVO billRefundNotThisMonthVO = new ClinicInboundAndOutboundVO();
-    billRefundNotThisMonthVO.setType((byte) 9);
+    billRefundNotThisMonthVO.setType((byte) 11);
     billRefundNotThisMonthVO.setName("账单退费（非本期）");
     billRefundNotThisMonthVO.setPaymentInfoList(billRefundNotThisMonth);
-    resultList.add(9, billRefundNotThisMonthVO);
+    resultList.add(11, billRefundNotThisMonthVO);
   }
 
   /**
@@ -418,10 +426,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
     billRefundThisMonth = reBuildStatementsPaymentList(billRefundThisMonth);
     ClinicInboundAndOutboundVO billRefundThisMonthVO = new ClinicInboundAndOutboundVO();
-    billRefundThisMonthVO.setType((byte) 8);
+    billRefundThisMonthVO.setType((byte) 10);
     billRefundThisMonthVO.setName("账单退费（本期）");
     billRefundThisMonthVO.setPaymentInfoList(billRefundThisMonth);
-    resultList.add(8, billRefundThisMonthVO);
+    resultList.add(10, billRefundThisMonthVO);
   }
 
   /**
@@ -455,10 +463,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
     clinicCollectionNotThisMonth = reBuildStatementsPaymentList(clinicCollectionNotThisMonth);
     ClinicInboundAndOutboundVO clinicCollectionNotThisMonthVO = new ClinicInboundAndOutboundVO();
-    clinicCollectionNotThisMonthVO.setType((byte) 7);
+    clinicCollectionNotThisMonthVO.setType((byte) 9);
     clinicCollectionNotThisMonthVO.setName("诊所代收（非本期）");
     clinicCollectionNotThisMonthVO.setPaymentInfoList(clinicCollectionNotThisMonth);
-    resultList.add(7, clinicCollectionNotThisMonthVO);
+    resultList.add(9, clinicCollectionNotThisMonthVO);
   }
 
   /**
@@ -492,10 +500,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
     clinicCollectionThisMonth = reBuildStatementsPaymentList(clinicCollectionThisMonth);
     ClinicInboundAndOutboundVO clinicCollectionThisMonthVO = new ClinicInboundAndOutboundVO();
-    clinicCollectionThisMonthVO.setType((byte) 6);
+    clinicCollectionThisMonthVO.setType((byte) 8);
     clinicCollectionThisMonthVO.setName("诊所代收（本期）");
     clinicCollectionThisMonthVO.setPaymentInfoList(clinicCollectionThisMonth);
-    resultList.add(6, clinicCollectionThisMonthVO);
+    resultList.add(8, clinicCollectionThisMonthVO);
   }
 
   /**
@@ -528,10 +536,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
     productSold = reBuildStatementsPaymentList(productSold);
     ClinicInboundAndOutboundVO productSoldVO = new ClinicInboundAndOutboundVO();
-    productSoldVO.setType((byte) 5);
+    productSoldVO.setType((byte) 7);
     productSoldVO.setName("产品售出");
     productSoldVO.setPaymentInfoList(productSold);
-    resultList.add(5, productSoldVO);
+    resultList.add(7, productSoldVO);
   }
 
   /**
@@ -550,7 +558,8 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   }
 
     private void prePaidCharge(
-            InboundAndOutboundStatementQuery query, PatientDepositAccountTypeEnum typeEnum, Integer index, List<ClinicInboundAndOutboundVO> resultList) {
+            InboundAndOutboundStatementQuery query, PatientDepositAccountTypeEnum typeEnum,
+            Integer index, List<ClinicInboundAndOutboundVO> resultList) {
     List<StatementPaymentVO> prePaidChargeResult = findPrePaidChargePaymentInfo(query, typeEnum.getType());
     List<BaseAccountItemVO> paymentList = mapper.selectAllPaymentList();
     List<StatementPaymentVO> prePaidCharge = new ArrayList<>();
@@ -731,7 +740,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    *
    * @param type "收支明细分类:0-账单收费（本期）；1-收欠费（本期）；2-收欠费（非本期）；3-会员充值；4-预付款充值；5-正畸预付款；6-美白预付款；7-产品售出；"
    *     "8-诊所代收（本期）；9-诊所代收（非本期）；10-账单退费（本期）；11-账单退费（非本期）；"
-   *     "12-会员卡退费；13-预付款退费；14-诊所被代收账（本期）；15-诊所被代收帐（非本期）"
+   *     "12-会员卡退费；13-预付款退费；14-正畸预付款退费；15-美白预付款退费；16-合计；17-诊所被代收账（本月）；18-诊所被代收帐（非本月）"
    * @param list 支付方式列表
    * @param query 会员卡/预付款本金赠金查询参数
    */
@@ -1093,11 +1102,12 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * 根据条件查询门诊预付款退费的入账方式分组信息
    *
    * @param query 查询条件
+   * @param type
    * @return List<ClinicInboundAndOutboundVO>
    */
   private List<StatementPaymentVO> findPrepaidRefundPaymentInfo(
-      InboundAndOutboundStatementQuery query) {
-    List<StatementPaymentVO> resultList = mapper.selectPrepaidRefundPaymentInfo(query);
+          InboundAndOutboundStatementQuery query, Integer type) {
+    List<StatementPaymentVO> resultList = mapper.selectPrepaidRefundPaymentInfo(query, type);
     return resultList;
   }
 
