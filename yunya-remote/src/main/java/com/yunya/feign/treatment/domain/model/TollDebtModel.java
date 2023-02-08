@@ -30,18 +30,27 @@ public class TollDebtModel implements Serializable {
   private Integer treatmentRecordId;
 
   /** 普通优惠信息 */
+  @ApiModelProperty("普通优惠信息")
   private GeneralDiscountModel generalDiscountModel;
 
   /** 授权折扣信息 */
+  @ApiModelProperty("授权折扣信息")
   private AccreditDiscountModel accreditDiscountModel;
 
   /** 预付款账户 */
+  @ApiModelProperty("预付款账户")
   private Set<PrepaymentAccountModel> prepaymentAccountModels;
 
+  /** 专项预付款账户 */
+  @ApiModelProperty("专项预付款账户")
+  private Set<PrepaymentAccountModel> spPrepaymentAccountModels;
+
   /** 会员卡账户 */
+  @ApiModelProperty("会员卡账户")
   private Set<MemberAccountModel> memberAccountModels;
 
   /** 其他支付方式 */
+  @ApiModelProperty("其他支付方式")
   private Set<PaymentModel> paymentModels;
 
   /** 挂帐金额 */
@@ -51,8 +60,10 @@ public class TollDebtModel implements Serializable {
   private BigDecimal outstandingAmount;
 
   /** 发票信息 */
+  @ApiModelProperty("发票信息")
   private InvoiceModel invoiceModel;
 
   /** 优惠方式 */
+  @ApiModelProperty("优惠方式")
   private byte discountType;
 }

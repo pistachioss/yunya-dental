@@ -29,7 +29,7 @@ public class BasePatientMemberOccurLog {
     private Integer patientId;
 
     /**
-     * 卡类型(0：会员卡；１：预付款)
+     * 卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      */
     @Id
     private Byte type;

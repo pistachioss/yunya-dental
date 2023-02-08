@@ -51,7 +51,7 @@ public class BillPayDetailRecord {
     private Integer billPayRecordId;
 
     /**
-     * 入账方式类型（0-预付款；1-会员卡；3-其他支付方式）
+     * 入账方式类型（0-预付款；1-会员卡；2-其他支付方式；3-正畸预付款；4-美白预付款）
      */
     private Byte type;
 
@@ -250,18 +250,18 @@ public class BillPayDetailRecord {
     }
 
     /**
-     * 获取入账方式类型（0-预付款；1-会员卡；2-其他支付方式）
+     * 获取入账方式类型（0-预付款；1-会员卡；2-其他支付方式；3-正畸预付款；4-美白预付款）
      *
-     * @return type - 入账方式类型（0-预付款；1-会员卡；2-其他支付方式）
+     * @return type - 入账方式类型（0-预付款；1-会员卡；2-其他支付方式；3-正畸预付款；4-美白预付款）
      */
     public Byte getType() {
         return type;
     }
 
     /**
-     * 设置入账方式类型（0-预付款；1-会员卡；3-其他支付方式）
+     * 设置入账方式类型（0-预付款；1-会员卡；2-其他支付方式；3-正畸预付款；4-美白预付款）
      *
-     * @param type 入账方式类型（0-预付款；1-会员卡；3-其他支付方式）
+     * @param type 入账方式类型（0-预付款；1-会员卡；2-其他支付方式；3-正畸预付款；4-美白预付款）
      */
     public void setType(Byte type) {
         this.type = type;

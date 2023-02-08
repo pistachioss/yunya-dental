@@ -47,4 +47,15 @@ public interface ClinicAccountItemMapper extends Mapper<ClinicAccountItem> {
    */
   AccountItemVO selectAccountItemVO(
       @Param("orgId") Integer orgId, @Param("accountItemId") Integer accountItemId);
+
+  /**
+   * 根据条件查询门诊可用的支付方式
+   *
+   * @param orgId
+   * @param types
+   * @return
+   */
+  List<AccountItemVO> selectClinicEnableAccountItemList(
+          @Param("orgId") Integer orgId,
+          @Param("types") List<Integer> types);
 }

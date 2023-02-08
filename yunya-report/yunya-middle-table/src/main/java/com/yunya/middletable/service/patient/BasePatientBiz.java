@@ -43,6 +43,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
 import static java.util.stream.Collectors.toMap;
 
 
@@ -166,7 +167,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
               patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
       if (patientPrepayments != null) {
         BasePatientMember basePatientMember =
-                basePatientMemberBiz.getPatientMemberInfo(patientPrepayments.getId(), 1);
+                basePatientMemberBiz.getPatientMemberInfo(patientPrepayments.getId(), NORMAL_PREPAYMENT.getType());
         basePatientMemberMapper.deleteByPrimaryKey(basePatientMember);
         basePatientMemberMapper.insert(basePatientMember);
       }

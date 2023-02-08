@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -30,8 +31,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
-import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
 import static com.yunya.framework.common.constant.ThreadPoolConstant.CUT_SLICE_500;
 
 /**
@@ -1226,43 +1225,20 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           List<StatementPaymentVO> statementPaymentResult, List<StatementPaymentVO> statementPayments) {
     if (StringHelper.isNotEmpty(statementPayments)) {
       for (StatementPaymentVO payment : statementPayments) {
-        String accountItemName = payment.getAccountItemName();
+        Integer accountItemId = payment.getAccountItemId();
         // 将支付方式名称为：会员卡或预付款的支付港式拆分为-会员卡本金/赠金；预付款本金/赠金
-        switch (accountItemName) {
-          case ACCOUNT_ITEM_OF_MEMBER:
-            Integer memberCardAccountItemId = payment.getAccountItemId();
-            BigDecimal memberCardTotalAmount = payment.getTotalAmount();
-            BigDecimal memberCardBonusAmount = payment.getBonusAmount();
-            StatementPaymentVO memberCardPrinciple = new StatementPaymentVO();
-            memberCardPrinciple.setAccountItemId(memberCardAccountItemId);
-            memberCardPrinciple.setAccountItemName("会员卡本金");
-            memberCardPrinciple.setTotalAmount(memberCardTotalAmount);
-            statementPaymentResult.add(0, memberCardPrinciple);
-            StatementPaymentVO memberCardBonus = new StatementPaymentVO();
-            memberCardBonus.setAccountItemId(memberCardAccountItemId);
-            memberCardBonus.setAccountItemName("会员卡赠金");
-            memberCardBonus.setTotalAmount(memberCardBonusAmount);
-            statementPaymentResult.add(1, memberCardBonus);
-            break;
-          case ACCOUNT_ITEM_OF_PREPARE:
-            Integer prePaidCardAccountItemId = payment.getAccountItemId();
-            BigDecimal prePaidCardTotalAmount = payment.getTotalAmount();
-            BigDecimal prePaidCardBonusAmount = payment.getBonusAmount();
-            StatementPaymentVO prePaidCardPrinciple = new StatementPaymentVO();
-            prePaidCardPrinciple.setAccountItemId(prePaidCardAccountItemId);
-            prePaidCardPrinciple.setAccountItemName("预付款本金");
-            prePaidCardPrinciple.setTotalAmount(prePaidCardTotalAmount);
-            statementPaymentResult.add(2, prePaidCardPrinciple);
-            StatementPaymentVO prepaidCardBonus = new StatementPaymentVO();
-            prepaidCardBonus.setAccountItemId(prePaidCardAccountItemId);
-            prepaidCardBonus.setAccountItemName("预付款赠金");
-            prepaidCardBonus.setTotalAmount(prePaidCardBonusAmount);
-            statementPaymentResult.add(3, prepaidCardBonus);
-            break;
-          default:
-            statementPaymentResult.add(payment);
-            break;
+        PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+        if (StringHelper.isNotNull(typeEnum)) {
+          String name = typeEnum.getName();
+          payment.setAccountItemName(name + "本金");
+          statementPaymentResult.add(payment);
+
+          StatementPaymentVO bouns = new StatementPaymentVO();
+          bouns.setAccountItemId(accountItemId);
+          bouns.setAccountItemName(name + "赠金");
+          bouns.setTotalAmount(payment.getBonusAmount());
         }
+        statementPaymentResult.add(payment);
       }
     }
   }

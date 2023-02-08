@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.form.ClinicAccountItemConfigureQueryForm;
+import com.yunya.feign.system.vo.ClinicChargeItemVO;
 import com.yunya.feign.system.vo.ClinicAccountItemListVO;
 import com.yunya.feign.system.vo.ClinicAccountItemVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -18,6 +19,9 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 简介: 门诊入账方式控制器
@@ -164,5 +168,52 @@ public class ClinicAccountItemController {
       @PathVariable(value = "accountItemId") Integer accountItemId) {
     clinicAccountItemBiz.switchClinicAccountItem(orgId, accountItemId);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据门诊id查询门诊可用的其他入账方式（不包含会员卡、预付款、专项预付款）
+   *
+   * @param orgId 门诊id
+   * @return
+   */
+  @ApiOperation("根据门诊id查询门诊可用的其他入账方式（不包含会员卡、预付款、专项预付款）")
+  @ApiImplicitParam(
+          name = "orgId",
+          value = "组织ID",
+          required = true,
+          dataType = "int",
+          paramType = "path")
+  @GetMapping(value = "/clinic/other/{orgId}", name = "根据门诊id查询门诊可用的其他入账方式（不包含会员卡、预付款、专项预付款）")
+  public ResponseResult<List<ClinicAccountItemVO>> findClinicAccountOtherCharge(
+          @PathVariable(value = "orgId") Integer orgId) {
+    List<ClinicAccountItemVO> result = clinicAccountItemBiz.findClinicAccountOtherCharge(orgId, new ArrayList<>());
+    return ResponseUtil.success(result);
+  }
+
+  /**
+   * 根据门诊id和患者id查询门诊可用的收费入账方式
+   *
+   * @param orgId 门诊id
+   * @return
+   */
+  @ApiOperation("根据门诊id和患者id查询门诊可用的收费入账方式")
+  @ApiImplicitParams(value = {
+          @ApiImplicitParam(
+            name = "orgId",
+            value = "组织ID",
+            required = true,
+            dataType = "int",
+            paramType = "path"),
+          @ApiImplicitParam(
+            name = "patientId",
+            value = "患者id",
+            required = true,
+            dataType = "int",
+            paramType = "path")})
+  @GetMapping(value = "/clinic/charge/{orgId}/{patientId}", name = "根据门诊id和患者id查询门诊可用的收费入账方式")
+  public ResponseResult<ClinicChargeItemVO> findClinicAccountCharge(
+          @PathVariable(value = "orgId") Integer orgId, @PathVariable(value = "patientId") Integer patientId) {
+    ClinicChargeItemVO result = clinicAccountItemBiz.findClinicAccountCharge(orgId, patientId);
+    return ResponseUtil.success(result);
   }
 }

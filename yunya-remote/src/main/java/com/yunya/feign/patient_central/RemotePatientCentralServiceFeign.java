@@ -1,22 +1,24 @@
 package com.yunya.feign.patient_central;
 
 import com.yunya.feign.ivy_mini.domain.form.WxSaveFansForm;
-import com.yunya.feign.patient_central.domain.form.*;
+import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
-import com.yunya.feign.patient_central.factory.*;
-import com.yunya.framework.common.annation.*;
-import com.yunya.framework.common.constant.*;
-import com.yunya.framework.common.model.*;
+import com.yunya.feign.patient_central.factory.RemotePatientCentralServiceFallBackFactory;
+import com.yunya.feign.system.vo.ClinicChargeItemVO;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.constant.YunyaServiceNameConstants;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.patient_central.*;
-import io.swagger.annotations.*;
-import org.springframework.cloud.openfeign.*;
-import org.springframework.validation.annotation.*;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.*;
-import java.util.*;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 /** @author YK */
 @FeignClient(
@@ -356,4 +358,8 @@ import java.util.*;
   @ApiOperation("获取患者生日确认日期")
   @GetMapping(value = "/api/birthday/check/{patientId}")
   Date getPatientBirthdayCheck(@PathVariable("patientId") Integer patientId);
+
+  @ApiOperation("查询患者储蓄账号（会员卡or预付款）信息列表")
+  @PostMapping("/api/member/depositAccount")
+  ClinicChargeItemVO findDepositAccountList(@RequestBody @Validated PatientDepositAccountQueryForm query);
 }

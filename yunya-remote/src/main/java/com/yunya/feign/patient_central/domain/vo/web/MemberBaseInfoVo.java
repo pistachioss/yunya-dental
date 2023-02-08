@@ -67,4 +67,10 @@ public class MemberBaseInfoVo implements Serializable {
 
   @ApiModelProperty("积分")
   private Integer point;
+
+  /**
+   * 备注（账户余额）
+   */
+  @ApiModelProperty("备注（账户余额）")
+  private String remark;
 }

@@ -38,7 +38,7 @@ public class PatientControllerTest {
   @Test
   public void testaaa() {
     PatientManageQuery query = new PatientManageQuery();
-    query.setLastOrgId(64);
+    query.setLastOrgId(new Integer[]{64});
     query.setBirthday("01-09");
     query.setWhetherPage(true);
     PageInfo<PatientBirthdayVo> page = patientBaseInfoBiz.getPatientBirthdayPage(query);

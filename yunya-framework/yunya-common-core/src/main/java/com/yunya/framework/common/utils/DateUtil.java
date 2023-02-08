@@ -1232,4 +1232,13 @@ public class DateUtil {
   public static void main(String[] args) {
     System.out.println(parse2Date("1941-09-04"));
   }
+
+  /**
+   * 当前时间
+   *
+   * @return
+   */
+  public static Date now() {
+    return new Date(System.currentTimeMillis());
+  }
 }
