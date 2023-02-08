@@ -288,22 +288,8 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
    * @return
    */
   public ClinicChargeItemVO findClinicAccountCharge(Integer orgId, Integer patientId) {
-    ClinicAccountItemQueryForm query = new ClinicAccountItemQueryForm();
-    query.setOrgId(orgId);
-    query.setInservice(true);
-    List<ClinicAccountItemVO> otherAccountItems = mapper.selectClinicAccountItemList(query);
-    if (StringHelper.isEmpty(otherAccountItems)) {
-      return new ClinicChargeItemVO();
-    }
     List<Integer> types = new ArrayList<>();
-    otherAccountItems = otherAccountItems.stream().filter(item->{
-      Integer accountItemId = item.getAccountItemId();
-      PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
-      if (StringHelper.isNotNull(typeEnum)) {
-        types.add(typeEnum.getType());
-      }
-      return !PRE_SOLE.equals(item.getType());
-    }).collect(Collectors.toList());
+    List<ClinicAccountItemVO> otherAccountItems = findClinicAccountOtherCharge(orgId, types);
     ClinicChargeItemVO result = findPatientDepositAccount(patientId, types);
     result.setOtherAccountItems(otherAccountItems);
     return result;
@@ -323,5 +309,24 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
     query.setPatientId(patientId);
     query.setTypes(types);
     return patientCentralServiceFeign.findDepositAccountList(query);
+  }
+
+  public List<ClinicAccountItemVO> findClinicAccountOtherCharge(Integer orgId, List<Integer> types) {
+    ClinicAccountItemQueryForm query = new ClinicAccountItemQueryForm();
+    query.setOrgId(orgId);
+    query.setInservice(true);
+    List<ClinicAccountItemVO> otherAccountItems = mapper.selectClinicAccountItemList(query);
+    if (StringHelper.isEmpty(otherAccountItems)) {
+      return new ArrayList<>();
+    }
+    otherAccountItems = otherAccountItems.stream().filter(item->{
+      Integer accountItemId = item.getAccountItemId();
+      PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+      if (StringHelper.isNotNull(typeEnum)) {
+        types.add(typeEnum.getType());
+      }
+      return !PRE_SOLE.equals(item.getType());
+    }).collect(Collectors.toList());
+    return otherAccountItems;
   }
 }

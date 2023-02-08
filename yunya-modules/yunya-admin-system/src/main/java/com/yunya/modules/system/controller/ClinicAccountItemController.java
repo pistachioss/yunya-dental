@@ -20,6 +20,9 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 简介: 门诊入账方式控制器
  *
@@ -167,6 +170,25 @@ public class ClinicAccountItemController {
     return ResponseUtil.success(null);
   }
 
+  /**
+   * 根据门诊id查询门诊可用的其他入账方式（不包含会员卡、预付款、专项预付款）
+   *
+   * @param orgId 门诊id
+   * @return
+   */
+  @ApiOperation("根据门诊id查询门诊可用的其他入账方式（不包含会员卡、预付款、专项预付款）")
+  @ApiImplicitParam(
+          name = "orgId",
+          value = "组织ID",
+          required = true,
+          dataType = "int",
+          paramType = "path")
+  @GetMapping(value = "/clinic/other/{orgId}", name = "根据门诊id查询门诊可用的其他入账方式（不包含会员卡、预付款、专项预付款）")
+  public ResponseResult<List<ClinicAccountItemVO>> findClinicAccountOtherCharge(
+          @PathVariable(value = "orgId") Integer orgId) {
+    List<ClinicAccountItemVO> result = clinicAccountItemBiz.findClinicAccountOtherCharge(orgId, new ArrayList<>());
+    return ResponseUtil.success(result);
+  }
 
   /**
    * 根据门诊id和患者id查询门诊可用的收费入账方式
