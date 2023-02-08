@@ -90,11 +90,11 @@ public class ClinicDataStatisticsBiz {
     prepaymentsDataStatisticVOList.add(clinicPrepaymentsDataStatistic);
     PrepaymentsDataStatisticVO clinicPrepaymentsDataStatistic2 =
             memberBiz.findClinicPrepaymentsDataStatistic(query, 2);
-    clinicPrepaymentsDataStatistic.setTypeName("正畸预付款");
+    clinicPrepaymentsDataStatistic2.setTypeName("正畸预付款");
     prepaymentsDataStatisticVOList.add(clinicPrepaymentsDataStatistic2);
     PrepaymentsDataStatisticVO clinicPrepaymentsDataStatistic3 =
             memberBiz.findClinicPrepaymentsDataStatistic(query, 3);
-    clinicPrepaymentsDataStatistic.setTypeName("美白预付款");
+    clinicPrepaymentsDataStatistic3.setTypeName("美白预付款");
     prepaymentsDataStatisticVOList.add(clinicPrepaymentsDataStatistic3);
     resultData.setPrepaymentsDataStatistic(prepaymentsDataStatisticVOList);
     return resultData;
