@@ -612,6 +612,7 @@
         bpmor.patient_id AS patientId,
         bp.`name` AS patientName,
         bp.mobile AS patientMobile,
+        case bpmor.type when 1 then '普通预付款' when 2 then '正畸预付款' when 3 then '美白预付款' end as 'type',
         bp.pinyin_name AS pinyinName,
         bpmor.card_id AS patientCardId,
         bpm.card_number AS patientCardNumber,
