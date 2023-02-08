@@ -84,8 +84,14 @@ public class ClinicDataStatisticsBiz {
     resultData.setMemberDataStatistic(clinicMemberDataStatistic);
     // 门诊预付款数据总览
     PrepaymentsDataStatisticVO clinicPrepaymentsDataStatistic =
-        memberBiz.findClinicPrepaymentsDataStatistic(query);
+        memberBiz.findClinicPrepaymentsDataStatistic(query, 1);
     resultData.setPrepaymentsDataStatistic(clinicPrepaymentsDataStatistic);
+    PrepaymentsDataStatisticVO clinicPrepaymentsDataStatistic2 =
+            memberBiz.findClinicPrepaymentsDataStatistic(query, 2);
+    resultData.setPrepaymentsDataStatistic(clinicPrepaymentsDataStatistic2);
+    PrepaymentsDataStatisticVO clinicPrepaymentsDataStatistic3 =
+            memberBiz.findClinicPrepaymentsDataStatistic(query, 3);
+    resultData.setPrepaymentsDataStatistic(clinicPrepaymentsDataStatistic3);
     return resultData;
   }
 

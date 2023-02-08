@@ -223,6 +223,7 @@
         bpt.name,
         bpt.pinyin_name pinyinName,
         bpt.mobile,
+        case bpmol.type when 1 then '普通预付款' when 2 then '正畸预付款' when 3 then '美白预付款' end as 'type',
         bpm.card_number cardNumber,
         IFNULL(bpmol.principal_amount,0) principalAmount,
         IFNULL(bpmol.bonus_amount,0) bonusAmount,
@@ -242,7 +243,7 @@
         JOIN base_patient bpt ON bpmol.patient_id = bpt.patient_Id
         JOIN base_patient_member bpm ON bpm.card_id = bpmol.card_id
         <where>
-            bpmol.type = 1
+            bpmol.type = #{form.type}
             AND bpmol.occur_type = 1
             <if test="form.orgId != null and form.orgId != ''">
                 AND bpmol.org_id = #{form.orgId}
@@ -287,6 +288,7 @@
         bpt.name,
         bpt.pinyin_name pinyinName,
         bpt.mobile,
+        case bpmol.type when 1 then '普通预付款' when 2 then '正畸预付款' when 3 then '美白预付款' end as 'type',
         ( SELECT bp.NAME FROM base_patient bp join base_patient_member bpm on bp.patient_id = bpm.patient_id where
         bpm.card_id = bpmol.card_id and bpm.type = bpmol.type ) masterCardName,
         bpm.card_number cardNumber,
@@ -302,7 +304,7 @@
         JOIN base_patient_member bpm ON bpm.card_id = bpmol.card_id
         JOIN base_bill bb ON bpmol.bill_id = bb.bill_id
         <where>
-            bpmol.type = 1
+            bpmol.type = #{form.type}
             AND bpmol.occur_type = 2
             <if test="form.orgId != null and form.orgId != ''">
                 AND bpmol.org_id = #{form.orgId}
@@ -338,6 +340,7 @@
         bpt.name,
         bpt.pinyin_name pinyinName,
         bpt.mobile,
+        case bpmol.type when 1 then '普通预付款' when 2 then '正畸预付款' when 3 then '美白预付款' end as 'type',
         bpm.card_number cardNumber,
         IFNULL(bpmol.principal_amount,0) principalAmount,
         IFNULL(bpmol.bonus_amount,0) bonusAmount,
@@ -353,7 +356,7 @@
         JOIN base_patient bpt ON bpmol.patient_id = bpt.patient_Id
         JOIN base_patient_member bpm ON bpm.card_id = bpmol.card_id
         <where>
-            bpmol.type = 1
+            bpmol.type = #{form.type}
             and bpmol.occur_type = 3
             <if test="form.orgId != null and form.orgId != ''">
                 and bpmol.org_id = #{form.orgId}

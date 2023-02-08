@@ -31,4 +31,8 @@ public class ClinicDataStatisticsInfoVO implements Serializable {
   private MemberDataStatisticVO memberDataStatistic;
   /** 预付款数据 */
   private PrepaymentsDataStatisticVO prepaymentsDataStatistic;
+  /** 正畸预付款数据 */
+  private PrepaymentsDataStatisticVO prepaymentsDataStatistic2;
+  /** 美白预付款数据 */
+  private PrepaymentsDataStatisticVO prepaymentsDataStatistic3;
 }
