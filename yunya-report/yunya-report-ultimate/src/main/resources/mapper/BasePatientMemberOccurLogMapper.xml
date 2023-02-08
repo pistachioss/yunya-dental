@@ -395,9 +395,9 @@
         bp.name,
         bp.pinyin_name pinyinName,
         bp.mobile,
+        case bpmol.type when 1 then '普通预付款' when 2 then '正畸预付款' when 3 then '美白预付款' end as 'type',
         bpm.card_number cardNumber,
         bpm.member_level_name memberLevelName,
-
         IFNULL((
         SELECT
         IFNULL( sum( a.current_recharge_principal ), 0 )
@@ -596,7 +596,6 @@
         bpmor.patientId,
         bpmor.patientName,
         bpmor.patientMobile,
-        bpmor.type,
         bpmor.patientCardId,
         bpmor.patientCardNumber,
         bpmor.cardTypeName,
@@ -613,7 +612,6 @@
         bpmor.patient_id AS patientId,
         bp.`name` AS patientName,
         bp.mobile AS patientMobile,
-        case bpmor.type when 1 then '普通预付款' when 2 then '正畸预付款' when 3 then '美白预付款' end as 'type',
         bp.pinyin_name AS pinyinName,
         bpmor.card_id AS patientCardId,
         bpm.card_number AS patientCardNumber,
