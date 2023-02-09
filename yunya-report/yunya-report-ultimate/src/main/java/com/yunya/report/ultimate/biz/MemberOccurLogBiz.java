@@ -8,6 +8,7 @@ import com.yunya.feign.report.domain.query.StatementPatientCardRechargeDetailInf
 import com.yunya.feign.report.domain.query.StatementPatientCardRefundDetailQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -433,8 +434,27 @@ public class MemberOccurLogBiz
           setRechargeDetailAmountValue(statementPaymentVO, vo);
         }
       }
+      setDepositAccountType(query.getCardType().intValue(), resultList);
     }
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 设置储蓄卡类型名称
+   *
+   * @param type
+   * @param resultList
+   */
+  private void setDepositAccountType(Integer type, List<? extends StatementPatientDepositAccountVO> resultList) {
+    String cardTypeName = null;
+    if (PatientDepositAccountTypeEnum.isSpPrepaymentType(type)) {
+      cardTypeName = PatientDepositAccountTypeEnum.getTypeEnum(type).getName();
+    }
+    for (StatementPatientDepositAccountVO vo : resultList) {
+      if (StringHelper.isNotEmpty(cardTypeName)) {
+        vo.setCardTypeName(cardTypeName);
+      }
+    }
   }
 
   /**
@@ -513,6 +533,7 @@ public class MemberOccurLogBiz
           setRefundDetailAmountValue(statementPaymentVO, vo);
         }
       }
+      setDepositAccountType(query.getCardType().intValue(), resultList);
     }
     return new PageInfo<>(resultList);
   }

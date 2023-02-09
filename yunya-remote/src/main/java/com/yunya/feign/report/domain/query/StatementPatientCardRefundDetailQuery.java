@@ -40,8 +40,8 @@ public class StatementPatientCardRefundDetailQuery extends PageQuery implements 
   @ApiModelProperty(value = "结束时间", required = true)
   @NotBlank(message = "查询结束时间不能为空！")
   private String endDate;
-  /** 卡类型:0-会员卡；1-预付款 */
-  @ApiModelProperty(value = "卡类型:0-会员卡；1-预付款", required = true, example = "0-会员卡；1-预付款")
+  /** 卡类型:0-会员卡；1-预付款；2-正畸预付款；3-美白预付款；*/
+  @ApiModelProperty(value = "卡类型:0-会员卡；1-预付款；2-正畸预付款；3-美白预付款；", required = true, example = "0-会员卡；1-预付款；2-正畸预付款；3-美白预付款；")
   @NotNull(message = "储值卡类型不能为空！")
   private Byte cardType;
   /** 患者关键字 */
