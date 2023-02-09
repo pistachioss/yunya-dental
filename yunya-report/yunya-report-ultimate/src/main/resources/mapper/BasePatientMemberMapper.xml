@@ -71,6 +71,19 @@
         group by bpm.member_level_name
     </select>
 
+    <!-- 查询预付款总概況 -->
+    <select id="memberOverviewListByType" resultType="com.yunya.feign.report.domain.vo.BaseMemberOverviewVo">
+        select
+        bpm.type memberLevelId,
+        (case bpm.type when 2 then '正畸预付款' when 3 then '美白预付款' else '--' end) as memberLevelName,
+        count(bpm.member_level_id) amount,
+        sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,
+        sum(bpm.bonus_amount) bonusAmount
+        from base_patient_member bpm
+        where type > 1
+        group by bpm.type
+    </select>
+
     <!-- 根据条件查询门诊会员数据总览 -->
     <select id="selectClinicMemberDataStatistic"
             resultType="com.yunya.feign.report.domain.vo.MemberDataStatisticVO">

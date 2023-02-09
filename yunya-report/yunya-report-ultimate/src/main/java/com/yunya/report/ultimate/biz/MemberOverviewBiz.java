@@ -110,4 +110,33 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
     map.put("sumBonusAmount", sumBonusAmount);
     return map;
   }
+
+  /**
+   * 预付款概况
+   *
+   * @return 预付款概况信息
+   */
+  public Map<String, Object> memberListByType() {
+    Map<String, Object> map = new HashMap<String, Object>(16);
+    int sumAmount = 0;
+    BigDecimal sumPrincipalAmount = new BigDecimal(0);
+    BigDecimal sumBonusAmount = new BigDecimal(0);
+    List<BaseMemberOverviewVo> baseMemberOverviewVos = mapper.memberOverviewListByType();
+    for (BaseMemberOverviewVo baseMemberOverviewVo : baseMemberOverviewVos) {
+      if (baseMemberOverviewVo.getAmount() > 0) {
+        sumAmount = sumAmount + baseMemberOverviewVo.getAmount();
+      }
+      if (baseMemberOverviewVo.getPrincipalAmount().compareTo(new BigDecimal(0)) > 0) {
+        sumPrincipalAmount = sumPrincipalAmount.add(baseMemberOverviewVo.getPrincipalAmount());
+      }
+      if (baseMemberOverviewVo.getBonusAmount().compareTo(new BigDecimal(0)) > 0) {
+        sumBonusAmount = sumBonusAmount.add(baseMemberOverviewVo.getBonusAmount());
+      }
+    }
+    map.put("baseMemberOverviewVoList", baseMemberOverviewVos);
+    map.put("sumAmount", sumAmount);
+    map.put("sumPrincipalAmount", sumPrincipalAmount);
+    map.put("sumBonusAmount", sumBonusAmount);
+    return map;
+  }
 }

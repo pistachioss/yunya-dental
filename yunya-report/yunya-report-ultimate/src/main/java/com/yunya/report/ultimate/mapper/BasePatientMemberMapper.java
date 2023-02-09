@@ -31,6 +31,13 @@ public interface BasePatientMemberMapper extends Mapper<BasePatientMember> {
   List<BaseMemberOverviewVo> memberOverviewList();
 
   /**
+   * 预付款概况
+   *
+   * @return List<MemberOverviewVo>
+   */
+  List<BaseMemberOverviewVo> memberOverviewListByType();
+
+  /**
    * 根据条件查询门诊会员数据总览
    *
    * @param query 查询条件

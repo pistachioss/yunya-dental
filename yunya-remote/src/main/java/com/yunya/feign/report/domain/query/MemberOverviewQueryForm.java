@@ -48,7 +48,7 @@ public class MemberOverviewQueryForm implements Serializable {
     /** 充值结束日期 */
     private String endDate;
 
-    @ApiModelProperty(value = "会员类型（0：会员卡,1:预付款）", required = true)
+    @ApiModelProperty(value = "会员类型（0：会员卡,1:普通预付款，2:正畸预付款，3:美白预付款）", required = true)
     /** 会员卡类型 */
     private Integer type;
 
