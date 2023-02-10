@@ -486,9 +486,6 @@ public class TollBiz {
    * @param spPrepayments
    */
   private void checkPrepayments(Set<PrepaymentAccountModel> prepayments, Set<PrepaymentAccountModel> spPrepayments) {
-    if (StringHelper.isEmpty(prepayments)) {
-      prepayments = new HashSet<>();
-    }
     if (StringHelper.isNotEmpty(spPrepayments)) {
       prepayments.addAll(spPrepayments);
     }

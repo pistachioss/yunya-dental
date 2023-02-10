@@ -702,6 +702,10 @@ public class PatientPrepaymentRelationBiz
     });
     result.forEach(vo->{
       Integer type = vo.getType();
+      PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnum(type);
+      if (StringHelper.isNotNull(typeEnum)) {
+        vo.setAccountItemId(typeEnum.getAccountItemId());
+      }
       types.remove(type);
       vo.setRemark(
               String.format("%s的%s（账户余额：%.2f）", vo.getName(),
@@ -717,6 +721,10 @@ public class PatientPrepaymentRelationBiz
         PatientPrepaymentsInfoVo vo = new PatientPrepaymentsInfoVo();
         vo.setPatientId(patientId);
         vo.setName(name);
+        PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnum(type);
+        if (StringHelper.isNotNull(typeEnum)) {
+          vo.setAccountItemId(typeEnum.getAccountItemId());
+        }
         vo.setRemark(
             String.format("%s的%s（未开通账户）", name,
                     PatientDepositAccountTypeEnum.getTypeEnum(type).getName())
