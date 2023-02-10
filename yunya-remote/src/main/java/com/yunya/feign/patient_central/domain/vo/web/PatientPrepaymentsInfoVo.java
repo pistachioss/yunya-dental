@@ -70,6 +70,12 @@ public class PatientPrepaymentsInfoVo implements Serializable {
     private BigDecimal prepaymentPrincipal;
 
     /**
+     * 关联入账方式id
+     */
+    @ApiModelProperty("关联入账方式id")
+    private Integer accountItemId;
+
+    /**
      * 开户日期
      */
     @ApiModelProperty("开户日期")

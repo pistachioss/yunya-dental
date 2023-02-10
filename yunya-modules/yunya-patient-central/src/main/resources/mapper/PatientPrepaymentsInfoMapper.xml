@@ -126,7 +126,7 @@
             IF(prepayment_number is null,'000000',substr( MAX(prepayment_number), -6, 6 )) as maxnum
         from patient_prepayments_info
         where
-        left(prepayment_number,1) = #{prefix}
+        left(prepayment_number, LENGTH(#{prefix})) = #{prefix}
         and org_id = #{orgId}
     </select>
 </mapper>
