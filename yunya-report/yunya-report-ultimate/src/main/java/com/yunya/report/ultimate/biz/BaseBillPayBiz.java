@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -56,6 +57,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
 
   @Resource(name = "customizeThreadPool")
   private ExecutorService threadPool;
+  
+  /** 入账方式 */
+  @Autowired private BaseAccountItemBiz baseAccountItemBiz;
 
   /**
    * 构建门诊工作量相关信息
@@ -932,11 +936,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           HttpServletResponse response, StatementBillChargeDetailInfoQuery query) throws IOException {
     PageInfo<StatementBillChargeDetailVO> pageInfo = findBillChargeDetailInfoList(query);
     List<StatementBillChargeDetailVO> resultList = pageInfo.getList();
-    ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
-            new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
-    // 构建导出数据列表
-    List<StatementBillChargeDetailExportVO> exportList =
-            buildStatementBillChargeDetailExportList(resultList);
     String fileName = "门诊账单收费（本期）明细列表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
@@ -945,7 +944,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                       "{0}{1}-{2}{3}",
                       organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
     }
-    excelUtil.exportExcel(response, exportList, "门诊账单收费（本期）明细", fileName);
+    DynamicHeaderPageInfo<JSONObject> page = buildDynamicChargeDetails(resultList);
+    List<JSONObject> result = page.getList();
+    ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+    excelUtil.exportExcel(response, result, "门诊账单收费（本期）明细", fileName, page.getMap());
   }
 
   /**
@@ -975,11 +977,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           HttpServletResponse response, StatementBillChargeDetailInfoQuery query) throws IOException {
     PageInfo<StatementBillChargeDetailVO> pageInfo = findBillCurrentCollectDebtDetailList(query);
     List<StatementBillChargeDetailVO> resultList = pageInfo.getList();
-    ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
-            new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
-    // 构建导出数据列表
-    List<StatementBillChargeDetailExportVO> exportList =
-            buildStatementBillChargeDetailExportList(resultList);
     String fileName = "门诊账单收欠费（本期）明细列表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
@@ -988,7 +985,100 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                       "{0}{1}-{2}{3}",
                       organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
     }
-    excelUtil.exportExcel(response, exportList, "门诊账单收欠费（本期）明细", fileName);
+    DynamicHeaderPageInfo<JSONObject> page = buildDynamicChargeDetails(resultList);
+    List<JSONObject> result = page.getList();
+    ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+    excelUtil.exportExcel(response, result, "门诊账单收欠费（本期）明细", fileName, page.getMap());
+  }
+
+  private DynamicHeaderPageInfo<JSONObject> buildDynamicChargeDetails(List<StatementBillChargeDetailVO> resultList) {
+    List<BaseAccountItemVO> payments = baseAccountItemBiz.findAllPaymentList();
+    Map<String, String> titles = new LinkedHashMap<>();
+    List<JSONObject> list = new ArrayList<>();
+    if (StringHelper.isNotEmpty(resultList)) {
+      Map<String, BigDecimal> totals = new LinkedHashMap<>(16);
+      resultList.forEach(vo->{
+        JSONObject obj = new JSONObject();
+        obj.put("payeeDate", vo.getPayeeDate());
+        obj.put("payeeOrgName", vo.getPayeeOrgName());
+        obj.put("billNum", vo.getBillNum());
+        obj.put("billOrgName", vo.getBillOrgName());
+        obj.put("billDate", vo.getBillDate());
+        obj.put("patientName", vo.getPatientName());
+        obj.put("patientMobile", vo.getPatientMobile());
+        obj.put("regDentistName", vo.getRegDentistName());
+        obj.put("originalAmount", vo.getOriginalAmount());
+        obj.put("privilegeAmount", vo.getPrivilegeAmount());
+        obj.put("actualAmount", vo.getActualAmount());
+        obj.put("totalReceivedAmount", vo.getTotalReceivedAmount());
+        obj.put("receivedAmount", vo.getReceivedAmount());
+        titles.putIfAbsent("payeeDate", "收费日期");
+        titles.putIfAbsent("payeeOrgName", "代收门诊");
+        titles.putIfAbsent("billNum", "账单编号");
+        titles.putIfAbsent("billOrgName", "开单门诊");
+        titles.putIfAbsent("billDate", "账单日期");
+        titles.putIfAbsent("patientName", "患者");
+        titles.putIfAbsent("patientMobile", "手机号");
+        titles.putIfAbsent("regDentistName", "挂号医生");
+        titles.putIfAbsent("originalAmount", "原价合计");
+        titles.putIfAbsent("privilegeAmount", "优惠金额");
+        titles.putIfAbsent("actualAmount", "应收金额");
+        titles.putIfAbsent("totalReceivedAmount", "实收金额");
+        titles.putIfAbsent("receivedAmount", "本次收费金额");
+        totals.put("originalAmount", totals.computeIfAbsent("originalAmount", k->BigDecimal.ZERO).add(vo.getOriginalAmount()));
+        totals.put("privilegeAmount", totals.computeIfAbsent("privilegeAmount", k->BigDecimal.ZERO).add(vo.getPrivilegeAmount()));
+        totals.put("actualAmount", totals.computeIfAbsent("actualAmount", k->BigDecimal.ZERO).add(vo.getActualAmount()));
+        totals.put("totalReceivedAmount", totals.computeIfAbsent("totalReceivedAmount", k->BigDecimal.ZERO).add(vo.getTotalReceivedAmount()));
+        totals.put("receivedAmount", totals.computeIfAbsent("receivedAmount", k->BigDecimal.ZERO).add(vo.getReceivedAmount()));
+        for (BaseAccountItemVO item : payments) {
+          BigDecimal itemAmount = BigDecimal.ZERO;
+          String name = item.getAccountItemName();
+          for (StatementPaymentVO payment : vo.getStatementPayments()) {
+            if (name.equals(payment.getAccountItemName())) {
+              itemAmount = payment.getTotalAmount();
+              break;
+            }
+          }
+          obj.put(name, itemAmount);
+          titles.put(name, name);
+          totals.put(name, totals.computeIfAbsent(name, k -> BigDecimal.ZERO).add(itemAmount));
+        }
+        obj.put("payeeName", vo.getPayeeName());
+        titles.put("payeeName", "收费人");
+        list.add(obj);
+      });
+      list.add(crtTotalObj(totals));
+    } else {
+      // 补充表头
+      titles.putIfAbsent("payeeDate", "收费日期");
+      titles.putIfAbsent("payeeOrgName", "代收门诊");
+      titles.putIfAbsent("billNum", "账单编号");
+      titles.putIfAbsent("billOrgName", "开单门诊");
+      titles.putIfAbsent("billDate", "账单日期");
+      titles.putIfAbsent("patientName", "患者");
+      titles.putIfAbsent("patientMobile", "手机号");
+      titles.putIfAbsent("regDentistName", "挂号医生");
+      titles.putIfAbsent("originalAmount", "原价合计");
+      titles.putIfAbsent("privilegeAmount", "优惠金额");
+      titles.putIfAbsent("actualAmount", "应收金额");
+      titles.putIfAbsent("totalReceivedAmount", "实收金额");
+      titles.putIfAbsent("receivedAmount", "本次收费金额");
+      for (BaseAccountItemVO item : payments) {
+        String name = item.getAccountItemName();
+        titles.put(name, name);
+      }
+      titles.put("payeeName", "收费人");
+    }
+    DynamicHeaderPageInfo<JSONObject> pageInfo = new DynamicHeaderPageInfo<>(list);
+    pageInfo.setMap(titles);
+    return pageInfo;
+  }
+
+  private JSONObject crtTotalObj(Map<String, BigDecimal> datas) {
+    JSONObject totalObj = new JSONObject();
+    totalObj.putIfAbsent("payeeDate", "合计");
+    datas.forEach((name, data)-> totalObj.put(name, data));
+    return totalObj;
   }
 
   /**
@@ -1018,11 +1108,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           HttpServletResponse response, StatementBillChargeDetailInfoQuery query) throws IOException {
     PageInfo<StatementBillChargeDetailVO> pageInfo = findOtherCollectDebtDetailList(query);
     List<StatementBillChargeDetailVO> resultList = pageInfo.getList();
-    ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
-            new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
-    // 构建导出数据列表
-    List<StatementBillChargeDetailExportVO> exportList =
-            buildStatementBillChargeDetailExportList(resultList);
     String fileName = "门诊账单收欠费（非本期）明细列表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
@@ -1031,7 +1116,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                       "{0}{1}-{2}{3}",
                       organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
     }
-    excelUtil.exportExcel(response, exportList, "门诊账单收欠费（非本期）明细", fileName);
+    DynamicHeaderPageInfo<JSONObject> page = buildDynamicChargeDetails(resultList);
+    List<JSONObject> result = page.getList();
+    ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+    excelUtil.exportExcel(response, result, "门诊账单收欠费（非本期）明细", fileName, page.getMap());
   }
 
   /**
@@ -1061,18 +1149,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           HttpServletResponse response, StatementBillChargeDetailInfoQuery query) throws IOException {
     PageInfo<StatementBillChargeDetailVO> pageInfo = findCurrentBillCollectionDetailList(query);
     List<StatementBillChargeDetailVO> list = pageInfo.getList();
-    // 构建导出数据列表
-    List<StatementBillChargeDetailExportVO> exportList =
-            buildStatementBillChargeDetailExportList(list);
-    ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
-            new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName = "诊所代收(本期)记录明细列表";
     if (null != organization) {
       String abbreviation = organization.getAbbreviation();
       fileName = abbreviation + fileName;
     }
-    excelUtil.exportExcel(response, exportList, "诊所代收(本期)记录明细", fileName);
+    DynamicHeaderPageInfo<JSONObject> page = buildDynamicChargeDetails(list);
+    List<JSONObject> result = page.getList();
+    ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+    excelUtil.exportExcel(response, result, "诊所代收(本期)记录明细", fileName, page.getMap());
   }
 
   /**
@@ -1102,18 +1188,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           HttpServletResponse response, StatementBillChargeDetailInfoQuery query) throws IOException {
     PageInfo<StatementBillChargeDetailVO> pageInfo = findOtherBillCollectionDetailList(query);
     List<StatementBillChargeDetailVO> list = pageInfo.getList();
-    // 构建导出数据列表
-    List<StatementBillChargeDetailExportVO> exportList =
-            buildStatementBillChargeDetailExportList(list);
-    ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
-            new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName = "诊所代收(非本期)记录明细列表";
     if (null != organization) {
       String abbreviation = organization.getAbbreviation();
       fileName = abbreviation + fileName;
     }
-    excelUtil.exportExcel(response, exportList, "诊所代收(非本期)记录明细", fileName);
+    DynamicHeaderPageInfo<JSONObject> page = buildDynamicChargeDetails(list);
+    List<JSONObject> result = page.getList();
+    ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+    excelUtil.exportExcel(response, result, "诊所代收(非本期)记录明细", fileName, page.getMap());
   }
 
   /**
@@ -1143,18 +1227,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           HttpServletResponse response, StatementBillChargeDetailInfoQuery query) throws IOException {
     PageInfo<StatementBillChargeDetailVO> pageInfo = findCurrentBillIsAcceptedDetailList(query);
     List<StatementBillChargeDetailVO> list = pageInfo.getList();
-    // 构建导出数据列表
-    List<StatementBillChargeDetailExportVO> exportList =
-            buildStatementBillChargeDetailExportList(list);
-    ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
-            new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName = "诊所被代收账(本期)记录明细列表";
     if (null != organization) {
       String abbreviation = organization.getAbbreviation();
       fileName = abbreviation + fileName;
     }
-    excelUtil.exportExcel(response, exportList, "诊所被代收账(本期)记录明细", fileName);
+    DynamicHeaderPageInfo<JSONObject> page = buildDynamicChargeDetails(list);
+    List<JSONObject> result = page.getList();
+    ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+    excelUtil.exportExcel(response, result, "诊所被代收账(本期)记录明细", fileName, page.getMap());
   }
 
   /**
@@ -1184,18 +1266,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           HttpServletResponse response, StatementBillChargeDetailInfoQuery query) throws IOException {
     PageInfo<StatementBillChargeDetailVO> pageInfo = findOtherBillIsAcceptedDetailList(query);
     List<StatementBillChargeDetailVO> list = pageInfo.getList();
-    // 构建导出数据列表
-    List<StatementBillChargeDetailExportVO> exportList =
-            buildStatementBillChargeDetailExportList(list);
-    ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
-            new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName = "诊所被代收账(非本期)记录明细列表";
     if (null != organization) {
       String abbreviation = organization.getAbbreviation();
       fileName = abbreviation + fileName;
     }
-    excelUtil.exportExcel(response, exportList, "诊所被代收账(非本期)记录明细", fileName);
+    DynamicHeaderPageInfo<JSONObject> page = buildDynamicChargeDetails(list);
+    List<JSONObject> result = page.getList();
+    ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+    excelUtil.exportExcel(response, result, "诊所被代收账(非本期)记录明细", fileName, page.getMap());
   }
 
   /**

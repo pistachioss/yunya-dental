@@ -187,14 +187,14 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     PageInfo<StatementBillRefundDetailVO> pageInfo = findCurrentBillRefundDetailList(query);
     List<StatementBillRefundDetailVO> list = pageInfo.getList();
     ExcelUtil<StatementBillRefundDetailVO> excelUtil =
-        new ExcelUtil<>(StatementBillRefundDetailVO.class);
+            new ExcelUtil<>(StatementBillRefundDetailVO.class);
     String fileName = "诊所账单退费（本期）明细列表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName =
-          String.format(
-              "%s%s-%s%s",
-              organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
+              String.format(
+                      "%s%s-%s%s",
+                      organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
     }
     excelUtil.exportExcel(response, list, "诊所账单退费（本期）明细列表", fileName);
   }
@@ -263,6 +263,13 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
               vo.setPrepaidPrincipleAmount(totalAmount);
               vo.setPrepaidBonusAmount(payment.getBonusAmount());
               break;
+            case ACCOUNT_ITEM_OF_ORTHADANTIC_PREPARE:
+              vo.setZjPrepaidPrincipleAmount(totalAmount);
+              vo.setZjPrepaidBonusAmount(payment.getBonusAmount());
+              break;
+            case ACCOUNT_ITEM_OF_WHITENING_PREPARE:
+              vo.setMbPrepaidPrincipleAmount(totalAmount);
+              vo.setMbPrepaidBonusAmount(payment.getBonusAmount());
             case ACCOUNT_ITEM_OF_CASH:
               vo.setCashAmount(totalAmount);
               break;
