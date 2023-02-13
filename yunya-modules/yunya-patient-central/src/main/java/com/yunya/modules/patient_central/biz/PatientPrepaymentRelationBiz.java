@@ -909,11 +909,11 @@ public class PatientPrepaymentRelationBiz
   }
 
   /**
-   * 查询预付款账户类型类别
+   * 查询专项预付款账户类型类别
    *
    * @return
    */
-  public List<PatientPrepaymentTypeVO> findPatientPrepaymentTypeList() {
+  public List<PatientPrepaymentTypeVO> findPatientSpPrepaymentTypeList() {
     List<PatientPrepaymentTypeVO> result = new ArrayList<>();
     Stream<PatientDepositAccountTypeEnum> items = PatientDepositAccountTypeEnum.values(true);
     items.forEach(item->{

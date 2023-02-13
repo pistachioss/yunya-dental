@@ -280,13 +280,13 @@ public class PatientPrepaymentRelationController {
   }
 
   /**
-   * 查询预付款账户类型类别
+   * 查询专项预付款账户类型类别
    *
    * @return
    */
-  @ApiOperation("查询预付款账户类型")
+  @ApiOperation("查询专项预付款账户类型")
   @GetMapping("/type/list")
-  public ResponseResult<List<PatientPrepaymentTypeVO>> findPatientPrepaymentTypeList() {
-    return ResponseUtil.success(patientPrepaymentBiz.findPatientPrepaymentTypeList());
+  public ResponseResult<List<PatientPrepaymentTypeVO>> findPatientSpPrepaymentTypeList() {
+    return ResponseUtil.success(patientPrepaymentBiz.findPatientSpPrepaymentTypeList());
   }
 }
