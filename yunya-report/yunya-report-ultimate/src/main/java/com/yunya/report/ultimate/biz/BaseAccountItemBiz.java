@@ -167,6 +167,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     inboundAndOutboundVO.setType((byte) 16);
     inboundAndOutboundVO.setName("合计");
     inboundAndOutboundVO.setPaymentInfoList(inboundPaymentResult);
+    inboundAndOutboundVO.setClassify((byte) 2);
     resultList.add(16, inboundAndOutboundVO);
   }
 
@@ -239,6 +240,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicIsAcceptedNotThisMonthVO.setType((byte) 18);
     clinicIsAcceptedNotThisMonthVO.setName("诊所被代收（非本期）");
     clinicIsAcceptedNotThisMonthVO.setPaymentInfoList(clinicIsAcceptedNotThisMonth);
+    clinicIsAcceptedNotThisMonthVO.setClassify((byte) 2);
     resultList.add(18, clinicIsAcceptedNotThisMonthVO);
   }
 
@@ -276,6 +278,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicIsAcceptedThisMonthVO.setType((byte) 17);
     clinicIsAcceptedThisMonthVO.setName("诊所被代收（本期）");
     clinicIsAcceptedThisMonthVO.setPaymentInfoList(clinicIsAcceptedThisMonth);
+    clinicIsAcceptedThisMonthVO.setClassify((byte) 2);
     resultList.add(17, clinicIsAcceptedThisMonthVO);
   }
 
@@ -320,6 +323,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     prepaidRefundVO.setType((byte) index.intValue());
     prepaidRefundVO.setName(typeEnum.getName() + "退费");
     prepaidRefundVO.setPaymentInfoList(prepaidRefund);
+    prepaidRefundVO.setClassify((byte) 1);
     resultList.add(index, prepaidRefundVO);
   }
 
@@ -356,6 +360,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     memberRefundVO.setType((byte) 12);
     memberRefundVO.setName("会员卡退费");
     memberRefundVO.setPaymentInfoList(memberRefund);
+    memberRefundVO.setClassify((byte) 1);
     resultList.add(12, memberRefundVO);
   }
 
@@ -393,6 +398,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     billRefundNotThisMonthVO.setType((byte) 11);
     billRefundNotThisMonthVO.setName("账单退费（非本期）");
     billRefundNotThisMonthVO.setPaymentInfoList(billRefundNotThisMonth);
+    billRefundNotThisMonthVO.setClassify((byte) 1);
     resultList.add(11, billRefundNotThisMonthVO);
   }
 
@@ -429,6 +435,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     billRefundThisMonthVO.setType((byte) 10);
     billRefundThisMonthVO.setName("账单退费（本期）");
     billRefundThisMonthVO.setPaymentInfoList(billRefundThisMonth);
+    billRefundThisMonthVO.setClassify((byte) 1);
     resultList.add(10, billRefundThisMonthVO);
   }
 
@@ -466,6 +473,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicCollectionNotThisMonthVO.setType((byte) 9);
     clinicCollectionNotThisMonthVO.setName("诊所代收（非本期）");
     clinicCollectionNotThisMonthVO.setPaymentInfoList(clinicCollectionNotThisMonth);
+    clinicCollectionNotThisMonthVO.setClassify((byte) 0);
     resultList.add(9, clinicCollectionNotThisMonthVO);
   }
 
@@ -503,6 +511,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicCollectionThisMonthVO.setType((byte) 8);
     clinicCollectionThisMonthVO.setName("诊所代收（本期）");
     clinicCollectionThisMonthVO.setPaymentInfoList(clinicCollectionThisMonth);
+    clinicCollectionThisMonthVO.setClassify((byte) 0);
     resultList.add(8, clinicCollectionThisMonthVO);
   }
 
@@ -539,6 +548,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     productSoldVO.setType((byte) 7);
     productSoldVO.setName("产品售出");
     productSoldVO.setPaymentInfoList(productSold);
+    productSoldVO.setClassify((byte) 0);
     resultList.add(7, productSoldVO);
   }
 
@@ -585,6 +595,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     prePaidChargeVO.setType((byte) index.intValue());
     prePaidChargeVO.setName(typeEnum.getName() + "充值");
     prePaidChargeVO.setPaymentInfoList(prePaidCharge);
+    prePaidChargeVO.setClassify((byte) 0);
     resultList.add(index, prePaidChargeVO);
   }
 
@@ -621,6 +632,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     memberChargeVO.setType((byte) 3);
     memberChargeVO.setName("会员充值");
     memberChargeVO.setPaymentInfoList(memberCharge);
+    memberChargeVO.setClassify((byte) 0);
     resultList.add(3, memberChargeVO);
   }
 
@@ -658,6 +670,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     collectArrearsNotThisMonthVO.setType((byte) 2);
     collectArrearsNotThisMonthVO.setName("收欠费（非本期）");
     collectArrearsNotThisMonthVO.setPaymentInfoList(collectArrearsNotThisMonth);
+    collectArrearsNotThisMonthVO.setClassify((byte) 0);
     resultList.add(2, collectArrearsNotThisMonthVO);
   }
 
@@ -695,6 +708,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     collectArrearsOfThisMonthVO.setType((byte) 1);
     collectArrearsOfThisMonthVO.setName("收欠费（本期）");
     collectArrearsOfThisMonthVO.setPaymentInfoList(collectArrearsThisMonth);
+    collectArrearsOfThisMonthVO.setClassify((byte) 0);
     resultList.add(1, collectArrearsOfThisMonthVO);
   }
 
@@ -732,6 +746,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     billChargeVO.setType((byte) 0);
     billChargeVO.setName("账单收费（本期）");
     billChargeVO.setPaymentInfoList(billChargeThisMonth);
+    billChargeVO.setClassify((byte) 0);
     resultList.add(0, billChargeVO);
   }
 

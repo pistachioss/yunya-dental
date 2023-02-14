@@ -20,6 +20,11 @@ import java.util.List;
 @Data
 @ToString
 public class ClinicInboundAndOutboundVO implements Serializable {
+
+  /** 数据行分类: 0-入账，1-出账，2-其他 */
+  @ApiModelProperty("数据行分类: 0-入账，1-出账，2-其他")
+  private Byte classify;
+
   /** 收支明细分类 */
   @ApiModelProperty(
       "收支明细分类:0-账单收费（本月）；1-收欠费（本月）；2-收欠费（非本月）；3-会员充值；4-预付款充值；5-正畸预付款；6美白预付款；7-产品售出；"
