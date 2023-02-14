@@ -469,7 +469,9 @@ public class ClinicDataStatisticsBiz {
 
     List<PrepaymentsDataStatisticVO> prepaymentsDataStatisticVOList = clinicDataStatisticsInfoVO.getPrepaymentsDataStatistic();
     prepaymentsDataStatisticVOList.forEach(prepaymentsDataStatistic -> {
-      resultList.add(crtObj(prepaymentsDataStatistic.getTypeName()+"充值(本金+赠金)",prepaymentsDataStatistic.getTypeName()+"消费(本金+赠金)","prepaymentsDataStatistic.getTypeName()+退费(本金+赠金)","","",""));
+      resultList.add(crtObj(prepaymentsDataStatistic.getTypeName()+"充值(本金+赠金)",
+              prepaymentsDataStatistic.getTypeName()+"消费(本金+赠金)",
+              prepaymentsDataStatistic.getTypeName()+"退费(本金+赠金)","","",""));
       resultList.add(crtObj(prepaymentsDataStatistic.getTotalPrepaymentsRechargeAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
               prepaymentsDataStatistic.getTotalPrepaymentsExpendAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
               prepaymentsDataStatistic.getTotalPrepaymentsRefundAmount().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
