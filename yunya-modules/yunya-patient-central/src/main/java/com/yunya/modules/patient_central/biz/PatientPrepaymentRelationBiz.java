@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ZERO;
@@ -891,6 +892,22 @@ public class PatientPrepaymentRelationBiz
             new ExcelUtil<>(PrepaidRechargeRecordVo.class);
     String fileName =  "充值记录";
     excelUtil.exportExcel(response, resultList, "充值记录", fileName);
+  }
+
+  /**
+   * 专项预付款充值记录-导出
+   * @param response 请求
+   * @param query 条件
+   */
+  public void expendExportSpecialPrepaymentRechargeRecord(HttpServletResponse response, PrepaidRechargeRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<PrepaidRechargeRecordVo> workloadList = rechargeRecord(query);
+    List<PrepaidRechargeRecordVo> resultList = workloadList.getList();
+    List<SpecialPrepaidRechargeRecordVo> list = Optional.of(resultList).orElseGet(ArrayList::new).stream().collect(Collectors.toList());
+    ExcelUtil<SpecialPrepaidRechargeRecordVo> excelUtil =
+            new ExcelUtil<>(SpecialPrepaidRechargeRecordVo.class);
+    String fileName =  "专项预付款充值记录";
+    excelUtil.exportExcel(response, list, "专项预付款充值记录", fileName);
   }
 
   /**

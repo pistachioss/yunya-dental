@@ -164,6 +164,21 @@ public class PatientPrepaymentRelationController {
   }
 
   /**
+   * 专项预付款充值记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   * @return 导出集合
+   * @throws IOException
+   */
+  @ApiOperation("专项预付款充值记录-导出")
+  @PostMapping(value = "/spRechargeRecord/export", name = "专项预付款充值记录")
+  public ResponseResult<T> expendExportSpecialPrepaymentRechargeRecord(
+          HttpServletResponse response, @RequestBody PrepaidRechargeRecordQueryForm queryForm) throws IOException {
+    patientPrepaymentBiz.expendExportSpecialPrepaymentRechargeRecord(response, queryForm);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 账单退费
    *
    * @param prepaidBillRechargeModel 账单退费
