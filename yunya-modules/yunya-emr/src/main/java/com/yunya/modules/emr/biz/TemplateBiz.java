@@ -141,6 +141,12 @@ public class TemplateBiz {
         return result;
     }
 
+    public void deleteRecord(Integer id) {
+        MedicalTemplate template = new MedicalTemplate();
+        template.setId(id);
+        medicalMapper.deleteByPrimaryKey(template);
+    }
+
     public MedicalDetailDetailVo getMedicalTemplateDetail(Integer templateId) {
         MedicalTemplate entity = medicalMapper.selectByPrimaryKey(templateId);
         return EntityUtils.build(entity, MedicalDetailDetailVo.class);
