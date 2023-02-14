@@ -53,6 +53,10 @@ public class EmployeePersonalActualWorkloadDetailVO implements Serializable {
   @Excel(name = "手机号")
   @ApiModelProperty("患者手机号")
   private String mobile;
+  /** 年龄 */
+  @Excel(name = "年龄")
+  @ApiModelProperty("年龄")
+  private Integer age;
   /** 原价合计 */
   @Excel(name = "原价合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("原价合计")

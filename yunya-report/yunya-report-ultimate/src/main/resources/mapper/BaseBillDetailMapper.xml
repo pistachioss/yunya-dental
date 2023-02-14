@@ -1226,6 +1226,7 @@
         patientId,
         patientName,
         mobile,
+        age,
         actualWorkload
         FROM (
         SELECT
@@ -1241,6 +1242,7 @@
         bb.patientName,
         bb.pinyinName,
         bb.mobile,
+        bb.age,
         bbd.actualWorkload
         FROM
         (
@@ -1282,6 +1284,7 @@
         bb.patient_id AS patientId,
         bp.`name` AS patientName,
         bp.pinyin_name AS pinyinName,
+        TIMESTAMPDIFF(YEAR,bp.birthday,CURDATE()) AS age,
         bp.mobile AS mobile
         FROM
         base_bill bb
@@ -1380,6 +1383,7 @@
         bbp.patientId,
         bbp.patientName,
         bbp.mobile,
+        bbp.age,
         DATE_FORMAT(bbp.payeeDate, '%Y-%m-%d %H:%i') AS chargeDate,
         CONVERT (
         SUM((bbp.actualWorkload / bbp.actualAmount) * bbp.receivedAmount),
@@ -1401,6 +1405,7 @@
         bbp.patientId,
         bp.`name` AS patientName,
         bp.pinyin_name AS pinyinName,
+        TIMESTAMPDIFF(YEAR, bp.birthday,CURDATE()) AS age,
         bp.mobile AS mobile
         FROM
         (
@@ -1604,6 +1609,7 @@
         patientId,
         patientName,
         mobile,
+        age,
         totalOriginalAmount,
         privilegeAmount,
         actualAmount,
@@ -1622,6 +1628,7 @@
         bb.patientId,
         bb.patientName,
         bb.mobile,
+        bb.age,
         bb.pinyinName
         from (
         select
@@ -1650,6 +1657,7 @@
         bb.patient_id as patientId,
         bp.`name` as patientName,
         bp.mobile as mobile,
+        TIMESTAMPDIFF(YEAR, bp.birthday,CURDATE()) as age,
         bp.pinyin_name as pinyinName
         FROM base_bill bb
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
@@ -2467,6 +2475,7 @@
         DATE_FORMAT(bb.order_date,'%Y-%m-%d') AS orderDate,
         DATE_FORMAT(bb.bill_date,'%Y-%m-%d %H:%i:%s') AS billDate,
         bp.`name` AS patientName,
+        TIMESTAMPDIFF(YEAR, bp.birthday,CURDATE()) AS age,
         bp.mobile
         FROM base_bill_pay bbp
         LEFT JOIN base_bill bb ON bbp.bill_id=bb.bill_id

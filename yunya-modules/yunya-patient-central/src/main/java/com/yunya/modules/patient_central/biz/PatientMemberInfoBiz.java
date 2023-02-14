@@ -360,14 +360,16 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo) {
     Integer patientId = patientBaseInfo.getId();
     if (StringHelper.isNotNull(patientId)) {
+      Integer type = NORMAL_PREPAYMENT.getType();
       PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
       patientPrepaymentsInfo.setOrgId(patientBaseInfo.getOrgId());
       patientPrepaymentsInfo.setPatientId(patientId);
       patientPrepaymentsInfo.setCrtId(patientBaseInfo.getCrtId());
       patientPrepaymentsInfo.setCrtName(patientBaseInfo.getCrtName());
+      patientPrepaymentsInfo.setType(type);
       generateCardNumber(patientPrepaymentsInfo);
       remoteRabbitMqServiceFeign.sendMessage(
-              patientPrepaymentsInfo.getId(), NORMAL_PREPAYMENT.getType(), 0, MsgCategoryEnum.BasePatientMember);
+              patientPrepaymentsInfo.getId(), type, 0, MsgCategoryEnum.BasePatientMember);
     }
   }
 
