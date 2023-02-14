@@ -76,7 +76,7 @@
         select
         bpm.type memberLevelId,
         (case bpm.type when 2 then '正畸预付款' when 3 then '美白预付款' else '--' end) as memberLevelName,
-        count(bpm.member_level_id) amount,
+        count(bpm.type) amount,
         sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,
         sum(bpm.bonus_amount) bonusAmount
         from base_patient_member bpm
