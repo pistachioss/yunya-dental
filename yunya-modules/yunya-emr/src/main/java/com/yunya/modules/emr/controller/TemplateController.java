@@ -122,10 +122,14 @@ public class TemplateController {
         return ResponseUtil.success(list);
     }
 
-    @ApiOperation("公司端-病历模板-删除")
-    @DeleteMapping("medical/template/{id}")
-    public ResponseResult deleteRecord(@PathVariable("id") Integer id) {
-        templateBiz.deleteRecord(id);
+    @ApiOperation("公司端-模板-删除")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="id", value="模板id",dataType = "integer", required=true),
+            @ApiImplicitParam(name="type", value="模板类型（0：普通模板（词条，范句，要点，诊断） 1：病历模板）", dataType = "integer", required=true)
+    })
+    @DeleteMapping("template/{type}/{id}")
+    public ResponseResult deleteRecord(@PathVariable("type") Integer type, @PathVariable("id") Integer id) {
+        templateBiz.deleteRecord(type, id);
         return ResponseUtil.success();
     }
 }
