@@ -178,6 +178,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
     if (MEMBER.equals(type)) {
       PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectByPrimaryKey(id);
       basePatientMember.setCardId(patientMemberInfo.getId());
+      basePatientMember.setOrgId(patientMemberInfo.getOrgId());
       basePatientMember.setCardNumber(patientMemberInfo.getCardNumber());
       basePatientMember.setType(type);
       basePatientMember.setMemberLevelId(patientMemberInfo.getMemberTypeId());
@@ -199,6 +200,7 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
       PatientPrepaymentsInfo patientPrepaymentsInfo =
           patientPrepaymentsInfoMapper.selectByPrimaryKey(id);
       basePatientMember.setCardId(patientPrepaymentsInfo.getId());
+      basePatientMember.setOrgId(patientPrepaymentsInfo.getOrgId());
       basePatientMember.setCardNumber(patientPrepaymentsInfo.getPrepaymentNumber());
       basePatientMember.setType(type);
       basePatientMember.setPrincipalAmount(patientPrepaymentsInfo.getPrepaymentPrincipal());

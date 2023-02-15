@@ -1,8 +1,10 @@
 package com.yunya.models.report;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "base_patient_member")
 public class BasePatientMember {
@@ -11,6 +13,12 @@ public class BasePatientMember {
      */
     @Column(name = "card_id")
     private Integer cardId;
+
+    /**
+     * 开通门诊
+     */
+    @Column(name = "org_id")
+    private Integer orgId;
 
     /**
      * 卡号
@@ -92,6 +100,24 @@ public class BasePatientMember {
      */
     public void setCardId(Integer cardId) {
         this.cardId = cardId;
+    }
+
+    /**
+     * 获取开通门诊id
+     *
+     * @return
+     */
+    public Integer getOrgId() {
+        return orgId;
+    }
+
+    /**
+     * 设置开通门诊id
+     *
+     * @param orgId
+     */
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
     }
 
     /**
