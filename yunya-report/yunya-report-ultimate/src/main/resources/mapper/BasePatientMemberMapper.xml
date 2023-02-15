@@ -38,7 +38,7 @@
             </if>
 
             <if test="form.orgIds != null and form.orgIds.size() > 0">
-                AND bp.org_id in
+                AND bpm.org_id in
                 <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">
                     #{orgId}
                 </foreach>
