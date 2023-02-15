@@ -267,7 +267,7 @@ public class MemberOccurLogBiz
    * @param annotationFieldName：实体类中被@Excel中注解的属性名
    * @param newAnnotationFieldValue：属性的新值
    */
-  private void setExcelAnnotationValue(String annotatedColumnName, String annotationFieldName, String newAnnotationFieldValue){
+  private void setExcelAnnotationValue(String annotatedColumnName, String annotationFieldName, boolean newAnnotationFieldValue){
     try{
       Class<BasePrepaidRechargeLogVo> airQualityRankingRespClass = BasePrepaidRechargeLogVo.class;
       Field classDeclaredField =  airQualityRankingRespClass.getDeclaredField(annotatedColumnName);
