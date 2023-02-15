@@ -134,8 +134,9 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
         patientPrepaymentsInfos.forEach(
             patientBaseInfo -> {
               Integer prepaymentsId = patientBaseInfo.getId();
-              mapper.deleteByPrimaryKeyAndType(prepaymentsId, dataType);
-              BasePatientMember basePatientMember = getPatientMemberInfo(prepaymentsId, dataType);
+              Integer type = patientBaseInfo.getType();
+              mapper.deleteByPrimaryKey(patientBaseInfo.getPrepaymentNumber());
+              BasePatientMember basePatientMember = getPatientMemberInfo(prepaymentsId, type);
               if (basePatientMember != null) {
                 mapper.insertSelective(basePatientMember);
               }
