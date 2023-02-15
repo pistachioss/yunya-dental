@@ -30,7 +30,7 @@
         bpm.bonus_amount bonusAmount
         from base_patient bp
         left join base_patient_member bpm on bp.patient_id = bpm.patient_id
-        left join base_organization bo on bo.org_id = bp.org_id
+        left join base_organization bo on bo.org_id = bpm.org_id
         <where>
             bpm.type = #{form.type}
             <if test="form.memberLevelId != null">
