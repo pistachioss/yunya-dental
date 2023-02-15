@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.query.PrepaidQueryForm;
 import com.yunya.feign.report.domain.query.StatementPatientCardRechargeDetailInfoQuery;
 import com.yunya.feign.report.domain.query.StatementPatientCardRefundDetailQuery;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.framework.common.annation.Excel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -23,9 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 
@@ -229,6 +234,13 @@ public class MemberOccurLogBiz
     }
     List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList =
         mapper.selectPrepaidRechargeList(form);
+    if (form.getType() == 1) {
+      setExcelAnnotationValue("rechargeMethod", "isExport", "true");
+      setExcelAnnotationValue("rechargeCardNumber", "isExport", "true");
+    } else {
+      setExcelAnnotationValue("rechargeMethod", "isExport", "false");
+      setExcelAnnotationValue("rechargeCardNumber", "isExport", "false");
+    }
     ExcelUtil<BasePrepaidRechargeLogVo> excelUtil = new ExcelUtil<>(BasePrepaidRechargeLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();
@@ -245,6 +257,28 @@ public class MemberOccurLogBiz
       }
     } else {
       excelUtil.exportExcel(response, basePrepaidRechargeLogVoList, "预付款充值记录表", "预付款消费记录表");
+    }
+  }
+
+  /**
+   * 通过反射动态设置导出的Excel列名
+   *
+   * @param annotatedColumnName：实体类中被@Excel注解的字段名
+   * @param annotationFieldName：实体类中被@Excel中注解的属性名
+   * @param newAnnotationFieldValue：属性的新值
+   */
+  private void setExcelAnnotationValue(String annotatedColumnName, String annotationFieldName, String newAnnotationFieldValue){
+    try{
+      Class<BasePrepaidRechargeLogVo> airQualityRankingRespClass = BasePrepaidRechargeLogVo.class;
+      Field classDeclaredField =  airQualityRankingRespClass.getDeclaredField(annotatedColumnName);
+      Excel excel = classDeclaredField.getAnnotation(Excel.class);
+      InvocationHandler excelInvocationHandler = Proxy.getInvocationHandler(excel);
+      Field excelInvocationHandlerField = excelInvocationHandler.getClass().getDeclaredField("memberValues");
+      excelInvocationHandlerField.setAccessible(true);
+      Map map = (Map) excelInvocationHandlerField.get(excelInvocationHandler);
+      map.put(annotationFieldName, newAnnotationFieldValue);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 
