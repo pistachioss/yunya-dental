@@ -1082,7 +1082,7 @@ public class ExcelUtil<T> {
    * @param attr 属性
    */
   private void putToField(Field field, Excel attr) {
-    if (null != attr && (attr.type() == Type.ALL || attr.type() == type)) {
+    if (null != attr && (attr.type() == Type.ALL || attr.type() == type) && attr.isShow()) {
       this.fields.add(new Object[] {field, attr});
     }
   }
