@@ -18,13 +18,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -128,4 +122,14 @@ public class TemplateController {
         return ResponseUtil.success(list);
     }
 
+    @ApiOperation("公司端-模板-删除")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="id", value="模板id",dataType = "integer", required=true),
+            @ApiImplicitParam(name="type", value="模板类型（0：普通模板（词条，范句，要点，诊断） 1：病历模板）", dataType = "integer", required=true)
+    })
+    @DeleteMapping("template/{type}/{id}")
+    public ResponseResult deleteRecord(@PathVariable("type") Integer type, @PathVariable("id") Integer id) {
+        templateBiz.deleteRecord(type, id);
+        return ResponseUtil.success();
+    }
 }
