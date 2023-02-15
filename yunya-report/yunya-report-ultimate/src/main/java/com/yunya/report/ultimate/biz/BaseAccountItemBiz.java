@@ -137,16 +137,20 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   private void calculateInboundAndOutbound(List<ClinicInboundAndOutboundVO> resultList) {
     List<StatementPaymentVO> inboundPayments = new ArrayList<>();
     List<StatementPaymentVO> outboundPayments = new ArrayList<>();
-    int bound = resultList.size();
-    for (int i = 0; i < bound; i++) {
-      if (i <= 7) {
-        List<StatementPaymentVO> paymentInfoList = resultList.get(i).getPaymentInfoList();
-        inboundPayments.addAll(paymentInfoList);
-      } else if (i <= 11) {
-        List<StatementPaymentVO> paymentInfoList = resultList.get(i).getPaymentInfoList();
-        outboundPayments.addAll(paymentInfoList);
+    resultList.forEach(vo->{
+      Byte classify = vo.getClassify();
+      List<StatementPaymentVO> paymentInfoList = vo.getPaymentInfoList();
+      switch (classify) {
+        case 0:
+          inboundPayments.addAll(paymentInfoList);
+          break;
+        case 1:
+          outboundPayments.addAll(paymentInfoList);
+          break;
+        case 2:
+          break;
       }
-    }
+    });
     // 入账支付信息分组求和
     List<StatementPaymentVO> inboundPaymentResult =
         groupAndCalculateStatementPayment(inboundPayments);
