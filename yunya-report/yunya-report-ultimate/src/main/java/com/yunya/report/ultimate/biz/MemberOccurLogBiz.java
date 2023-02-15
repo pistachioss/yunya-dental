@@ -235,11 +235,11 @@ public class MemberOccurLogBiz
     List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList =
         mapper.selectPrepaidRechargeList(form);
     if (form.getType() == 1) {
-      setExcelAnnotationValue("rechargeMethod", "isShow", "true");
-      setExcelAnnotationValue("rechargeCardNumber", "isShow", "true");
+      setExcelAnnotationValue("rechargeMethod", "isShow", true);
+      setExcelAnnotationValue("rechargeCardNumber", "isShow", true);
     } else {
-      setExcelAnnotationValue("rechargeMethod", "isShow", "false");
-      setExcelAnnotationValue("rechargeCardNumber", "isShow", "false");
+      setExcelAnnotationValue("rechargeMethod", "isShow", false);
+      setExcelAnnotationValue("rechargeCardNumber", "isShow", false);
     }
     ExcelUtil<BasePrepaidRechargeLogVo> excelUtil = new ExcelUtil<>(BasePrepaidRechargeLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
