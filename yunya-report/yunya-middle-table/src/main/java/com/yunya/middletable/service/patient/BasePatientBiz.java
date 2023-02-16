@@ -161,13 +161,18 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    */
   public void addPrepaidInfo(BasePatient patient) {
     if (patient != null){
+      Integer type = NORMAL_PREPAYMENT.getType();
       PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
       patientPrepaymentsInfo.setPatientId(patient.getPatientId());
-      PatientPrepaymentsInfo patientPrepayments =
-              patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
+      Example example = new Example(PatientPrepaymentsInfo.class);
+      Example.Criteria c = example.createCriteria();
+      c.andEqualTo("patientId", patient.getPatientId());
+      c.andEqualTo("type", type);
+      c.andEqualTo("inservice", true);
+      PatientPrepaymentsInfo patientPrepayments = patientPrepaymentsInfoMapper.selectOneByExample(example);
       if (patientPrepayments != null) {
         BasePatientMember basePatientMember =
-                basePatientMemberBiz.getPatientMemberInfo(patientPrepayments.getId(), NORMAL_PREPAYMENT.getType());
+                basePatientMemberBiz.getPatientMemberInfo(patientPrepayments.getId(), type);
         basePatientMemberMapper.deleteByPrimaryKey(basePatientMember);
         basePatientMemberMapper.insert(basePatientMember);
       }
