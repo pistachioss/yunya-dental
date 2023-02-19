@@ -21,9 +21,9 @@ public enum PatientDepositAccountTypeEnum {
     /** 预付款 */
     NORMAL_PREPAYMENT(false, 1, "预付款", "Y", 6),
     /** 正畸预付款 */
-    ORTHADANTIC_PREPAYMENT(true, 2, "正畸预付款", "ZY", 30),
+    ORTHADANTIC_PREPAYMENT(true, 2, "正畸预付款", "ZY", 100),
     /** 美白预付款 */
-    WHITENING_PREPAYMENT(true, 3, "美白预付款", "MY", 31),
+    WHITENING_PREPAYMENT(true, 3, "美白预付款", "MY", 101),
 //    /** 种植预付款 */
 //    IMPLANT_PREPAYMENT(true,4, "种植预付款", "ZZY", null),
     ;
