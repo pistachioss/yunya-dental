@@ -35,6 +35,7 @@ import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.enums.TemplateEnum;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -62,12 +63,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -341,6 +337,7 @@ public class TollBiz {
    * @param model 收费参数
    */
   public TollConfirmVO confirmCharge(TollModel model) {
+    checkPrepayments(model.getPrepaymentAccountModels(), model.getSpPrepaymentAccountModels());
     Integer orderRecordId = model.getOrderRecordId();
     Byte discountType = model.getDiscountType();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
@@ -480,6 +477,23 @@ public class TollBiz {
     tollConfirmVO.setBillNumber(billRecord.getBillNumber());
     tollConfirmVO.setBillPayRecordId(billPayRecordId);
     return tollConfirmVO;
+  }
+
+  /**
+   * 检查预付款账户
+   *
+   * @param prepayments
+   * @param spPrepayments
+   */
+  private void checkPrepayments(Set<PrepaymentAccountModel> prepayments, Set<PrepaymentAccountModel> spPrepayments) {
+    if (StringHelper.isNotEmpty(spPrepayments)) {
+      prepayments.addAll(spPrepayments);
+    }
+    prepayments.forEach(payment->{
+      if (!PatientDepositAccountTypeEnum.isRelTypeId(payment.getAccountItemId())) {
+        throw new ClientServiceException("无效的预付款账户类型", PARAMETERS_IS_ILLEGAL);
+      }
+    });
   }
 
   /**
@@ -1127,6 +1141,7 @@ public class TollBiz {
       Set<MemberAccountModel> memberAccountModels,
       Set<PaymentModel> paymentModels) {
     if (!CollectionUtils.isEmpty(prepaymentAccountModels)) {
+      // 预付款
       prepaymentAccountModels.forEach(
           prepaymentAccountModel -> {
             if (prepaymentAccountModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
@@ -1143,6 +1158,7 @@ public class TollBiz {
           });
     }
     if (!CollectionUtils.isEmpty(memberAccountModels)) {
+      // 会员卡
       memberAccountModels.forEach(
           memberAccountModel -> {
             if (memberAccountModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
@@ -1159,6 +1175,7 @@ public class TollBiz {
           });
     }
     if (!CollectionUtils.isEmpty(paymentModels)) {
+      // 其他支付方式
       paymentModels.forEach(
           paymentModel -> {
             if (paymentModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
@@ -1380,6 +1397,7 @@ public class TollBiz {
    * @param model 收费参数
    */
   public TollConfirmVO collectDebt(TollDebtModel model) {
+    checkPrepayments(model.getPrepaymentAccountModels(), model.getSpPrepaymentAccountModels());
     Integer treatmentId = model.getTreatmentRecordId();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
     //    // TODO: bug3210 未收费走收欠费流程

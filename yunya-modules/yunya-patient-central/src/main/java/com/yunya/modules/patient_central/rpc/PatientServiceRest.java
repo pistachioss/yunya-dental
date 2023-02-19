@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.system.vo.ClinicChargeItemVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -403,5 +404,14 @@ public class PatientServiceRest {
       return null;
     }
     return patientBaseInfo.getBirthdayCheck();
+  }
+
+
+
+
+  @ApiOperation("查询患者储蓄账号（会员卡or预付款）信息列表")
+  @PostMapping("/member/depositAccount")
+  public ClinicChargeItemVO findDepositAccountList(@RequestBody @Validated PatientDepositAccountQueryForm query) {
+    return patientMemberInfoBiz.findDepositAccountList(query);
   }
 }

@@ -328,7 +328,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public WxFans getPushWxUser(Integer patientId) {
         Example example = new Example(WxFans.class);
-        example.createCriteria().andEqualTo("patientId", patientId);
+        example.createCriteria().andEqualTo("patientId", patientId).andEqualTo("fansStatus", 2);
         WxFans wxFans = mapper.selectOneByExample(example);
         if (wxFans != null) {
             return wxFans;

@@ -124,6 +124,7 @@
         brd.patientId,
         brd.patientName,
         brd.mobile,
+        brd.age,
         brd.employeeId
         FROM
         (
@@ -139,6 +140,7 @@
         br.patientName,
         br.pinyinName,
         br.mobile,
+        br.age,
         if(#{query.isConsulter} = 0, brd.executor_id, brd.consulter_id) AS employeeId
         FROM
         base_refund_detail brd
@@ -153,6 +155,7 @@
         br.patient_id AS patientId,
         bp.`name` AS patientName,
         bp.pinyin_name AS pinyinName,
+        TIMESTAMPDIFF(YEAR, bp.birthday,CURDATE()) AS age,
         bp.mobile AS mobile
         FROM
         base_refund br

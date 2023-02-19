@@ -52,6 +52,10 @@ public class BusinessConstants {
   public static final String ACCOUNT_ITEM_OF_MEMBER = "会员卡";
   /** 预付款支付方式名称 */
   public static final String ACCOUNT_ITEM_OF_PREPARE = "预付款";
+  /** 预付款支付方式名称 */
+  public static final String ACCOUNT_ITEM_OF_ORTHADANTIC_PREPARE = "正畸预付款";
+  /** 预付款支付方式名称 */
+  public static final String ACCOUNT_ITEM_OF_WHITENING_PREPARE = "美白预付款";
   /** 支付宝支付方式名称 */
   public static final String ACCOUNT_ITEM_OF_ALIPAY = "支付宝";
   /** 微信支付方式名称 */

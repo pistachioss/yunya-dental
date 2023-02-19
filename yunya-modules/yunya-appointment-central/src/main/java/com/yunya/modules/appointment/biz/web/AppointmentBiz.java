@@ -223,7 +223,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 预约添加成功回调
             appointmentLifecycle.build(appointmentEntity);
             // 如果添加预约成功，则返回预约成功信息
-            return ResponseUtil.success();
+            return ResponseUtil.success(new ArrayList<>());
         }
 
         // 如果预约有冲突返回冲突的预约
@@ -628,7 +628,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 生成修改预约操作记录
         appointOperateRecordBiz.saveAppointOperationRecord(appointment,appointmentForm);
-        return ResponseUtil.success();
+        return ResponseUtil.success(new ArrayList<>());
     }
 
 

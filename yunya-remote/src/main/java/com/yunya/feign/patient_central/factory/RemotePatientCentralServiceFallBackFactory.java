@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.system.vo.ClinicChargeItemVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.patient_central.*;
 import lombok.extern.slf4j.Slf4j;
@@ -256,5 +257,10 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public Date getPatientBirthdayCheck(@PathVariable("patientId") Integer patientId) {
         return null;
 
+    }
+
+    @Override
+    public ClinicChargeItemVO findDepositAccountList(PatientDepositAccountQueryForm query) {
+        return null;
     }
 }

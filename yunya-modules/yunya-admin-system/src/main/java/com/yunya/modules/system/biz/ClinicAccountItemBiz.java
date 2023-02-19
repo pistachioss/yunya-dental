@@ -3,13 +3,13 @@ package com.yunya.modules.system.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientDepositAccountQueryForm;
 import com.yunya.feign.system.form.ClinicAccountItemConfigureQueryForm;
-import com.yunya.feign.system.vo.AccountItemVO;
-import com.yunya.feign.system.vo.ClinicAccountItemListVO;
-import com.yunya.feign.system.vo.ClinicAccountItemVO;
-import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.PageHelperUtils;
 import com.yunya.framework.common.utils.StringHelper;
@@ -30,8 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
+import static com.yunya.modules.system.enums.AccountItemTypeEnum.PRE_SOLE;
 
 /**
  * 简介: 门诊入账方式业务层
@@ -48,6 +50,7 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
   @Autowired private CompanyMapper companyMapper;
 
   @Autowired private AccountItemMapper accountItemMapper;
+  @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
 
   /**
    * 根据ID查询门诊入账方式信息
@@ -275,5 +278,55 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
       result.setUpdName(BaseContextHandler.getName());
       mapper.updateByPrimaryKeySelective(result);
     }
+  }
+
+  /**
+   * 根据门诊id和患者id查询门诊可用的收费入账方式
+   *
+   * @param orgId
+   * @param patientId
+   * @return
+   */
+  public ClinicChargeItemVO findClinicAccountCharge(Integer orgId, Integer patientId) {
+    List<Integer> types = new ArrayList<>();
+    List<ClinicAccountItemVO> otherAccountItems = findClinicAccountOtherCharge(orgId, types);
+    ClinicChargeItemVO result = findPatientDepositAccount(patientId, types);
+    result.setOtherAccountItems(otherAccountItems);
+    return result;
+  }
+
+  /**
+   * 查询患者的储蓄账号（会员卡or预付款）信息列表
+   * @param patientId
+   * @param types
+   * @return
+   */
+  private ClinicChargeItemVO findPatientDepositAccount(Integer patientId, List<Integer> types) {
+    if (StringHelper.isEmpty(types)) {
+      return new ClinicChargeItemVO();
+    }
+    PatientDepositAccountQueryForm query = new PatientDepositAccountQueryForm();
+    query.setPatientId(patientId);
+    query.setTypes(types);
+    return patientCentralServiceFeign.findDepositAccountList(query);
+  }
+
+  public List<ClinicAccountItemVO> findClinicAccountOtherCharge(Integer orgId, List<Integer> types) {
+    ClinicAccountItemQueryForm query = new ClinicAccountItemQueryForm();
+    query.setOrgId(orgId);
+    query.setInservice(true);
+    List<ClinicAccountItemVO> otherAccountItems = mapper.selectClinicAccountItemList(query);
+    if (StringHelper.isEmpty(otherAccountItems)) {
+      return new ArrayList<>();
+    }
+    otherAccountItems = otherAccountItems.stream().filter(item->{
+      Integer accountItemId = item.getAccountItemId();
+      PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+      if (StringHelper.isNotNull(typeEnum)) {
+        types.add(typeEnum.getType());
+      }
+      return !PRE_SOLE.equals(item.getType());
+    }).collect(Collectors.toList());
+    return otherAccountItems;
   }
 }

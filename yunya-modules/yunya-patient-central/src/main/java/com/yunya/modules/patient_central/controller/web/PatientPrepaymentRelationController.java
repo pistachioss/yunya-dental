@@ -14,8 +14,11 @@ import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
 
 /**
  * 简单介绍:</br> 患者预付款 控制层
@@ -50,9 +55,25 @@ public class PatientPrepaymentRelationController {
    * @return ResponseResult<PatientPrepaymentsInfoVo>
    */
   @ApiOperation("账户基本信息")
+  @ApiImplicitParams(value = {
+          @ApiImplicitParam(
+                  name = "id",
+                  value = "患者id",
+                  required = true,
+                  dataType = "int",
+                  paramType = "path"),
+          @ApiImplicitParam(
+                  name = "prepaymentType",
+                  value = "预付款账号类型",
+                  required = true,
+                  defaultValue = "1",
+                  dataType = "int")})
   @GetMapping("/prepaidAccountBaseInfo/{id}")
-  public ResponseResult<PatientPrepaymentsInfoVo> findPrepaymentInfo(@PathVariable("id") Integer id) {
-    return ResponseUtil.success(this.patientPrepaymentBiz.findPrepaymentInfo(id));
+  public ResponseResult<PatientPrepaymentsInfoVo> findPrepaymentInfo(@PathVariable("id") Integer id, Integer prepaymentType) {
+    if (StringHelper.isNull(prepaymentType)) {
+      prepaymentType = NORMAL_PREPAYMENT.getType();
+    }
+    return ResponseUtil.success(this.patientPrepaymentBiz.findPrepaymentInfo(id, prepaymentType));
   }
 
   /**
@@ -139,6 +160,21 @@ public class PatientPrepaymentRelationController {
   public ResponseResult<T> expendExportRechargeRecord(
           HttpServletResponse response, @RequestBody PrepaidRechargeRecordQueryForm queryForm) throws IOException {
     patientPrepaymentBiz.expendExportRechargeRecord(response, queryForm);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 专项预付款充值记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   * @return 导出集合
+   * @throws IOException
+   */
+  @ApiOperation("专项预付款充值记录-导出")
+  @PostMapping(value = "/spRechargeRecord/export", name = "专项预付款充值记录")
+  public ResponseResult<T> expendExportSpecialPrepaymentRechargeRecord(
+          HttpServletResponse response, @RequestBody PrepaidRechargeRecordQueryForm queryForm) throws IOException {
+    patientPrepaymentBiz.expendExportSpecialPrepaymentRechargeRecord(response, queryForm);
     return ResponseUtil.success(null);
   }
 
@@ -258,5 +294,14 @@ public class PatientPrepaymentRelationController {
     return ResponseUtil.success(patientCardOwnerInfoVos);
   }
 
-
+  /**
+   * 查询专项预付款账户类型类别
+   *
+   * @return
+   */
+  @ApiOperation("查询专项预付款账户类型")
+  @GetMapping("/type/list")
+  public ResponseResult<List<PatientPrepaymentTypeVO>> findPatientSpPrepaymentTypeList() {
+    return ResponseUtil.success(patientPrepaymentBiz.findPatientSpPrepaymentTypeList());
+  }
 }

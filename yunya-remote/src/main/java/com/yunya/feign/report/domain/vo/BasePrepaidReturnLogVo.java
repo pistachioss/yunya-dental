@@ -43,6 +43,11 @@ public class BasePrepaidReturnLogVo {
   @ApiModelProperty("手机号")
   private String mobile;
 
+  /** 预付款类型 */
+  @Excel(name = "预付款类型")
+  @ApiModelProperty("预付款类型(１：预付款（普通），2-正畸预付款，3-美白预付款)")
+  private String type;
+
   /** 预付款账号 */
   @Excel(name = "预付款账号")
   @ApiModelProperty("预付款账号")

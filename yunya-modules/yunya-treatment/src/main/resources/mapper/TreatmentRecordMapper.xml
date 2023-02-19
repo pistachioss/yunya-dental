@@ -138,7 +138,7 @@
         br.debt_amount AS debtAmount,
         br.freePaymentPrice,
         br.privilege_type as privilegeType,
-        br.receivedAmount
+        br.received_amount AS receivedAmount
         FROM
         treatment_record tr
         LEFT JOIN (
@@ -157,16 +157,8 @@
                 br.debt_amount,
                 ifnull(bpd.amount, 0) as freePaymentPrice,
                 br.privilege_type,
-                bpr.receivedAmount
+                br.received_amount
             from bill_record br
-            LEFT JOIN (
-                SELECT
-                    bill_record_id,
-                    sum(received_amount) AS receivedAmount
-                FROM bill_pay_record
-                WHERE inservice = 1
-                GROUP BY bill_record_id
-            ) bpr ON bpr.bill_record_id = br.id
             left join (
                 select bill_record_id,sum(amount) amount from bill_pay_detail_record
                 <where>

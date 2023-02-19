@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
-import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -29,13 +28,20 @@ public class BillRefundModel implements Serializable {
   @NotNull(message = "就诊记录ID")
   private Integer treatmentRecordId;
   /** 退费订单明细列表 */
+  @ApiModelProperty("退费订单明细列表")
   @NotEmpty(message = "退费订单明细列表不能为空")
   private List<RefundOrderDetailModel> refundOrderDetailModels;
   /** 退费会员账户信息 */
+  @ApiModelProperty("退费会员账户信息")
   private MemberRefundModel memberRefundModel;
   /** 退费预付款账户信息 */
+  @ApiModelProperty("退费预付款账户信息")
   private PrepaymentRefundModel prepaymentRefundModel;
+  /** 退费专项预付款账户 */
+  @ApiModelProperty("退费专项预付款账户")
+  private PrepaymentRefundModel spPrepaymentRefundModel;
   /** 其他退费入账方式信息 */
+  @ApiModelProperty("其他退费入账方式信息")
   private List<PaymentModel> refundPaymentModels;
   /** 退费原因 */
   @ApiModelProperty("退费原因")

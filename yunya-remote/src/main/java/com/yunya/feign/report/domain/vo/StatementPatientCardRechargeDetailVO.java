@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
@@ -23,36 +22,14 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @ApiModel("对账单患者卡（会员卡、预付款充值信息VO）")
 @Data
 @ToString
-public class StatementPatientCardRechargeDetailVO implements Serializable {
+public class StatementPatientCardRechargeDetailVO extends StatementPatientDepositAccountVO {
   /** 充值记录ID */
   @ApiModelProperty("充值记录ID")
   private Integer rechargeRecordId;
   /** 充值日期 */
-  @Excel(name = "充值日期")
+  @Excel(name = "充值日期", sort = 1)
   @ApiModelProperty("充值日期")
   private String rechargeDate;
-  /** 患者ID */
-  @ApiModelProperty("患者ID")
-  private Integer patientId;
-  /** 患者姓名 */
-  @Excel(name = "患者")
-  @ApiModelProperty("患者姓名")
-  private String patientName;
-  /** 手机号 */
-  @Excel(name = "手机号")
-  @ApiModelProperty("手机号")
-  private String patientMobile;
-  /** 患者储值卡（会员卡or预付卡）ID */
-  @ApiModelProperty("患者储值卡（会员卡or预付卡）ID")
-  private Integer patientCardId;
-  /** 会员卡或预付卡卡号 */
-  @Excel(name = "卡号")
-  @ApiModelProperty("会员卡或预付卡卡号")
-  private String patientCardNumber;
-  /** 卡类型 */
-  @Excel(name = "卡类型")
-  @ApiModelProperty("卡类型名称")
-  private String cardTypeName;
   /** 充值本金金额 */
   @Excel(name = "充值本金金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("充值本金金额")

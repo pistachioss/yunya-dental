@@ -673,12 +673,12 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询患者储值卡（会员卡、预付款）退费明细列表
+   * 根据条件查询患者储值卡退费明细列表
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-患者储值卡（0-会员卡；1-预付款）退费-查询明细")
+  @ApiOperation("公司端报表-财务报表-对账单-患者储值卡退费-查询明细")
   @PostMapping(value = "/card/refund/detail/list", name = "根据条件查询患者储值卡退费明细列表")
   public ResponseResult<PageInfo<StatementPatientCardRefundDetailVO>> patientCardRefundDetailList(
       @RequestBody @Validated StatementPatientCardRefundDetailQuery query) {

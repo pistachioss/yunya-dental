@@ -20,6 +20,9 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class PrepaymentsDataStatisticVO implements Serializable {
+  /** 预付款类型 */
+  @ApiModelProperty("预付款类型")
+  private String typeName;
   /** 预付款充值总额（本金+赠金） */
   @ApiModelProperty("预付款充值总额（本金+赠金）")
   private BigDecimal totalPrepaymentsRechargeAmount;

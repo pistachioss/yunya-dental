@@ -3,6 +3,7 @@ package com.yunya.middletable.service.patient;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.*;
 import com.yunya.middletable.dao.report.BasePatientMemberMapper;
@@ -12,13 +13,14 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.report.BasePatientMember;
 import com.yunya.models.report.BasePatientMemberOccurLog;
 import com.yunya.models.system.AccountItem;
-import org.apache.ibatis.annotations.Case;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.List;
+
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.MEMBER;
 
 /**
  * 简介:报表服务患者会员/预付款发生操作事件同步
@@ -112,7 +114,7 @@ public class BasePatientMemberOccurLogBiz
     Integer type = (Integer) msg.getParamMap().get("type");
     Integer operationType = (Integer) msg.getParamMap().get("operationType");
     // 会员卡操作日志
-    if (type == 0) {
+    if (MEMBER.equals(type)) {
       Integer cardId = addMemberOccurLog(id, type, operationType);
       if (cardId != null){
         BasePatientMember patientMemberInfo = basePatientMemberBiz.getPatientMemberInfo(cardId, type);
@@ -122,7 +124,7 @@ public class BasePatientMemberOccurLogBiz
       }
     }
     // 预付款操作日志
-    if (type == 1) {
+    if (PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
       Integer cardId = addPrepaymentOccurLog(id, type, operationType);
       if (cardId != null){
         BasePatientMember patientMemberInfo = basePatientMemberBiz.getPatientMemberInfo(cardId, type);
@@ -143,14 +145,14 @@ public class BasePatientMemberOccurLogBiz
     Integer type = (Integer) msg.getParamMap().get("type");
     Integer id = (Integer) msg.getParamMap().get("id");
     Integer operationType = (Integer) msg.getParamMap().get("operationType");
-    if (type == 0) {
+    if (MEMBER.equals(type)) {
       BasePatientMemberOccurLog basePatientMemberOccurLog =
           mapper.selectOneByPrimaryKeyAndtype(id, type, operationType);
       if (basePatientMemberOccurLog != null) {
         return basePatientMemberOccurLog;
       }
     }
-    if (type == 1) {
+    if (PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
       BasePatientMemberOccurLog basePatientMemberOccurLog =
           mapper.selectOneByPrimaryKeyAndtype(id, type, operationType);
       if (basePatientMemberOccurLog != null) {
@@ -167,7 +169,7 @@ public class BasePatientMemberOccurLogBiz
    */
   public void pullOccurLogData(PullForm form) {
     Integer type = form.getDataType();
-    if (type == 0) {
+    if (MEMBER.equals(type)) {
       // （基础表-充值表）充值
       pullMemberRecharge(form, type,1,0);
       // （基础表-充值表）撤销
@@ -179,7 +181,7 @@ public class BasePatientMemberOccurLogBiz
       // 退费
       pullMemberReturnRecord(form, type,3);
     }
-    if (type == 1) {
+    if (PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
       // （基础表-充值表）充值
       pullPrepaymentRecharge(form, type,1,0);
       // （基础表-充值表）撤销

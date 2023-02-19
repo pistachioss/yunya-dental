@@ -31,6 +31,13 @@ public interface BasePatientMemberMapper extends Mapper<BasePatientMember> {
   List<BaseMemberOverviewVo> memberOverviewList();
 
   /**
+   * 预付款概况
+   *
+   * @return List<MemberOverviewVo>
+   */
+  List<BaseMemberOverviewVo> memberOverviewListByType();
+
+  /**
    * 根据条件查询门诊会员数据总览
    *
    * @param query 查询条件
@@ -42,8 +49,9 @@ public interface BasePatientMemberMapper extends Mapper<BasePatientMember> {
    * 根据条件查询门诊预付款数据总览
    *
    * @param query 查询条件
+   * @param type 预付款类型(１：预付款（普通），2-正畸预付款，3-美白预付款)
    * @return PrepaymentsDataStatisticVO
    */
   PrepaymentsDataStatisticVO selectClinicPrepaymentsDataStatistic(
-      @Param("query") DataStatisticsQuery query);
+      @Param("query") DataStatisticsQuery query, @Param("type") int type);
 }

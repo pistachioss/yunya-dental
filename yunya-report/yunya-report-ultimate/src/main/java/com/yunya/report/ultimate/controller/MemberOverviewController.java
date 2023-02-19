@@ -99,4 +99,15 @@ public class MemberOverviewController {
   public ResponseResult<Map<String, Object>> memberList() {
     return ResponseUtil.success(this.memberOverviewBiz.memberList());
   }
+
+  /**
+   * 预付款概况
+   *
+   * @return List<BaseOrganization>
+   */
+  @ApiOperation("预付款概况")
+  @PostMapping("/member/listbytype")
+  public ResponseResult<Map<String, Object>> memberListByType() {
+    return ResponseUtil.success(this.memberOverviewBiz.memberListByType());
+  }
 }

@@ -56,6 +56,9 @@ public @interface Excel {
   /** 是否导出数据,应对需求:有时我们需要导出一份模板,这是标题需要但内容需要用户手工填写. */
   boolean isExport() default true;
 
+  /** 用于动态修改 列 是否导出展示 */
+  boolean isShow() default true;
+
   /** 导出数否合并 */
   boolean isMerge() default false;
 

@@ -33,20 +33,28 @@ public class TollModel implements Serializable {
   @NotNull(message = "优惠类型不能为空")
   private Byte discountType;
   /** 普通优惠信息 */
+  @ApiModelProperty("普通优惠信息")
   private GeneralDiscountModel generalDiscountModel;
   /** 授权折扣信息 */
+  @ApiModelProperty("授权折扣信息")
   private AccreditDiscountModel accreditDiscountModel;
   /** 预付款账户 */
+  @ApiModelProperty("预付款账户")
   private Set<PrepaymentAccountModel> prepaymentAccountModels;
+  /** 专项预付款账户 */
+  @ApiModelProperty("专项预付款账户")
+  private Set<PrepaymentAccountModel> spPrepaymentAccountModels;
   /** 会员卡账户 */
   private Set<MemberAccountModel> memberAccountModels;
   /** 其他支付方式 */
+  @ApiModelProperty("其他支付方式")
   private Set<PaymentModel> paymentModels;
   /** 挂帐金额 */
   @ApiModelProperty(value = "挂帐金额", required = true)
   @NotNull(message = "挂帐金额不能为空！")
   private BigDecimal outstandingAmount;
   /** 发票信息 */
+  @ApiModelProperty("发票信息")
   @Valid private InvoiceModel invoiceModel;
   /** 是否自动收费 */
   @ApiModelProperty(hidden = true)

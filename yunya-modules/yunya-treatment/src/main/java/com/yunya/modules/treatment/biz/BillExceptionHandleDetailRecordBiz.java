@@ -8,6 +8,7 @@ import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPaymentAdjustDetailVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.SysEmployee;
@@ -153,7 +154,7 @@ public class BillExceptionHandleDetailRecordBiz
                     Integer accountItemId = vo.getAccountItemId();
                     AccountItem item = systemServiceFeign.findAccountItemById(accountItemId);
                     if (null != item) {
-                      vo.setAccountItemName(item.getName());
+                      vo.setAccountItemName(convertName(item, vo.getRemark()));
                     }
                     payDetailList.add(vo);
                   });
@@ -162,6 +163,23 @@ public class BillExceptionHandleDetailRecordBiz
       }
     }
     return billPayInfo;
+  }
+
+  /**
+   * 转换成名称
+   *
+   * @param item
+   * @param cardNumber
+   * @return
+   */
+  private String convertName(AccountItem item, String cardNumber) {
+    Integer accountItemId = item.getId();
+    PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+    String name = item.getName();
+    if (StringHelper.isNotNull(typeEnum)) {
+      name = String.format("%s（%s账号：%s）", typeEnum.getName(), typeEnum.getName(), cardNumber);
+    }
+    return name;
   }
 
   /**

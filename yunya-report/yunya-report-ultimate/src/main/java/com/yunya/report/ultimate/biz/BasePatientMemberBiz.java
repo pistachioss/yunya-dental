@@ -36,8 +36,8 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
    * @param query 查询条件
    * @return PrepaymentsDataStatisticVO
    */
-  public PrepaymentsDataStatisticVO findClinicPrepaymentsDataStatistic(DataStatisticsQuery query) {
-    PrepaymentsDataStatisticVO resultData = mapper.selectClinicPrepaymentsDataStatistic(query);
+  public PrepaymentsDataStatisticVO findClinicPrepaymentsDataStatistic(DataStatisticsQuery query, int type) {
+    PrepaymentsDataStatisticVO resultData = mapper.selectClinicPrepaymentsDataStatistic(query, type);
     return resultData;
   }
 }

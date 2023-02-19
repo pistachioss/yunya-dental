@@ -1,8 +1,10 @@
 package com.yunya.models.report;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "base_patient_member")
 public class BasePatientMember {
@@ -13,6 +15,12 @@ public class BasePatientMember {
     private Integer cardId;
 
     /**
+     * 开通门诊
+     */
+    @Column(name = "org_id")
+    private Integer orgId;
+
+    /**
      * 卡号
      */
     @Id
@@ -20,7 +28,7 @@ public class BasePatientMember {
     private String cardNumber;
 
     /**
-     * 卡类型(0：会员卡；１：预付款)
+     * 卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      */
     private Integer type;
 
@@ -95,6 +103,24 @@ public class BasePatientMember {
     }
 
     /**
+     * 获取开通门诊id
+     *
+     * @return
+     */
+    public Integer getOrgId() {
+        return orgId;
+    }
+
+    /**
+     * 设置开通门诊id
+     *
+     * @param orgId
+     */
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
+    }
+
+    /**
      * 获取卡号
      *
      * @return card_number - 卡号
@@ -113,18 +139,18 @@ public class BasePatientMember {
     }
 
     /**
-     * 获取卡类型(0：会员卡；１：预付款)
+     * 获取卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      *
-     * @return type - 卡类型(0：会员卡；１：预付款)
+     * @return type - 卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      */
     public Integer getType() {
         return type;
     }
 
     /**
-     * 设置卡类型(0：会员卡；１：预付款)
+     * 设置卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      *
-     * @param type 卡类型(0：会员卡；１：预付款)
+     * @param type 卡类型(0：会员卡；１：预付款；2：正畸预付款；3：美白预付款)
      */
     public void setType(Integer type) {
         this.type = type;

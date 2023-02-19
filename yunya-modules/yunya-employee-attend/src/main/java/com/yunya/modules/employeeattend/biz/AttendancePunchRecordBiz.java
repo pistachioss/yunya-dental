@@ -1793,7 +1793,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
 //                        System.out.println(DateUtil.micro2Min(workOvertimeDiff));
                         if (DateUtil.micro2Min(workOvertimeDiff) >= 1) {
                             incrMinute(workDateOvertimeMinuteMap, userId, orgId, workOvertimeDiff);
-                            if (DateUtil.micro2Min(workOvertimeDiff) >= 30) {
+                            if (DateUtil.micro2Min(workOvertimeDiff) >= 60) {
+                                // 加班时长60分钟以上
                                 incrMinute(workDateOvertime30MinuteMap, userId, orgId, workOvertimeDiff);
                             }
                         }
@@ -1830,7 +1831,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
 //                        System.out.println(DateUtil.micro2Min(workOvertimeDiff));
                         if (DateUtil.micro2Min(workOvertimeDiff) >= 1) {
                             incrMinute(workDateOvertimeMinuteMap, userId, orgId, workOvertimeDiff);
-                            if (DateUtil.micro2Min(workOvertimeDiff) >= 30) {
+                            if (DateUtil.micro2Min(workOvertimeDiff) >= 60) {
+                                // 加班时长60分钟以上
                                 incrMinute(workDateOvertime30MinuteMap, userId, orgId, workOvertimeDiff);
                             }
                         }

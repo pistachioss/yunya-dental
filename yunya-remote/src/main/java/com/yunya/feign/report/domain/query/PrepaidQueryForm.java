@@ -32,7 +32,6 @@ public class PrepaidQueryForm implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
-
     @ApiModelProperty(value = "门诊id", required = false)
     /** 门诊id */
     private Integer orgId;
@@ -40,6 +39,10 @@ public class PrepaidQueryForm implements Serializable {
     @ApiModelProperty(value = "患者条件", required = false)
     /** 患者条件 */
     private String combination;
+
+    @ApiModelProperty(value = "卡类型(１：预付款（普通），2-正畸预付款，3-美白预付款)", required = true)
+    /** 卡类型(１：预付款（普通），2-正畸预付款，3-美白预付款) */
+    private Integer type;
 
     @ApiModelProperty(value = "预付款账号", required = false)
     /** 预付款账号 */

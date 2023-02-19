@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
+
 /**
  * 简介:
  *
@@ -40,7 +42,7 @@ public class BasePatientMemberMapperTest {
     query.setDateType((byte) 0);
     query.setStartDate("2020-12-10");
     query.setEndDate("2020-12-10");
-    PrepaymentsDataStatisticVO vo = patientMemberMapper.selectClinicPrepaymentsDataStatistic(query);
+    PrepaymentsDataStatisticVO vo = patientMemberMapper.selectClinicPrepaymentsDataStatistic(query, NORMAL_PREPAYMENT.getType());
     System.out.println(vo);
   }
 }

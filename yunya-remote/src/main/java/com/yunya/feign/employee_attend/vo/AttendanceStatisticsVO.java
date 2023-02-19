@@ -60,9 +60,9 @@ public class AttendanceStatisticsVO implements Serializable {
     @ApiModelProperty(value = "工作日加班时长（分钟）")
     private Long workDateOvertimeMinute;
 
-    /** 工作日加班超30分钟以上时长（分钟）*/
-    @Excel(name = "工作日加班超30分钟以上时长（分钟）", cellType = Excel.ColumnType.NUMERIC)
-    @ApiModelProperty(value = "工作日加班超30分钟以上时长（分钟）")
+    /** 工作日加班超60分钟以上时长（分钟）*/
+    @Excel(name = "工作日加班超60分钟以上时长（分钟）", cellType = Excel.ColumnType.NUMERIC)
+    @ApiModelProperty(value = "工作日加班超60分钟以上时长（分钟）")
     private Long workDateOvertime30Minute;
 
     /** 休息日加班时长（分钟）*/

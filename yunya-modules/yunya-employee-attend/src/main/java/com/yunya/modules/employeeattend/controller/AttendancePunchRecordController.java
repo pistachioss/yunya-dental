@@ -212,7 +212,7 @@ public class AttendancePunchRecordController {
     @ApiOperation("分页查询工作日加班时长超30分钟的考勤汇总明细")
     @PostMapping("/statisticsWorkDateOvertime30ByMinute")
     public ResponseResult<PageInfo<AttendanceWorkDateOvertimeMinuteVO>> statisticsWorkDateOvertime30ByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceWorkDateOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateOvertimeByMinute(30, queryForm);
+        List<AttendanceWorkDateOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateOvertimeByMinute(60, queryForm);
         PageInfo<AttendanceWorkDateOvertimeMinuteVO> pageInfo = new PageInfo<>(result);
         return ResponseUtil.success(pageInfo);
     }

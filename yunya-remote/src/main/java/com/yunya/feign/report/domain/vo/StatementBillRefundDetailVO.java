@@ -96,6 +96,22 @@ public class StatementBillRefundDetailVO implements Serializable {
   @Excel(name = "预付款赠金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("预付款赠金")
   private BigDecimal prepaidBonusAmount;
+  /** 正畸预付款本金 */
+  @Excel(name = "正畸预付款本金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("正畸预付款本金")
+  private BigDecimal zjPrepaidPrincipleAmount;
+  /** 正畸预付款赠金 */
+  @Excel(name = "正畸预付款赠金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("正畸预付款赠金")
+  private BigDecimal zjPrepaidBonusAmount;
+  /** 美白预付款本金 */
+  @Excel(name = "美白预付款本金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("美白预付款本金")
+  private BigDecimal mbPrepaidPrincipleAmount;
+  /** 美白预付款赠金 */
+  @Excel(name = "美白预付款赠金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("美白预付款赠金")
+  private BigDecimal mbPrepaidBonusAmount;
   /** 现金 */
   @Excel(name = "现金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("现金")

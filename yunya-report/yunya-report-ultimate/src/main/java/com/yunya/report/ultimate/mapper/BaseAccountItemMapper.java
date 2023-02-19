@@ -59,10 +59,12 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * 根据条件查询门诊预付款充值的入账方式分组信息
    *
    * @param query 查询条件
+   * @param type 卡类型(0：会员卡；１：预付款（普通），2-正畸预付款，3-美白预付款)
    * @return List<ClinicInboundAndOutboundVO>
    */
   List<StatementPaymentVO> selectPaidChargePaymentInfo(
-      @Param("query") InboundAndOutboundStatementQuery query);
+          @Param("query") InboundAndOutboundStatementQuery query,
+          @Param("type") Integer type);
 
   /**
    * 根据条件查询门诊产品售出的入账方式分组信息
@@ -122,10 +124,12 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * 根据条件查询门诊预付款退费的入账方式分组信息
    *
    * @param query 查询条件
+   * @param type
    * @return List<ClinicInboundAndOutboundVO>
    */
   List<StatementPaymentVO> selectPrepaidRefundPaymentInfo(
-      @Param("query") InboundAndOutboundStatementQuery query);
+          @Param("query") InboundAndOutboundStatementQuery query,
+          @Param("type") Integer type);
 
   /**
    * 根据条件查询门诊本月被代收的入账方式分组信息

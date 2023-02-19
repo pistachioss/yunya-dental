@@ -24,6 +24,7 @@ import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
@@ -53,6 +54,7 @@ import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseRefund;
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
 
 /**
  * 简介: 账单记录业务层
@@ -271,7 +273,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BillRecord billRecord = checkBillRecord(treatmentRecordId, orgId);
     List<RefundOrderDetailModel> refundOrderDetailModels = model.getRefundOrderDetailModels();
     MemberRefundModel memberRefundModel = model.getMemberRefundModel();
-    PrepaymentRefundModel prepaymentRefundModel = model.getPrepaymentRefundModel();
+    List<PrepaymentRefundModel> prepaymentRefundModels = checkPrepaymentRefunds(model);
     List<PaymentModel> refundPaymentModels = model.getRefundPaymentModels();
     String refundReason = model.getRefundReason();
     List<String> refundAnnex = model.getRefundAnnex();
@@ -282,7 +284,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BigDecimal refundOrderDetailAmount = calculateRefundOrderDetailAmount(refundOrderDetailModels);
     // 计算退费总额
     BigDecimal refundTotalAmount =
-        calculateRefundAmount(memberRefundModel, prepaymentRefundModel, refundPaymentModels);
+        calculateRefundAmount(memberRefundModel, prepaymentRefundModels, refundPaymentModels);
     if (refundOrderDetailAmount.compareTo(refundTotalAmount) != 0) {
       throw new ClientServiceException("账单退费失败，退费总额与退费项目金额总和不相等！", PARAMETERS_IS_ILLEGAL);
     }
@@ -321,7 +323,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
         orderRecordId,
         billRefundRecordId,
         memberRefundModel,
-        prepaymentRefundModel,
+        prepaymentRefundModels,
         refundPaymentModels);
     // 保存账单退费异常处理记录
     BillExceptionHandleRecord exceptionHandleRecord = new BillExceptionHandleRecord();
@@ -348,19 +350,46 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   }
 
   /**
+   * 检查预付款退费方式
+   *
+   * @param model
+   * @return
+   */
+  private List<PrepaymentRefundModel> checkPrepaymentRefunds(BillRefundModel model) {
+    List<PrepaymentRefundModel> data = new ArrayList<>();
+    PrepaymentRefundModel prepaymentRefundModel = model.getPrepaymentRefundModel();
+    PrepaymentRefundModel spPrepaymentRefundModel = model.getSpPrepaymentRefundModel();
+    if (StringHelper.isNotNull(prepaymentRefundModel)) {
+      PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(prepaymentRefundModel.getAccountItemId());
+      if (StringHelper.isNull(typeEnum) || !NORMAL_PREPAYMENT.equals(typeEnum.getType())) {
+        throw new ClientServiceException("无效的预付款账户类型", PARAMETERS_IS_ILLEGAL);
+      }
+      data.add(prepaymentRefundModel);
+    }
+    if (StringHelper.isNotNull(spPrepaymentRefundModel)) {
+      PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(prepaymentRefundModel.getAccountItemId());
+      if (StringHelper.isNull(typeEnum) || PatientDepositAccountTypeEnum.isSpPrepaymentType(typeEnum.getType())) {
+        throw new ClientServiceException("无效的预付款账户类型", PARAMETERS_IS_ILLEGAL);
+      }
+      data.add(spPrepaymentRefundModel);
+    }
+    return data;
+  }
+
+  /**
    * 保存账单退费付款明细记录
    *
    * @param orderRecordId 订单记录ID
    * @param billRefundRecordId 退费记录ID
    * @param memberRefundModel 会员卡退费
-   * @param prepaymentRefundModel 预付款踢飞
+   * @param prepaymentRefundModels 预付款退费
    * @param refundPaymentModels 其他方式退费
    */
   private void saveBillRefundPayDetailRecord(
       Integer orderRecordId,
       Integer billRefundRecordId,
       MemberRefundModel memberRefundModel,
-      PrepaymentRefundModel prepaymentRefundModel,
+      List<PrepaymentRefundModel> prepaymentRefundModels,
       List<PaymentModel> refundPaymentModels) {
     BillRefundPayDetailRecord refundPayDetailRecord = new BillRefundPayDetailRecord();
     refundPayDetailRecord.setBillRefundRecordId(billRefundRecordId);
@@ -394,31 +423,33 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       patientCentralServiceFeign.billRefund(memberModel);
     }
     // 预付款退费
-    if (null != prepaymentRefundModel) {
-      refundPayDetailRecord.setAccountItemId(prepaymentRefundModel.getAccountItemId());
-      String prepaymentNum = prepaymentRefundModel.getPrepaymentAccountId();
-      refundPayDetailRecord.setRemark(prepaymentNum);
-      BigDecimal principalAmount = prepaymentRefundModel.getPrincipalAmount();
-      BigDecimal giftAmount = prepaymentRefundModel.getGiftAmount();
-      if (principalAmount == null) {
-        principalAmount = new BigDecimal(0);
-      }
-      if (giftAmount == null) {
-        giftAmount = new BigDecimal(0);
-      }
-      refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
-      refundPayDetailRecord.setPrincipalAmount(principalAmount);
-      refundPayDetailRecord.setGiftAmount(giftAmount);
-      billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
-      // 预付款退费金额返还
-      PrepaidBillRechargeModel prepaidModel = new PrepaidBillRechargeModel();
-      prepaidModel.setOrderRecordId(orderRecordId);
-      prepaidModel.setPrepaidId(prepaymentNum);
-      prepaidModel.setRechargePrincipal(principalAmount);
-      prepaidModel.setRechargeBonus(giftAmount);
-      prepaidModel.setBillPayRecordId(billRefundRecordId);
-      prepaidModel.setRemarks(billRefundRecordId.toString());
-      patientCentralServiceFeign.billRefund(prepaidModel);
+    if (StringHelper.isNotEmpty(prepaymentRefundModels)) {
+      prepaymentRefundModels.forEach(prepaymentRefundModel->{
+        refundPayDetailRecord.setAccountItemId(prepaymentRefundModel.getAccountItemId());
+        String prepaymentNum = prepaymentRefundModel.getPrepaymentAccountId();
+        refundPayDetailRecord.setRemark(prepaymentNum);
+        BigDecimal principalAmount = prepaymentRefundModel.getPrincipalAmount();
+        BigDecimal giftAmount = prepaymentRefundModel.getGiftAmount();
+        if (principalAmount == null) {
+          principalAmount = new BigDecimal(0);
+        }
+        if (giftAmount == null) {
+          giftAmount = new BigDecimal(0);
+        }
+        refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
+        refundPayDetailRecord.setPrincipalAmount(principalAmount);
+        refundPayDetailRecord.setGiftAmount(giftAmount);
+        billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
+        // 预付款退费金额返还
+        PrepaidBillRechargeModel prepaidModel = new PrepaidBillRechargeModel();
+        prepaidModel.setOrderRecordId(orderRecordId);
+        prepaidModel.setPrepaidId(prepaymentNum);
+        prepaidModel.setRechargePrincipal(principalAmount);
+        prepaidModel.setRechargeBonus(giftAmount);
+        prepaidModel.setBillPayRecordId(billRefundRecordId);
+        prepaidModel.setRemarks(billRefundRecordId.toString());
+        patientCentralServiceFeign.billRefund(prepaidModel);
+      });
     }
     // 其它方式退款
     if (StringHelper.isNotEmpty(refundPaymentModels)) {
@@ -495,13 +526,13 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * 计算退费总额
    *
    * @param memberAccountModel 会员退费
-   * @param prepaymentAccountModel 预付款退费
+   * @param prepaymentAccountModels 预付款退费
    * @param refundPaymentModels 其他方式退费
    * @return totalAmount 退费总额
    */
   private BigDecimal calculateRefundAmount(
       MemberRefundModel memberAccountModel,
-      PrepaymentRefundModel prepaymentAccountModel,
+      List<PrepaymentRefundModel> prepaymentAccountModels,
       List<PaymentModel> refundPaymentModels) {
     BigDecimal totalAmount = BigDecimal.valueOf(0);
     if (null != memberAccountModel) {
@@ -515,16 +546,18 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       }
       totalAmount = totalAmount.add(principalAmount).add(giftAmount);
     }
-    if (null != prepaymentAccountModel) {
-      BigDecimal principalAmount = prepaymentAccountModel.getPrincipalAmount();
-      BigDecimal giftAmount = prepaymentAccountModel.getGiftAmount();
-      if (principalAmount == null) {
-        principalAmount = new BigDecimal(0);
+    if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
+      for (PrepaymentRefundModel prepaymentAccountModel : prepaymentAccountModels) {
+        BigDecimal principalAmount = prepaymentAccountModel.getPrincipalAmount();
+        BigDecimal giftAmount = prepaymentAccountModel.getGiftAmount();
+        if (principalAmount == null) {
+          principalAmount = new BigDecimal(0);
+        }
+        if (giftAmount == null) {
+          giftAmount = new BigDecimal(0);
+        }
+        totalAmount = totalAmount.add(principalAmount).add(giftAmount);
       }
-      if (giftAmount == null) {
-        giftAmount = new BigDecimal(0);
-      }
-      totalAmount = totalAmount.add(principalAmount).add(giftAmount);
     }
     if (StringHelper.isNotEmpty(refundPaymentModels)) {
       for (PaymentModel model : refundPaymentModels) {
