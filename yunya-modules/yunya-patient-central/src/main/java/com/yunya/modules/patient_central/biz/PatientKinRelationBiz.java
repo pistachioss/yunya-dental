@@ -162,6 +162,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
       PatientKinRelation linkedPatient = new PatientKinRelation();
       linkedPatient.setPatientId(patientKinRelation.getLinkedPatientId());
       linkedPatient.setLinkedPatientId(patientKinRelation.getPatientId());
+      linkedPatient.setInservice(true);
       PatientKinRelation kinRelation = mapper.selectOne(linkedPatient);
       if (kinRelation != null){
         kinRelation.setKinshipId(patientKinRelation.getKinshipId());
