@@ -67,9 +67,11 @@
 			   cast(IFNULL(ppi.prepayment_principal + ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentsMoneySum,
 			   pmi.crt_time as crtTime
         from patient_base_info pbi
-        left join patient_prepayments_info ppi on pbi.id = ppi.patient_id
+        left join (
+            select * from patient_prepayments_info where type=1
+        ) ppi on pbi.id = ppi.patient_id
         left join patient_member_info pmi      on pbi.id = pmi.patient_id
-        where pbi.id = #{id} and ppi.type = 1
+        where pbi.id = #{id}
     </select>
 
     <!-- 查询推荐关系 -->
