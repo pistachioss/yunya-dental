@@ -27,7 +27,7 @@ public class ReservationVo implements Serializable {
     /**
      * 创建时间
      */
-    @Excel(name = "登记时间")
+    @Excel(name = "登记时间", dateFormat = "yyyy-MM-dd HH:mm:ss")
     private Date crtTime;
 
     /**
@@ -49,6 +49,18 @@ public class ReservationVo implements Serializable {
     private String patientPhone;
 
     /**
+     * 预约项目
+     */
+    @Excel(name = "预约项目")
+    private String appointItemName;
+
+    /**
+     * 权益码
+     */
+    @Excel(name = "权益码")
+    private String code;
+
+    /**
      * 预约意向渠道ID
      */
     private Integer reservationSourceId;
@@ -61,17 +73,8 @@ public class ReservationVo implements Serializable {
     /**
      * 预约意向时间
      */
+    @Excel(name = "意向预约时间")
     private String reservationDate;
-
-    /**
-     * 预约项目
-     */
-    private String appointItemName;
-
-    /**
-     * 权益码
-     */
-    private String code;
 
     /**
      * 预约意向门诊ID
@@ -81,16 +84,19 @@ public class ReservationVo implements Serializable {
     /**
      * 预约意向门诊ID
      */
+    @Excel(name = "就近门诊")
     private String orgName;
 
     /**
      * 登记状态(0：新增；1：已预约；2：已放弃)
      */
+    @Excel(name = "状态", readConverterExp = "0=新增,1=已预约,2=已放弃")
     private Byte status;
 
     /**
      * 备注
      */
+    @Excel(name = "备注")
     private String remarks;
 
     /**
