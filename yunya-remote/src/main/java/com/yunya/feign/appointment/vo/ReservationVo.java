@@ -27,13 +27,13 @@ public class ReservationVo implements Serializable {
     /**
      * 创建时间
      */
-    @Excel(name = "登记时间", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "登记时间", dateFormat = "yyyy-MM-dd HH:mm:ss", width = 30)
     private Date crtTime;
 
     /**
      * 就诊人名字
      */
-    @Excel(name = "就诊人姓名")
+    @Excel(name = "就诊人姓名", width = 20)
     private String patientName;
 
     /**
@@ -51,13 +51,13 @@ public class ReservationVo implements Serializable {
     /**
      * 预约项目
      */
-    @Excel(name = "预约项目")
+    @Excel(name = "预约项目", width = 20)
     private String appointItemName;
 
     /**
      * 权益码
      */
-    @Excel(name = "权益码")
+    @Excel(name = "权益码", width = 30)
     private String code;
 
     /**
@@ -84,7 +84,7 @@ public class ReservationVo implements Serializable {
     /**
      * 预约意向门诊ID
      */
-    @Excel(name = "就近门诊")
+    @Excel(name = "就近门诊", width = 40)
     private String orgName;
 
     /**
@@ -96,7 +96,7 @@ public class ReservationVo implements Serializable {
     /**
      * 备注
      */
-    @Excel(name = "备注")
+    @Excel(name = "备注", width = 30)
     private String remarks;
 
     /**
