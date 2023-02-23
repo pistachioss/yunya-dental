@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.model.ReservationModel;
 import com.yunya.feign.appointment.domain.query.ReservationQuery;
 import com.yunya.feign.appointment.vo.ReservationVo;
+import com.yunya.feign.report.domain.query.PatientArrearsCallForQuery;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -19,7 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -66,6 +69,17 @@ public class ReservationController {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
         List<ReservationVo> results = biz.list(query);
-        return ResponseUtil.success(new PageInfo<ReservationVo>(results));
+        PageInfo<ReservationVo> result = new PageInfo<ReservationVo>(results);
+        result.setSize(biz.list_appCount(query));
+        return ResponseUtil.success(result);
+    }
+
+    @ApiOperation("获取预约意向登记列表-导出")
+    @PostMapping(value = "/list/export")
+    public ResponseResult<T> export(
+            HttpServletResponse response, @RequestBody @Validated ReservationQuery query)
+            throws IOException {
+        biz.export(response, query);
+        return ResponseUtil.success(null);
     }
 }

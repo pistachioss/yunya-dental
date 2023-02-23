@@ -25,6 +25,30 @@ public class ReservationVo implements Serializable {
     private Integer id;
 
     /**
+     * 创建时间
+     */
+    @Excel(name = "登记时间")
+    private Date crtTime;
+
+    /**
+     * 就诊人名字
+     */
+    @Excel(name = "就诊人姓名")
+    private String patientName;
+
+    /**
+     * 就诊人性别
+     */
+    @Excel(name = "就诊人性别", readConverterExp = "0=男,1=女")
+    private Byte patientGender;
+
+    /**
+     * 就诊人手机号
+     */
+    @Excel(name = "联系电话")
+    private String patientPhone;
+
+    /**
      * 预约意向渠道ID
      */
     private Integer reservationSourceId;
@@ -45,6 +69,11 @@ public class ReservationVo implements Serializable {
     private String appointItemName;
 
     /**
+     * 权益码
+     */
+    private String code;
+
+    /**
      * 预约意向门诊ID
      */
     private Integer orgId;
@@ -53,21 +82,6 @@ public class ReservationVo implements Serializable {
      * 预约意向门诊ID
      */
     private String orgName;
-
-    /**
-     * 就诊人名字
-     */
-    private String patientName;
-
-    /**
-     * 就诊人手机号
-     */
-    private String patientPhone;
-
-    /**
-     * 就诊人性别
-     */
-    private Byte patientGender;
 
     /**
      * 登记状态(0：新增；1：已预约；2：已放弃)
@@ -87,24 +101,15 @@ public class ReservationVo implements Serializable {
     /**
      * 创建人名称
      */
-    @Column(name = "crt_name")
     private String crtName;
-
-    /**
-     * 创建时间
-     */
-    @Column(name = "crt_time")
-    private Date crtTime;
 
     /**
      * 更新人名称
      */
-    @Column(name = "upd_name")
     private String updName;
 
     /**
      * 更新时间
      */
-    @Column(name = "upd_time")
     private Date updTime;
 }
