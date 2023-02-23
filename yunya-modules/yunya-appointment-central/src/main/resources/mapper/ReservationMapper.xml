@@ -84,7 +84,7 @@
     from reservation oa
     <where>
       oa.status = 1
-      <if test="query.org_name != null">
+      <if test="query.orgName != null">
         and oa.org_name = #{query.orgName}
       </if>
       <if test="query.reservationSourceId != null">
