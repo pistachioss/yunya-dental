@@ -530,6 +530,14 @@ public class StringHelper extends StringUtils {
     return StringUtils.isNotBlank(str) ? Lists.newArrayList(Splitter.on(",").split(str).iterator()).get(0) : null;
   }
 
+  public static Integer defaultInt(Integer value) {
+    return isNotNull(value) ? value : 0;
+  }
+
+  public static BigDecimal defaultBigDecimal(BigDecimal value) {
+    return isNotNull(value) ? value : BigDecimal.ZERO;
+  }
+
   /**
    * 判断是否存在任意一个元素为null
    *

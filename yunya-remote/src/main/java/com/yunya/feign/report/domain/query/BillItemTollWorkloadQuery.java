@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Collection;
 
@@ -29,7 +29,9 @@ public class BillItemTollWorkloadQuery extends ClinicEmployeeWorkloadQuery imple
   /** 项目分类ID列表 */
   private Collection<Integer> categoryIds;
   /** 项目类型（0-价目、1-商品）*/
-  private Byte itemType = 0;
+  @ApiModelProperty(value = "项目类型（0-价目，1-商品）", required = true)
+  @NotNull(message = "请选择项目类型")
+  private Byte itemType;
   /** 项目ID列表 */
   private Collection<Integer> itemIds;
 }
