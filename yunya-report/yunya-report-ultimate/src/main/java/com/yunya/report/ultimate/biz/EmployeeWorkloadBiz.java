@@ -662,7 +662,7 @@ public class EmployeeWorkloadBiz {
     Map<String, BillItemTollAndWorkloadVO> resultMap = new HashMap<>(16);
     receivedMap.forEach(
         (key, vo) -> {
-          Integer quantity = vo.getQuantity();
+          Integer quantity = StringHelper.defaultInt(vo.getQuantity());
           BigDecimal workload = vo.getWorkload();
           if (workload.compareTo(BigDecimal.ZERO) > 0) {
             BillItemTollAndWorkloadVO entity = resultMap.get(key);
@@ -670,7 +670,7 @@ public class EmployeeWorkloadBiz {
               entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
             }
             if (!ObjectUtils.isEmpty(entity)) {
-              entity.setQuantity(StringHelper.defaultInt(quantity));
+              entity.setQuantity(quantity);
               entity.setReceivedWorkload(workload);
               resultMap.put(key, entity);
             }
@@ -678,6 +678,7 @@ public class EmployeeWorkloadBiz {
         });
     freePaymentMap.forEach(
         (key, vo) -> {
+          Integer quantity = StringHelper.defaultInt(vo.getQuantity());
           BigDecimal workload = vo.getWorkload();
           if (workload.compareTo(BigDecimal.ZERO) > 0) {
             BillItemTollAndWorkloadVO entity = resultMap.get(key);
@@ -685,6 +686,7 @@ public class EmployeeWorkloadBiz {
               entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
             }
             if (!ObjectUtils.isEmpty(entity)) {
+              entity.setQuantity(quantity);
               entity.setFreePayWorkload(workload);
               resultMap.put(key, entity);
             }
