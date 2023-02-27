@@ -96,6 +96,7 @@ import static com.yunya.feign.wechat.enums.TemplateEnum.APPOINT_SUCCESS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.enums.SmsAutosendEventEnum.YILIANBAO_APPOINT_SUCCESS;
 import static com.yunya.framework.common.enums.SmsTemplateItemEnum.*;
+import static java.util.stream.Collectors.groupingBy;
 
 /**
  * 患者预约服务
@@ -2304,9 +2305,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             List<AppointListExportVo> appointListExportVos = new ArrayList<>();
             if (appointmentListItemVoList != null && !appointmentListItemVoList.isEmpty()) {
                 List<AppointListExportVo> appointListExportVoList = new ArrayList<>();
+                AppointOperationQuery operationQuery = new AppointOperationQuery();
+                operationQuery.setAppointIds(appointmentListItemVoList.stream().map(AppointmentListItemVo::getId).collect(Collectors.toList()));
+                Map<Integer, List<AppointOperationRecordVo>> appointOptMap = Optional.ofNullable(appointOperateRecordBiz.findAppointOperationRecordByExample(operationQuery))
+                        .orElseGet(ArrayList::new)
+                        .stream().collect(groupingBy(AppointOperationRecordVo::getAppointmentId));
                 // 设置预约患者信息
                 appointmentListItemVoList.forEach(appointmentListItemVo -> {
-                    AppointListExportVo appointListExportVo = appointListItemTransformExportEntity(appointmentListItemVo);
+                    AppointListExportVo appointListExportVo = appointListItemTransformExportEntity(appointmentListItemVo, appointOptMap);
                     appointListExportVoList.add(appointListExportVo);
                 });
                 // 对预约列表信息排序
@@ -2362,7 +2368,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param appointmentListItemVo 预约列表中的每一条预约
      * @return Excel对象实体
      */
-    private AppointListExportVo appointListItemTransformExportEntity (AppointmentListItemVo appointmentListItemVo) {
+    private AppointListExportVo appointListItemTransformExportEntity (AppointmentListItemVo appointmentListItemVo, Map<Integer, List<AppointOperationRecordVo>> appointOptMap) {
         AppointListExportVo appointListExportVo = new AppointListExportVo();
 
         appointListExportVo.setDentistId(appointmentListItemVo.getDentistId());
@@ -2382,10 +2388,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointListExportVo.setPatientRemarks(appointmentListItemVo.getPatientRemark());
 
         // 预约操作记录参数
-        AppointOperationQuery operationQuery = new AppointOperationQuery();
-        operationQuery.setOrgId(appointmentListItemVo.getOrgId());
-        operationQuery.setAppointmentId(appointmentListItemVo.getId());
-        List<AppointOperationRecordVo> appointOperationRecords = appointOperateRecordBiz.findAppointOperationRecordByExample(operationQuery);
+        List<AppointOperationRecordVo> appointOperationRecords = appointOptMap.get(appointmentListItemVo.getId());
         if (appointOperationRecords != null && !appointOperationRecords.isEmpty()){
             AppointOperationRecordVo appointOperationRecordVo = appointOperationRecords.get(0);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
