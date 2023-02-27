@@ -4,14 +4,17 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
+import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.SortUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.EmployeeWorkloadCost;
 import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
 import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
+import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -53,8 +56,9 @@ public class EmployeeWorkloadBiz {
   @Autowired private EmployeeWorkloadCostBiz employeeWorkloadCostBiz;
 
   @Autowired private BaseTariffInfoBiz baseTariffInfoBiz;
+  @Autowired private BaseOrganizationMapper baseOrganizationMapper;
 
-  /**
+    /**
    * 根据条件查询员工工作量列表
    *
    * @param query
@@ -367,6 +371,25 @@ public class EmployeeWorkloadBiz {
         });
   }
 
+    private Future<List<ClinicEmployeBonusCoefficientVO>> multiFindClinicEmployeeCollection(BillItemTollWorkloadQuery query) {
+        if (query.getItemType().intValue() == 0) {
+            return multiFindClinicEmployeeCartesianProduct(query);
+        }
+        return threadPool.submit(()-> {
+            List<ClinicEmployeBonusCoefficientVO> result = new ArrayList<>();
+            List<BaseOrganization> orgs = baseOrganizationMapper.selectOrganizationList(new ClinicPerformanceBusinessQuery());
+            orgs.forEach(org->{
+                ClinicEmployeBonusCoefficientVO vo = new ClinicEmployeBonusCoefficientVO();
+                vo.setEmployeeId(-1);
+                vo.setEmployeeName("--");
+                vo.setOrgId(org.getOrgId());
+                vo.setAbbreviation(org.getAbbreviation());
+                result.add(vo);
+            });
+            return result;
+        });
+    }
+
   /**
    * 多线程查询员工和门诊的笛卡尔积
    *
@@ -375,8 +398,7 @@ public class EmployeeWorkloadBiz {
    */
   private Future<List<ClinicEmployeBonusCoefficientVO>> multiFindClinicEmployeeCartesianProduct(
       ClinicEmployeeWorkloadQuery query) {
-    return threadPool.submit(
-        () -> baseEmployeeMapper.selectClinicEmployeeCartesianProduct(query, true));
+    return threadPool.submit(()->baseEmployeeMapper.selectClinicEmployeeCartesianProduct(query, true));
   }
 
   public List<ClinicEmployeBonusCoefficientVO> findClinicEmployeeCartesianProduct(
@@ -581,12 +603,12 @@ public class EmployeeWorkloadBiz {
     Future<Map<String, EmployeeTariffWorkloadVO>> refundWorkload =
         findClinicExecutorTariffRefundWorkload(query);
 
-    // 查询价目表
-    Future<Map<Integer, ItemCategoryVO>> tariffMap = findTariffInfoMap();
+    // 查询价目or商品表
+    Future<Map<Integer, ItemCategoryVO>> tariffMap = findTariffInfoMap(query.getItemType());
 
     // 门诊员工
     Future<List<ClinicEmployeBonusCoefficientVO>> employees =
-        multiFindClinicEmployeeCartesianProduct(query);
+        multiFindClinicEmployeeCollection(query);
 
     // 数据合并组装
     List<BillItemTollAndWorkloadVO> result =
@@ -640,6 +662,7 @@ public class EmployeeWorkloadBiz {
     Map<String, BillItemTollAndWorkloadVO> resultMap = new HashMap<>(16);
     receivedMap.forEach(
         (key, vo) -> {
+          Integer quantity = StringHelper.defaultInt(vo.getQuantity());
           BigDecimal workload = vo.getWorkload();
           if (workload.compareTo(BigDecimal.ZERO) > 0) {
             BillItemTollAndWorkloadVO entity = resultMap.get(key);
@@ -647,6 +670,7 @@ public class EmployeeWorkloadBiz {
               entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
             }
             if (!ObjectUtils.isEmpty(entity)) {
+              entity.setQuantity(quantity);
               entity.setReceivedWorkload(workload);
               resultMap.put(key, entity);
             }
@@ -654,6 +678,7 @@ public class EmployeeWorkloadBiz {
         });
     freePaymentMap.forEach(
         (key, vo) -> {
+          Integer quantity = StringHelper.defaultInt(vo.getQuantity());
           BigDecimal workload = vo.getWorkload();
           if (workload.compareTo(BigDecimal.ZERO) > 0) {
             BillItemTollAndWorkloadVO entity = resultMap.get(key);
@@ -661,6 +686,7 @@ public class EmployeeWorkloadBiz {
               entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
             }
             if (!ObjectUtils.isEmpty(entity)) {
+              entity.setQuantity(quantity);
               entity.setFreePayWorkload(workload);
               resultMap.put(key, entity);
             }
@@ -735,10 +761,10 @@ public class EmployeeWorkloadBiz {
     return entity;
   }
 
-  private Future<Map<Integer, ItemCategoryVO>> findTariffInfoMap() {
+  private Future<Map<Integer, ItemCategoryVO>> findTariffInfoMap(Byte itemType) {
     return threadPool.submit(
         () -> {
-          List<ItemCategoryVO> itemList = baseTariffInfoBiz.findItemCategoryInfoList(0);
+          List<ItemCategoryVO> itemList = baseTariffInfoBiz.findItemCategoryInfoList(itemType);
           return itemList.stream().collect(toMap(ItemInfoVO::getItemId, Function.identity()));
         });
   }

@@ -42,7 +42,7 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
     return tariffInfoMapper.selectItemListByCategoryId(itemType, null);
   }
 
-  public List<ItemCategoryVO> findItemCategoryInfoList(Integer itemType) {
+  public List<ItemCategoryVO> findItemCategoryInfoList(Byte itemType) {
     return tariffInfoMapper.selectItemCategoryListByCategoryId(itemType, null);
   }
 
