@@ -36,6 +36,10 @@ public class PersonalBillItemTollAndWorkloadQuery extends PageQuery implements S
   @ApiModelProperty(value = "查询结束时间", required = true)
   @NotBlank(message = "查询结束时间不能为空！")
   private String endDate;
+  /** 项目类型：0-价目，1-商品 */
+  @ApiModelProperty(value = "项目类型：0-价目，1-商品", required = true)
+  @NotNull(message = "项目类型不能为空")
+  private Byte itemType;
   /** 项目ID */
   @ApiModelProperty("项目ID")
   @NotNull(message = "项目ID不能为空")
