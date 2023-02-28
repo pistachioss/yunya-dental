@@ -4078,7 +4078,7 @@
             bb.regDentistId,
             bbd1.billTotalWorkload,
             <if test="query.itemType == 0">
-                0 AS tariffTotalWorkload
+                0 AS tariffTotalWorkload,
             </if>
             <if test="query.itemType == 1">
                 bbd2.tariffTotalWorkload,
