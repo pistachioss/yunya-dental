@@ -4046,8 +4046,11 @@
         bbd.itemWorkload,
         bbd.executorId,
         bbd.executorName,
-        IF(bbp.freePayAmount > bbd.billTotalWorkload, bbd.billTotalWorkload,
-        bbp.freePayAmount) AS freePayAmount
+        IF(
+            IF(bbp.freePayAmount-bbd.tariffTotalWorkload>0,bbp.freePayAmount-bbd.tariffTotalWorkload,0) > bbd.billTotalWorkload,
+            bbd.billTotalWorkload,
+            IF(bbp.freePayAmount-bbd.tariffTotalWorkload>0,bbp.freePayAmount-bbd.tariffTotalWorkload,0)
+        ) AS freePayAmount
         from (
         select bbpd.bill_id, sum(principal_amount) as freePayAmount
         from base_bill_pay_detail bbpd
@@ -4074,20 +4077,44 @@
             bb.mobile,
             bb.regDentistId,
             bbd1.billTotalWorkload,
+            <if test="query.itemType == 0">
+                0 AS tariffTotalWorkload
+            </if>
+            <if test="query.itemType == 1">
+                bbd2.tariffTotalWorkload,
+            </if>
             bbd.price * bbd.quantity - bbd.discount_amount as itemWorkload,
             bbd.executor_id as executorId,
             be.employee_name as executorName
             from base_bill_detail bbd
             INNER JOIN (
-            SELECT bbd.bill_id,
-            SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billTotalWorkload
-            FROM base_bill_detail bbd
-            <where>
-                <if test="query.orgId != null">
-                    and bbd.org_id = #{query.orgId}
-                </if>
-            </where>
-            GROUP BY bbd.bill_id
+                SELECT bbd.bill_id,
+                SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS tariffTotalWorkload
+                FROM base_bill_detail bbd
+                <where>
+                    bbd.executor_id > 0
+                    <if test="query.orgId != null">
+                        and bbd.org_id = #{query.orgId}
+                    </if>
+                </where>
+                GROUP BY bbd.bill_id
+            ) bbd2 ON bbd.bill_id = bbd2.bill_id
+            INNER JOIN (
+                SELECT bbd.bill_id,
+                SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billTotalWorkload
+                FROM base_bill_detail bbd
+                <where>
+                    <if test="query.itemType == 0">
+                        AND bbd.executor_id > 0
+                    </if>
+                    <if test="query.itemType == 1">
+                        AND bbd.executor_id is null
+                    </if>
+                    <if test="query.orgId != null">
+                        and bbd.org_id = #{query.orgId}
+                    </if>
+                </where>
+                GROUP BY bbd.bill_id
             ) bbd1 ON bbd.bill_id = bbd1.bill_id
             inner join (
                 select bb.bill_id as billId,
@@ -4111,12 +4138,17 @@
             ) bb on bbd.bill_id = bb.billId
             left join base_employee be on bbd.executor_id = be.user_id
             <where>
-                <if test="query.executorId != null and query.executorId != -1">
-                    and bbd.executor_id = #{query.executorId}
+                <if test="query.executorId != null">
+                    <if test="query.executorId > 0">
+                        and bbd.executor_id = #{query.executorId}
+                    </if>
+                    <if test="query.executorId &lt; 0">
+                        and bbd.executor_id is null
+                    </if>
                 </if>
-               <if test="query.itemType != null">
+                <if test="query.itemType != null">
                    and bbd.item_type = #{query.itemType}
-               </if>
+                </if>
                 <if test="query.itemId != null">
                     and bbd.item_id = #{query.itemId}
                 </if>
@@ -5037,6 +5069,7 @@
         GROUP BY bbd.itemId,bbd.executorId,bbd.orgId
     </select>
 
+<!--    项目应收 / 账单总应收 * 免单总额-->
     <!--查询执行人的项目免单支付金额-->
     <select id="selectClinicExecutorTariffFreepaymentAmount"
             resultType="com.yunya.feign.report.domain.vo.EmployeeTariffWorkloadVO">
@@ -5051,95 +5084,129 @@
         ) AS workload
         FROM (
             SELECT
-            bbd.orgId,
-            bbd.executorId,
-            IF (
-            bbp.freePayAmount > bbd.billTotalWorkload,
-            bbd.billTotalWorkload,
-            bbp.freePayAmount
-            ) AS freePayAmount,
-            bbd.itemId,
-            bbd.quantity,
-            bbd.itemWorkload,
-            bbd.billTotalWorkload
+                bbd.orgId,
+                bbd.executorId,
+                IF (
+                IF(bbp.freePayAmount-bbd.tariffTotalWorkload>0,bbp.freePayAmount-bbd.tariffTotalWorkload,0) > bbd.billTotalWorkload,
+                bbd.billTotalWorkload,
+                IF(bbp.freePayAmount-bbd.tariffTotalWorkload>0,bbp.freePayAmount-bbd.tariffTotalWorkload,0)
+                ) AS freePayAmount,
+                bbd.itemId,
+                bbd.quantity,
+                bbd.itemWorkload,
+                bbd.billTotalWorkload
             FROM (
-            SELECT
-            bbpd.bill_id,
-            sum(bbpd.principal_amount) AS freePayAmount
-            FROM base_bill_pay_detail bbpd
-            INNER JOIN base_bill_pay bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
-            <where>
-                bbpd.account_item_id in (23, 26)
-                and bbp.received_amount > 0
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
-                </if>
-            </where>
-            GROUP BY bbpd.bill_id
+                SELECT
+                bbpd.bill_id,
+                sum(bbpd.principal_amount) AS freePayAmount
+                FROM base_bill_pay_detail bbpd
+                INNER JOIN base_bill_pay bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
+                <where>
+                    bbpd.account_item_id in (23, 26)
+                    and bbp.received_amount > 0
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                    </if>
+                </where>
+                GROUP BY bbpd.bill_id
             ) bbp
             INNER JOIN (
-            SELECT
-            bbd.org_id AS orgId,
-            bbd.bill_id,
-            IFNULL(bbd.executor_id, -1) AS executorId,
-            bbd.item_id AS itemId,
-            bbd.quantity,
-            bbd.price * bbd.quantity - bbd.discount_amount AS itemWorkload,
-            bbd1.billTotalWorkload
-            FROM base_bill_detail bbd
-            INNER JOIN (
-            SELECT
-            bbd.bill_id,
-            SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billTotalWorkload
-            FROM base_bill_detail bbd
-            <where>
-                <if test="query.itemType != null">
-                    AND bbd.item_type = #{query.itemType}
+                SELECT
+                    bbd.org_id AS orgId,
+                    bbd.bill_id,
+                    IFNULL(bbd.executor_id, -1) AS executorId,
+                    bbd.item_id AS itemId,
+                    bbd.quantity,
+                    bbd.price * bbd.quantity - bbd.discount_amount AS itemWorkload,
+                    bbd1.billTotalWorkload,
+                    <if test="query.itemType == 0">
+                        0 AS tariffTotalWorkload
+                    </if>
+                    <if test="query.itemType == 1">
+                    bbd2.tariffTotalWorkload
+                    </if>
+                FROM base_bill_detail bbd
+                INNER JOIN (
+                    SELECT
+                    bbd.bill_id,
+                    SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS tariffTotalWorkload
+                    FROM base_bill_detail bbd
+                    <where>
+                        bbd.executor_id > 0
+                        <if test="query.orgIds!=null and query.orgIds.length>0">
+                            and bbd.org_id in
+                            <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                                #{item}
+                            </foreach>
+                        </if>
+                        <if test="query.employeeIds!=null and query.employeeIds.length>0">
+                            and bbd.executor_id in
+                            <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                                #{item}
+                            </foreach>
+                        </if>
+                        <if test="query.itemIds!=null and query.itemIds.size()>0">
+                            and bbd.item_id in
+                            <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                                #{item}
+                            </foreach>
+                        </if>
+                    </where>
+                    GROUP BY bbd.bill_id
+                ) bbd2 ON bbd.bill_id = bbd2.bill_id
+                INNER JOIN (
+                SELECT
+                bbd.bill_id,
+                SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billTotalWorkload
+                FROM base_bill_detail bbd
+                <where>
+                    <if test="query.itemType != null">
+                        AND bbd.item_type = #{query.itemType}
+                        <if test="query.itemType == 0">
+                            AND bbd.executor_id > 0
+                        </if>
+                        <if test="query.itemType == 1">
+                            AND bbd.executor_id is null
+                        </if>
+                    </if>
+                    <if test="query.orgIds!=null and query.orgIds.length>0">
+                        and bbd.org_id in
+                        <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    <if test="query.employeeIds!=null and query.employeeIds.length>0">
+                        and bbd.executor_id in
+                        <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    <if test="query.itemIds!=null and query.itemIds.size()>0">
+                        and bbd.item_id in
+                        <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                </where>
+                GROUP BY bbd.bill_id
+                ) bbd1 ON bbd.bill_id = bbd1.bill_id
+                <where>
                     <if test="query.itemType == 0">
                         AND bbd.executor_id > 0
                     </if>
                     <if test="query.itemType == 1">
-                        AND bbd.executor_id is null
+                        AND bbd.executor_id is null or bbd.executor_id &lt; 0
                     </if>
-                </if>
-                <if test="query.orgIds!=null and query.orgIds.length>0">
-                    and bbd.org_id in
-                    <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-                <if test="query.employeeIds!=null and query.employeeIds.length>0">
-                    and bbd.executor_id in
-                    <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-                <if test="query.itemIds!=null and query.itemIds.size()>0">
-                    and bbd.item_id in
-                    <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-            </where>
-            GROUP BY bbd.bill_id
-            ) bbd1 ON bbd.bill_id = bbd1.bill_id
-            <where>
-                <if test="query.itemType == 0">
-                    AND bbd.executor_id > 0
-                </if>
-                <if test="query.itemType == 1">
-                    AND bbd.executor_id is null or bbd.executor_id &lt; 0
-                </if>
-                <if test="query.orgIds!=null and query.orgIds.length>0">
-                    and bbd.org_id in
-                    <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-            </where>
+                    <if test="query.orgIds!=null and query.orgIds.length>0">
+                        and bbd.org_id in
+                        <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                </where>
             ) bbd ON bbp.bill_id = bbd.bill_id
         ) bbd
         GROUP BY bbd.executorId,bbd.itemId,bbd.orgId
