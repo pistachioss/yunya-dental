@@ -2299,10 +2299,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         AppointListQuery listQuery = EntityUtils.build(exportQuery,AppointListQuery.class);
         PageInfo pageInfo = this.findAppointmentListByExample(listQuery);
         List<AppointmentListItemVo> appointmentListItemVoList = pageInfo.getList();
+        List<AppointListExportVo> appointListExportVos = new ArrayList<>();
+        // 合并行
+        List<CellRangeAddress> mergeCells = new ArrayList<>();
         // 预约列表为空抛出异常
         if (StringHelper.isNotEmpty(appointmentListItemVoList)) {
             // 预约列表信息
-            List<AppointListExportVo> appointListExportVos = new ArrayList<>();
             if (appointmentListItemVoList != null && !appointmentListItemVoList.isEmpty()) {
                 List<AppointListExportVo> appointListExportVoList = new ArrayList<>();
                 AppointOperationQuery operationQuery = new AppointOperationQuery();
@@ -2318,13 +2320,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 // 对预约列表信息排序
                 appointListExportVos = appointListExportVoList.stream().sorted(Comparator.comparingInt(AppointListExportVo::getDentistId)).collect(Collectors.toList());
             }
-
-            Integer orgId = exportQuery.getOrgId();
-
-            SimpleDateFormat exportAppointDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String exportAppointDate = exportAppointDateFormat.format(exportQuery.getAppointDate());
-            // 合并行
-            List<CellRangeAddress> mergeCells = new ArrayList<>();
             // 将列表中第一个医生的名字作为初始值
             String firstDentistName = appointListExportVos.get(0).getDentistName();
             int firstRow = 1;
@@ -2350,17 +2345,19 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     lastRow++;
                 }
             }
-            ExcelUtil<AppointListExportVo> appointExcelExport = new ExcelUtil<>(AppointListExportVo.class);
-            appointExcelExport.setMergeRegion(mergeCells);
-            OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-            String orgName = null;
-            if (orgInfo != null) {
-                orgName = orgInfo.getName();
-            }
-            // 导出excel文件名  "XXX门诊预约报表（2020-06-10）"
-            String excelName = orgName + "预约报表(" + exportAppointDate + ")";
-            appointExcelExport.exportExcel(response, appointListExportVos, excelName, excelName);
+
+
         }
+        ExcelUtil<AppointListExportVo> appointExcelExport = new ExcelUtil<>(AppointListExportVo.class);
+        appointExcelExport.setMergeRegion(mergeCells);
+        OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(exportQuery.getOrgId());
+        String orgName = null;
+        if (orgInfo != null) {
+            orgName = orgInfo.getName();
+        }
+        // 导出excel文件名  "XXX门诊预约报表（2020-06-10）"
+        String excelName = orgName + "预约报表(" + DateUtil.format(exportQuery.getAppointDate()) + ")";
+        appointExcelExport.exportExcel(response, appointListExportVos, excelName, excelName);
     }
 
     /**
