@@ -63,6 +63,18 @@ public class AppPatientBaseInfoController {
     }
 
     /**
+     * 根据姓名和手机号判断是否已存在
+     * @param patientBaseInfoQueryForm 患者信息查询QueryFrom
+     * @return ResponseResult
+     */
+    @ApiOperation("根据姓名和手机号判断是否已存在，无提示")
+    @PostMapping("/userExistsFindNotTips")
+    public ResponseResult findUserExistsNotTips(
+            @RequestBody PatientBaseInfoQueryForm patientBaseInfoQueryForm) {
+        return this.patientBaseInfoBiz.appFindUserExistsNotTips(patientBaseInfoQueryForm);
+    }
+
+    /**
      * app端  姓名/病例编号/手机号/姓名拼音模糊查询患者
      * @param patientBaseInfoQueryForm 患者模糊查询模板
      * @return ResponseResult
