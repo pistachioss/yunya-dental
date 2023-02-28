@@ -5014,7 +5014,7 @@
                        AND bbd.executor_id > 0
                    </if>
                    <if test="query.itemType == 1">
-                       AND bbd.executor_id is null or bbd.executor_id &lt; 0
+                       AND bbd.executor_id is null
                    </if>
                 </if>
                 and bb.bill_date IS NOT NULL

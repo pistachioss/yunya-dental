@@ -22,14 +22,7 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -377,7 +370,9 @@ public class EmployeeWorkloadBiz {
         }
         return threadPool.submit(()-> {
             List<ClinicEmployeBonusCoefficientVO> result = new ArrayList<>();
-            List<BaseOrganization> orgs = baseOrganizationMapper.selectOrganizationList(new ClinicPerformanceBusinessQuery());
+            ClinicPerformanceBusinessQuery orgQuery = new ClinicPerformanceBusinessQuery();
+            orgQuery.setOrgIds(Arrays.asList(query.getOrgIds()));
+            List<BaseOrganization> orgs = baseOrganizationMapper.selectOrganizationList(orgQuery);
             orgs.forEach(org->{
                 ClinicEmployeBonusCoefficientVO vo = new ClinicEmployeBonusCoefficientVO();
                 vo.setEmployeeId(-1);
