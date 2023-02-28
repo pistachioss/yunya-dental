@@ -1418,6 +1418,26 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   }
 
   /**
+   * 查询患者是否存在
+   *
+   * @param patientBaseInfoQueryForm 患者信息查询QueryFrom
+   * @return ResponseResult
+   */
+  public ResponseResult appFindUserExistsNotTips(PatientBaseInfoQueryForm patientBaseInfoQueryForm) {
+    List<PatientBaseInfoVo> patientBaseInfoVos;
+    patientBaseInfoVos = patientBaseInfoMapper.findUserExistsList(patientBaseInfoQueryForm);
+    if (!StringHelper.isEmpty(patientBaseInfoVos)) {
+      return ResponseUtil.success("该用户已存在", patientBaseInfoVos);
+    }
+    List<PatientBaseInfoVo> patientBaseInfoVoList =
+            patientBaseInfoMapper.findUserExistsByMobileList(patientBaseInfoQueryForm.getMobile());
+    if (!StringHelper.isEmpty(patientBaseInfoVoList)) {
+      return ResponseUtil.success("该手机号已存在", patientBaseInfoVoList);
+    }
+    return ResponseUtil.success("", patientBaseInfoVoList);
+  }
+
+  /**
    * 修改患者信息
    *
    * @param patientExtendInfoModel 患者信息
