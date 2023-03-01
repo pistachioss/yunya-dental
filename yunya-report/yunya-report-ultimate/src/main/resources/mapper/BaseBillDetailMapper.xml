@@ -3737,7 +3737,6 @@
         from base_bill_pay bbp
         inner join base_bill bb on bbp.bill_id = bb.bill_id
         <where>
-            and bbp.received_amount > 0
             <if test="query.startDate != null and query.startDate != ''">
                 and date_format(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
             </if>
