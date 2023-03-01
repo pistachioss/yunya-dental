@@ -681,7 +681,7 @@ public class EmployeeWorkloadBiz {
               entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
             }
             if (!ObjectUtils.isEmpty(entity)) {
-              entity.setQuantity(quantity);
+//              entity.setQuantity(quantity + entity.getQuantity());
               entity.setFreePayWorkload(workload);
               resultMap.put(key, entity);
             }
