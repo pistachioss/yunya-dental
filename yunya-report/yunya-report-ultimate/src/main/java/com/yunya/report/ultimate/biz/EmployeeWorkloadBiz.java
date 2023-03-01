@@ -659,7 +659,7 @@ public class EmployeeWorkloadBiz {
         (key, vo) -> {
           Integer quantity = StringHelper.defaultInt(vo.getQuantity());
           BigDecimal workload = vo.getWorkload();
-          if (workload.compareTo(BigDecimal.ZERO) > 0) {
+          if (quantity > 0) {
             BillItemTollAndWorkloadVO entity = resultMap.get(key);
             if (ObjectUtils.isEmpty(entity)) {
               entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
@@ -673,7 +673,6 @@ public class EmployeeWorkloadBiz {
         });
     freePaymentMap.forEach(
         (key, vo) -> {
-          Integer quantity = StringHelper.defaultInt(vo.getQuantity());
           BigDecimal workload = vo.getWorkload();
           if (workload.compareTo(BigDecimal.ZERO) > 0) {
             BillItemTollAndWorkloadVO entity = resultMap.get(key);
@@ -681,7 +680,6 @@ public class EmployeeWorkloadBiz {
               entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
             }
             if (!ObjectUtils.isEmpty(entity)) {
-//              entity.setQuantity(quantity + entity.getQuantity());
               entity.setFreePayWorkload(workload);
               resultMap.put(key, entity);
             }

@@ -5039,7 +5039,8 @@
             </where>
             ) bbd ON bbp.bill_id = bbd.billId
             <where>
-                bbp.received_amount > 0
+                /*bbp.received_amount > 0*/
+                bbd.quantity > 0
                 <if test="query.dateType == 0">
                     <if test="query.startDate != null and query.startDate != ''">
                         and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
