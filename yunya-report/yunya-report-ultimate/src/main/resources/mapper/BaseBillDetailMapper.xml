@@ -3705,7 +3705,7 @@
         bbd.patientId,
         bbd.patientName,
         bbd.mobile,
-        bbd.itemReceivedWorkload
+        IFNULL(bbd.itemReceivedWorkload, 0) AS itemReceivedWorkload
         from (
         select bbd.billId,
         date_format(bbd.billDate, '%Y-%m-%d %H:%i') as billDate,
