@@ -572,10 +572,14 @@ public class OrganizationBiz {
     return companyMapper.selectOrgInfoById(null);
   }
 
-  public List<QztOrgVO> qzOrgList() {
+  public List<QztOrgVO> qzOrgList(Integer type) {
     Example example = new Example(Company.class);
-    example.createCriteria().andEqualTo("enableQztSync", true)
-            .andEqualTo("inservice", true);
+    Example.Criteria criteria = example.createCriteria().andEqualTo("inservice", true);
+    if (Objects.equals(0, type)) {
+      criteria.andEqualTo("enableQztSync", true);
+    } else {
+      criteria.andEqualTo("enableBjSync", true);
+    }
     List<Company> list = companyMapper.selectByExample(example);
     return BeanCopierUtils.listGeneralCopyBean(list, QztOrgVO.class);
   }
