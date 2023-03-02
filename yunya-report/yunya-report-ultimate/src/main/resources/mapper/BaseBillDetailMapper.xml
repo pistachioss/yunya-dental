@@ -44,7 +44,8 @@
         bdi.quantity,
         bdi.totalOriginalAmount,
         bdi.discountAmount,
-        bdi.totalOriginalAmount - bdi.discountAmount AS actualAmount
+        bdi.totalOriginalAmount - bdi.discountAmount AS actualAmount,
+        convert(bdi.itemAmount / bdi.itemTotalAmount * bdi.freePayAmount, decimal(19, 2)) as freePaymentAmount
         FROM
         (
         SELECT
@@ -70,26 +71,58 @@
         bbd.price,
         bbd.quantity,
         bbd.price * bbd.quantity AS totalOriginalAmount,
-        bbd.discount_amount AS discountAmount
+        bbd.discount_amount AS discountAmount,
+        bbd.price * bbd.quantity - bbd.discount_amount AS itemAmount,
+        CASE
+        WHEN bbd.item_type = 0 THEN IFNULL(bt.tariffTotalAmount, 0) ELSE IFNULL(bo.oralTotalAmount, 0) END AS itemTotalAmount,
+        CASE
+        WHEN bbd.item_type = 0 THEN
+            IF(
+                IFNULL(bbp.freePayAmount, 0) >IFNULL(bt.tariffTotalAmount, 0),
+                IFNULL(bt.tariffTotalAmount, 0),
+                IFNULL(bbp.freePayAmount, 0)
+            )
+        ELSE
+            IF(
+                IF(IFNULL(bbp.freePayAmount, 0)-IFNULL(bt.tariffTotalAmount, 0)>0,IFNULL(bbp.freePayAmount, 0)-IFNULL(bt.tariffTotalAmount, 0),0) > IFNULL(bo.oralTotalAmount, 0),
+                IFNULL(bo.oralTotalAmount, 0),
+                IF(IFNULL(bbp.freePayAmount, 0)-IFNULL(bt.tariffTotalAmount, 0)>0,IFNULL(bbp.freePayAmount, 0)-IFNULL(bt.tariffTotalAmount, 0),0)
+            )
+        END AS freePayAmount
         FROM base_bill_detail bbd
         LEFT JOIN base_tariff_info bti ON bbd.item_id=bti.item_id AND bbd.item_type=bti.item_type
         LEFT JOIN (
-        SELECT
-        bb.bill_id AS billId,
-        bb.order_date AS orderDate,
-        bb.patient_id AS patientId,
-        bb.bill_num AS billNum,
-        bp.`name` AS patientName,
-        bp.gender AS gender,
-        bp.mobile AS mobile,
-        bp.pinyin_name AS pinyinName
-        FROM base_bill bb
-        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+            SELECT bill_id, SUM(price * quantity - discount_amount) AS tariffTotalAmount
+            FROM base_bill_detail WHERE item_type = 0 and executor_id > 0 GROUP BY bill_id
+        ) bt ON bbd.bill_id = bt.bill_id
+        LEFT JOIN (
+            SELECT bill_id, SUM(price * quantity - discount_amount) AS oralTotalAmount
+            FROM base_bill_detail WHERE item_type = 1 and executor_id is null GROUP BY bill_id
+        ) bo ON bbd.bill_id = bo.bill_id
+        LEFT JOIN (
+            SELECT bbpd.bill_id, sum(bbpd.principal_amount) AS freePayAmount
+            FROM base_bill_pay_detail bbpd
+            INNER JOIN base_bill_pay bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
+            where bbpd.account_item_id in (23, 26) and bbp.received_amount > 0 GROUP BY bbpd.bill_id
+        ) bbp ON bbp.bill_id = bbd.bill_id
+        LEFT JOIN (
+            SELECT
+            bb.bill_id AS billId,
+            bb.order_date AS orderDate,
+            bb.patient_id AS patientId,
+            bb.bill_num AS billNum,
+            bp.`name` AS patientName,
+            bp.gender AS gender,
+            bp.mobile AS mobile,
+            bp.pinyin_name AS pinyinName
+            FROM base_bill bb
+            LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
         ) bp ON bbd.bill_id = bp.billId
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         LEFT JOIN base_organization bo ON bo.org_id = bbd.org_id
         ) bdi
         <where>
+            freePayAmount > 0
             <if test="query.orgIds!=null and query.orgIds.size()>0">
                 AND bdi.orgId in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
