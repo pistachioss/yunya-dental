@@ -47,7 +47,7 @@
     from reservation oa
     left join reservation_resource rr on oa.reservation_source_id = rr.id
     <where>
-      <if test="query.orgName != null">
+      <if test="query.orgName != null and query.orgName != ''">
         and oa.org_name = #{query.orgName}
       </if>
       <if test="query.reservationSourceId != null">
@@ -84,7 +84,7 @@
     from reservation oa
     <where>
       oa.status = 1
-      <if test="query.orgName != null">
+      <if test="query.orgName != null and query.orgName != ''">
         and oa.org_name = #{query.orgName}
       </if>
       <if test="query.reservationSourceId != null">
