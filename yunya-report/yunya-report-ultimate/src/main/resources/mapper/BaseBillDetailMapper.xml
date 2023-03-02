@@ -122,7 +122,6 @@
         LEFT JOIN base_organization bo ON bo.org_id = bbd.org_id
         ) bdi
         <where>
-            freePayAmount > 0
             <if test="query.orgIds!=null and query.orgIds.size()>0">
                 AND bdi.orgId in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
