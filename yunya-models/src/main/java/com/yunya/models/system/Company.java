@@ -49,6 +49,12 @@ public class Company {
   @Column(name = "qzt_institution_code")
   private String qztInstitutionCode;
 
+  @Column(name = "enable_bj_sync")
+  private Boolean enableBjSync;
+
+  @Column(name = "bj_institution_code")
+  private String bjInstitutionCode;
+
   /** 是否启用 */
   @ApiModelProperty("是否启用")
   private Boolean inservice;
@@ -323,5 +329,21 @@ public class Company {
 
   public void setQztInstitutionCode(String qztInstitutionCode) {
     this.qztInstitutionCode = qztInstitutionCode;
+  }
+
+  public Boolean getEnableBjSync() {
+    return enableBjSync;
+  }
+
+  public void setEnableBjSync(Boolean enableBjSync) {
+    this.enableBjSync = enableBjSync;
+  }
+
+  public String getBjInstitutionCode() {
+    return bjInstitutionCode;
+  }
+
+  public void setBjInstitutionCode(String bjInstitutionCode) {
+    this.bjInstitutionCode = bjInstitutionCode;
   }
 }

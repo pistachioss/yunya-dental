@@ -24,3 +24,6 @@ domainUrl: http://192.168.31.95
 
 qzt:
   prefix: http://121.41.36.72:8010
+
+bj:
+  prefix: 8.136.199.41:84

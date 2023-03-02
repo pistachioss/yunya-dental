@@ -1,5 +1,6 @@
 package com.yunya.modules.system.task;
 
+import com.yunya.modules.system.biz.BjDoctorBiz;
 import com.yunya.modules.system.biz.QztDoctorBiz;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -22,11 +23,19 @@ public class Task {
 
     @Resource
     private QztDoctorBiz qztDoctorBiz;
+    @Resource
+    private BjDoctorBiz BjDoctorBiz;
 
     @Scheduled(cron = "${corn.qzt-doctor}")
     @RequestMapping("/white/qztDocter/sync")
     public void syncDoctor() {
         qztDoctorBiz.sync();
+    }
+
+    @Scheduled(cron = "${corn.qzt-doctor}")
+    @RequestMapping("/white/bjDocter/sync")
+    public void syncBjDoctor() {
+        BjDoctorBiz.sync();
     }
 
 }
