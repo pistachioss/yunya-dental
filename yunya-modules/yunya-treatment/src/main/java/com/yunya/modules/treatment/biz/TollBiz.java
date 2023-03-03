@@ -337,6 +337,7 @@ public class TollBiz {
    * @param model 收费参数
    */
   public TollConfirmVO confirmCharge(TollModel model) {
+    checkAdditionaDiscount(model);
     checkPrepayments(model.getPrepaymentAccountModels(), model.getSpPrepaymentAccountModels());
     Integer orderRecordId = model.getOrderRecordId();
     Byte discountType = model.getDiscountType();
@@ -479,6 +480,16 @@ public class TollBiz {
     return tollConfirmVO;
   }
 
+  private void checkAdditionaDiscount(TollModel model) {
+    Byte discountType = model.getDiscountType();
+    if (discountType.intValue() == 3) {
+      GeneralDiscountModel generalDiscountModel = model.getGeneralDiscountModel();
+      AccreditDiscountModel accreditDiscountModel = model.getAccreditDiscountModel();
+
+
+    }
+  }
+
   /**
    * 检查预付款账户
    *
@@ -581,6 +592,13 @@ public class TollBiz {
       case 2:
         saveBillPayDetailRecordWithAccreditDiscount(
             totalCharge, orderRecordId, billRecordId, accreditDiscount);
+        break;
+      case 3:
+        // 价目使用卡券优惠 + 商品使用授权折扣
+        saveBillPayDetailRecordWithGeneralDiscount(
+                totalCharge, orderRecordId, billRecordId, generalDiscount);
+        saveBillPayDetailRecordWithAccreditDiscount(
+                totalCharge, orderRecordId, billRecordId, accreditDiscount);
         break;
       default:
         break;
@@ -900,6 +918,10 @@ public class TollBiz {
         privilegeAmount =
             calculateAccreditPrivilegeAmount(orderRecordId, accreditDiscountDetailModels);
         break;
+      case 3:
+        privilegeAmount = calculateGeneralPrivilegeAmount(orderRecordId, generalDiscountModel);
+        privilegeAmount = privilegeAmount.add(calculateAccreditPrivilegeAmount(orderRecordId, accreditDiscountModel.getAccreditDiscountDetailModels()));
+        break;
       default:
         break;
     }
@@ -1035,50 +1057,55 @@ public class TollBiz {
       AccreditDiscountModel accreditDiscountModel) {
     switch (discountType) {
       case 1:
-        Integer memberTypeId = generalDiscountModel.getMemberTypeId();
-        Integer discountCouponId = generalDiscountModel.getDiscountCouponId();
-        List<CouponDiscountInfoModel> discountInfoModels =
-            generalDiscountModel.getCouponDiscountInfoModels();
-        if (null == memberTypeId
-            && null == discountCouponId
-            && StringHelper.isEmpty(discountInfoModels)) {
-          throw new ClientServiceException("当前未选择任何卡券！", PARAMETERS_IS_ILLEGAL);
-        }
+        checkCardDiscount(generalDiscountModel);
         break;
       case 2:
-        if (accreditDiscountModel != null) {
-          Integer warrantId = accreditDiscountModel.getWarrantId();
-          SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
-          if (null != employee) {
-            if (!employee.getDiscount()) {
-              throw new ClientServiceException("您当前选择的授权人不具备授权折扣权限！", PARAMETERS_IS_ILLEGAL);
-            }
-            List<AccreditDiscountDetailModel> discountDetailModels =
-                accreditDiscountModel.getAccreditDiscountDetailModels();
-            if (StringHelper.isEmpty(discountDetailModels)) {
-              throw new ClientServiceException("授权折扣订单列表不能为空！", PARAMETERS_IS_ILLEGAL);
-            }
-          } else {
-            throw new ClientServiceException("授权人不存在！", PARAMETERS_IS_ILLEGAL);
-          }
-        } else {
-          log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓校验优惠参数↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-          log.info("==> [class]:com.yunya.modules.treatment.biz.TollBiz");
-          log.info(
-              "==> [method]: private void checkPrivilegeParam(Byte discountType,"
-                  + "GeneralDiscountModel generalDiscountModel, "
-                  + "AccreditDiscountModel accreditDiscountModel)");
-          log.info(
-              "==> [params]:discountType={},generalDiscountModel={},accreditDiscountModel{}",
-              discountType,
-              generalDiscountModel,
-              null);
-          log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
-          throw new ClientServiceException("授权折扣异常", PARAMETERS_IS_ILLEGAL);
-        }
+        checkAccreditDiscount(accreditDiscountModel);
+        break;
+      case 3:
+        checkCardDiscount(generalDiscountModel);
+        checkAccreditDiscount(accreditDiscountModel);
         break;
       default:
         break;
+    }
+  }
+
+  /**
+   * 检查授权折扣参数
+   *
+   * @param accreditDiscountModel
+   */
+  private void checkAccreditDiscount(AccreditDiscountModel accreditDiscountModel) {
+    if (accreditDiscountModel != null) {
+      Integer warrantId = accreditDiscountModel.getWarrantId();
+      SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
+      if (null != employee) {
+        if (!employee.getDiscount()) {
+          throw new ClientServiceException("您当前选择的授权人不具备授权折扣权限！", PARAMETERS_IS_ILLEGAL);
+        }
+        List<AccreditDiscountDetailModel> discountDetailModels =
+                accreditDiscountModel.getAccreditDiscountDetailModels();
+        if (StringHelper.isEmpty(discountDetailModels)) {
+          throw new ClientServiceException("授权折扣订单列表不能为空！", PARAMETERS_IS_ILLEGAL);
+        }
+      } else {
+        throw new ClientServiceException("授权人不存在！", PARAMETERS_IS_ILLEGAL);
+      }
+    } else {
+      throw new ClientServiceException("授权折扣异常", PARAMETERS_IS_ILLEGAL);
+    }
+  }
+
+  private void checkCardDiscount(GeneralDiscountModel generalDiscountModel) {
+    Integer memberTypeId = generalDiscountModel.getMemberTypeId();
+    Integer discountCouponId = generalDiscountModel.getDiscountCouponId();
+    List<CouponDiscountInfoModel> discountInfoModels =
+            generalDiscountModel.getCouponDiscountInfoModels();
+    if (null == memberTypeId
+            && null == discountCouponId
+            && StringHelper.isEmpty(discountInfoModels)) {
+      throw new ClientServiceException("当前未选择任何卡券！", PARAMETERS_IS_ILLEGAL);
     }
   }
 
@@ -1321,6 +1348,10 @@ public class TollBiz {
         saveCouponPrivilege(patientId, orderRecordId, generalDiscount);
         break;
       case 2:
+        saveAccreditPrivilege(patientId, orderRecordId, accreditDiscount);
+        break;
+      case 3:
+        saveCouponPrivilege(patientId, orderRecordId, generalDiscount);
         saveAccreditPrivilege(patientId, orderRecordId, accreditDiscount);
         break;
       default:
