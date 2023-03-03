@@ -170,6 +170,8 @@ public class RedisConstants implements Serializable {
 
   /** ---------------------------全诊通----------------------------------------------- */
   public static final String QZT_TOKEN =  "qzt:token";
+  /** ---------------------------滨江----------------------------------------------- */
+  public static final String BJ_TOKEN =  "bj:token";
 
   /**
    * 设置key中的占位符

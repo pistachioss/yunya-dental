@@ -135,9 +135,12 @@ public class OrganizationController {
   }
 
   @ApiOperation("查询已开启全诊通认证门诊列表")
-  @GetMapping("/qzt/list")
-  public ResponseResult<List<QztOrgVO>> qzOrgList() {
-    List<QztOrgVO> resultList = organizationBiz.qzOrgList();
+  @ApiImplicitParams({
+          @ApiImplicitParam(name="type", value="门诊类型（0：全诊通 1：滨江麟康）", dataType = "integer", required=true)
+  })
+  @GetMapping("/qzt/list/{type}")
+  public ResponseResult<List<QztOrgVO>> qzOrgList(@PathVariable(value = "type") Integer type) {
+    List<QztOrgVO> resultList = organizationBiz.qzOrgList(type);
     return ResponseUtil.success(resultList);
   }
 }
