@@ -29,4 +29,11 @@ public class Task {
         qztMedicalBiz.sync();
     }
 
+    @Scheduled(cron = "00 00 01 * * ?")
+    @RequestMapping("/white/bjMedical/sync")
+    public void syncBjDoctor() {
+        qztMedicalBiz.sync();
+    }
+
+
 }
