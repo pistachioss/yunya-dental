@@ -4113,8 +4113,8 @@
                                 and bbd.org_id = #{query.orgId}
                             </if>
                         </where>
-                        GROUP BY bbd.bill_id, bbd.item_id
-                    ) bbd1 ON bbd.bill_id = bbd1.bill_id and bbd.item_id= bbd1.item_id
+                        GROUP BY bbd.bill_id
+                    ) bbd1 ON bbd.bill_id = bbd1.bill_id
                     inner join (
                         select bb.bill_id as billId,
                         bb.patient_id as patientId,
@@ -5179,15 +5179,9 @@
                                 #{item}
                             </foreach>
                         </if>
-                        <if test="query.itemIds!=null and query.itemIds.size()>0">
-                            and bbd.item_id in
-                            <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
-                                #{item}
-                            </foreach>
-                        </if>
                     </where>
-                    GROUP BY bbd.bill_id, bbd.item_id
-                ) bbd1 ON bbd.bill_id = bbd1.bill_id and bbd.item_id=bbd1.item_id
+                    GROUP BY bbd.bill_id
+                ) bbd1 ON bbd.bill_id = bbd1.bill_id
                 <where>
                     <if test="query.itemType == 0">
                         AND bbd.executor_id > 0
@@ -5198,6 +5192,12 @@
                     <if test="query.orgIds!=null and query.orgIds.length>0">
                         and bbd.org_id in
                         <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    <if test="query.itemIds!=null and query.itemIds.size()>0">
+                        and bbd.item_id in
+                        <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
                             #{item}
                         </foreach>
                     </if>
