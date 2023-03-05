@@ -24,3 +24,8 @@ domainUrl: http://192.168.31.95
 
 qzt:
   prefix: http://121.41.36.72:8010
+
+bj:
+  prefix: 8.136.199.41:84
+  appKey: 65028
+  appSecret: cb2d6e93507a0ee800b8473e486b89ed34554aa2

@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 @ToString
 @EqualsAndHashCode(callSuper = true)
 public class EmployeeTariffWorkloadVO extends ClinicEmployeTariffInfoVO implements Serializable {
+    @ApiModelProperty("数量")
+    private Integer quantity;
 
     @ApiModelProperty("工作量")
     private BigDecimal workload;

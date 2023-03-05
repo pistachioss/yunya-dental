@@ -73,4 +73,6 @@ public class OrganizationInfoVO implements Serializable {
   private List<Integer> orgIds;
   private Boolean enableQztSync;
   private String qztInstitutionCode;
+  private Boolean enableBjSync;
+  private String bjInstitutionCode;
 }

@@ -9,6 +9,7 @@
     <result column="reservation_source_id" jdbcType="INTEGER" property="reservationSourceId" />
     <result column="reservation_limit_id" jdbcType="INTEGER" property="reservationLimitId" />
     <result column="appoint_item_name" jdbcType="VARCHAR" property="appointItemName" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
     <result column="org_id" jdbcType="INTEGER" property="orgId" />
     <result column="patient_name" jdbcType="VARCHAR" property="patientName" />
     <result column="patient_phone" jdbcType="VARCHAR" property="patientPhone" />
@@ -32,6 +33,7 @@
       , rr.source_name as 'reservationSourceName'
       , oa.reservation_date as 'reservationDate'
       , oa.appoint_item_name as 'appointItemName'
+      , oa.code
       , oa.patient_name as 'patientName'
       , oa.patient_phone as 'patientPhone'
       , oa.patient_gender as 'patientGender'
@@ -45,8 +47,8 @@
     from reservation oa
     left join reservation_resource rr on oa.reservation_source_id = rr.id
     <where>
-      <if test="query.orgId != null">
-        and oa.org_id = #{query.orgId}
+      <if test="query.orgName != null and query.orgName != ''">
+        and oa.org_name = #{query.orgName}
       </if>
       <if test="query.reservationSourceId != null">
         and oa.reservation_source_id = #{query.reservationSourceId}
@@ -74,6 +76,42 @@
       </if>
     </where>
     order by oa.crt_time DESC
+  </select>
+
+  <!-- 根据条件批量查询预约申请中已预约数量 -->
+  <select id="findByCondition_appCount" resultType="INTEGER">
+    select count(0) as 'count'
+    from reservation oa
+    <where>
+      oa.status = 1
+      <if test="query.orgName != null and query.orgName != ''">
+        and oa.org_name = #{query.orgName}
+      </if>
+      <if test="query.reservationSourceId != null">
+        and oa.reservation_source_id = #{query.reservationSourceId}
+      </if>
+      <if test="query.appointItemName != null and query.appointItemName != ''">
+        and oa.appoint_item_name like concat('%',#{query.appointItemName},'%')
+      </if>
+      <if test="query.patientName != null and query.patientName != ''">
+        and oa.patient_name like concat('%',#{query.patientName},'%')
+      </if>
+      <if test="query.patientPhone != null and query.patientPhone != ''">
+        and oa.patient_phone like concat('%',#{query.patientPhone},'%')
+      </if>
+      <if test="query.status != null">
+        and oa.status = #{query.status}
+      </if>
+      <if test="query.inservice != null">
+        and oa.inservice = #{query.inservice}
+      </if>
+      <if test="query.appointStartDate != null and query.appointStartDate != null">
+        and date_format(oa.crt_time,'%Y-%m-%d') &gt;= #{query.appointStartDate}
+      </if>
+      <if test="query.appointEndDate != null and query.appointEndDate != ''">
+        and date_format(oa.crt_time,'%Y-%m-%d') &lt;= #{query.appointEndDate}
+      </if>
+    </where>
   </select>
 
   <select id="submittedLimit" resultType="com.yunya.models.appointment.Reservation">

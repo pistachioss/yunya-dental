@@ -482,4 +482,10 @@ public interface RemoteSystemServiceFeign {
    */
   @GetMapping(value = "/api/dictItem/{typeName}")
   List<DictionaryItem> findDictItemByTypeName(@PathVariable(value = "typeName") String typeName);
+
+  @GetMapping("/bj/doctor/list")
+  List<BjDoctor> certBjDoctors();
+
+  @GetMapping("/bj/company/list")
+  List<Company> certBjCompanys();
 }

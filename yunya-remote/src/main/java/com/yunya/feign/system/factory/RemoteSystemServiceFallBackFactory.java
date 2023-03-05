@@ -316,4 +316,14 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public List<DictionaryItem> findDictItemByTypeName(String typeName) {
     return null;
   }
+
+  @Override
+  public List<BjDoctor> certBjDoctors() {
+    return null;
+  }
+
+  @Override
+  public List<Company> certBjCompanys() {
+    return null;
+  }
 }

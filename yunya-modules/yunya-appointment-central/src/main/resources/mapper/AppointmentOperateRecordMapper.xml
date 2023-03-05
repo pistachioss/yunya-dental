@@ -46,6 +46,12 @@
           <if test="query.appointmentId != null">
             and aor.appointment_id = #{query.appointmentId}
           </if>
+		  <if test="query.appointIds!=null and query.appointIds.size()>0">
+            and aor.appointment_id in
+            <foreach collection="query.appointIds" item="item" index="index" open="(" close=")" separator=",">
+               #{item}
+            </foreach>
+          </if>
         </where>
         order by aor.crt_time
         <if test="query.orderBy != null">

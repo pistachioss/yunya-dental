@@ -5,6 +5,8 @@ import com.yunya.feign.appointment.domain.model.ReservationModel;
 import com.yunya.feign.appointment.domain.query.ReservationCodeQuery;
 import com.yunya.feign.appointment.domain.query.ReservationQuery;
 import com.yunya.feign.appointment.vo.ReservationVo;
+import com.yunya.feign.report.domain.query.PatientArrearsCallForQuery;
+import com.yunya.feign.report.domain.vo.PatientArrearsCallForVO;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -19,6 +21,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Reservation;
 import com.yunya.modules.appointment.biz.web.ReservationLimitBiz;
@@ -30,6 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Date;
@@ -149,6 +154,19 @@ public class ReservationBiz extends BaseBiz<ReservationMapper, Reservation> {
 //        }
         return results;
     }
+
+    public void export(
+            HttpServletResponse response, ReservationQuery query) throws IOException {
+        List<ReservationVo> resultList = mapper.findByCondition(query);
+        ExcelUtil<ReservationVo> excelUtil = new ExcelUtil<>(ReservationVo.class);
+        excelUtil.exportExcel(response, resultList, "获取预约意向登记列表", "获取预约意向登记列表");
+    }
+
+    public Integer list_appCount(ReservationQuery query) {
+        Integer results = mapper.findByCondition_appCount(query);
+        return results;
+    }
+
     private void setOrgInfo(List<ReservationVo> results) {
         List<Integer> orgIds = results.stream().mapToInt(ReservationVo::getOrgId).boxed().collect(Collectors.toList());
         List<OrganizationInfoDetail> orgInfos = systemServiceFeign.findOrgInfoInIds(orgIds);

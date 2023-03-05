@@ -101,4 +101,8 @@ public class BillTariffIncomeDetailVO implements Serializable {
   @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("应收金额（原价合计-折扣金额）")
   private BigDecimal actualAmount;
+  /** 免单金额 */
+  @Excel(name = "免单金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("免单金额")
+  private BigDecimal freePaymentAmount;
 }

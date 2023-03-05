@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * 查询预约操作记录参数封装
@@ -46,5 +47,9 @@ public class AppointOperationQuery implements Serializable {
      */
     @ApiModelProperty(value = "预约ID")
     private Integer appointmentId;
+
+    /** 预约id列表 */
+    @ApiModelProperty("预约id列表")
+    private Collection<Integer> appointIds;
 
 }

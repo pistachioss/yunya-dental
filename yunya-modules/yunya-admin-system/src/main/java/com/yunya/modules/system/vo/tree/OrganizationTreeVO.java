@@ -4,6 +4,8 @@ package com.yunya.modules.system.vo.tree;
 import com.yunya.framework.common.model.TreeNode;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.persistence.Column;
+
 /**
  * 简单介绍:</br> 组织树
  *
@@ -29,6 +31,11 @@ public class OrganizationTreeVO extends TreeNode {
   private Boolean enableQztSync;
   @ApiModelProperty("全诊通医疗机构编码")
   private String qztInstitutionCode;
+  @ApiModelProperty("滨江医疗机构编码")
+  private Boolean enableBjSync;
+
+  @ApiModelProperty("滨江医疗机构编码")
+  private String bjInstitutionCode;
 
   public OrganizationTreeVO() {
   }
@@ -95,6 +102,22 @@ public class OrganizationTreeVO extends TreeNode {
 
   public void setQztInstitutionCode(String qztInstitutionCode) {
     this.qztInstitutionCode = qztInstitutionCode;
+  }
+
+  public Boolean getEnableBjSync() {
+    return enableBjSync;
+  }
+
+  public void setEnableBjSync(Boolean enableBjSync) {
+    this.enableBjSync = enableBjSync;
+  }
+
+  public String getBjInstitutionCode() {
+    return bjInstitutionCode;
+  }
+
+  public void setBjInstitutionCode(String bjInstitutionCode) {
+    this.bjInstitutionCode = bjInstitutionCode;
   }
 
   @Override

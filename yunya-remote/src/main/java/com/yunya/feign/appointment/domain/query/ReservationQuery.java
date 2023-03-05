@@ -28,10 +28,10 @@ public class ReservationQuery implements Serializable {
     private Integer pageSize = 10;
 
     /**
-     * 就近门诊ID
+     * 就近门诊
      */
-    @ApiModelProperty(value = "门诊ID")
-    private Integer orgId;
+    @ApiModelProperty(value = "门诊")
+    private String orgName;
 
     /**
      * 预约项目ID

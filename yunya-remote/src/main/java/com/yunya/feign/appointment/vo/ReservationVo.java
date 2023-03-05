@@ -25,6 +25,42 @@ public class ReservationVo implements Serializable {
     private Integer id;
 
     /**
+     * 创建时间
+     */
+    @Excel(name = "登记时间", dateFormat = "yyyy-MM-dd HH:mm:ss", width = 30)
+    private Date crtTime;
+
+    /**
+     * 就诊人名字
+     */
+    @Excel(name = "就诊人姓名", width = 20)
+    private String patientName;
+
+    /**
+     * 就诊人性别
+     */
+    @Excel(name = "就诊人性别", readConverterExp = "0=男,1=女")
+    private Byte patientGender;
+
+    /**
+     * 就诊人手机号
+     */
+    @Excel(name = "联系电话")
+    private String patientPhone;
+
+    /**
+     * 预约项目
+     */
+    @Excel(name = "预约项目", width = 20)
+    private String appointItemName;
+
+    /**
+     * 权益码
+     */
+    @Excel(name = "权益码", width = 30)
+    private String code;
+
+    /**
      * 预约意向渠道ID
      */
     private Integer reservationSourceId;
@@ -37,12 +73,8 @@ public class ReservationVo implements Serializable {
     /**
      * 预约意向时间
      */
+    @Excel(name = "意向预约时间")
     private String reservationDate;
-
-    /**
-     * 预约项目
-     */
-    private String appointItemName;
 
     /**
      * 预约意向门诊ID
@@ -52,31 +84,19 @@ public class ReservationVo implements Serializable {
     /**
      * 预约意向门诊ID
      */
+    @Excel(name = "就近门诊", width = 40)
     private String orgName;
-
-    /**
-     * 就诊人名字
-     */
-    private String patientName;
-
-    /**
-     * 就诊人手机号
-     */
-    private String patientPhone;
-
-    /**
-     * 就诊人性别
-     */
-    private Byte patientGender;
 
     /**
      * 登记状态(0：新增；1：已预约；2：已放弃)
      */
+    @Excel(name = "状态", readConverterExp = "0=新增,1=已预约,2=已放弃")
     private Byte status;
 
     /**
      * 备注
      */
+    @Excel(name = "备注", width = 30)
     private String remarks;
 
     /**
@@ -87,24 +107,15 @@ public class ReservationVo implements Serializable {
     /**
      * 创建人名称
      */
-    @Column(name = "crt_name")
     private String crtName;
-
-    /**
-     * 创建时间
-     */
-    @Column(name = "crt_time")
-    private Date crtTime;
 
     /**
      * 更新人名称
      */
-    @Column(name = "upd_name")
     private String updName;
 
     /**
      * 更新时间
      */
-    @Column(name = "upd_time")
     private Date updTime;
 }
