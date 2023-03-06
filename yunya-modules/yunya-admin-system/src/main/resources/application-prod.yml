@@ -34,6 +34,6 @@ qzt:
   prefix: https://www.aioclinic.com
 
 bj:
-  prefix: 8.136.250.65:127
+  prefix: http://8.136.250.65:127
   appKey: 65028
   appSecret: cb2d6e93507a0ee800b8473e486b89ed34554aa2
