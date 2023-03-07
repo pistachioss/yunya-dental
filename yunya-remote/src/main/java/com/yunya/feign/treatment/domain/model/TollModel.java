@@ -28,8 +28,8 @@ public class TollModel implements Serializable {
   @ApiModelProperty(value = "开单记录ID ", required = true)
   @NotNull(message = "开单记录ID不能为空！")
   private Integer orderRecordId;
-  /** 折扣方式（0-不使用优惠；1-优惠；2-授权折扣） */
-  @ApiModelProperty(value = "折扣类型（0-不使用优惠；1-优惠；2-授权折扣）", required = true)
+  /** 折扣方式（0-不使用优惠；1-优惠；2-授权折扣；3-混搭（价目使用优惠+商品使用折扣）） */
+  @ApiModelProperty(value = "折扣类型（0-不使用优惠；1-优惠；2-授权折扣；3-混搭（价目使用优惠+商品使用折扣））", required = true)
   @NotNull(message = "优惠类型不能为空")
   private Byte discountType;
   /** 普通优惠信息 */
