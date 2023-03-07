@@ -96,7 +96,7 @@
             <if test="type != null">
                 and `type` = #{type}
             </if>
-        order by `enable` desc, `crt_time` desc
+        order by `enable` desc, `sort` desc
     </select>
 
     <update id="enableById">
