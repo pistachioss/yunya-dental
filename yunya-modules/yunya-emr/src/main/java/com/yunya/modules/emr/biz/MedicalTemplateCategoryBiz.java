@@ -97,7 +97,7 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
         List<MedicalTemplateCategory> parentList = list.stream().filter(obj ->
                             Objects.equals(BusinessConstants.DEFAULT_PARENT_ID, obj.getParentId()))
                             .collect(Collectors.toList());
-        parentList.sort(Comparator.comparing(MedicalTemplateCategory::getSort).reversed());
+        parentList.sort(Comparator.comparing(MedicalTemplateCategory::getId));
         //父分类子分类做map映射
         Map<Integer, List<MedicalTemplateCategory>> categoryMap = list.stream().
                                     collect(Collectors.groupingBy(obj -> obj.getParentId()));

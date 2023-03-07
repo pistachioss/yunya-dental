@@ -3,6 +3,7 @@ package com.yunya.modules.emr.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.emr.domain.form.GeneralTemplateForm;
 import com.yunya.feign.emr.domain.form.MedicalTempCategorySortForm;
+import com.yunya.feign.emr.domain.form.MedicalTempSortForm;
 import com.yunya.feign.emr.domain.form.MedicalTemplateForm;
 import com.yunya.feign.emr.domain.model.GeneralTemplateModel;
 import com.yunya.feign.emr.domain.model.MedicalTemplateModel;
@@ -91,14 +92,12 @@ public class TemplateController {
     }
     @ApiOperation("公司端-病历模板-排序修改")
     @PutMapping("medical/template/sort")
-    @ApiImplicitParam(name="type", value="分类（0：普通模板 1：病例模板）", dataType = "integer")
     @CurrentUser
-    public ResponseResult updateSort(@PathVariable(value = "type") Integer type,
-                                     @RequestBody List<MedicalTempCategorySortForm> medicalTempCategorySortForms) {
-        if(type == 0){
-            templateBiz.updateGenSort(medicalTempCategorySortForms);
+    public ResponseResult updateSort(@RequestBody MedicalTempSortForm medicalTempCategorySortForms) {
+        if(medicalTempCategorySortForms.getType() == 0){
+            templateBiz.updateGenSort(medicalTempCategorySortForms.getMedicalTempCategorySortForms());
         }else{
-            templateBiz.updateSort(medicalTempCategorySortForms);
+            templateBiz.updateSort(medicalTempCategorySortForms.getMedicalTempCategorySortForms());
         }
 
         return ResponseUtil.success();
