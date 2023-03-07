@@ -34,6 +34,7 @@ public class GeneralTemplate implements Serializable {
      * 启用/禁用
      */
     private Integer enable;
+    @Column(name = "sort")
     private Integer sort;
 
     /**
