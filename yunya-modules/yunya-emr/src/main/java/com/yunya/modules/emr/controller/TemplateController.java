@@ -37,13 +37,13 @@ public class TemplateController {
     private TemplateBiz templateBiz;
 
 
-    @ApiOperation("公司端-普通模板-排序修改")
-    @PutMapping("medical/template/updateGenSort")
-    @CurrentUser
-    public ResponseResult updateGenSort(@RequestBody List<MedicalTempCategorySortForm> medicalTempCategorySortForms) {
-        templateBiz.updateGenSort(medicalTempCategorySortForms);
-        return ResponseUtil.success();
-    }
+//    @ApiOperation("公司端-普通模板-排序修改")
+//    @PutMapping("medical/template/updateGenSort")
+//    @CurrentUser
+//    public ResponseResult updateGenSort(@RequestBody List<MedicalTempCategorySortForm> medicalTempCategorySortForms) {
+//        templateBiz.updateGenSort(medicalTempCategorySortForms);
+//        return ResponseUtil.success();
+//    }
 
     @ApiOperation("公司端-普通模板新增")
     @PostMapping("template/{categoryId}/general")
@@ -91,9 +91,16 @@ public class TemplateController {
     }
     @ApiOperation("公司端-病历模板-排序修改")
     @PutMapping("medical/template/sort")
+    @ApiImplicitParam(name="type", value="分类（0：普通模板 1：病例模板）", dataType = "integer")
     @CurrentUser
-    public ResponseResult updateSort(@RequestBody List<MedicalTempCategorySortForm> medicalTempCategorySortForms) {
-        templateBiz.updateSort(medicalTempCategorySortForms);
+    public ResponseResult updateSort(@PathVariable(value = "type") Integer type,
+                                     @RequestBody List<MedicalTempCategorySortForm> medicalTempCategorySortForms) {
+        if(type == 0){
+            templateBiz.updateGenSort(medicalTempCategorySortForms);
+        }else{
+            templateBiz.updateSort(medicalTempCategorySortForms);
+        }
+
         return ResponseUtil.success();
     }
     @ApiOperation("公司端-病例模板修改")
