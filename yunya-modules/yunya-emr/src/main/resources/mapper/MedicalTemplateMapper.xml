@@ -22,6 +22,36 @@
         <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
     </resultMap>
 
+    <update id="updateSort">
+        update medical_template
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="sort=case" suffix="end,">
+                <foreach collection="list" item="item" index="i">
+                    when id=#{item.id} then #{item.sort}
+                </foreach>
+            </trim>
+        </trim>
+        where id in
+        <foreach close=")" collection="list" item="item" open="(" separator=",">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateGenSort">
+        update general_template
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="sort=case" suffix="end,">
+                <foreach collection="list" item="item" index="i">
+                    when id=#{item.id} then #{item.sort}
+                </foreach>
+            </trim>
+        </trim>
+        where id in
+        <foreach close=")" collection="list" item="item" open="(" separator=",">
+            #{item.id}
+        </foreach>
+    </update>
+
     <select id="countByCategoryId" resultType="int">
         select
             count(*)

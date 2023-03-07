@@ -1,8 +1,11 @@
 package com.yunya.modules.emr.mapper;
 
+import com.yunya.feign.emr.domain.form.MedicalTempCategorySortForm;
 import com.yunya.models.emr.MedicalTemplateCategory;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
+
+import java.util.List;
 
 public interface MedicalTemplateCategoryMapper extends Mapper<MedicalTemplateCategory> {
 
@@ -14,5 +17,7 @@ public interface MedicalTemplateCategoryMapper extends Mapper<MedicalTemplateCat
      * @return
      */
     int countByName(@Param("name") String name, @Param("parentId") Integer parentId, @Param("id") Integer id);
+
+    void updateSort(List<MedicalTempCategorySortForm>medicalTempCategorySortForms);
 
 }

@@ -37,6 +37,9 @@ public class MedicalTemplateCategory implements Serializable {
     @Column(name = "crt_id")
     private Integer crtId;
 
+    @Column(name = "sort")
+    private Integer sort;
+
     /**
      * 创建时间
      */

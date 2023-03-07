@@ -35,12 +35,21 @@ public class TemplateBiz {
     @Resource
     private MedicalTemplateMapper medicalMapper;
 
+    public void updateSort( List<MedicalTempCategorySortForm> medicalTempCategorySortForms) {
+        medicalMapper.updateSort(medicalTempCategorySortForms);
+    }
+    public void updateGenSort( List<MedicalTempCategorySortForm> medicalTempCategorySortForms) {
+        medicalMapper.updateGenSort(medicalTempCategorySortForms);
+    }
+
     public void createGeneralRecord(Integer categoryId, GeneralTemplateModel createModel) {
         GeneralTemplate createEntity = EntityUtils.build(createModel, GeneralTemplate.class);
         createEntity.setMedicalTemplateCategoryId(categoryId);
         createEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         createEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         generalMapper.insertSelective(createEntity);
+        createEntity.setSort(createEntity.getId());
+        generalMapper.updateByPrimaryKeySelective(createEntity);
     }
 
     public void updateGeneralRecord(Integer categoryId, Integer templateId, GeneralTemplateForm updateForm) {
@@ -64,6 +73,7 @@ public class TemplateBiz {
         List<GeneralTemplatePageVo> list = Lists.newArrayListWithExpectedSize(page.size());
         list = EntityUtils.build(page.getResult(), GeneralTemplatePageVo.class);
         list.forEach(obj -> obj.setEnable(EnableEnum.getValue(Integer.valueOf(obj.getEnable()))));
+        list.sort(Comparator.comparing(GeneralTemplatePageVo::getSort).reversed());
         PageInfo<GeneralTemplatePageVo> pageInfo = new PageInfo<>(list);
         pageInfo.setPageNum(page.getPageNum());
         pageInfo.setTotal(page.getTotal());
@@ -81,6 +91,8 @@ public class TemplateBiz {
         createEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         createEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         medicalMapper.insertSelective(createEntity);
+        createEntity.setSort(createEntity.getId());
+        medicalMapper.updateByPrimaryKeySelective(createEntity);
     }
 
     public void updateMedicalRecord(Integer categoryId, Integer templateId, MedicalTemplateForm updateForm) {
@@ -110,6 +122,7 @@ public class TemplateBiz {
             obj.setEnable(EnableEnum.getValue(Integer.valueOf(obj.getEnable())));
             obj.setType(TemplateTypeEnum.getValue(Integer.valueOf(obj.getType())));
         });
+        list.sort(Comparator.comparing(MedicalTemplatePageVo::getSort).reversed());
         PageInfo<MedicalTemplatePageVo> pageInfo = new PageInfo<>(list);
         pageInfo.setPageNum(page.getPageNum());
         pageInfo.setTotal(page.getTotal());
