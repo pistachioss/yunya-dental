@@ -287,10 +287,76 @@ public class BenefitBiz {
             findSetAuthBenefit(summary, resultList);
         }
         if (MIX_MATCH_BENEFIT.equals(benefitType)) {
-            findSetCardBenefit(summary, resultList);
-            findSetAuthBenefit(summary, resultList);
+            findSetMixMatchBenefit(summary, resultList);
         }
         return resultList;
+    }
+
+    /**
+     * 查找并设置混搭优惠信息
+     *
+     * @param summary
+     * @param resultList
+     */
+    private void findSetMixMatchBenefit(OrderBenefit summary, List<OrderBenefitDetailVo> resultList) {
+        List<CardBenefit> cardBenefits = getOrderBenefitDetail(summary.getOrderId(), CardBenefit.class, cardBenefitMapper, null);
+        if (CollectionUtils.isNotEmpty(cardBenefits)) {
+            Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
+            listMap.forEach((k, v) -> {
+                OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
+                BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal supplyWorkTotalLoad = v.stream()
+                        .filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
+                        .map(CardBenefit::getSupplyWorkload).reduce(BigDecimal.ZERO, BigDecimal::add);
+                log.info("查询账单优惠明细，开单明细id：{}，计算补入工作量：{}", k, supplyWorkTotalLoad);
+                vo.setOrderDetailId(k);
+                vo.setItemBenefitAmount(itemBenefitAmount);
+                //按照优惠提交顺序排序
+                v.sort(Comparator.comparing(CardBenefit::getSort));
+                List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
+                    ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
+                    benefitVo.setBenefitId(obj.getCardId());
+                    benefitVo.setBenefitType(obj.getBenefitType());
+                    benefitVo.setCouponType(obj.getCouponType());
+                    if (MEMBER_TYPE.equals(obj.getBenefitType())) {
+                        MemberType memberType = systemServiceFeign.findMemberTypeById(obj.getCardId());
+                        benefitVo.setBenefitName(memberType == null ? null : memberType.getName());
+                    }
+                    if (COUPON_TYPE.equals(obj.getBenefitType())) {
+                        CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(obj.getCouponId());
+                        benefitVo.setBenefitName(coupon == null ? null : coupon.getName());
+                    }
+                    benefitVo.setBenefitAmount(obj.getBenefitAmount());
+                    return benefitVo;
+                }).collect(toList());
+                vo.setItemBenefitList(itemBenefits);
+                vo.setSupplyWorkload(supplyWorkTotalLoad);
+                resultList.add(vo);
+            });
+        }
+
+        Map<Integer, OrderBenefitDetailVo> resultMap = resultList.stream().collect(toMap(OrderBenefitDetailVo::getOrderDetailId, Function.identity()));
+        List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(summary.getOrderId(), AuthDiscountBenefit.class, authDiscountBenefitMapper, null);
+        if (CollectionUtils.isNotEmpty(authBenefit)) {
+            Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
+            listMap.forEach((k, v) -> {
+                OrderBenefitDetailVo vo = resultMap.computeIfAbsent(k, o->new OrderBenefitDetailVo());
+                BigDecimal itemBenefitAmount = v.stream().map(AuthDiscountBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                vo.setOrderDetailId(k);
+                vo.setItemBenefitAmount(vo.getItemBenefitAmount().add(itemBenefitAmount));
+                List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
+                    ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
+                    benefitVo.setBenefitType(AUTH_BENEFIT_TYPE);
+                    benefitVo.setBenefitAmount(obj.getBenefitAmount());
+                    benefitVo.setBenefitId(summary.getAuthorizedId());
+                    SysUserInfoDetail author = summary.getAuthorizedId() == null ? null :
+                            systemServiceFeign.findSysUserEmployeeInfoByUserId(summary.getAuthorizedId());
+                    benefitVo.setBenefitName(author == null ? null : author.getName());
+                    return benefitVo;
+                }).collect(toList());
+                vo.getItemBenefitList().addAll(itemBenefits);
+            });
+        }
     }
 
     /**
