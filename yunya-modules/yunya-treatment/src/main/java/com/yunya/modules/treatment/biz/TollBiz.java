@@ -630,13 +630,162 @@ public class TollBiz {
         break;
       case 3:
         // 价目使用卡券优惠 + 商品使用授权折扣
-        saveBillPayDetailRecordWithGeneralDiscount(
-                totalCharge, orderRecordId, billRecordId, generalDiscount);
-        saveBillPayDetailRecordWithAccreditDiscount(
-                totalCharge, orderRecordId, billRecordId, accreditDiscount);
+        saveBillPayDetailRecordWithMixDiscount(
+                totalCharge, orderRecordId, billRecordId, generalDiscount, accreditDiscount);
         break;
       default:
         break;
+    }
+  }
+
+  private void saveBillPayDetailRecordWithMixDiscount(BigDecimal totalCharge, Integer orderRecordId, Integer billRecordId, GeneralDiscountModel generalDiscount, AccreditDiscountModel accreditDiscount) {
+    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
+    OrderDetail orderDetail = new OrderDetail();
+    orderDetail.setOrderRecordId(orderRecordId);
+    orderDetail.setInservice(true);
+    List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
+
+    Integer patientId = orderRecord.getPatientId();
+    Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    PatientChooseBenefitForm paramForm = new PatientChooseBenefitForm();
+    paramForm.setPatientId(patientId);
+    paramForm.setOrderId(orderRecordId);
+    paramForm.setOrgId(orgId);
+    paramForm.setMemberCardId(generalDiscount.getMemberTypeId());
+    paramForm.setDiscountId(generalDiscount.getDiscountCouponId());
+    List<Integer> voucherIds = Lists.newArrayList();
+    List<Integer> exchangeIds = Lists.newArrayList();
+    List<Integer> packageIds = Lists.newArrayList();
+    List<CouponDiscountInfoModel> discountInfoModels =
+            generalDiscount.getCouponDiscountInfoModels();
+    setCouponListValue(discountInfoModels, voucherIds, exchangeIds, packageIds);
+    paramForm.setVoucherIds(voucherIds);
+    paramForm.setExchangeIds(exchangeIds);
+    paramForm.setPackageIds(packageIds);
+    ResponseResult<PatientOrderBenefitVo> result = discountFeign.choiceBenefit(paramForm);
+    PatientOrderBenefitVo benefitVo = result.getData();
+    if (null != benefitVo) {
+      List<PatientItemBenefitVo> benefitVos = benefitVo.getItemList();
+      // TODO: bug3210 要求去掉优惠判断
+      //      if (StringHelper.isNotEmpty(benefitVos)) {
+      for (OrderDetail detail : orderDetails) {
+        if (detail.getType().intValue() == 1) {
+          continue;
+        }
+        OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
+        detailPayRecord.setOrgId(orgId);
+        detailPayRecord.setPatientId(patientId);
+        detailPayRecord.setTreatmentRecordId(treatmentRecordId);
+        detailPayRecord.setOrderRecordId(orderRecordId);
+        Integer detailId = detail.getId();
+        detailPayRecord.setOrderDetailId(detailId);
+        detailPayRecord.setBillRecordId(billRecordId);
+        BigDecimal receivableAmount = detail.getReceivableAmount();
+        detailPayRecord.setReceivableAmount(receivableAmount);
+        BigDecimal privilegeAmount = BigDecimal.valueOf(0);
+        BigDecimal actualAmount = receivableAmount;
+        BigDecimal couponWorkload = BigDecimal.valueOf(0);
+        for (PatientItemBenefitVo vo : benefitVos) {
+          Integer orderDetailId = vo.getOrderDetailId();
+          if (detailId.equals(orderDetailId)) {
+            privilegeAmount = vo.getItemBenefitAmount();
+            if (privilegeAmount.compareTo(actualAmount) > 0) {
+              privilegeAmount = actualAmount;
+            }
+            actualAmount = receivableAmount.subtract(privilegeAmount);
+            if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
+              actualAmount = BigDecimal.ZERO;
+            }
+            // 获取补入工作量
+            couponWorkload = vo.getSupplyWorkload();
+          }
+        }
+        detailPayRecord.setPrivilegeAmount(privilegeAmount);
+        detailPayRecord.setActualReceivable(actualAmount);
+        // 设置已收
+        if (totalCharge.compareTo(actualAmount) >= 0) {
+          detailPayRecord.setReceivedAmount(actualAmount);
+          totalCharge = totalCharge.subtract(actualAmount);
+        } else {
+          detailPayRecord.setReceivedAmount(totalCharge);
+          totalCharge = BigDecimal.valueOf(0);
+        }
+        detailPayRecord.setCouponWorkload(couponWorkload);
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        detailPayRecord.setCrtId(userId);
+        String name = BaseContextHandler.getName();
+        detailPayRecord.setCrtName(name);
+        detailPayRecord.setUpdId(userId);
+        detailPayRecord.setUpdName(name);
+        orderDetailPayRecordBiz.insertSelective(detailPayRecord);
+      }
+      //      } else {
+      //        throw new ClientServiceException("收费失败，当前选择卡券未匹配任何优惠！", PARAMETERS_IS_ILLEGAL);
+      //      }
+    } else {
+      throw new ClientServiceException(result.getMsg(), result.getStatus());
+    }
+
+    List<AccreditDiscountDetailModel> discountDetailModels =
+            accreditDiscount.getAccreditDiscountDetailModels();
+    if (StringHelper.isNotEmpty(orderDetails)) {
+      for (OrderDetail detail : orderDetails) {
+        if (detail.getType().intValue() == 0) {
+          continue;
+        }
+        OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
+        detailPayRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+        detailPayRecord.setPatientId(orderRecord.getPatientId());
+        detailPayRecord.setTreatmentRecordId(orderRecord.getTreatmentRecordId());
+        detailPayRecord.setOrderRecordId(orderRecordId);
+        Integer detailId = detail.getId();
+        detailPayRecord.setOrderDetailId(detailId);
+        detailPayRecord.setBillRecordId(billRecordId);
+        BigDecimal receivableAmount = detail.getReceivableAmount();
+        detailPayRecord.setReceivableAmount(receivableAmount);
+        BigDecimal privilegeAmount = BigDecimal.valueOf(0);
+        BigDecimal actualAmount = receivableAmount;
+        for (AccreditDiscountDetailModel discountDetailModel : discountDetailModels) {
+          if (detail.getBillingItemId().equals(discountDetailModel.getBillingItemId())
+                  && detail.getType().equals(discountDetailModel.getType())) {
+            // 折扣单价
+            BigDecimal discountPrice =
+                    discountDetailModel
+                            .getActualAmount()
+                            .divide(
+                                    BigDecimal.valueOf(discountDetailModel.getQuantity()),
+                                    4,
+                                    RoundingMode.HALF_UP);
+            actualAmount = discountPrice.multiply(BigDecimal.valueOf(detail.getQuantity()));
+            if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
+              throw new ClientServiceException("实收金额不能小于0！", PARAMETERS_IS_ILLEGAL);
+            }
+            privilegeAmount = receivableAmount.subtract(actualAmount);
+            if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
+              throw new ClientServiceException("授权折扣的实收金额不能大于原价！", PARAMETERS_IS_ILLEGAL);
+            }
+          }
+        }
+        detailPayRecord.setPrivilegeAmount(privilegeAmount);
+        detailPayRecord.setActualReceivable(actualAmount);
+        detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
+        // 设置已收
+        if (totalCharge.compareTo(actualAmount) >= 0) {
+          detailPayRecord.setReceivedAmount(actualAmount);
+          totalCharge = totalCharge.subtract(actualAmount);
+        } else {
+          detailPayRecord.setReceivedAmount(totalCharge);
+          totalCharge = BigDecimal.valueOf(0);
+        }
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        detailPayRecord.setCrtId(userId);
+        String name = BaseContextHandler.getName();
+        detailPayRecord.setCrtName(name);
+        detailPayRecord.setUpdId(userId);
+        detailPayRecord.setUpdName(name);
+        orderDetailPayRecordBiz.insertSelective(detailPayRecord);
+      }
     }
   }
 

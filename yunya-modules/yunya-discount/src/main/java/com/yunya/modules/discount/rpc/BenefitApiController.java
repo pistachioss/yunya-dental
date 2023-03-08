@@ -184,6 +184,7 @@ public class BenefitApiController {
 
     @ApiOperation("混搭优惠明细保存")
     @PostMapping("/order/benefit/mixMatch/save")
+    @CurrentUser
     public ResponseResult saveMixMatchBenefit(@Valid @RequestBody MixMatchBenefitModel model) {
         return benefitBiz.saveMixMatchBenefit(model);
     }
