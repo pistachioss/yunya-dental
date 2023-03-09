@@ -75,7 +75,7 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             }
             if (MIX_MATCH_BENEFIT.equals(orderBenefit.getBenefitType())) {
                 List<CardBenefit> cardBenefits = getBenefitDetail(Sets.newHashSet(orderId), CardBenefit.class, cardBenefitMapper);
-                List<BaseBenefit> data1 = cardTransform(cardBenefits, orderBenefit.getRemark(), orderBenefit.getAuthorizedId());
+                List<BaseBenefit> data1 = cardTransform(cardBenefits, orderBenefit.getRemark(), null);
                 if (StringHelper.isNotEmpty(data1)) {
                     baseBenefits.addAll(data1);
                 }
