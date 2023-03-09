@@ -218,6 +218,7 @@ public class TollBiz {
               0 == benefitType ? Integer.valueOf(99) : benefitVo.getCouponType());
           couponInfoVO.setBenefitName(benefitVo.getBenefitName());
           couponInfoVO.setBenefitAmount(benefitVo.getBenefitAmount());
+          couponInfoVO.setCardNumber(benefitVo.getCardNumber());
           discountAppliesCoupon.add(couponInfoVO);
         });
   }
