@@ -90,4 +90,8 @@ public class OrderDetailChargeVO implements Serializable {
   private List<PrivilegeCouponInfoVO> discountAppliesCoupons;
   /** 会员价 */
   private Map<Integer, Object> memberPrices;
+
+  /** 是否有优惠 */
+  @ApiModelProperty("是否有优惠")
+  private Boolean hasDiscount = false;
 }
