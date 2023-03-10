@@ -5,6 +5,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.yunya.feign.system.vo.BjSyncDoctorVO;
 import com.yunya.feign.system.vo.QztSyncDoctorVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.RedisConstants;
@@ -82,7 +83,7 @@ public class BjDoctorBiz extends BaseBiz<BjDoctorMapper, BjDoctor> {
             Company company = companyMapper.selectByPrimaryKey(Integer.valueOf(selectClinic.get(0)));
             doctor.setCrtId(userId);
             doctor.setRelateUserIds(userId1);
-            doctor.setInstitutionId(company.getQztInstitutionCode());
+            doctor.setInstitutionId(company.getBjInstitutionCode());
             mapper.insertSelective(doctor);
             return;
         }
@@ -131,17 +132,16 @@ public class BjDoctorBiz extends BaseBiz<BjDoctorMapper, BjDoctor> {
         if (CollectionUtils.isEmpty(doctors) && StringUtils.isBlank(shortToken)) {
             return;
         }
-        List<QztSyncDoctorVO> syncDoctorVOS = doctors.stream().map(t -> {
-            QztSyncDoctorVO doctorVO = BeanCopierUtils.generalCopyBean(t, QztSyncDoctorVO.class);
-            doctorVO.setEntid(t.getId());
-            doctorVO.setDepartmentId(t.getDepartId());
+        List<BjSyncDoctorVO> syncDoctorVOS = doctors.stream().map(t -> {
+            BjSyncDoctorVO doctorVO = BeanCopierUtils.generalCopyBean(t, BjSyncDoctorVO.class);
+            doctorVO.setDoctorId(t.getRelateUserIds().split(",")[0]);
             doctorVO.setDepartmentName(t.getDepartName());
-            doctorVO.setName(t.getDoctorName());
+            doctorVO.setOrganizationCode(t.getInstitutionId());
             return doctorVO;
         }).collect(Collectors.toList());
-        log.info("全诊通医生数据同步开始，同步数量：{}", syncDoctorVOS.size());
+        log.info("滨江医生数据同步开始，同步数量：{}", syncDoctorVOS.size());
         JSONObject jsonObject = bjRestTemplateApi.postObject(String.format(bjPrefix + DOCTOR_URL, shortToken), syncDoctorVOS);
-        log.info("全诊通医生数据同步完成：{}", jsonObject);
+        log.info("滨江医生数据同步完成：{}", jsonObject);
     }
 
     public List<BjDoctor> certDoctors() {
@@ -188,11 +188,11 @@ public class BjDoctorBiz extends BaseBiz<BjDoctorMapper, BjDoctor> {
         mapper.updateByPrimaryKeySelective(doctor);
     }
 
-    public List<Company> certCompanys() {
+    public List<Company> certBjCompanys() {
         Example example = new Example(Company.class);
         example.createCriteria()
-                .andEqualTo("enableQztSync", true);
-        example.selectProperties("id", "name", "qztInstitutionCode");
+                .andEqualTo("enableBjSync", true);
+        example.selectProperties("id", "name", "bjInstitutionCode");
         return companyMapper.selectByExample(example);
     }
 }

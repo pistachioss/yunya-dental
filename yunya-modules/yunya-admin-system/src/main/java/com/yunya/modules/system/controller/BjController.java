@@ -53,6 +53,6 @@ public class BjController {
 
     @GetMapping("/bj/company/list")
     public List<Company> certCompanys() {
-        return doctorBiz.certCompanys();
+        return doctorBiz.certBjCompanys();
     }
 }

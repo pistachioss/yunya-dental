@@ -29,6 +29,10 @@ public class RefreshBjToken implements CommandLineRunner {
     private RedisUtils redisUtils;
     @Value("${bj.prefix}")
     private String bjPrefix;
+    @Value("${bj.appKey}")
+    private String bjAppkey;
+    @Value("${bj.appSecret}")
+    private String bjAppSecret;
     @Resource
     private BjRestTemplateApi bjRestTemplateApi;
 
@@ -48,9 +52,9 @@ public class RefreshBjToken implements CommandLineRunner {
     public void refreshToken() {
         String url = bjPrefix + BJ_TOKEN;
         Map<String, String> param = Maps.newHashMap();
-        param.put("appKey", "65028");
-        param.put("appSecret", "cb2d6e93507a0ee800b8473e486b89ed34554aa2");
-        JSONObject bjToken = bjRestTemplateApi.postObject(url, null);
+        param.put("appKey", bjAppkey);
+        param.put("appSecret", bjAppSecret);
+        JSONObject bjToken = bjRestTemplateApi.postObject(url, param);
         log.info("调用滨江access_token返回结果是: {}", bjToken);
         String token = bjToken.getString("token");
         //redis工具根据项目自行修改

@@ -1,6 +1,7 @@
 package com.yunya.modules.emr.controller;
 
 import com.yunya.feign.emr.domain.form.MedicalTempCategoryForm;
+import com.yunya.feign.emr.domain.form.MedicalTempCategorySortForm;
 import com.yunya.feign.emr.domain.model.MedicalTempCategoryModel;
 import com.yunya.feign.emr.domain.vo.TemplateCategoryVo;
 import com.yunya.feign.emr.domain.vo.TemplateParentCategoryVo;
@@ -42,6 +43,14 @@ public class MedicalTemplateCategoryController {
                                        @PathVariable("id") Integer id,
                                        @Valid @RequestBody MedicalTempCategoryForm updateForm) {
         categoryBiz.updateRecord(parentId, id, updateForm);
+        return ResponseUtil.success();
+    }
+
+    @ApiOperation("公司端-病历模板分类-排序修改")
+    @PutMapping("medical/template/category/sort")
+    @CurrentUser
+    public ResponseResult updateSort(@RequestBody List<MedicalTempCategorySortForm> medicalTempCategorySortForms) {
+        categoryBiz.updateSort(medicalTempCategorySortForms);
         return ResponseUtil.success();
     }
 

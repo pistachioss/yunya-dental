@@ -2,6 +2,7 @@ package com.yunya.modules.emr.biz;
 
 import com.google.common.collect.Lists;
 import com.yunya.feign.emr.domain.form.MedicalTempCategoryForm;
+import com.yunya.feign.emr.domain.form.MedicalTempCategorySortForm;
 import com.yunya.feign.emr.domain.model.MedicalTempCategoryModel;
 import com.yunya.feign.emr.domain.vo.TemplateCategoryVo;
 import com.yunya.feign.emr.domain.vo.TemplateParentCategoryVo;
@@ -49,6 +50,8 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
         createEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         createEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         mapper.insertSelective(createEntity);
+        createEntity.setSort(createEntity.getId());
+        mapper.updateByPrimaryKeySelective(createEntity);
     }
 
     public void updateRecord(Integer parentId, Integer id, MedicalTempCategoryForm modifyForm) {
@@ -63,6 +66,9 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
         updateEntity.setId(id);
         updateEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         mapper.updateByPrimaryKeySelective(updateEntity);
+    }
+    public void updateSort( List<MedicalTempCategorySortForm> medicalTempCategorySortForms) {
+        mapper.updateSort(medicalTempCategorySortForms);
     }
 
     public void deleteRecord(Integer id) {
@@ -91,11 +97,13 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
         List<MedicalTemplateCategory> parentList = list.stream().filter(obj ->
                             Objects.equals(BusinessConstants.DEFAULT_PARENT_ID, obj.getParentId()))
                             .collect(Collectors.toList());
+        parentList.sort(Comparator.comparing(MedicalTemplateCategory::getId));
         //父分类子分类做map映射
         Map<Integer, List<MedicalTemplateCategory>> categoryMap = list.stream().
                                     collect(Collectors.groupingBy(obj -> obj.getParentId()));
         //生成父分类的vo集合
         List<TemplateCategoryVo> parentVos = EntityUtils.build(parentList, TemplateCategoryVo.class);
+
         parentVos.forEach(superVo -> {
             //取出原始数据子分类集合
             List<MedicalTemplateCategory> childList = categoryMap.get(superVo.getId());
@@ -103,7 +111,7 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
                 return;
             }
             //子分类进行排序（更新时间倒叙）
-            childList.sort(Comparator.comparing(MedicalTemplateCategory::getCrtTime).reversed());
+            childList.sort(Comparator.comparing(MedicalTemplateCategory::getSort).reversed());
             //构建子分类返回vo
             List<TemplateCategoryVo> childResultList = EntityUtils.build(childList, TemplateCategoryVo.class);
             superVo.setChildList(childResultList);
