@@ -44,10 +44,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
@@ -287,7 +284,7 @@ public class BenefitBiz {
             findSetAuthBenefit(summary, resultList);
         }
         if (MIX_MATCH_BENEFIT.equals(benefitType)) {
-            findSetMixMatchBenefit(summary, resultList);
+            return findSetMixMatchBenefit(summary);
         }
         return resultList;
     }
@@ -296,15 +293,18 @@ public class BenefitBiz {
      * 查找并设置混搭优惠信息
      *
      * @param summary
-     * @param resultList
      */
-    private void findSetMixMatchBenefit(OrderBenefit summary, List<OrderBenefitDetailVo> resultList) {
+    private List<OrderBenefitDetailVo> findSetMixMatchBenefit(OrderBenefit summary) {
+        Map<Integer, OrderBenefitDetailVo> resultMap = new LinkedHashMap<>(16);
         List<CardBenefit> cardBenefits = getOrderBenefitDetail(summary.getOrderId(), CardBenefit.class, cardBenefitMapper, null);
         if (CollectionUtils.isNotEmpty(cardBenefits)) {
             Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
             listMap.forEach((k, v) -> {
                 OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
                 BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                if (itemBenefitAmount.compareTo(BigDecimal.ZERO) == 0) {
+                    return;
+                }
                 BigDecimal supplyWorkTotalLoad = v.stream()
                         .filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
                         .map(CardBenefit::getSupplyWorkload).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -331,17 +331,19 @@ public class BenefitBiz {
                 }).collect(toList());
                 vo.setItemBenefitList(itemBenefits);
                 vo.setSupplyWorkload(supplyWorkTotalLoad);
-                resultList.add(vo);
+                resultMap.put(k, vo);
             });
         }
 
-        Map<Integer, OrderBenefitDetailVo> resultMap = resultList.stream().collect(toMap(OrderBenefitDetailVo::getOrderDetailId, Function.identity()));
         List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(summary.getOrderId(), AuthDiscountBenefit.class, authDiscountBenefitMapper, null);
         if (CollectionUtils.isNotEmpty(authBenefit)) {
             Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().filter(vo->vo.getItemType().equals(1)).collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
             listMap.forEach((k, v) -> {
                 OrderBenefitDetailVo vo = resultMap.computeIfAbsent(k, o->new OrderBenefitDetailVo());
                 BigDecimal itemBenefitAmount = v.stream().map(AuthDiscountBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                if (itemBenefitAmount.compareTo(BigDecimal.ZERO) == 0) {
+                    return;
+                }
                 vo.setOrderDetailId(k);
                 vo.setItemBenefitAmount(vo.getItemBenefitAmount().add(itemBenefitAmount));
                 List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
@@ -357,6 +359,7 @@ public class BenefitBiz {
                 vo.getItemBenefitList().addAll(itemBenefits);
             });
         }
+        return new ArrayList<>(resultMap.values());
     }
 
     /**

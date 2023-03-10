@@ -183,7 +183,7 @@ public class TollBiz {
             }
             couponInfoVO.setBenefitAmount(receivableAmount.subtract(actualAmount));
             discountAppliesCoupon.add(couponInfoVO);
-            accredits.put(vo.getOrderDetailId(), vo);
+            accredits.put(vo.getOrderDetailId(), cloneAmount(vo));
           }
 
           vo.setActualAmount(actualAmount);
@@ -237,6 +237,13 @@ public class TollBiz {
       }
     });
 
+  }
+
+  private OrderDetailChargeVO cloneAmount(OrderDetailChargeVO vo) {
+    OrderDetailChargeVO obj = new OrderDetailChargeVO();
+    obj.setActualAmount(vo.getActualAmount());
+    obj.setReceivableAmount(vo.getReceivableAmount());
+    return obj;
   }
 
 
