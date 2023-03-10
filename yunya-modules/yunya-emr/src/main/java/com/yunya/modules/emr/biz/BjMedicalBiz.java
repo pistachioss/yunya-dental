@@ -1,6 +1,7 @@
 package com.yunya.modules.emr.biz;
 
 import cn.hutool.core.util.RandomUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Splitter;
@@ -127,7 +128,7 @@ public class BjMedicalBiz {
                     medicalVO.setMedicalRecordId(t.getId().toString());
                     medicalVO.setPatientName(patientBaseInfoVo.getName());
                     medicalVO.setPatientSex(getGender(patientBaseInfoVo.getGender()));
-                    medicalVO.setOrganizationCode(company.getQztInstitutionCode());
+                    medicalVO.setOrganizationCode(company.getBjInstitutionCode());
                     medicalVO.setDepartmentName("口腔科");
                     medicalVO.setDoctorId(doctor.getId().toString());
                     medicalVO.setDoctorName(doctor.getDoctorName());
@@ -138,7 +139,8 @@ public class BjMedicalBiz {
                     medicalVO.setIcd10("Z01.251");
                     medicalVO.setDiseaseDesc(t.getPrescription());
                     medicalVO.setPastHistory(t.getPastHistory());
-                    medicalVO.setOperation(t.getTreatment());
+                    String describe = JSONArray.parseArray(t.getTreatment()).getJSONObject(0).getString("describe");
+                    medicalVO.setOperation(describe);
                     return medicalVO;
                 }).collect(Collectors.toList());
         log.info("滨江病例数据同步开始，同步数量：{}", commonRecords.size());
@@ -164,6 +166,12 @@ public class BjMedicalBiz {
             itemDetailVO.setDrugName("牙科");
             itemDetailVO.setDrugGenericName("初诊检查");
             itemDetailVO.setDrugConsumption("1");
+            itemDetailVO.setDrugSpecification("");
+            itemDetailVO.setDrugManufacturer("");
+            itemDetailVO.setDrugUsages("");
+            itemDetailVO.setDrugUsagesDays("");
+            itemDetailVO.setDrugUsagesFrequency("");
+            itemDetailVO.setDrugConsumptionUnit("");
             qztSyncItemVO.setDrugList(Collections.singletonList(itemDetailVO));
             itemList.add(qztSyncItemVO);
         }
