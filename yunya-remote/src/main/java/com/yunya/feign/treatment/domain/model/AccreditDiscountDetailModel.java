@@ -38,6 +38,11 @@ public class AccreditDiscountDetailModel implements Serializable {
   @NotNull(message = "实收金额不能为空！")
   @Min(value = 0, message = "输入金额不能小于0！")
   private BigDecimal actualAmount;
+  /** 应收金额 */
+  @ApiModelProperty(value = "应收金额", required = true)
+  @NotNull(message = "应收金额不能为空！")
+  @Min(value = 0, message = "输入金额不能小于0！")
+  private BigDecimal receivableAmount;
 
   /** 折扣率 */
   @ApiModelProperty(value = "折扣率", required = true)

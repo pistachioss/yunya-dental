@@ -432,6 +432,7 @@ public class TollBiz {
    *
    * @param model 收费参数
    */
+  @Transactional
   public TollConfirmVO confirmCharge(TollModel model) {
     checkPrepayments(model.getPrepaymentAccountModels(), model.getSpPrepaymentAccountModels());
     Integer orderRecordId = model.getOrderRecordId();
@@ -593,7 +594,15 @@ public class TollBiz {
     if (StringHelper.isNotNull(benefitVo)) {
       privilegeAmount = benefitVo.getBenefitTotalAmount();
     }
-    return privilegeAmount.add(calculateAccreditPrivilegeAmount(orderRecordId, accreditDiscountDetailModels));
+    BigDecimal accredictPrivilegeAmount = BigDecimal.valueOf(0);
+    for (AccreditDiscountDetailModel detailModel : accreditDiscountDetailModels) {
+        BigDecimal privilege = detailModel.getReceivableAmount().subtract(detailModel.getActualAmount());
+        if (BigDecimal.ZERO.compareTo(privilege) > 0) {
+          throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
+        }
+        accredictPrivilegeAmount = accredictPrivilegeAmount.add(privilege);
+    }
+    return privilegeAmount.add(accredictPrivilegeAmount);
   }
 
   private PatientOrderBenefitVo checkMixMatchPrivilege(Integer orderRecordId, Integer patientId, GeneralDiscountModel generalDiscountModel, List<AccreditDiscountDetailModel> accreditDiscountDetailModels) {
