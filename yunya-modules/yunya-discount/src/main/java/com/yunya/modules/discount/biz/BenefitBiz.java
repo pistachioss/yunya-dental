@@ -338,7 +338,7 @@ public class BenefitBiz {
         Map<Integer, OrderBenefitDetailVo> resultMap = resultList.stream().collect(toMap(OrderBenefitDetailVo::getOrderDetailId, Function.identity()));
         List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(summary.getOrderId(), AuthDiscountBenefit.class, authDiscountBenefitMapper, null);
         if (CollectionUtils.isNotEmpty(authBenefit)) {
-            Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
+            Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().filter(vo->vo.getItemType().equals(1)).collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
             listMap.forEach((k, v) -> {
                 OrderBenefitDetailVo vo = resultMap.computeIfAbsent(k, o->new OrderBenefitDetailVo());
                 BigDecimal itemBenefitAmount = v.stream().map(AuthDiscountBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);

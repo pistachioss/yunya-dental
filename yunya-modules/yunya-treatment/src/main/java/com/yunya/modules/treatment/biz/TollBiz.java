@@ -37,7 +37,6 @@ import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
@@ -182,6 +181,9 @@ public class TollBiz {
         BigDecimal actualAmount = vo.getActualAmount();
         List<PrivilegeCouponInfoVO> discountAppliesCoupon = vo.getDiscountAppliesCoupons();
         if (vo.getOrderDetailId().equals(benefitVo.getOrderDetailId())) {
+          if (benefitVo.getType().intValue() == 0) {
+            discountAppliesCoupon = new ArrayList<>();
+          }
           BigDecimal discountAmount = benefitVo.getItemBenefitAmount();
           actualAmount = actualAmount.subtract(discountAmount);
           BigDecimal discountRate = actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
@@ -514,10 +516,7 @@ public class TollBiz {
       Integer type = detail.getType().intValue();
       Integer itemId = detail.getBillingItemId();
       boolean editDiscountRate = detail.getDiscountRate().compareTo(new BigDecimal(100))!=0;
-      if (type==0 && editDiscountRate) {
-        BaseTariff tariff = baseTariffBiz.selectById(itemId);
-        throw new ClientServiceException(tariff.getName() + "无法使用授权折扣", PARAMETERS_IS_ILLEGAL);
-      } else if (type==1 && editDiscountRate && oralItemIds.contains(itemId)) {
+      if (type==1 && editDiscountRate && oralItemIds.contains(itemId)) {
         BaseOralTariff oralTariff = oralTariffBiz.selectById(itemId);
         throw new ClientServiceException(oralTariff.getName() + "无法使用授权折扣", PARAMETERS_IS_ILLEGAL);
       }
