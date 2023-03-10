@@ -33,10 +33,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.enums.ChoiceBenefitTypeEnum.*;
 import static com.yunya.middletable.constant.SynConstant.CUT_SLICE_100;
 import static com.yunya.middletable.constant.SynConstant.CUT_SLICE_5000;
-import static com.yunya.middletable.enums.BenefitEnum.AUTH_BENEFIT;
-import static com.yunya.middletable.enums.BenefitEnum.CARD_BENEFIT;
 import static com.yunya.middletable.enums.TrueFalseEnum.FALSE;
 import static java.util.stream.Collectors.*;
 
@@ -246,6 +245,22 @@ public class BaseBenefitServiceNewImpl extends BaseBiz<BaseBenefitMapper, BaseBe
                         //授权优惠转换
                         List<BaseBenefit> templateList = authTransform(authBenefits, map);
                         list.addAll(templateList);
+                    }
+                }
+                // 混搭优惠
+                if (MIX_MATCH_BENEFIT.equals(k)) {
+                    List<CardBenefit> cardBenefits = getBenefitDetail(map.keySet(), CardBenefit.class, cardBenefitMapper);
+                    //卡券优惠转换
+                    List<BaseBenefit> templateList = cardTransform(cardBenefits, map);
+                    if (CollectionUtils.isNotEmpty(templateList)) {
+                        list.addAll(templateList);
+                    }
+
+                    List<AuthDiscountBenefit> authBenefits = getBenefitDetail(map.keySet(), AuthDiscountBenefit.class, authBenefitMapper);
+                    if (CollectionUtils.isNotEmpty(authBenefits)) {
+                        //授权优惠转换
+                        List<BaseBenefit> tmplist = authTransform(authBenefits, map);
+                        list.addAll(tmplist);
                     }
                 }
             });

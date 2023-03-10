@@ -43,7 +43,7 @@ public class OrderBenefit implements Serializable {
     private Integer authorizedId;
 
     /**
-     * 优惠方式（0-卡券优惠  1-授权折扣）
+     * 优惠方式（0-卡券优惠  1-授权折扣 2-混搭优惠（价目使用卡券+商品使用折扣））
      */
     @Column(name = "benefit_type")
     private Integer benefitType;

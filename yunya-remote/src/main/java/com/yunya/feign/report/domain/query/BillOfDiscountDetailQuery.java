@@ -43,6 +43,6 @@ public class BillOfDiscountDetailQuery extends PageQuery implements Serializable
   @ApiModelProperty("挂号医生ID列表")
   private Integer[] regDentistIds;
 
-  @ApiModelProperty("优惠类型列表：1-产品优惠；2-授权折扣")
+  @ApiModelProperty("优惠类型列表：1-产品优惠；2-授权折扣；3-混搭优惠（价目使用产品+商品使用折扣）")
   private Byte[] privilegeTypes;
 }

@@ -3,6 +3,7 @@ package com.yunya.modules.discount.rpc;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
+import com.yunya.feign.discount.domain.model.MixMatchBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
@@ -179,5 +180,12 @@ public class BenefitApiController {
     @GetMapping("/card/lastestActived/{patientId}")
     public PatientCardBaseVo findPatientLastestActivedCardInfo(@PathVariable(value = "patientId") Integer patientId) {
         return cardBiz.findPatientLastestActivedCardInfo(patientId);
+    }
+
+    @ApiOperation("混搭优惠明细保存")
+    @PostMapping("/order/benefit/mixMatch/save")
+    @CurrentUser
+    public ResponseResult saveMixMatchBenefit(@Valid @RequestBody MixMatchBenefitModel model) {
+        return benefitBiz.saveMixMatchBenefit(model);
     }
 }

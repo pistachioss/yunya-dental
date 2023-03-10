@@ -1,4 +1,4 @@
-package com.yunya.modules.discount.enums;
+package com.yunya.framework.common.enums;
 
 import java.util.Objects;
 
@@ -14,7 +14,12 @@ public enum ChoiceBenefitTypeEnum {
 	/**
 	 * 授权折扣）
 	 */
-	AUTH_BENEFIT(1, "授权折扣）"),
+	AUTH_BENEFIT(1, "授权折扣"),
+	/**
+	 * 混搭优惠（价目使用卡券+商品使用折扣）
+	 */
+	MIX_MATCH_BENEFIT(2, "混搭优惠"),
+
 	;
 
 	private Integer code;

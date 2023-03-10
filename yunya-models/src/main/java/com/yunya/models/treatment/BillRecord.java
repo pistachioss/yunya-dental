@@ -53,7 +53,7 @@ public class BillRecord {
     private BigDecimal receivableAmount;
 
     /**
-     * 优惠方式（0-未使用优惠；1-一般优惠；2-授权折扣）
+     * 优惠方式（0-未使用优惠；1-一般优惠；2-授权折扣；3-混搭（价目使用优惠+商品使用折扣））
      * */
     @Column(name = "privilege_type")
     private Byte privilegeType;
@@ -281,7 +281,7 @@ public class BillRecord {
     /**
      * 获取优惠方式
      *
-     * @return privilegeType 优惠方式（0-未使用优惠；1-一般优惠；2-授权折扣）
+     * @return privilegeType 优惠方式（0-未使用优惠；1-一般优惠；2-授权折扣；3-混搭（价目使用优惠+商品使用折扣））
      */
     public Byte getPrivilegeType() {
         return privilegeType;
@@ -290,7 +290,7 @@ public class BillRecord {
     /**
      * 设置优惠方式
      *
-     * @param privilegeType 优惠方式（0-未使用优惠；1-一般优惠；2-授权折扣）
+     * @param privilegeType 优惠方式（0-未使用优惠；1-一般优惠；2-授权折扣；3-混搭（价目使用优惠+商品使用折扣））
      */
     public void setPrivilegeType(Byte privilegeType) {
         this.privilegeType = privilegeType;

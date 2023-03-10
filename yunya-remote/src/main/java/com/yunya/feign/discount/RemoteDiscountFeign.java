@@ -3,6 +3,7 @@ package com.yunya.feign.discount;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
+import com.yunya.feign.discount.domain.model.MixMatchBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.CardSaleQuery;
 import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
@@ -143,4 +144,8 @@ public interface RemoteDiscountFeign {
      */
     @GetMapping("/card/lastestActived/{patientId}")
     PatientCardBaseVo findPatientLastestActivedCardInfo(@PathVariable(value = "patientId") Integer patientId);
+
+    @ApiOperation("混搭优惠明细保存")
+    @PostMapping("/order/benefit/mixMatch/save")
+    ResponseResult saveMixMatchBenefit(@Valid @RequestBody MixMatchBenefitModel model);
 }

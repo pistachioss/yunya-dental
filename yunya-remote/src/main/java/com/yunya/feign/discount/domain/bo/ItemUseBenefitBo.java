@@ -30,5 +30,7 @@ public class ItemUseBenefitBo implements Serializable {
     private String benefitName;
     @ApiModelProperty(value = "优惠金额")
     private BigDecimal benefitAmount;
+    @ApiModelProperty(value = "会员卡号")
+    private String cardNumber;
 
 }

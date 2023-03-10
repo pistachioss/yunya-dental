@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
+import com.yunya.feign.discount.domain.model.MixMatchBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
@@ -153,6 +154,11 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
 
     @Override
     public PatientCardBaseVo findPatientLastestActivedCardInfo(Integer patientId) {
+        return null;
+    }
+
+    @Override
+    public ResponseResult saveMixMatchBenefit(MixMatchBenefitModel model) {
         return null;
     }
 
