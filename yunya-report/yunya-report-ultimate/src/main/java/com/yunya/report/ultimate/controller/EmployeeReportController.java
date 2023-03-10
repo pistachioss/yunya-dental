@@ -146,7 +146,7 @@ public class EmployeeReportController {
   @ApiOperation("咨询师业绩明细导出（公司端-运营报表-员工报表）")
   @PostMapping(value = "/consulter/list/detail/export", name = "咨询师业绩明细导出")
   public ResponseResult exportListDetailsOfConsulter(
-          HttpServletResponse response, @RequestBody @Validated BillItemTollWorkloadQuery query)
+          HttpServletResponse response, @RequestBody @Validated ClinicEmployeeWorkloadQuery query)
           throws Exception {
     employeeWorkloadBiz.exportListDetailsOfConsulter(response, query);
     return ResponseUtil.success(null);
