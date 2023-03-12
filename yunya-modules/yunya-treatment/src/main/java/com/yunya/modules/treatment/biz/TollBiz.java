@@ -760,31 +760,12 @@ public class TollBiz {
     Integer patientId = orderRecord.getPatientId();
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-    PatientChooseBenefitForm paramForm = new PatientChooseBenefitForm();
-    paramForm.setPatientId(patientId);
-    paramForm.setOrderId(orderRecordId);
-    paramForm.setOrgId(orgId);
-    paramForm.setMemberCardId(generalDiscount.getMemberTypeId());
-    paramForm.setDiscountId(generalDiscount.getDiscountCouponId());
-    List<Integer> voucherIds = Lists.newArrayList();
-    List<Integer> exchangeIds = Lists.newArrayList();
-    List<Integer> packageIds = Lists.newArrayList();
-    List<CouponDiscountInfoModel> discountInfoModels =
-            generalDiscount.getCouponDiscountInfoModels();
-    setCouponListValue(discountInfoModels, voucherIds, exchangeIds, packageIds);
-    paramForm.setVoucherIds(voucherIds);
-    paramForm.setExchangeIds(exchangeIds);
-    paramForm.setPackageIds(packageIds);
-    ResponseResult<PatientOrderBenefitVo> result = discountFeign.choiceBenefit(paramForm);
+    ResponseResult<PatientOrderBenefitVo> result = findGeneralPrivilege(orderRecordId, patientId, generalDiscount);
     PatientOrderBenefitVo benefitVo = result.getData();
+    Map<Integer, OrderDetailPayRecord> detailPays = new HashMap<>(16);
     if (null != benefitVo) {
       List<PatientItemBenefitVo> benefitVos = benefitVo.getItemList();
-      // TODO: bug3210 要求去掉优惠判断
-      //      if (StringHelper.isNotEmpty(benefitVos)) {
       for (OrderDetail detail : orderDetails) {
-        if (detail.getType().intValue() == 1) {
-          continue;
-        }
         OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
         detailPayRecord.setOrgId(orgId);
         detailPayRecord.setPatientId(patientId);
@@ -830,7 +811,7 @@ public class TollBiz {
         detailPayRecord.setCrtName(name);
         detailPayRecord.setUpdId(userId);
         detailPayRecord.setUpdName(name);
-        orderDetailPayRecordBiz.insertSelective(detailPayRecord);
+        detailPays.put(detailId, detailPayRecord);
       }
       //      } else {
       //        throw new ClientServiceException("收费失败，当前选择卡券未匹配任何优惠！", PARAMETERS_IS_ILLEGAL);
@@ -843,19 +824,9 @@ public class TollBiz {
             accreditDiscount.getAccreditDiscountDetailModels();
     if (StringHelper.isNotEmpty(orderDetails)) {
       for (OrderDetail detail : orderDetails) {
-        if (detail.getType().intValue() == 0) {
-          continue;
-        }
-        OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
-        detailPayRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-        detailPayRecord.setPatientId(orderRecord.getPatientId());
-        detailPayRecord.setTreatmentRecordId(orderRecord.getTreatmentRecordId());
-        detailPayRecord.setOrderRecordId(orderRecordId);
         Integer detailId = detail.getId();
-        detailPayRecord.setOrderDetailId(detailId);
-        detailPayRecord.setBillRecordId(billRecordId);
+        OrderDetailPayRecord detailPayRecord = detailPays.computeIfAbsent(detailId, k->new OrderDetailPayRecord());
         BigDecimal receivableAmount = detail.getReceivableAmount();
-        detailPayRecord.setReceivableAmount(receivableAmount);
         BigDecimal privilegeAmount = BigDecimal.valueOf(0);
         BigDecimal actualAmount = receivableAmount;
         for (AccreditDiscountDetailModel discountDetailModel : discountDetailModels) {
@@ -879,24 +850,36 @@ public class TollBiz {
             }
           }
         }
-        detailPayRecord.setPrivilegeAmount(privilegeAmount);
-        detailPayRecord.setActualReceivable(actualAmount);
-        detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
-        // 设置已收
-        if (totalCharge.compareTo(actualAmount) >= 0) {
-          detailPayRecord.setReceivedAmount(actualAmount);
-          totalCharge = totalCharge.subtract(actualAmount);
-        } else {
-          detailPayRecord.setReceivedAmount(totalCharge);
-          totalCharge = BigDecimal.valueOf(0);
+        if (privilegeAmount.compareTo(BigDecimal.ZERO) > 0) {
+          detailPayRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+          detailPayRecord.setPatientId(orderRecord.getPatientId());
+          detailPayRecord.setTreatmentRecordId(orderRecord.getTreatmentRecordId());
+          detailPayRecord.setOrderRecordId(orderRecordId);
+          detailPayRecord.setOrderDetailId(detailId);
+          detailPayRecord.setBillRecordId(billRecordId);
+          detailPayRecord.setReceivableAmount(receivableAmount);
+
+          detailPayRecord.setPrivilegeAmount(privilegeAmount);
+          detailPayRecord.setActualReceivable(actualAmount);
+          detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
+          // 设置已收
+          if (totalCharge.compareTo(actualAmount) >= 0) {
+            detailPayRecord.setReceivedAmount(actualAmount);
+            totalCharge = totalCharge.subtract(actualAmount);
+          } else {
+            detailPayRecord.setReceivedAmount(totalCharge);
+            totalCharge = BigDecimal.valueOf(0);
+          }
+          Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+          detailPayRecord.setCrtId(userId);
+          String name = BaseContextHandler.getName();
+          detailPayRecord.setCrtName(name);
+          detailPayRecord.setUpdId(userId);
+          detailPayRecord.setUpdName(name);
         }
-        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        detailPayRecord.setCrtId(userId);
-        String name = BaseContextHandler.getName();
-        detailPayRecord.setCrtName(name);
-        detailPayRecord.setUpdId(userId);
-        detailPayRecord.setUpdName(name);
-        orderDetailPayRecordBiz.insertSelective(detailPayRecord);
+      }
+      if (StringHelper.isNotEmpty(detailPays)) {
+        orderDetailPayRecordBiz.batchInsert(new ArrayList<>(detailPays.values()));
       }
     }
   }
