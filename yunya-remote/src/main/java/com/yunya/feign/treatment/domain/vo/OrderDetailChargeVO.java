@@ -57,10 +57,10 @@ public class OrderDetailChargeVO implements Serializable {
   private String toothBit;
   /** 折扣率 */
   @ApiModelProperty("折扣率")
-  private BigDecimal discountRate;
+  private BigDecimal discountRate = BigDecimal.ZERO;
   /** 应收金额 */
   @ApiModelProperty("应收金额（原价-优惠）")
-  private BigDecimal actualAmount;
+  private BigDecimal actualAmount = BigDecimal.ZERO;
   /** 实收金额 */
   @ApiModelProperty("实收金额")
   private BigDecimal receivedAmount;
@@ -90,4 +90,8 @@ public class OrderDetailChargeVO implements Serializable {
   private List<PrivilegeCouponInfoVO> discountAppliesCoupons;
   /** 会员价 */
   private Map<Integer, Object> memberPrices;
+
+  /** 是否有优惠 */
+  @ApiModelProperty("是否有优惠")
+  private Boolean hasDiscount = false;
 }

@@ -107,7 +107,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     if (StringHelper.isEmpty(query.getPrivilegeTypes())) {
-      query.setPrivilegeTypes(new Byte[] {1, 2});
+      query.setPrivilegeTypes(new Byte[] {1, 2, 3});
     }
     List<BillOfDiscountDetailVO> resultList = mapper.selectBillDiscountDetailList(query);
     return new PageInfo<>(resultList);
@@ -121,10 +121,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    */
   public void exportDiscountDetailList(
       HttpServletResponse response, BillOfDiscountDetailQuery query) throws IOException {
-    if (StringHelper.isEmpty(query.getPrivilegeTypes())) {
-      query.setPrivilegeTypes(new Byte[] {1, 2});
-    }
-    List<BillOfDiscountDetailVO> resultList = mapper.selectBillDiscountDetailList(query);
+    query.setWhetherPage(false);
+    List<BillOfDiscountDetailVO> resultList = findBillDiscountDetailList(query).getList();
     ExcelUtil<BillOfDiscountDetailVO> excelUtil = new ExcelUtil<>(BillOfDiscountDetailVO.class);
     excelUtil.exportExcel(response, resultList, "账单优惠明细列表", "账单优惠明细");
   }

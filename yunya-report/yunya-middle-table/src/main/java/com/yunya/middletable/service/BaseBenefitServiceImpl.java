@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.discount.AuthDiscountBenefitMapper;
 import com.yunya.middletable.dao.discount.CardBenefitMapper;
 import com.yunya.middletable.dao.discount.OrderBenefitMapper;
@@ -23,17 +24,13 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
-import static com.yunya.middletable.constant.SynConstant.*;
-import static com.yunya.middletable.enums.BenefitEnum.*;
-import static com.yunya.middletable.enums.TrueFalseEnum.*;
+import static com.yunya.framework.common.enums.ChoiceBenefitTypeEnum.*;
+import static com.yunya.middletable.constant.SynConstant.CUT_SLICE_100;
+import static com.yunya.middletable.enums.TrueFalseEnum.FALSE;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -75,6 +72,19 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             if (AUTH_BENEFIT.equals(orderBenefit.getBenefitType())) {
                 List<AuthDiscountBenefit> originData = getBenefitDetail(Collections.singleton(orderId), AuthDiscountBenefit.class, authBenefitMapper);
                 baseBenefits = authTransform(originData, orderBenefit.getRemark(), orderBenefit.getAuthorizedId());
+            }
+            if (MIX_MATCH_BENEFIT.equals(orderBenefit.getBenefitType())) {
+                List<CardBenefit> cardBenefits = getBenefitDetail(Sets.newHashSet(orderId), CardBenefit.class, cardBenefitMapper);
+                List<BaseBenefit> data1 = cardTransform(cardBenefits, orderBenefit.getRemark(), null);
+                if (StringHelper.isNotEmpty(data1)) {
+                    baseBenefits.addAll(data1);
+                }
+
+                List<AuthDiscountBenefit> authBenefits = getBenefitDetail(Collections.singleton(orderId), AuthDiscountBenefit.class, authBenefitMapper);
+                List<BaseBenefit> data2 = authTransform(authBenefits, orderBenefit.getRemark(), orderBenefit.getAuthorizedId());
+                if (StringHelper.isNotEmpty(data1)) {
+                    baseBenefits.addAll(data2);
+                }
             }
             List<BaseBenefit> existBenefits = getExistByOrderIds(Collections.singletonList(orderId));
 

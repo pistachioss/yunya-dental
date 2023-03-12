@@ -22,5 +22,8 @@ spring:
 
 domainUrl: http://test.ivy2.yunya365.com
 
+qzt:
+  prefix: http://121.41.36.72:8010
+
 bj:
-  prefix: 8.136.199.41:84
+  prefix: http://8.136.199.41:84

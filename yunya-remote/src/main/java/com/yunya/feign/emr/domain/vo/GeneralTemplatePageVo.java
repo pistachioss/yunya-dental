@@ -15,6 +15,7 @@ import lombok.Setter;
 public class GeneralTemplatePageVo {
 
     private Integer id;
+    private Integer sort;
     @ApiModelProperty(value = "词条内容")
     private String content;
 

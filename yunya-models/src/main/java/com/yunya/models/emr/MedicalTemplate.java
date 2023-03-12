@@ -29,6 +29,8 @@ public class MedicalTemplate implements Serializable {
      */
     private Integer type;
 
+    private Integer sort;
+
     /**
      * 复诊
      */

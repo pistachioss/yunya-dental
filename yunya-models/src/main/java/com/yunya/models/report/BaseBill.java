@@ -1,7 +1,6 @@
 package com.yunya.models.report;
 
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -69,7 +68,7 @@ public class BaseBill {
     private Date billDate;
 
     /**
-     * 优惠类型（0-普通优惠；1-授权折扣）
+     * 优惠类型（0-未使用优惠；1-一般优惠；2-授权折扣；3-混搭（价目使用优惠+商品使用折扣））
      */
     @Column(name = "privilege_type")
     private Byte privilegeType;
@@ -279,18 +278,18 @@ public class BaseBill {
     }
 
     /**
-     * 获取优惠类型（0-普通优惠；1-授权折扣）
+     * 获取优惠类型（0-未使用优惠；1-一般优惠；2-授权折扣；3-混搭（价目使用优惠+商品使用折扣））
      *
-     * @return privilege_type - 优惠类型（0-普通优惠；1-授权折扣）
+     * @return privilege_type - 优惠类型（0-未使用优惠；1-一般优惠；2-授权折扣；3-混搭（价目使用优惠+商品使用折扣））
      */
     public Byte getPrivilegeType() {
         return privilegeType;
     }
 
     /**
-     * 设置优惠类型（0-未使用优惠；1-一般优惠；2-授权折扣）
+     * 设置优惠类型（0-未使用优惠；1-一般优惠；2-授权折扣；3-混搭（价目使用优惠+商品使用折扣））
      *
-     * @param privilegeType 优惠类型（0-未使用优惠；1-一般优惠；2-授权折扣）
+     * @param privilegeType 优惠类型（0-未使用优惠；1-一般优惠；2-授权折扣；3-混搭（价目使用优惠+商品使用折扣））
      */
     public void setPrivilegeType(Byte privilegeType) {
         this.privilegeType = privilegeType;

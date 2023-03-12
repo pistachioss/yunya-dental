@@ -1651,6 +1651,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         itemUseBenefitBo.setCouponId(benefitBo.getCouponId());
         itemUseBenefitBo.setBenefitType(benefitType);
         itemUseBenefitBo.setCouponType(couponType);
+        itemUseBenefitBo.setCardNumber(benefitBo.getCardNumber());
         itemUseBenefitBo.setBenefitName(benefitBo.getCouponName());
         itemUseBenefitBo.setItemIndex(itemIndex);
         //单个个体优惠金额
@@ -3294,6 +3295,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                         memberCard.setCardId(obj.getMemberCardId());
                         memberCard.setDiscountRate(obj.getMemberCardRate());
                         memberCard.setCouponName(obj.getMemberCardName());
+                        memberCard.setCardNumber(obj.getMemberCardNumber());
                         memberCard.setCouponType(MEMBER_CARD.getCode());
                         memberCard.setMixable(TRUE.getCode());
                         return memberCard;

@@ -17,6 +17,8 @@ import java.util.List;
 public class TemplateCategoryVo {
     @ApiModelProperty("分类Id")
     private Integer id;
+    @ApiModelProperty("排序字段")
+    private Integer sort;
     @ApiModelProperty("分类名称")
     private String name;
     @ApiModelProperty(value = "子分类集合")

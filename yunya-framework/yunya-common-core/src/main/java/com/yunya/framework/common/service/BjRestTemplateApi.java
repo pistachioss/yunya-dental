@@ -1,5 +1,6 @@
 package com.yunya.framework.common.service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.framework.common.exception.ClientServiceException;
 import lombok.extern.slf4j.Slf4j;
@@ -31,12 +32,13 @@ public class BjRestTemplateApi {
     }
 
     public JSONObject postObject(String url, Object obj) {
-        log.info("滨江api调用url：{}，参数：{}", url, obj);
+        log.info("滨江api调用url：{}，参数：{}", url, JSON.toJSONString(obj));
         String resultStr = restTemplate.postForObject(url, obj, String.class);
         return getRequestRes(resultStr);
     }
 
     private JSONObject getRequestRes(String resultStr) {
+        log.error("滨江api返回结果：{}", resultStr);
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
         boolean success = jsonObject.getBoolean("success");
         String message = jsonObject.getString("msg");

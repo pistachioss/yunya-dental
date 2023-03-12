@@ -24,4 +24,10 @@ public class BjSyncItemDetailVO {
      * 药品或诊疗数量，中药的
      */
     private String drugConsumption;
+    private String drugSpecification;
+    private String drugManufacturer;
+    private String drugUsages;
+    private String drugUsagesDays;
+    private String drugUsagesFrequency;
+    private String drugConsumptionUnit;
 }

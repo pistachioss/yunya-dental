@@ -16,6 +16,8 @@ public class MedicalTemplatePageVo {
 
     @ApiModelProperty(value = "id")
     private Integer id;
+    @ApiModelProperty(value = "sort")
+    private Integer sort;
 
     @ApiModelProperty(value = "模板名称")
     private String name;

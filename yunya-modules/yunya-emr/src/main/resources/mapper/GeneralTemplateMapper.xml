@@ -25,6 +25,7 @@
         select
             `id`,
             `content`,
+            `sort`,
             `enable`
         from `general_template`
         where `medical_template_category_id` = #{categoryId}
@@ -34,7 +35,7 @@
             <if test="enable != null">
                 and `enable` = #{enable}
             </if>
-        order by `enable` desc, `crt_time` desc
+        order by `enable` desc, `sort` desc
     </select>
 
     <update id="enableById">

@@ -54,7 +54,7 @@ public class RefreshBjToken implements CommandLineRunner {
         Map<String, String> param = Maps.newHashMap();
         param.put("appKey", bjAppkey);
         param.put("appSecret", bjAppSecret);
-        JSONObject bjToken = bjRestTemplateApi.postObject(url, null);
+        JSONObject bjToken = bjRestTemplateApi.postObject(url, param);
         log.info("调用滨江access_token返回结果是: {}", bjToken);
         String token = bjToken.getString("token");
         //redis工具根据项目自行修改

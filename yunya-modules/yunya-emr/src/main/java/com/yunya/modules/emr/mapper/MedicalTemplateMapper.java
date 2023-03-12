@@ -1,6 +1,7 @@
 package com.yunya.modules.emr.mapper;
 
 
+import com.yunya.feign.emr.domain.form.MedicalTempCategorySortForm;
 import com.yunya.models.emr.MedicalTemplate;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -10,6 +11,14 @@ import java.util.List;
 
 public interface MedicalTemplateMapper extends Mapper<MedicalTemplate> {
 
+    /**
+     * 修改排序
+     *
+     * @return
+     */
+    void updateSort(List<MedicalTempCategorySortForm>medicalTempCategorySortForms);
+
+    void updateGenSort(List<MedicalTempCategorySortForm>medicalTempCategorySortForms);
     /**
      * 查询分类下病历模板数量
      *

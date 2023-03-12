@@ -24,5 +24,7 @@ public class ItemUseBenefitVo implements Serializable {
     private String benefitName;
     @ApiModelProperty(value = "优惠金额")
     private BigDecimal benefitAmount;
+    @ApiModelProperty("会员卡号")
+    private String cardNumber;
 
 }

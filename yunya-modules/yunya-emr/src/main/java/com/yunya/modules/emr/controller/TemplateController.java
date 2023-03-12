@@ -2,6 +2,8 @@ package com.yunya.modules.emr.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.emr.domain.form.GeneralTemplateForm;
+import com.yunya.feign.emr.domain.form.MedicalTempCategorySortForm;
+import com.yunya.feign.emr.domain.form.MedicalTempSortForm;
 import com.yunya.feign.emr.domain.form.MedicalTemplateForm;
 import com.yunya.feign.emr.domain.model.GeneralTemplateModel;
 import com.yunya.feign.emr.domain.model.MedicalTemplateModel;
@@ -34,6 +36,15 @@ public class TemplateController {
 
     @Resource
     private TemplateBiz templateBiz;
+
+
+//    @ApiOperation("公司端-普通模板-排序修改")
+//    @PutMapping("medical/template/updateGenSort")
+//    @CurrentUser
+//    public ResponseResult updateGenSort(@RequestBody List<MedicalTempCategorySortForm> medicalTempCategorySortForms) {
+//        templateBiz.updateGenSort(medicalTempCategorySortForms);
+//        return ResponseUtil.success();
+//    }
 
     @ApiOperation("公司端-普通模板新增")
     @PostMapping("template/{categoryId}/general")
@@ -79,7 +90,18 @@ public class TemplateController {
         templateBiz.createMedicalRecord(categoryId, createModel);
         return ResponseUtil.success();
     }
+    @ApiOperation("公司端-病历模板-排序修改")
+    @PutMapping("medical/template/sort")
+    @CurrentUser
+    public ResponseResult updateSort(@RequestBody MedicalTempSortForm medicalTempCategorySortForms) {
+        if(medicalTempCategorySortForms.getType() == 0){
+            templateBiz.updateGenSort(medicalTempCategorySortForms.getMedicalTempCategorySortForms());
+        }else{
+            templateBiz.updateSort(medicalTempCategorySortForms.getMedicalTempCategorySortForms());
+        }
 
+        return ResponseUtil.success();
+    }
     @ApiOperation("公司端-病例模板修改")
     @PutMapping("template/{categoryId}/medical/{templateId}")
     @CurrentUser
