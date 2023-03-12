@@ -308,7 +308,10 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
             if (!benefitMap.containsKey(key)) {
               benefitMap.put(key, benefit);
             }
-            billDiscountVOs.setOperateUserName(benefit.getAuthorizedName());
+            String authorizedName = benefit.getAuthorizedName();
+            if (StringHelper.isNotEmpty(authorizedName)) {
+              billDiscountVOs.setOperateUserName(authorizedName);
+            }
           });
     }
     if (StringHelper.isNotEmpty(amountMap)) {
