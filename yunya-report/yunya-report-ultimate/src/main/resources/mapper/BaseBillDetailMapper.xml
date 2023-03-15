@@ -5026,7 +5026,36 @@
                 bbd.quantity,
                 bbd.itemWorkload,
                 bbd.executorId
-            FROM base_bill_pay bbp
+            FROM (
+                SELECT bill_id, SUM(received_amount) AS received_amount FROM base_bill_pay bbp
+                <where>
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT(bbp.payee_date, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT(bbp.payee_date, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT(bbp.payee_date, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT(bbp.payee_date, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY bill_id
+            ) bbp
             INNER JOIN (
             SELECT
             bb.org_id AS orgId,
@@ -5072,30 +5101,6 @@
             <where>
                 /*bbp.received_amount > 0*/
                 bbd.quantity > 0
-                <if test="query.dateType == 0">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
-                    </if>
-                </if>
-                <if test="query.dateType == 1">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT(bbp.payee_date, '%Y-%m') &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bbp.payee_date, '%Y-%m') &lt;= #{query.endDate}
-                    </if>
-                </if>
-                <if test="query.dateType == 2">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT(bbp.payee_date, '%Y') &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bbp.payee_date, '%Y') &lt;= #{query.endDate}
-                    </if>
-                </if>
             </where>
         ) bbd
         GROUP BY bbd.itemId,bbd.executorId,bbd.orgId
