@@ -27,4 +27,25 @@ public class EmployeeTariffWorkloadVO extends ClinicEmployeTariffInfoVO implemen
 
     @ApiModelProperty("工作量")
     private BigDecimal workload;
+
+    @ApiModelProperty("账单id")
+    private Integer billId;
+
+    @ApiModelProperty("账单编号")
+    private String orderNum;
+
+    @ApiModelProperty("患者姓名")
+    private String name;
+
+    @ApiModelProperty("患者电话")
+    private String mobile;
+
+    @ApiModelProperty("开单备注")
+    private String remark;
+
+    @ApiModelProperty("挂号医生")
+    private String employeeName;
+
+    @ApiModelProperty("账单日期")
+    private String billDate;
 }
