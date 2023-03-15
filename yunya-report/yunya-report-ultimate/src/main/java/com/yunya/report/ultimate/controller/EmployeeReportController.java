@@ -111,6 +111,20 @@ public class EmployeeReportController {
     return ResponseUtil.success(pageInfo);
   }
 
+
+  /**
+   * 根据条件导出统计明细
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计-导出统计明细")
+  @PostMapping(value = "/operation/tariff/pay/workload/list/allExport", name = "公司端报表-报表统计-运营报表-收费项目工作量统计-导出统计明细")
+  public ResponseResult allExporttariffPaymentWorkloadStatistics(
+          HttpServletResponse response,  @RequestBody @Validated BillItemTollWorkloadQuery query) throws Exception {
+            employeeWorkloadBiz.allExporttariffPaymentWorkloadStatistics(response,query);
+    return ResponseUtil.success(null);
+  }
   /**
    * 根据条件导出项目收费及工作量列表
    *

@@ -438,6 +438,20 @@ public class EmployeeWorkloadBiz {
     return result;
   }
 
+    /**
+     * 转换为员工工作量map
+     *
+     * @param workloads
+     * @return
+     */
+    private Map<String, EmployeeTariffWorkloadVO> allExportmapEmployeeWorkloadVO(
+            List<EmployeeTariffWorkloadVO> workloads) {
+        Map<String, EmployeeTariffWorkloadVO> result = new HashMap<>();
+        workloads.forEach(
+                vo -> result.put(vo.getEmployeeId() + "," + vo.getOrgId() + "." + vo.getItemId()+ "." + vo.getBillId(), vo));
+        return result;
+    }
+
   /**
    * 根据条件查询人事报表的员工工作量列表
    *
@@ -617,7 +631,50 @@ public class EmployeeWorkloadBiz {
     // 分页
     return PageUtl.doPage(query.getPageNum(), query.getPageSize(), result, query.getWhetherPage());
   }
+  //导出统计明细
+  public void allExporttariffPaymentWorkloadStatistics(
+            HttpServletResponse response,  BillItemTollWorkloadQuery query) throws Exception {
+        resolveItemIds(query);
+        // 实收工作量
+        Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload =
+                allExportfindClinicExecutorTariffReceivedWorkload(query);
 
+        // 免单支付金额
+        Future<Map<String, EmployeeTariffWorkloadVO>> freePaymentAmount =
+                allExportfindClinicExecutorTariffFreePaymentAmount(query);
+
+        // 补入工作量
+        Future<Map<String, EmployeeTariffWorkloadVO>> supplementWorkload =
+                allExportfindClinicExecutorTariffFreeSupplementWorkload(query);
+
+        // 退费工作量
+        Future<Map<String, EmployeeTariffWorkloadVO>> refundWorkload =
+                allExportfindClinicExecutorTariffRefundWorkload(query);
+
+        // 查询价目or商品表
+        Future<Map<Integer, ItemCategoryVO>> tariffMap = findTariffInfoMap(query.getItemType());
+
+        // 门诊员工
+        Future<List<ClinicEmployeBonusCoefficientVO>> employees =
+                multiFindClinicEmployeeCollection(query);
+
+        // 数据合并组装
+        List<BillItemTollAndWorkloadAllExportVO> result =
+                allExportmergeExecutorTariffWorkload(
+                        receivedWorkload,
+                        freePaymentAmount,
+                        supplementWorkload,
+                        refundWorkload,
+                        employees,
+                        tariffMap);
+
+
+      String fileName = query.getStartDate() + "-" + query.getEndDate() + "收费数量及金额全部明细";
+      ExcelUtil<BillItemTollAndWorkloadAllExportVO> excelUtil =
+              new ExcelUtil<>(BillItemTollAndWorkloadAllExportVO.class);
+      excelUtil.exportExcel(response, result, "收费数量及金额全部明细", fileName);
+
+    }
   /**
    * 解析出itemId
    *
@@ -717,7 +774,109 @@ public class EmployeeWorkloadBiz {
     // 排序
     return SortUtil.sort(new ArrayList<>(resultMap.values()), itemWorkloadCmpList());
   }
+    private List<BillItemTollAndWorkloadAllExportVO> allExportmergeExecutorTariffWorkload(
+            Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload,
+            Future<Map<String, EmployeeTariffWorkloadVO>> freePaymentAmount,
+            Future<Map<String, EmployeeTariffWorkloadVO>> supplementWorkload,
+            Future<Map<String, EmployeeTariffWorkloadVO>> refundWorkload,
+            Future<List<ClinicEmployeBonusCoefficientVO>> employeeFutrue,
+            Future<Map<Integer, ItemCategoryVO>> tariffFuture)
+            throws Exception {
+        Map<String, EmployeeTariffWorkloadVO> receivedMap = receivedWorkload.get();
+        Map<String, EmployeeTariffWorkloadVO> freePaymentMap = freePaymentAmount.get();
+        Map<String, EmployeeTariffWorkloadVO> supplementMap = supplementWorkload.get();
+        Map<String, EmployeeTariffWorkloadVO> refundMap = refundWorkload.get();
+        List<ClinicEmployeBonusCoefficientVO> employees = employeeFutrue.get();
+        Map<String, ClinicEmployeBonusCoefficientVO> employeeMap = new HashMap<>(16);
+        employees.forEach(vo -> employeeMap.put(vo.getEmployeeId() + "," + vo.getOrgId(), vo));
+        Map<Integer, ItemCategoryVO> tariffMap = tariffFuture.get();
+        Map<String, BillItemTollAndWorkloadAllExportVO> resultMap = new HashMap<>(16);
+        receivedMap.forEach(
+                (key, vo) -> {
+                    Integer quantity = StringHelper.defaultInt(vo.getQuantity());
+                    BigDecimal workload = vo.getWorkload();
+                    if (quantity > 0) {
+                        BillItemTollAndWorkloadAllExportVO entity = resultMap.get(key);
+                        if (ObjectUtils.isEmpty(entity)) {
+                            entity = allExportcreateWorkloadBaseInfo(key, employeeMap, tariffMap);
+                        }
+                        if (!ObjectUtils.isEmpty(entity)) {
+                            entity.setQuantity(quantity);
+                            entity.setReceivedWorkload(workload);
+                            entity.setOrderNum(vo.getOrderNum());
+                            entity.setName(vo.getName());
+                            entity.setMobile(vo.getMobile());
+                            entity.setRemark(vo.getRemark());
+                            entity.setBillDate(vo.getBillDate());
+                            entity.setEmployeeName(vo.getEmployeeName());
+                            resultMap.put(key, entity);
+                        }
+                    }
+                });
+        freePaymentMap.forEach(
+                (key, vo) -> {
+                    BigDecimal workload = vo.getWorkload();
+                    if (workload.compareTo(BigDecimal.ZERO) > 0) {
+                        BillItemTollAndWorkloadAllExportVO entity = resultMap.get(key);
+                        if (ObjectUtils.isEmpty(entity)) {
+                            entity = allExportcreateWorkloadBaseInfo(key, employeeMap, tariffMap);
+                        }
+                        if (!ObjectUtils.isEmpty(entity)) {
+                            entity.setFreePayWorkload(workload);
+                            entity.setOrderNum(vo.getOrderNum());
+                            entity.setName(vo.getName());
+                            entity.setMobile(vo.getMobile());
+                            entity.setRemark(vo.getRemark());
+                            entity.setBillDate(vo.getBillDate());
+                            entity.setEmployeeName(vo.getEmployeeName());
+                            resultMap.put(key, entity);
+                        }
+                    }
+                });
+        supplementMap.forEach(
+                (key, vo) -> {
+                    BigDecimal workload = vo.getWorkload();
+                    if (workload.compareTo(BigDecimal.ZERO) > 0) {
+                        BillItemTollAndWorkloadAllExportVO entity = resultMap.get(key);
+                        if (ObjectUtils.isEmpty(entity)) {
+                            entity = allExportcreateWorkloadBaseInfo(key, employeeMap, tariffMap);
+                        }
+                        if (!ObjectUtils.isEmpty(entity)) {
+                            entity.setSupplyWorkload(workload);
+                            entity.setOrderNum(vo.getOrderNum());
+                            entity.setName(vo.getName());
+                            entity.setMobile(vo.getMobile());
+                            entity.setRemark(vo.getRemark());
+                            entity.setBillDate(vo.getBillDate());
+                            entity.setEmployeeName(vo.getEmployeeName());
+                            resultMap.put(key, entity);
+                        }
+                    }
+                });
+        refundMap.forEach(
+                (key, vo) -> {
+                    BigDecimal workload = vo.getWorkload();
+                    if (workload.compareTo(BigDecimal.ZERO) > 0) {
+                        BillItemTollAndWorkloadAllExportVO entity = resultMap.get(key);
+                        if (ObjectUtils.isEmpty(entity)) {
+                            entity = allExportcreateWorkloadBaseInfo(key, employeeMap, tariffMap);
+                        }
+                        if (!ObjectUtils.isEmpty(entity)) {
+                            entity.setRefundWorkload(workload);
+                            entity.setOrderNum(vo.getOrderNum());
+                            entity.setName(vo.getName());
+                            entity.setMobile(vo.getMobile());
+                            entity.setRemark(vo.getRemark());
+                            entity.setBillDate(vo.getBillDate());
+                            entity.setEmployeeName(vo.getEmployeeName());
+                            resultMap.put(key, entity);
+                        }
+                    }
+                });
 
+        // 排序
+        return SortUtil.sort(new ArrayList<>(resultMap.values()), allExportitemWorkloadCmpList());
+    }
   /**
    * 填充基础信息
    *
@@ -753,6 +912,41 @@ public class EmployeeWorkloadBiz {
     }
     return entity;
   }
+    /**
+     * 填充基础信息
+     *
+     * @param key
+     * @param employeeMap
+     * @param tariffMap
+     * @return
+     */
+    private BillItemTollAndWorkloadAllExportVO allExportcreateWorkloadBaseInfo(
+            String key,
+            Map<String, ClinicEmployeBonusCoefficientVO> employeeMap,
+            Map<Integer, ItemCategoryVO> tariffMap) {
+        String[] keys = key.split("\\.");
+        BillItemTollAndWorkloadAllExportVO entity = new BillItemTollAndWorkloadAllExportVO();
+        ClinicEmployeBonusCoefficientVO employee = employeeMap.get(keys[0]);
+        if (!ObjectUtils.isEmpty(employee)) {
+            entity.setAbbreviation(employee.getAbbreviation());
+            entity.setOrgId(employee.getOrgId());
+            entity.setExecutorName(employee.getEmployeeName());
+            entity.setExecutorId(employee.getEmployeeId());
+        } else {
+            return null;
+        }
+        ItemCategoryVO item = tariffMap.get(Integer.parseInt(keys[1]));
+        if (!ObjectUtils.isEmpty(item)) {
+            entity.setItemName(item.getItemName());
+            entity.setItemId(item.getItemId());
+            entity.setItemNum(item.getItemNum());
+            entity.setItemCategoryName(item.getCategoryName());
+            entity.setItemCategoryId(item.getCategoryId());
+        } else {
+            return null;
+        }
+        return entity;
+    }
 
   private Future<Map<Integer, ItemCategoryVO>> findTariffInfoMap(Byte itemType) {
     return threadPool.submit(
@@ -777,7 +971,21 @@ public class EmployeeWorkloadBiz {
           return mapEmployeeWorkloadVO(workload);
         });
   }
-
+    /**
+     * 多线程查询项目退费工作量
+     *
+     * @param query
+     * @return
+     */
+    private Future<Map<String, EmployeeTariffWorkloadVO>> allExportfindClinicExecutorTariffRefundWorkload(
+            BillItemTollWorkloadQuery query) {
+        return threadPool.submit(
+                () -> {
+                    List<EmployeeTariffWorkloadVO> workload =
+                            baseBillDetailMapper.allExportfindClinicExecutorTariffRefundWorkload(query);
+                    return mapEmployeeWorkloadVO(workload);
+                });
+    }
   /**
    * 多线程查询执行人的项目补入工作量
    *
@@ -793,7 +1001,21 @@ public class EmployeeWorkloadBiz {
           return mapEmployeeWorkloadVO(workload);
         });
   }
-
+    /**
+     * 多线程查询项目补入工作量
+     *
+     * @param query
+     * @return
+     */
+    private Future<Map<String, EmployeeTariffWorkloadVO>>
+    allExportfindClinicExecutorTariffFreeSupplementWorkload(BillItemTollWorkloadQuery query) {
+        return threadPool.submit(
+                () -> {
+                    List<EmployeeTariffWorkloadVO> workload =
+                            baseBillDetailMapper.allExportfindClinicExecutorTariffFreeSupplementWorkload(query);
+                    return mapEmployeeWorkloadVO(workload);
+                });
+    }
   /**
    * 多线程查询执行人的项目免单支付金额
    *
@@ -809,7 +1031,21 @@ public class EmployeeWorkloadBiz {
           return mapEmployeeWorkloadVO(amount);
         });
   }
-
+    /**
+     * 多线程查询项目免单支付金额
+     *
+     * @param query
+     * @return
+     */
+    private Future<Map<String, EmployeeTariffWorkloadVO>> allExportfindClinicExecutorTariffFreePaymentAmount(
+            BillItemTollWorkloadQuery query) {
+        return threadPool.submit(
+                () -> {
+                    List<EmployeeTariffWorkloadVO> amount =
+                            baseBillDetailMapper.allExportfindClinicExecutorTariffFreePaymentAmount(query);
+                    return allExportmapEmployeeWorkloadVO(amount);
+                });
+    }
   /**
    * 多线程查询执行人的项目实收工作量
    *
@@ -826,6 +1062,21 @@ public class EmployeeWorkloadBiz {
         });
   }
 
+    /**
+     * 多线程查询实收工作量
+     *
+     * @param query
+     * @return
+     */
+    public Future<Map<String, EmployeeTariffWorkloadVO>> allExportfindClinicExecutorTariffReceivedWorkload(
+            BillItemTollWorkloadQuery query) {
+        return threadPool.submit(
+                () -> {
+                    List<EmployeeTariffWorkloadVO> workload =
+                            baseBillDetailMapper.allExportfindClinicExecutorTariffReceivedWorkload(query);
+                    return allExportmapEmployeeWorkloadVO(workload);
+                });
+    }
   /**
    * 返回项目收费数量&金额的排序规则
    *
@@ -839,6 +1090,15 @@ public class EmployeeWorkloadBiz {
             BillItemTollAndWorkloadVO::getRefundWorkload)
         .reversed();
   }
+
+    private Comparator allExportitemWorkloadCmpList() {
+        return SortUtil.comparing(
+                BillItemTollAndWorkloadAllExportVO::getReceivedWorkload,
+                BillItemTollAndWorkloadAllExportVO::getFreePayWorkload,
+                BillItemTollAndWorkloadAllExportVO::getSupplyWorkload,
+                BillItemTollAndWorkloadAllExportVO::getRefundWorkload)
+                .reversed();
+    }
 
   public void exportTariffPaymentWorkloadList(
       HttpServletResponse response, BillItemTollWorkloadQuery query) throws Exception {
