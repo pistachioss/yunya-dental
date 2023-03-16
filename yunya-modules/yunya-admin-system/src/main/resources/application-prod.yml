@@ -24,6 +24,7 @@ spring:
 # 日志打印级别
 logging:
   level:
+    root: info
     tk.mybatis: INFO
     com.yunya: INFO
     com.yunya365: INFO
