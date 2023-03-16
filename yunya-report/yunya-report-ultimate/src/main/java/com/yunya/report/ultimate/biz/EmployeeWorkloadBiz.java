@@ -983,7 +983,7 @@ public class EmployeeWorkloadBiz {
                 () -> {
                     List<EmployeeTariffWorkloadVO> workload =
                             baseBillDetailMapper.allExportfindClinicExecutorTariffRefundWorkload(query);
-                    return mapEmployeeWorkloadVO(workload);
+                    return allExportmapEmployeeWorkloadVO(workload);
                 });
     }
   /**
@@ -1013,7 +1013,7 @@ public class EmployeeWorkloadBiz {
                 () -> {
                     List<EmployeeTariffWorkloadVO> workload =
                             baseBillDetailMapper.allExportfindClinicExecutorTariffFreeSupplementWorkload(query);
-                    return mapEmployeeWorkloadVO(workload);
+                    return allExportmapEmployeeWorkloadVO(workload);
                 });
     }
   /**
