@@ -4107,18 +4107,18 @@
                     bb.pinyinName,
                     bb.mobile,
                     bb.regDentistId,
-                    bbd1.billTotalWorkload,
+                    IFNULL(bbd1.billTotalWorkload, 0) AS billTotalWorkload,
                     <if test="query.itemType == 0">
                         0 AS tariffTotalWorkload,
                     </if>
                     <if test="query.itemType == 1">
-                        bbd2.tariffTotalWorkload,
+                        IFNULL(bbd2.tariffTotalWorkload, 0) AS tariffTotalWorkload,
                     </if>
                     bbd.price * bbd.quantity - bbd.discount_amount as itemWorkload,
                     bbd.executor_id as executorId,
                     be.employee_name as executorName
                     from base_bill_detail bbd
-                    INNER JOIN (
+                    LEFT JOIN (
                         SELECT bbd.bill_id,
                         SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS tariffTotalWorkload
                         FROM base_bill_detail bbd
@@ -4130,7 +4130,7 @@
                         </where>
                         GROUP BY bbd.bill_id
                     ) bbd2 ON bbd.bill_id = bbd2.bill_id
-                    INNER JOIN (
+                    LEFT JOIN (
                         SELECT bbd.bill_id, bbd.item_id,
                         SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billTotalWorkload
                         FROM base_bill_detail bbd
