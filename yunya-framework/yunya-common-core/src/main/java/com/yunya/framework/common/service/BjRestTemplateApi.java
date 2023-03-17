@@ -38,7 +38,7 @@ public class BjRestTemplateApi {
     }
 
     private JSONObject getRequestRes(String resultStr) {
-        log.error("滨江api返回结果：{}", resultStr);
+        log.info("滨江api返回结果：{}", resultStr);
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
         boolean success = jsonObject.getBoolean("success");
         String message = jsonObject.getString("msg");

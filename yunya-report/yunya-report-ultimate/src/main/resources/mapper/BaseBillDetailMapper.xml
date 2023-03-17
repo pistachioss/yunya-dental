@@ -5682,7 +5682,7 @@
     <select id="allExportfindClinicExecutorTariffRefundWorkload"
             resultType="com.yunya.feign.report.domain.vo.EmployeeTariffWorkloadVO">
         SELECT
-        iFNULL(brd.refund_amount,0) AS workload,
+        iFNULL(SUM(brd.refund_amount),0) AS workload,
         brd.executorId AS employeeId,
         brd.itemId,
         brd.orgId,
@@ -5694,7 +5694,7 @@
         brd.remark,
         brd.orderNum
         FROM (
-        SELECT
+        SELECT DISTINCT
         brd.refund_amount,
         IFNULL(brd.executor_id, -1) AS executorId,
         brd.item_id AS itemId,
@@ -5757,7 +5757,7 @@
             </if>
         </where>
         ) brd
-        GROUP BY brd.executorId,brd.itemId,brd.orgId
+        GROUP BY brd.executorId,brd.itemId,brd.orgId,brd.billId
     </select>
     <select id="selectBillItemNumByQuery" resultType="com.yunya.feign.report.domain.vo.PersonalBillItemVO">
         SELECT

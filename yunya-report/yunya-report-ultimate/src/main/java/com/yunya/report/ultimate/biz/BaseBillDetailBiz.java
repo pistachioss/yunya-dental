@@ -2862,6 +2862,46 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     excelUtil.exportExcel(response, res, "开单数量及金额明细一体表", fileName);
   }
 
+
+    /**
+     * 根据条件查询收费数量及金额全部明细列表导出
+     *
+     * @param query
+     * @param response
+     * @throws Exception
+     */
+    public void billItemStatisticsDetailIntegrationAllExport(
+            BillItemInfoQuery query, HttpServletResponse response) throws Exception {
+        Collection<Integer[]> items = query.getCategoryItems();
+        if (!CollectionUtils.isEmpty(items)) {
+            Set<Integer> categoryIds = new HashSet<>();
+            Set<Integer> itemIds = new HashSet<>();
+            items.forEach(
+                    vo -> {
+                        categoryIds.add(vo[0]);
+                        itemIds.add(vo[1]);
+                    });
+            query.setCategoryIds(categoryIds);
+            query.setItemIds(itemIds);
+        } else {
+            throw new ClientServiceException("请至少选择一个项目", PARAMETERS_IS_ILLEGAL);
+        }
+        List<BillItemStatisticsDetailVO> result = mapper.billItemAmountDetailList(query);
+        List<BillItemStatisticsDetailIntegrationVO> res =
+                BeanCopierUtils.listGeneralCopyBean(result, BillItemStatisticsDetailIntegrationVO.class);
+        ExcelUtil<BillItemStatisticsDetailIntegrationVO> excelUtil =
+                new ExcelUtil<>(BillItemStatisticsDetailIntegrationVO.class);
+        String fileName = query.getStartDate() + "-" + query.getEndDate() + "收费数量及金额明细一体表";
+        List<Integer> orgIds = query.getOrgIds();
+        if (StringHelper.isNotEmpty(orgIds) && orgIds.size() == 1) {
+            BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+            if (null != organization) {
+                fileName = organization.getAbbreviation() + fileName;
+            }
+        }
+        excelUtil.exportExcel(response, res, "收费数量及金额明细一体表", fileName);
+    }
+
   public List<BillDetailtemVO> findBillDetailItemList(ClinicPerformanceBusinessQuery query) {
     setDistinctBillIds(query);
     return mapper.selectBillDetailItemList(query);

@@ -135,22 +135,30 @@ public class BjMedicalBiz {
                     medicalVO.setMedicalTime(DateUtil.format(treatmentRecordExtendVO.getTreatStartTime(), "yyyy-MM-dd HH:mm:ss"));
                     medicalVO.setMedicalType(0);
                     medicalVO.setFirstVisit(t.getType());
-                    medicalVO.setDiagnose(t.getChiefComplaint());
+                    medicalVO.setDiagnose(validNull(t.getChiefComplaint()));
                     medicalVO.setIcd10("Z01.251");
-                    medicalVO.setDiseaseDesc(t.getPrescription());
-                    medicalVO.setPastHistory(t.getPastHistory());
+                    medicalVO.setDiseaseDesc(validNull(t.getPrescription()));
+                    medicalVO.setPastHistory(validNull(t.getPastHistory()));
                     String describe = JSONArray.parseArray(t.getTreatment()).getJSONObject(0).getString("describe");
-                    medicalVO.setOperation(describe);
+                    medicalVO.setOperation(validNull(describe));
+                    medicalVO.setAllergyHistory("");
                     return medicalVO;
                 }).collect(Collectors.toList());
         log.info("滨江病例数据同步开始，同步数量：{}", commonRecords.size());
         //全诊通单次同步上限500
-        List<List<BjSyncMedicalVO>> partition = Lists.partition(commonRecords, 500);
-        for (int i = 0; i < partition.size(); i++) {
-            JSONObject jsonObject = bjRestTemplateApi.postObject(String.format(qztPrefix + MEDICAL_URL, shortToken), partition.get(i));
-            log.info("第{}次滨江病例数据同步完成：同步结果：{}", i, jsonObject);
+        List<List<BjSyncMedicalVO>> partition = Lists.partition(commonRecords, 1);
+        int count = 0;
+        for (int i = 0; i < commonRecords.size(); i++) {
+            List<BjSyncMedicalVO> vos = partition.get(i);
+            try {
+                JSONObject jsonObject = bjRestTemplateApi.postObject(String.format(qztPrefix + MEDICAL_URL, shortToken), vos);
+                log.info("第{}次滨江病例数据同步完成：同步结果：{}", i, jsonObject);
+                count++;
+            } catch (Exception e) {
+                log.error("第{}次滨江病例数据同步失败,参数：{}", i, JSON.toJSONString(vos) );
+            }
         }
-
+        log.info("{},滨江病例数据同步成功数：{}，失败数：{}", preDay,count, commonRecords.size() - count);
         //同步诊疗项目
         List<BjSyncItemVO> itemList = Lists.newArrayListWithCapacity(commonRecords.size());
         for (BjSyncMedicalVO commonRecord : commonRecords) {
@@ -176,11 +184,18 @@ public class BjMedicalBiz {
             itemList.add(qztSyncItemVO);
         }
         log.info("滨江诊疗项目数据同步开始，同步数量：{}", itemList.size());
-        List<List<BjSyncItemVO>> itemSync = Lists.partition(itemList, 500);
+        List<List<BjSyncItemVO>> itemSync = Lists.partition(itemList, 1);
+        count = 0;
         for (int i = 0; i < itemSync.size(); i++) {
-            JSONObject jsonObject = bjRestTemplateApi.postObject(String.format(qztPrefix + TREATMENT_URL, shortToken), itemSync.get(i));
-            log.info("第{}次滨江诊疗项目数据同步完成：同步结果：{}", i, jsonObject);
+            try {
+                JSONObject jsonObject = bjRestTemplateApi.postObject(String.format(qztPrefix + TREATMENT_URL, shortToken), itemSync.get(i));
+                log.info("第{}次滨江诊疗项目数据同步完成：同步结果：{}", i, jsonObject);
+                count++;
+            } catch (Exception e) {
+                log.error("第{}次滨江诊疗项目数据失败", i);
+            }
         }
+        log.info("{},滨江处方数据同步成功数：{}，失败数：{}", preDay,count, itemSync.size() - count);
         log.info("{}，该天电子病例和诊疗项目已同步滨江", preDay);
     }
 
@@ -227,6 +242,10 @@ public class BjMedicalBiz {
             qztGender = 2;
         }
         return qztGender;
+    }
+
+    private String validNull(String param) {
+        return Objects.isNull(param) ? "" : param;
     }
 
 }
