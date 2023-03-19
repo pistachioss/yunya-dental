@@ -5432,7 +5432,7 @@
         </where>
         GROUP BY bbpd.bill_id
         ) bbp
-        LEFT JOIN (
+        INNER JOIN (
         SELECT
         bbd.org_id AS orgId,
         bbd1.bill_id,
