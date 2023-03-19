@@ -5432,7 +5432,7 @@
         </where>
         GROUP BY bbpd.bill_id
         ) bbp
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         bbd.org_id AS orgId,
         bbd1.bill_id,
@@ -5440,15 +5440,15 @@
         bbd.item_id AS itemId,
         bbd.quantity,
         bbd.price * bbd.quantity - bbd.discount_amount AS itemWorkload,
-        bbd1.billTotalWorkload,
+        IFNULL(bbd1.billTotalWorkload, 0) AS billTotalWorkload,
         <if test="query.itemType == 0">
             0 AS tariffTotalWorkload
         </if>
         <if test="query.itemType == 1">
-            bbd2.tariffTotalWorkload
+            IFNULL(bbd2.tariffTotalWorkload, 0) AS tariffTotalWorkload
         </if>
         FROM base_bill_detail bbd
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         bbd.bill_id,
         SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS tariffTotalWorkload
@@ -5470,7 +5470,7 @@
         </where>
         GROUP BY bbd.bill_id
         ) bbd2 ON bbd.bill_id = bbd2.bill_id
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         bbd.bill_id,
         bbd.item_id,
@@ -5502,11 +5502,14 @@
         GROUP BY bbd.bill_id
         ) bbd1 ON bbd.bill_id = bbd1.bill_id
         <where>
-            <if test="query.itemType == 0">
-                AND bbd.executor_id > 0
-            </if>
-            <if test="query.itemType == 1">
-                AND bbd.executor_id is null
+            <if test="query.itemType != null">
+                AND bbd.item_type = #{query.itemType}
+                <if test="query.itemType == 0">
+                    AND bbd.executor_id > 0
+                </if>
+                <if test="query.itemType == 1">
+                    AND bbd.executor_id is null
+                </if>
             </if>
             <if test="query.orgIds!=null and query.orgIds.length>0">
                 and bbd.org_id in
