@@ -5399,7 +5399,7 @@
         bbd.itemWorkload,
         bbp.name,
         bbp.mobile,
-        bbp.remark,
+        bbd.remark,
         bbp.billDate,
         bbp.employeeName,
         bbd.billTotalWorkload
@@ -5408,14 +5408,12 @@
         bbpd.bill_id,
         bp.name,
         bp.mobile,
-        bbd.remark,
         bb.bill_date as billDate,
         be.employee_name as employeeName,
         bb.bill_num as orderNum,
         sum(bbpd.principal_amount) AS freePayAmount
         FROM base_bill_pay_detail bbpd
         INNER JOIN base_bill bb on bb.bill_id =  bbpd.bill_id
-        INNER JOIN base_bill_detail bbd on bb.bill_id =  bbd.bill_id
         INNER JOIN base_bill_pay bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
         left JOIN base_patient bp ON bb.patient_id = bp.patient_id
         left join base_treatment_process btp on bb.treatment_id = btp.treatment_id
@@ -5436,6 +5434,7 @@
         SELECT
         bbd.org_id AS orgId,
         bbd1.bill_id,
+        bbd.remark,
         IFNULL(bbd.executor_id, -1) AS executorId,
         bbd.item_id AS itemId,
         bbd.quantity,
