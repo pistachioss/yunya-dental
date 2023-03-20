@@ -4462,7 +4462,7 @@
         be.employee_name AS executorName,
         IFNULL(TRUNCATE(((bbd.quantity*bbd.price-bbd.discount_amount)/bb.actual_amount)*bbp.received_amount,2),0) AS
         amount,
-        TRUNCATE(((bbd.quantity*bbd.price-bbd.discount_amount)/bb.actual_amount),2) AS freePaymentAmount,
+        IFNULL(TRUNCATE(((bbd.quantity*bbd.price-bbd.discount_amount)/bb.actual_amount)*bbp.free_amount,2),0) AS freePaymentAmount,
         if(bb.privilege_date=bbp.payee_date,TRUNCATE(IFNULL(bbd.coupon_workload,0),2),0) AS supplyWorkload,
         bp.NAME AS patientName,
         bp.patient_id AS patientId,
@@ -4472,6 +4472,7 @@
         select bbp.bill_pay_id,
         bbp.payee_date,
         bbp.bill_id,
+        bbpd.principal_amount AS free_amount,
         bbp.received_amount-ifnull(bbpd.principal_amount,0) AS received_amount
         from base_bill_pay bbp
         left join (
