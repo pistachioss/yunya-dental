@@ -2733,7 +2733,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
               .collect(Collectors.toSet());
       List<BillPayFreePayAmountVO> freePayAmounts =
           baseBillPayDetailBiz.findBillFreePayAmountList(billPayIds);
-      if (StringHelper.isNotEmpty(freePayAmounts)) {
+      if (StringHelper.isNotEmpty(resultList)) {
         Map<Integer, BigDecimal> freePaymentMap =
             freePayAmounts.stream()
                 .collect(
