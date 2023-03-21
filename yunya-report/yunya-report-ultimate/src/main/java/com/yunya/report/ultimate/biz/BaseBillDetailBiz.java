@@ -2727,31 +2727,51 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     queryCategoryItem(query);
     List<BillItemReceivedStatisticsVO> resultList = mapper.billItemReceivedStatistics(query);
     if (StringHelper.isNotEmpty(resultList)) {
-      Set<Integer> billPayIds =
-          resultList.stream()
-              .map(BillItemReceivedStatisticsVO::getBillPayId)
-              .collect(Collectors.toSet());
+      List<BillItemReceivableAmountVO> billAmounts = mapper.selectBillItemReceivableAmountList(
+              resultList.stream()
+              .map(BillItemReceivedStatisticsVO::getBillId)
+              .collect(Collectors.toSet())
+      );
+      Map<Integer, BillItemReceivableAmountVO> receivableAmountMap =
+              Optional.ofNullable(billAmounts).orElseGet(ArrayList::new).stream().collect(toMap(BillItemReceivableAmountVO::getBillId, Function.identity()));
       List<BillPayFreePayAmountVO> freePayAmounts =
-          baseBillPayDetailBiz.findBillFreePayAmountList(billPayIds);
-      if (StringHelper.isNotEmpty(resultList)) {
+          baseBillPayDetailBiz.findBillFreePayAmountList(
+                  resultList.stream()
+                  .map(BillItemReceivedStatisticsVO::getBillPayId)
+                  .collect(Collectors.toSet()));
         Map<Integer, BigDecimal> freePaymentMap =
-            freePayAmounts.stream()
-                .collect(
-                    toMap(
-                        BillPayFreePayAmountVO::getBillPayId,
-                        BillPayFreePayAmountVO::getFreePayAmount));
-        resultList.forEach(
-            vo -> {
-              BigDecimal free = vo.getFreePaymentAmount();
-              BigDecimal freeTotal = freePaymentMap.get(vo.getBillPayId());
-              if (free != null && freeTotal != null) {
-                free = free.multiply(freeTotal);
-              } else {
-                free = BigDecimal.ZERO;
+                Optional.ofNullable(freePayAmounts).orElseGet(ArrayList::new).stream()
+                .collect(toMap(BillPayFreePayAmountVO::getBillPayId, BillPayFreePayAmountVO::getFreePayAmount));
+      Integer itemType = query.getItemType();
+      resultList.forEach(
+        vo -> {
+          BigDecimal receivableAmount = vo.getReceivableAmount();
+          BillItemReceivableAmountVO itemReceivableAmountVO = receivableAmountMap.get(vo.getBillId());
+          BigDecimal tariffReceivableAmount = BigDecimal.ZERO;
+          BigDecimal oralReceivableAmount =  BigDecimal.ZERO;
+          if (StringHelper.isNotNull(itemReceivableAmountVO)) {
+            tariffReceivableAmount = itemReceivableAmountVO.getTariffReceivableAmount();
+            oralReceivableAmount = itemReceivableAmountVO.getOralReceivableAmount();
+          }
+          BigDecimal free = BigDecimal.ZERO;
+          BigDecimal freeTotal = freePaymentMap.get(vo.getBillPayId());
+          if (StringHelper.isNotNull(freeTotal)) {
+            if (itemType == 1) {
+              freeTotal = freeTotal.subtract(tariffReceivableAmount);
+              if (freeTotal.compareTo(BigDecimal.ZERO)>0 && oralReceivableAmount.compareTo(BigDecimal.ZERO)>0) {
+                free = receivableAmount.divide(oralReceivableAmount, 2, BigDecimal.ROUND_HALF_UP).multiply(freeTotal);
               }
-              vo.setFreePaymentAmount(free);
-            });
-      }
+            } else {
+              if (freeTotal.subtract(tariffReceivableAmount).compareTo(BigDecimal.ZERO) > 0) {
+                freeTotal = tariffReceivableAmount;
+              }
+              if (tariffReceivableAmount.compareTo(BigDecimal.ZERO)>0) {
+                free = receivableAmount.divide(tariffReceivableAmount, 2, BigDecimal.ROUND_HALF_UP).multiply(freeTotal);
+              }
+            }
+          }
+          vo.setFreePaymentAmount(free);
+        });
     }
     return new PageInfo<>(resultList);
   }

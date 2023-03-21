@@ -594,4 +594,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   List<BillDetailtemAllVO> selectClinicReceivedDetailList(
           @Param("query") ClinicEmployeeWorkloadQuery query);
+
+  /**
+   * 根据账单id查询账单的商品和价目总应收
+   *
+   * @param billIds
+   * @return
+   */
+  List<BillItemReceivableAmountVO> selectBillItemReceivableAmountList(@Param("billIds") Collection<Integer> billIds);
 }

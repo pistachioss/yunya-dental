@@ -89,4 +89,11 @@ public class BillItemReceivedStatisticsVO implements Serializable {
   @Excel(name = "手机号")
   @ApiModelProperty("手机号")
   private String mobile;
+
+  /** 账单id */
+  @ApiModelProperty("账单id")
+  private Integer billId;
+  /** 项目应收 */
+  @ApiModelProperty("项目应收")
+  private BigDecimal receivableAmount;
 }
