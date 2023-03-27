@@ -513,12 +513,30 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillItemTollWorkloadQuery query);
 
   /**
+   * 查询项目实收工作量
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeTariffWorkloadVO> allExportfindClinicExecutorTariffReceivedWorkload(
+      @Param("query") BillItemTollWorkloadQuery query);
+
+  /**
    * 查询执行人的项目免单支付金额
    *
    * @param query
    * @return
    */
   List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffFreepaymentAmount(
+      @Param("query") BillItemTollWorkloadQuery query);
+
+  /**
+   * 查询项目免单支付金额
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeTariffWorkloadVO> allExportfindClinicExecutorTariffFreePaymentAmount(
       @Param("query") BillItemTollWorkloadQuery query);
 
   /**
@@ -531,6 +549,15 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillItemTollWorkloadQuery query);
 
   /**
+   * 查询项目补入工作量
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeTariffWorkloadVO> allExportfindClinicExecutorTariffFreeSupplementWorkload(
+      @Param("query") BillItemTollWorkloadQuery query);
+
+  /**
    * 查询执行人的项目退费工作量
    *
    * @param query
@@ -538,6 +565,15 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffRefundWorkload(
       @Param("query") BillItemTollWorkloadQuery query);
+
+  /**
+   * 查询执项目退费工作量
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeTariffWorkloadVO> allExportfindClinicExecutorTariffRefundWorkload(
+          @Param("query") BillItemTollWorkloadQuery query);
 
   List<PersonalBillItemVO> selectBillItemNumByQuery(
       @Param("query") PatientDimensionQueryForm query);
@@ -558,4 +594,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   List<BillDetailtemAllVO> selectClinicReceivedDetailList(
           @Param("query") ClinicEmployeeWorkloadQuery query);
+
+  /**
+   * 根据账单id查询账单的商品和价目总应收
+   *
+   * @param billIds
+   * @return
+   */
+  List<BillItemReceivableAmountVO> selectBillItemReceivableAmountList(@Param("billIds") Collection<Integer> billIds);
 }

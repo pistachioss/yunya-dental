@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillItemInfoQuery;
 import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.vo.BillItemTollAndWorkloadVO;
@@ -8,6 +9,7 @@ import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfOperationVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfPersonnelVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
 import com.yunya.report.ultimate.biz.EmployeeWorkloadBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -31,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 public class EmployeeReportController {
   /** 员工工作量 */
   @Autowired private EmployeeWorkloadBiz employeeWorkloadBiz;
-
+  @Autowired private BaseBillDetailBiz billDetailBiz;
   /**
    * 根据条件查询运营报表的员工工作量列表
    *
@@ -109,6 +111,36 @@ public class EmployeeReportController {
     PageInfo<BillItemTollAndWorkloadVO> pageInfo =
         employeeWorkloadBiz.findStatisticsTariffPaymentWorkloadList(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+
+  /**
+   * 根据条件导出统计明细
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计-导出统计明细")
+  @PostMapping(value = "/operation/tariff/pay/workload/list/allExport", name = "公司端报表-报表统计-运营报表-收费项目工作量统计-导出统计明细")
+  public ResponseResult allExporttariffPaymentWorkloadStatistics(
+          HttpServletResponse response,  @RequestBody @Validated BillItemTollWorkloadQuery query) throws Exception {
+            employeeWorkloadBiz.allExporttariffPaymentWorkloadStatistics(response,query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询收费数量&金额表导出明细一体表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemDetailVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计-导出明细一体表")
+  @PostMapping(value = "/billItem/statistics/detail/allExport", name = "开单数量及金额导出明细一体表")
+  public ResponseResult<T> billItemStatisticsDetailIntegrationAllExport(
+          HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
+          throws Exception {
+    billDetailBiz.billItemStatisticsDetailIntegrationAllExport(query, response);
+    return ResponseUtil.success(null);
   }
 
   /**
