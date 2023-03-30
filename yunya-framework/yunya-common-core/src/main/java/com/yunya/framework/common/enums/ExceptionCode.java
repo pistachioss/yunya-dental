@@ -74,7 +74,10 @@ public enum ExceptionCode implements RestError {
   JWT_IS_LOGIN(40010, "用户已登录"),
 // jwt token 相关 end
   SIZE_OVERFLOW(5100, "数据大小不能超过1000"),
-
+  XML_PARSE_ERROR(40011, "xml解析异常"),
+  XHQ_RPC_ERROR(40012, "西湖区接口调用失败"),
+  XML_NODE_GET(40013, "获取xml node异常"),
+  XML_ZIP_ERROR(40014, "xml压缩失败"),
 ;
 
   private final int code;

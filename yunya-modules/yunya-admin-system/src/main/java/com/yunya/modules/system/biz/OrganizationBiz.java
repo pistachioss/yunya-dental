@@ -334,6 +334,8 @@ public class OrganizationBiz {
     company.setQztInstitutionCode(resource.getQztInstitutionCode());
     company.setEnableBjSync(resource.getEnableBjSync());
     company.setBjInstitutionCode(resource.getBjInstitutionCode());
+    company.setEnableXhqSync(resource.getEnableXhqSync());
+    company.setXhqInstitutionCode(resource.getXhqInstitutionCode());
     int i = companyMapper.updateByPrimaryKeySelective(company);
     redisUtils.delete(REDIS_KEY_ORG_LIST);
     redisUtils.delete(REDIS_KEY_ORG_ID + id);

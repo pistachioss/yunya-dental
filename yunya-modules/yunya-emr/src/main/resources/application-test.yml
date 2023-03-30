@@ -27,3 +27,6 @@ qzt:
 
 bj:
   prefix: http://8.136.199.41:84
+
+xhq:
+  prefix: https://www.aioclinic.com/collect_data/api/dataUpload/xiHu
