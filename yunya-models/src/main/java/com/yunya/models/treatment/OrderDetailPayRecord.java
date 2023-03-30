@@ -77,6 +77,12 @@ public class OrderDetailPayRecord {
     private BigDecimal receivedAmount;
 
     /**
+     * 项目免单
+     */
+    @Column(name = "free_amount")
+    private BigDecimal freeAmount;
+
+    /**
      * 卡券单个项目补入工作量
      */
     @Column(name = "coupon_workload")
@@ -319,6 +325,24 @@ public class OrderDetailPayRecord {
      */
     public void setReceivedAmount(BigDecimal receivedAmount) {
         this.receivedAmount = receivedAmount;
+    }
+
+    /**
+     * 获取免单金额
+     *
+     * @return 免单金额
+     */
+    public BigDecimal getFreeAmount() {
+        return freeAmount;
+    }
+
+    /**
+     * 设置免单金额
+     *
+     * @param freeAmount 免单金额
+     */
+    public void setFreeAmount(BigDecimal freeAmount) {
+        this.freeAmount = freeAmount;
     }
 
     /**

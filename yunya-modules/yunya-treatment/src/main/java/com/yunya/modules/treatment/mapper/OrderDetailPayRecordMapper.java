@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillDetailVO;
+import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.models.treatment.OrderDetailPayRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -34,4 +35,12 @@ public interface OrderDetailPayRecordMapper extends Mapper<OrderDetailPayRecord>
    * @param orderDetailPayRecords 开单明细收费记录
    */
   void batchInsert(@Param("list") List<OrderDetailPayRecord> orderDetailPayRecords);
+
+  /**
+   * 根据就诊id查询订单项目收费明细
+   *
+   * @param treatmentId
+   * @return
+   */
+  List<BillPayShareDetailVO> selectBillItemPayDetailByTreatmentId(@Param("treatmentId") Integer treatmentId);
 }

@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillDetailVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -113,5 +114,15 @@ public class OrderDetailPayRecordBiz
       fileName = organization.getAbbreviation() + fileName;
     }
     excelUtil.exportExcel(response, resultList, "账单明细记录", fileName);
+  }
+
+  /**
+   * 根据就诊id查询订单项目收费明细
+   *
+   * @param treatmentId
+   * @return
+   */
+  public List<BillPayShareDetailVO> findBillItemPayDetailByTreatmentId(Integer treatmentId) {
+    return mapper.selectBillItemPayDetailByTreatmentId(treatmentId);
   }
 }

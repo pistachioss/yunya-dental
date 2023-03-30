@@ -67,6 +67,7 @@ public class AutoChargeTask {
     if (!CollectionUtils.isEmpty(treatmentRecordIds)) {
       List<OrderRecord> orderRecords = orderRecordBiz.getUnCheckedOrderRecords(treatmentRecordIds);
       if (!CollectionUtils.isEmpty(orderRecords)) {
+        BigDecimal[] totalCharge = {BigDecimal.ZERO, BigDecimal.ZERO};
         CountDownLatch countDownLatch = new CountDownLatch(orderRecords.size());
         orderRecords.forEach(
             orderRecord ->
@@ -83,8 +84,8 @@ public class AutoChargeTask {
                         BillRecord billRecord = buildBillRecord(orderRecord);
                         billRecordBiz.insertBillRecord(billRecord);
                         // 保存开单明细收费记录
-                        tollBiz.saveOrderDetailPayRecordWithNoDiscount(
-                            BigDecimal.ZERO, orderRecord.getId(), billRecord.getId(), true);
+                        tollBiz.saveOrderDetailPayRecordWithNoDiscount(totalCharge,
+                            orderRecord.getId(), billRecord.getId(), true);
                         // 更新开单状态为结账
                         orderRecord.setStatus(BusinessConstants.ORDER_FINISH_STATUS);
                         int i = orderRecordBiz.updateOrderStatus(orderRecord);

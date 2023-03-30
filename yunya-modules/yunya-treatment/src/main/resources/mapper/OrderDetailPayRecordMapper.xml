@@ -98,4 +98,18 @@
         </where>
         order by br.crt_time desc
     </select>
+
+    <!--根据就诊id查询订单项目收费明细-->
+    <select id="selectBillItemPayDetailByTreatmentId"
+            resultType="com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO">
+        SELECT
+            odpr.order_record_id AS orderRecordId,
+            od.item_type AS itemType,
+            od.item_id AS itemId,
+            odpr.actual_receivable AS actualReceivable,
+            odpr.received_amount AS receivedAmount
+        FROM order_detail_pay_record odpr
+        INNER JOIN order_detail od ON od.id=odpr.order_detail_id
+        WHERE odpr.inservice = true AND odpr.treatment_record_id = #{treatmentId}
+    </select>
 </mapper>

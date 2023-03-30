@@ -78,11 +78,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     this.chain.put(bId,callback);
   }
 
-  /** 本次免单支付 */
-  private final Integer PAYMENT_BY_CUSTOMER_FREE = 23;
-  /** 艾维员工免单 */
-  private final Integer PAYMENT_BY_EMPLOYEE_FREE = 26;
-
   /**
    * 根据消息类型操作（新增/修改/删除）中间表入账方式
    *
