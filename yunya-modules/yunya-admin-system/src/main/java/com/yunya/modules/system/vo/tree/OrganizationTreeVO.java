@@ -36,6 +36,8 @@ public class OrganizationTreeVO extends TreeNode {
 
   @ApiModelProperty("滨江医疗机构编码")
   private String bjInstitutionCode;
+  private Boolean enableXhqSync;
+  private String xhqInstitutionCode;
 
   public OrganizationTreeVO() {
   }
@@ -118,6 +120,22 @@ public class OrganizationTreeVO extends TreeNode {
 
   public void setBjInstitutionCode(String bjInstitutionCode) {
     this.bjInstitutionCode = bjInstitutionCode;
+  }
+
+  public Boolean getEnableXhqSync() {
+    return enableXhqSync;
+  }
+
+  public void setEnableXhqSync(Boolean enableXhqSync) {
+    this.enableXhqSync = enableXhqSync;
+  }
+
+  public String getXhqInstitutionCode() {
+    return xhqInstitutionCode;
+  }
+
+  public void setXhqInstitutionCode(String xhqInstitutionCode) {
+    this.xhqInstitutionCode = xhqInstitutionCode;
   }
 
   @Override

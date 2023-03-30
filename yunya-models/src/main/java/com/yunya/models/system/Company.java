@@ -54,6 +54,11 @@ public class Company {
 
   @Column(name = "bj_institution_code")
   private String bjInstitutionCode;
+  @Column(name = "enable_xhq_sync")
+  private Boolean enableXhqSync;
+
+  @Column(name = "xhq_institution_code")
+  private String xhqInstitutionCode;
 
   /** 是否启用 */
   @ApiModelProperty("是否启用")
@@ -345,5 +350,21 @@ public class Company {
 
   public void setBjInstitutionCode(String bjInstitutionCode) {
     this.bjInstitutionCode = bjInstitutionCode;
+  }
+
+  public Boolean getEnableXhqSync() {
+    return enableXhqSync;
+  }
+
+  public void setEnableXhqSync(Boolean enableXhqSync) {
+    this.enableXhqSync = enableXhqSync;
+  }
+
+  public String getXhqInstitutionCode() {
+    return xhqInstitutionCode;
+  }
+
+  public void setXhqInstitutionCode(String xhqInstitutionCode) {
+    this.xhqInstitutionCode = xhqInstitutionCode;
   }
 }

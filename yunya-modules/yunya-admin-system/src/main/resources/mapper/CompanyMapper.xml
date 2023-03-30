@@ -15,6 +15,8 @@
         <result column="qzt_institution_code" property="qztInstitutionCode" jdbcType="VARCHAR"/>
         <result column="enable_bj_sync" property="enableBjSync" jdbcType="BIT"/>
         <result column="bj_institution_code" property="bjInstitutionCode" jdbcType="VARCHAR"/>
+        <result column="enable_xhq_sync" property="enableXhqSync" jdbcType="BIT"/>
+        <result column="xhq_institution_code" property="xhqInstitutionCode" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
@@ -126,6 +128,8 @@
         ccb.qztInstitutionCode,
         ccb.enableBjSync,
         ccb.bjInstitutionCode,
+        ccb.enableXhqSync,
+        ccb.xhqInstitutionCode,
         ccb.businessEndTime
         FROM
         (
@@ -140,6 +144,8 @@
         c.qzt_institution_code as qztInstitutionCode,
         c.enable_bj_sync as enableBjSync,
         c.bj_institution_code as bjInstitutionCode,
+        c.enable_xhq_sync as enableXhqSync,
+        c.xhq_institution_code as xhqInstitutionCode,
         cb.abbreviation,
         cb.clinic_number AS clinicNumber,
         cb.brandName,
