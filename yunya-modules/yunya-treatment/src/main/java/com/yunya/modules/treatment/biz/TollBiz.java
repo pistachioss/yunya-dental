@@ -2340,5 +2340,6 @@ public class TollBiz {
       String[] keys = StringHelper.split(key, ",");
       itemPaySharedAmount(amounts[0], amounts[1], Integer.parseInt(keys[0]), Integer.parseInt(keys[1]));
     });
+    rabbitMqServiceFeign.sendMessage(billPayId, 0, BaseBillPay);
   }
 }

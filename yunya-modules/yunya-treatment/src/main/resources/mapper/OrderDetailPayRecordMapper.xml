@@ -159,7 +159,7 @@
             <where>
                 inservice=true
                 AND order_record_id = #{orderRecordId}
-                AND bill_pay_id &lt;= #{billPayId}
+                AND bill_pay_id &lt; #{billPayId}
             </where>
             group by order_record_id, item_type, item_id
         ) bdp ON bdp.order_record_id=od.order_record_id and od.type=bdp.item_type and od.billing_item_id=bdp.item_id
