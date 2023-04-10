@@ -37,4 +37,16 @@ public class BillPayShareDetailVO implements Serializable {
     /** 项目已收金额 */
     @ApiModelProperty("项目已收金额")
     private BigDecimal receivedAmount;
+
+    /** 项目免单金额 */
+    @ApiModelProperty("项目免单金额")
+    private BigDecimal freeAmount;
+
+    /** 账单价目总应收 */
+    @ApiModelProperty("账单价目总应收")
+    private BigDecimal tariffActualAmount;
+
+    /** 账单商品总应收 */
+    @ApiModelProperty("账单商品总应收")
+    private BigDecimal oralActualAmount;
 }

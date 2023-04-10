@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -108,6 +109,7 @@ public class TollBiz {
   
   /** 账单收费分摊明细 */
   @Autowired private BillPayShareDetailMapper billPayShareDetailMapper;
+  @Autowired private IItemPaySharedAmount iItemPaySharedAmount;
 
   /**
    * 根据优惠信息匹配订单优惠
@@ -1828,8 +1830,6 @@ public class TollBiz {
     String name = BaseContextHandler.getName();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     long currentTimeMillis = System.currentTimeMillis();
-
-    List<BillPayShareDetailVO> itemPayDetails = orderDetailPayRecordBiz.findBillItemPayDetailByTreatmentId(treatmentId);
     if (null != billRecordResult) {
       BigDecimal privilegeAmount = billRecordResult.getPrivilegeAmount();
       BigDecimal actualReceivableAmount = billRecordResult.getActualReceivableAmount();
@@ -1989,7 +1989,7 @@ public class TollBiz {
     BigDecimal thisReceivedAmount = BigDecimal.ZERO;
     // 本次免单金额
     BigDecimal thisFreeAmount = BigDecimal.ZERO;
-    itemPaySharedAmount(thisFreeAmount, thisReceivedAmount, billPayRecordId, itemPayDetails);
+    itemPaySharedAmount(thisFreeAmount, thisReceivedAmount, orderRecordId, billPayRecordId);
     if (StringHelper.isNotEmpty(prepaymentAccounts)) {
       usePrepaymentAccount(
           prepaymentAccounts, patientId, treatmentId, orderRecordId, billRecordId, billPayRecordId);
@@ -2178,70 +2178,28 @@ public class TollBiz {
   /**
    * 本次收费分摊明细
    *
-   * @param thisFreeAmount
-   * @param thisReceivedAmount
-   * @param
+   * @param thisFreeAmount 本次收费的免单金额
+   * @param thisReceivedAmount 本次收费的实收金额
+   * @param orderRecordId 订单id
+   * @param billPayId 收费id
    */
-  private void itemPaySharedAmount(BigDecimal thisFreeAmount, BigDecimal thisReceivedAmount, Integer billPayId, List<BillPayShareDetailVO> itemPayDetails) {
-    Integer optId = Integer.parseInt(BaseContextHandler.getUserID());
-    Date now = new Date(System.currentTimeMillis());
-    for (BillPayShareDetailVO detail : itemPayDetails) {
-      BigDecimal actualAmount = detail.getActualReceivable();
-      BigDecimal receivedAmount = detail.getReceivedAmount();
-      // 项目欠费（缺口）
-      BigDecimal gap = actualAmount.subtract(receivedAmount);
-      if (gap.compareTo(BigDecimal.ZERO)==0) {
-        // 已收满的不在进行分摊
-        continue;
-      }
-      // 免单填充缺口
-      BigDecimal filling = gap.subtract(thisFreeAmount);
-      BigDecimal receivedShared = BigDecimal.ZERO;
-      BigDecimal freeShared = BigDecimal.ZERO;
-      if (filling.compareTo(BigDecimal.ZERO) >= 0 ) {
-        freeShared = thisFreeAmount;
-        thisFreeAmount = BigDecimal.ZERO;
-        // 缺口更新
-        gap = filling;
-      } else {
-        freeShared = gap;
-        // 填充后有冗余
-        thisFreeAmount = filling.abs();
-      }
+  public void itemPaySharedAmount(BigDecimal thisFreeAmount, BigDecimal thisReceivedAmount, Integer orderRecordId, Integer billPayId) {
+    BillPayShareDetail query = new BillPayShareDetail();
+    query.setBillPayId(billPayId);
+    query.setOrderRecordId(orderRecordId);
+    billPayShareDetailMapper.delete(query);
 
-      if (thisFreeAmount.compareTo(BigDecimal.ZERO)==0) {
-        // 本次收费的免单部分已分摊完，分摊实收部分
-        // 实收填充缺口
-        filling = gap.subtract(thisReceivedAmount);
-        if (filling.compareTo(BigDecimal.ZERO) >= 0 ) {
-          receivedShared = thisReceivedAmount;
-          thisReceivedAmount = BigDecimal.ZERO;
-          // 缺口更新
-          gap = filling;
-        } else {
-          receivedShared = gap;
-          // 填充后有冗余
-          thisFreeAmount = filling.abs();
-        }
-      }
-      BillPayShareDetail shareDetail = new BillPayShareDetail();
-      shareDetail.setBillPayId(billPayId);
-      shareDetail.setItemType(detail.getItemType());
-      shareDetail.setItemId(detail.getItemId());
-      shareDetail.setOrderRecordId(detail.getOrderRecordId());
-      shareDetail.setFreeAmount(freeShared);
-      shareDetail.setReceivedAmount(receivedShared);
-      shareDetail.setInservice(true);
-      shareDetail.setCrtId(optId);
-      shareDetail.setCrtTime(now);
-      shareDetail.setUptId(optId);
-      shareDetail.setUptTime(now);
-      billPayShareDetailMapper.insertSelective(shareDetail);
-      if (thisFreeAmount.compareTo(BigDecimal.ZERO)==0 && thisReceivedAmount.compareTo(BigDecimal.ZERO)==0) {
-        // 本次收费全部分摊完
-        return;
-      }
+    Integer optId = Integer.parseInt(BaseContextHandler.getUserID());
+    List<BillPayShareDetailVO> itemPayDetails = orderDetailPayRecordBiz.findItemPayDetailDeadlineBillPayId(orderRecordId, billPayId);
+    BillPayShareDetail[] result = iItemPaySharedAmount.generateSharedDetails(thisFreeAmount, thisReceivedAmount, billPayId, itemPayDetails, optId);
+    List<BillPayShareDetail> shareDetails = Arrays.stream(result)
+            .filter(vo->StringHelper.isNotNull(vo) && (StringHelper.gtZero(vo.getFreeAmount()) || StringHelper.gtZero(vo.getReceivedAmount())))
+            .collect(Collectors.toList());
+    if(StringHelper.isEmpty(shareDetails)) {
+      log.error("账单收费：{}没有可分摊的项目", billPayId);
+      return;
     }
+    billPayShareDetailMapper.batchSave(shareDetails);
   }
 
   /**
@@ -2390,5 +2348,29 @@ public class TollBiz {
     BigDecimal receiptAmount =
         billPayDetailRecordMapper.selectReceiptAmountOfPrepaid(billRecordId, item.getId());
     return amount.subtract(receiptAmount);
+  }
+
+  public void generateItemPaySharedDetail(Integer orderRecordId, Integer billPayId) {
+    Example example = new Example(BillPayDetailRecord.class);
+    example.orderBy("billPayRecordId");
+    Example.Criteria c = example.createCriteria();
+    c.andEqualTo("inservice", true).andEqualTo("orderRecordId", orderRecordId).andEqualTo("billPayRecordId", billPayId);
+    List<BillPayDetailRecord> details = billPayDetailRecordMapper.selectByExample(example);
+    Map<String, BigDecimal[]> map = new LinkedHashMap<>(16);
+    for (BillPayDetailRecord vo : details) {
+      BigDecimal amount = vo.getAmount();
+      String key = StringHelper.joinWith(",", vo.getOrderRecordId(), vo.getBillPayRecordId());
+      BigDecimal[] amounts = map.computeIfAbsent(key, k -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+      Integer accountItemId = vo.getAccountItemId();
+      if (accountItemId==23 || accountItemId==26) {
+        amounts[0] = amounts[0].add(amount);
+      } else {
+        amounts[1] = amounts[1].add(amount);
+      }
+    }
+    map.forEach((key, amounts)->{
+      String[] keys = StringHelper.split(key, ",");
+      itemPaySharedAmount(amounts[0], amounts[1], Integer.parseInt(keys[0]), Integer.parseInt(keys[1]));
+    });
   }
 }

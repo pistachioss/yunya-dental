@@ -117,12 +117,13 @@ public class OrderDetailPayRecordBiz
   }
 
   /**
-   * 根据就诊id查询订单项目收费明细
+   * 根据订单id查询订单在billPayId截止之前的项目收费明细
    *
-   * @param treatmentId
+   * @param orderRecordId
+   * @param billPayId
    * @return
    */
-  public List<BillPayShareDetailVO> findBillItemPayDetailByTreatmentId(Integer treatmentId) {
-    return mapper.selectBillItemPayDetailByTreatmentId(treatmentId);
+  public List<BillPayShareDetailVO> findItemPayDetailDeadlineBillPayId(Integer orderRecordId, Integer billPayId) {
+    return mapper.selectItemPayDetailDeadlineBillPayId(orderRecordId, billPayId);
   }
 }

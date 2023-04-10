@@ -18,4 +18,18 @@
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
     <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <insert id="batchSave">
+    insert into bill_pay_share_detail(order_record_id, bill_pay_id, item_type, item_id, free_amount, received_amount, inservice, crt_id, crt_time, upt_id, upt_time)
+    values
+    <foreach collection ="list" item="it" index= "index" separator =",">
+      (#{it.orderRecordId}, #{it.billPayId}, #{it.itemType}, #{it.itemId}, #{it.freeAmount},
+       #{it.receivedAmount}, #{it.inservice}, #{it.crtId}, #{it.crtTime}, #{it.uptId}, #{it.uptTime})
+    </foreach>
+    ON DUPLICATE KEY UPDATE
+    free_amount = VALUES(free_amount),
+    received_amount = VALUES(received_amount),
+    upt_id = VALUES(upt_id),
+    upt_time = VALUES(upt_time)
+  </insert>
 </mapper>

@@ -37,10 +37,13 @@ public interface OrderDetailPayRecordMapper extends Mapper<OrderDetailPayRecord>
   void batchInsert(@Param("list") List<OrderDetailPayRecord> orderDetailPayRecords);
 
   /**
-   * 根据就诊id查询订单项目收费明细
+   * 根据订单id查询订单在billPayId截止之前的项目收费明细
    *
-   * @param treatmentId
+   * @param orderRecordId
+   * @param billPayId
    * @return
    */
-  List<BillPayShareDetailVO> selectBillItemPayDetailByTreatmentId(@Param("treatmentId") Integer treatmentId);
+  List<BillPayShareDetailVO> selectItemPayDetailDeadlineBillPayId(
+          @Param("orderRecordId") Integer orderRecordId,
+          @Param("billPayId") Integer billPayId);
 }

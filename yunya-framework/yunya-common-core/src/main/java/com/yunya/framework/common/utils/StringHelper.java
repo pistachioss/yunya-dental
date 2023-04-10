@@ -7,6 +7,7 @@ import com.yunya.framework.common.constant.StringPool;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -555,5 +556,114 @@ public class StringHelper extends StringUtils {
       }
     }
     return false;
+  }
+
+  public static boolean eqZero(BigDecimal value) {
+    if (isNull(value)) {
+      return false;
+    }
+    return eq(value, BigDecimal.ZERO);
+  }
+
+  /**
+   * 大于
+   *
+   * @param val1
+   * @param val2
+   * @return
+   */
+  public static boolean lt(BigDecimal val1, BigDecimal val2) {
+    if (isNull(val1) || isNull(val2)) {
+      return false;
+    }
+    return cmp(val1, val2)<0;
+  }
+
+  /**
+   * 小于等于
+   *
+   * @param val1
+   * @param val2
+   * @return
+   */
+  public static boolean le(BigDecimal val1, BigDecimal val2) {
+    if (isNull(val1) || isNull(val2)) {
+      return false;
+    }
+    return cmp(val1, val2)<=0;
+  }
+
+  /**
+   * 大于
+   *
+   * @param val1
+   * @param val2
+   * @return
+   */
+  public static boolean gt(BigDecimal val1, BigDecimal val2) {
+    if (isNull(val1) || isNull(val2)) {
+      return false;
+    }
+    return cmp(val1, val2)>0;
+  }
+
+  /**
+   * 大于等于
+   *
+   * @param val1
+   * @param val2
+   * @return
+   */
+  public static boolean ge(BigDecimal val1, BigDecimal val2) {
+    if (isNull(val1) || isNull(val2)) {
+      return false;
+    }
+    return cmp(val1, val2)>=0;
+  }
+
+  /**
+   * 相等
+   * @param val1
+   * @param val2
+   * @return
+   */
+  public static boolean eq(BigDecimal val1, BigDecimal val2) {
+    if (isNull(val1) || isNull(val2)) {
+      return false;
+    }
+    return cmp(val1, val2) == 0;
+  }
+
+  /**
+   * 比较
+   *
+   * @param val1
+   * @param val2
+   * @return
+   */
+  public static Integer cmp(@NotNull BigDecimal val1, @NotNull BigDecimal val2) {
+    return val1.compareTo(val2);
+  }
+
+  /**
+   * 小于0
+   * @param value
+   * @return
+   */
+  public static boolean ltZero(BigDecimal value) {
+    return lt(value, BigDecimal.ZERO);
+  }
+
+  /**
+   * 大于0
+   * @param value
+   * @return
+   */
+  public static boolean gtZero(BigDecimal value) {
+    return gt(value, BigDecimal.ZERO);
+  }
+
+  public static boolean geZero(BigDecimal value) {
+    return ge(value, BigDecimal.ZERO);
   }
 }

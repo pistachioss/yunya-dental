@@ -164,4 +164,12 @@ public class TollController {
     result.put("enablePrepaymentAmount", this.tollBiz.currentOrderEnablePrepayment(orderRecordId));
     return ResponseUtil.success(result);
   }
+
+  @ApiOperation("根据账单id或收费id生成项目收费分摊明细")
+  @PostMapping("/generate/sharedDetail")
+  @CurrentUser
+  public ResponseResult generateItemPaySharedDetail(@RequestParam("orderRecordId") Integer orderRecordId, @RequestParam("billPayId") Integer billPayId) {
+    tollBiz.generateItemPaySharedDetail(orderRecordId, billPayId);
+    return ResponseUtil.success();
+  }
 }
