@@ -126,4 +126,13 @@ public class OrderDetailPayRecordBiz
   public List<BillPayShareDetailVO> findItemPayDetailDeadlineBillPayId(Integer orderRecordId, Integer billPayId) {
     return mapper.selectItemPayDetailDeadlineBillPayId(orderRecordId, billPayId);
   }
+
+  /**
+   * 根据订单id统计并更新项目总已收（含免单）、总免单
+   *
+   * @param orderRecordId
+   */
+  public void statOrderDetailPayItemTotal(Integer orderRecordId) {
+    mapper.statOrderDetailPayItemTotal(orderRecordId);
+  }
 }

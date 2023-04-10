@@ -22,6 +22,14 @@ public class BillPayShareDetailVO implements Serializable {
     @ApiModelProperty("订单id")
     private Integer orderRecordId;
 
+    /** 收费id */
+    @ApiModelProperty("收费id")
+    private Integer billPayId;
+
+    /** 订单明细id */
+    @ApiModelProperty("订单明细id")
+    private Integer orderDetailId;
+
     /** 项目类型：0-价目；1-商品 */
     @ApiModelProperty("项目类型：0-价目；1-商品")
     private Byte itemType;
@@ -36,11 +44,11 @@ public class BillPayShareDetailVO implements Serializable {
 
     /** 项目已收金额 */
     @ApiModelProperty("项目已收金额")
-    private BigDecimal receivedAmount;
+    private BigDecimal itemRecAmount;
 
     /** 项目免单金额 */
     @ApiModelProperty("项目免单金额")
-    private BigDecimal freeAmount;
+    private BigDecimal itemFreeAmount;
 
     /** 账单价目总应收 */
     @ApiModelProperty("账单价目总应收")
@@ -49,4 +57,8 @@ public class BillPayShareDetailVO implements Serializable {
     /** 账单商品总应收 */
     @ApiModelProperty("账单商品总应收")
     private BigDecimal oralActualAmount;
+
+    /** 是否启用 */
+    @ApiModelProperty("是否启用")
+    private Boolean inservice = true;
 }

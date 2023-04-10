@@ -3,6 +3,7 @@ package com.yunya.middletable.service;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.MemberExpendRecordMapper;
@@ -10,8 +11,10 @@ import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
 import com.yunya.middletable.dao.report.BaseBillPayDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillPayMapper;
+import com.yunya.middletable.dao.report.BaseBillPayShareMapper;
 import com.yunya.middletable.dao.treatment.BillPayDetailRecordMapper;
 import com.yunya.middletable.dao.treatment.BillPayRecordMapper;
+import com.yunya.middletable.dao.treatment.BillPayShareDetailMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
 import com.yunya.models.patient_central.MemberExpendRecord;
@@ -19,8 +22,10 @@ import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.BaseBillPayDetail;
+import com.yunya.models.report.BaseBillPayShare;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
+import com.yunya.models.treatment.BillPayShareDetail;
 import com.yunya.models.treatment.OrderDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -66,6 +71,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private OrderDetailMapper orderDetailMapper;
   /** 账单*/
   @Autowired private BaseBillMapper baseBillMapper;
+  /** 收费分摊明细 */
+  @Autowired private BillPayShareDetailMapper billPayShareDetailMapper;
+  /** 中间表项目分摊明细 */
+  @Autowired private BaseBillPayShareMapper baseBillPayShareMapper;
   /** 线程池 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -97,6 +106,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           // 保存收费记录明细
           log.info("保存收费记录明细baseBillPay: {}",baseBillPay);
           saveBillPayDetailRecord(dataId);
+          saveBillPayShareDetailRecord(dataId);
           if(!chain.isEmpty()){
             Iterator<Integer> iterator = chain.keySet().iterator();
             while (iterator.hasNext()) {
@@ -116,6 +126,31 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       default:
         statisticsInPayDate(dataId);
         break;
+    }
+  }
+
+  /**
+   * 账单收费项目分摊明细保存
+   *
+   * @param billPayId
+   */
+  private void saveBillPayShareDetailRecord(Integer billPayId) {
+    BaseBillPayShare detail = new BaseBillPayShare();
+    detail.setBillPayId(billPayId);
+    baseBillPayShareMapper.delete(detail);
+    BillPayShareDetail query = new BillPayShareDetail();
+    query.setInservice(true);
+    query.setBillPayId(billPayId);
+    List<BillPayShareDetail> shares = billPayShareDetailMapper.select(query);
+    List<BaseBillPayShare> datas = new ArrayList<>();
+    shares.forEach(vo->{
+      BaseBillPayShare data = new BaseBillPayShare();
+      BeanUtil.copyProperties(vo, data);
+      data.setBillId(vo.getOrderRecordId());
+      datas.add(data);
+    });
+    if (StringHelper.isNotEmpty(datas)) {
+      baseBillPayShareMapper.batchSave(datas);
     }
   }
 
@@ -280,6 +315,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                           mapper.insertSelective(baseBillPay);
                           // 保存收费记录明细
                           saveBillPayDetailRecord(billPayBillPayId);
+                          saveBillPayShareDetailRecord(billPayBillPayId);
                         }
                       }
                     }
@@ -315,47 +351,4 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     }
     return baseBillPays;
   }
-
-
-  /**
-   * 根据时间段批量操作中间表账单收费时统计
-   *
-   * @param form
-   * @throws InterruptedException
-   */
-  /*public void pullPayDateStatistics(PullForm form) throws InterruptedException {
-    String startDate = form.getStartDate();
-    String endDate = form.getEndDate();
-    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
-    if (StringHelper.isNotEmpty(dateRanges)) {
-      CountDownLatch latch = new CountDownLatch(dateRanges.size());
-      List<Future> resultFutures = new ArrayList<>();
-      for (String date : dateRanges) {
-        resultFutures.add(
-                importExcelThreadPool.submit(
-                        () -> {
-                          try {
-                            Example example = new Example(BaseBillPay.class);
-                            example
-                                    .createCriteria()
-                                    .andCondition(
-                                            "payee_date >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
-                                    .andCondition(
-                                            "payee_date < '"
-                                                    + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
-                                                    + "'");
-                            List<BaseBillPay> baseBillPays =
-                                    mapper.selectByExample(example);
-                            if (StringHelper.isNotEmpty(baseBillPays)) {
-                              baseBillPays.forEach(vo-> statisticsInPayDate(vo.getBillPayId()));
-                            }
-                          } finally {
-                            latch.countDown();
-                          }
-                        }));
-      }
-      latch.await();
-      BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
-    }
-  }*/
 }

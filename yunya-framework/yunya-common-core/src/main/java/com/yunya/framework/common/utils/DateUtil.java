@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
 
@@ -1229,16 +1231,36 @@ public class DateUtil {
     return currentMonth == month;
   }
 
-  public static void main(String[] args) {
-    System.out.println(parse2Date("1941-09-04"));
-  }
-
   /**
    * 当前时间
    *
    * @return
    */
   public static Date now() {
-    return new Date(System.currentTimeMillis());
+    return new Date(curTimeMill());
+  }
+
+  public static long curTimeMill() {
+    return System.currentTimeMillis();
+  }
+
+  public static void main(String[] args) {
+    dur("测试", o->{
+      try {
+        TimeUnit.SECONDS.sleep(1);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      return null;
+    });
+  }
+
+  public static <R> R dur(String name, Function<String, R> func) {
+    long t1 = curTimeMill();
+    R result = func.apply(name);
+    long t2 = curTimeMill();
+    long t = t2 - t1;
+    log.info("名称：{}-耗时：{}", name,  t);
+    return result;
   }
 }

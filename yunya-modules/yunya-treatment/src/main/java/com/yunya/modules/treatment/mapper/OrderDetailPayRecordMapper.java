@@ -46,4 +46,11 @@ public interface OrderDetailPayRecordMapper extends Mapper<OrderDetailPayRecord>
   List<BillPayShareDetailVO> selectItemPayDetailDeadlineBillPayId(
           @Param("orderRecordId") Integer orderRecordId,
           @Param("billPayId") Integer billPayId);
+
+  /**
+   * 根据订单id统计并更新项目总已收（含免单）、总免单
+   *
+   * @param orderRecordId
+   */
+  void statOrderDetailPayItemTotal(@Param("orderRecordId") Integer orderRecordId);
 }

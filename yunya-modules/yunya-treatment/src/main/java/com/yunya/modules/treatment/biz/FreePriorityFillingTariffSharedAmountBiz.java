@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayShareDetail;
 import org.springframework.stereotype.Service;
@@ -71,7 +72,7 @@ public class FreePriorityFillingTariffSharedAmountBiz implements IItemPaySharedA
         BigDecimal oralRecTmp = payment[4];
         Byte itemType = detail.getItemType();
         BigDecimal actualAmount = detail.getActualReceivable();
-        BigDecimal totalReceived = detail.getReceivedAmount().add(detail.getFreeAmount());
+        BigDecimal totalReceived = detail.getItemRecAmount().add(detail.getItemFreeAmount());
         // 项目缺口(欠费)
         BigDecimal gap = actualAmount.subtract(totalReceived);
         if (StringHelper.eqZero(gap)) {
@@ -97,15 +98,12 @@ public class FreePriorityFillingTariffSharedAmountBiz implements IItemPaySharedA
             // 所有商品已填满且实收过剩，用剩余实收填充价目
             receivedShared = sharedAmount(payment, 1);
         }
-        detail.setReceivedAmount(detail.getReceivedAmount().add(receivedShared));
-        detail.setFreeAmount(detail.getFreeAmount().add(freeShared));
+        detail.setItemRecAmount(detail.getItemRecAmount().add(receivedShared));
+        detail.setItemFreeAmount(detail.getItemFreeAmount().add(freeShared));
         BillPayShareDetail shareDetail = new BillPayShareDetail();
-        shareDetail.setItemType(itemType);
-        shareDetail.setItemId(detail.getItemId());
-        shareDetail.setOrderRecordId(detail.getOrderRecordId());
+        BeanUtil.copyProperties(detail, shareDetail);
         shareDetail.setFreeAmount(freeShared);
         shareDetail.setReceivedAmount(receivedShared);
-        shareDetail.setInservice(true);
         return shareDetail;
     }
 
@@ -144,7 +142,7 @@ public class FreePriorityFillingTariffSharedAmountBiz implements IItemPaySharedA
     private BillPayShareDetail priorityFilling(BillPayShareDetailVO detail, BigDecimal[] payment) {
         Byte itemType = detail.getItemType();
         BigDecimal actualAmount = detail.getActualReceivable();
-        BigDecimal totalReceived = detail.getReceivedAmount().add(detail.getFreeAmount());
+        BigDecimal totalReceived = detail.getItemRecAmount().add(detail.getItemFreeAmount());
         // 项目缺口(欠费)
         BigDecimal gap = actualAmount.subtract(totalReceived);
         if (StringHelper.eqZero(gap)) {
@@ -161,15 +159,12 @@ public class FreePriorityFillingTariffSharedAmountBiz implements IItemPaySharedA
             // 实收对商品缺口进行填充
             receivedShared = sharedAmount(payment, 1);
         }
-        detail.setReceivedAmount(detail.getReceivedAmount().add(receivedShared));
-        detail.setFreeAmount(detail.getFreeAmount().add(freeShared));
+        detail.setItemRecAmount(detail.getItemRecAmount().add(receivedShared));
+        detail.setItemFreeAmount(detail.getItemFreeAmount().add(freeShared));
         BillPayShareDetail shareDetail = new BillPayShareDetail();
-        shareDetail.setItemType(itemType);
-        shareDetail.setItemId(detail.getItemId());
-        shareDetail.setOrderRecordId(detail.getOrderRecordId());
+        BeanUtil.copyProperties(detail, shareDetail);
         shareDetail.setFreeAmount(freeShared);
         shareDetail.setReceivedAmount(receivedShared);
-        shareDetail.setInservice(true);
         return shareDetail;
     }
 
@@ -211,7 +206,7 @@ public class FreePriorityFillingTariffSharedAmountBiz implements IItemPaySharedA
         BigDecimal[] payments = {thisFreeAmount, thisReceivedAmount, BigDecimal.ZERO};
         for (BillPayShareDetailVO detail : itemPayDetails) {
             BigDecimal actualAmount = detail.getActualReceivable();
-            BigDecimal receivedAmount = detail.getReceivedAmount();
+            BigDecimal receivedAmount = detail.getItemRecAmount();
             // 项目欠费（缺口）
             BigDecimal gap = actualAmount.subtract(receivedAmount);
             if (StringHelper.eqZero(gap)) {

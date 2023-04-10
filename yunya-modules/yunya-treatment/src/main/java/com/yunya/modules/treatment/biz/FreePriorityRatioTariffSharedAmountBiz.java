@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
+import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayShareDetail;
 
@@ -63,8 +64,8 @@ public class FreePriorityRatioTariffSharedAmountBiz implements IItemPaySharedAmo
         BigDecimal oralRecTmp = payment[5];
         Byte itemType = detail.getItemType();
         BigDecimal actualAmount = detail.getActualReceivable();
-        BigDecimal freeRecAmount = detail.getFreeAmount();
-        BigDecimal receivedAmount = detail.getReceivedAmount();
+        BigDecimal freeRecAmount = detail.getItemFreeAmount();
+        BigDecimal receivedAmount = detail.getItemRecAmount();
         BigDecimal totalReceived = receivedAmount.add(freeRecAmount);
         // 项目缺口(欠费)
         BigDecimal gap = actualAmount.subtract(totalReceived);
@@ -90,15 +91,12 @@ public class FreePriorityRatioTariffSharedAmountBiz implements IItemPaySharedAmo
             // 所有商品已填满且实收过剩，用剩余实收对价目进行占比分摊
             receivedShared = sharedAmount(payment, detail.getActualReceivable(), detail.getTariffActualAmount(), 3);
         }
-        detail.setReceivedAmount(detail.getReceivedAmount().add(receivedShared));
-        detail.setFreeAmount(detail.getFreeAmount().add(freeShared));
+        detail.setItemRecAmount(detail.getItemRecAmount().add(receivedShared));
+        detail.setItemFreeAmount(detail.getItemFreeAmount().add(freeShared));
         BillPayShareDetail shareDetail = new BillPayShareDetail();
-        shareDetail.setItemType(itemType);
-        shareDetail.setItemId(detail.getItemId());
-        shareDetail.setOrderRecordId(detail.getOrderRecordId());
+        BeanUtil.copyProperties(detail, shareDetail);
         shareDetail.setFreeAmount(freeShared);
         shareDetail.setReceivedAmount(receivedShared);
-        shareDetail.setInservice(true);
         return shareDetail;
     }
 
@@ -115,7 +113,6 @@ public class FreePriorityRatioTariffSharedAmountBiz implements IItemPaySharedAmo
     private void computeIfAbsent(BillPayShareDetail[] result, int index, BillPayShareDetail shareDetail, Integer billPayId, Integer optId, Date now) {
         BillPayShareDetail o = result[index];
         if (StringHelper.isNull(o)) {
-            shareDetail.setBillPayId(billPayId);
             shareDetail.setCrtId(optId);
             shareDetail.setCrtTime(now);
             shareDetail.setUptId(optId);
@@ -137,7 +134,7 @@ public class FreePriorityRatioTariffSharedAmountBiz implements IItemPaySharedAmo
     private BillPayShareDetail priorityRatio(BillPayShareDetailVO detail, BigDecimal[] payment) {
         Byte itemType = detail.getItemType();
         BigDecimal actualAmount = detail.getActualReceivable();
-        BigDecimal totalReceived = detail.getReceivedAmount().add(detail.getFreeAmount());
+        BigDecimal totalReceived = detail.getItemRecAmount().add(detail.getItemFreeAmount());
         // 项目缺口(欠费)
         BigDecimal gap = actualAmount.subtract(totalReceived);
         if (StringHelper.eqZero(gap)) {
@@ -156,15 +153,12 @@ public class FreePriorityRatioTariffSharedAmountBiz implements IItemPaySharedAmo
             // 实收对商品缺口进行分摊
             receivedShared = sharedAmount(payment, detail.getActualReceivable(), detail.getOralActualAmount(), 1);
         }
-        detail.setReceivedAmount(detail.getReceivedAmount().add(receivedShared));
-        detail.setFreeAmount(detail.getFreeAmount().add(freeShared));
+        detail.setItemRecAmount(detail.getItemRecAmount().add(receivedShared));
+        detail.setItemFreeAmount(detail.getItemFreeAmount().add(freeShared));
         BillPayShareDetail shareDetail = new BillPayShareDetail();
-        shareDetail.setItemType(itemType);
-        shareDetail.setItemId(detail.getItemId());
-        shareDetail.setOrderRecordId(detail.getOrderRecordId());
+        BeanUtil.copyProperties(detail, shareDetail);
         shareDetail.setFreeAmount(freeShared);
         shareDetail.setReceivedAmount(receivedShared);
-        shareDetail.setInservice(true);
         return shareDetail;
     }
 
