@@ -18,6 +18,7 @@
         <result column="quantity" property="quantity" jdbcType="INTEGER"/>
         <result column="price" property="price" jdbcType="DECIMAL"/>
         <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
+        <result column="free_amount" property="freeAmount" jdbcType="DECIMAL"/>
         <result column="remark" property="remark" jdbcType="VARCHAR"/>
     </resultMap>
     <!-- 根据条件查询账单项目收入明细列表 -->

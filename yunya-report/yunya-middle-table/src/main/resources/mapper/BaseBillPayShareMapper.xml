@@ -5,10 +5,9 @@
     <!--
       WARNING - @mbg.generated
     -->
-    <id column="id" property="id" jdbcType="INTEGER" />
     <result column="bill_id" property="billId" jdbcType="INTEGER" />
     <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER" />
-    <result column="order_detail_id" property="orderDetailId" jdbcType="INTEGER" />
+    <result column="bill_detail_id" property="billDetailId" jdbcType="INTEGER" />
     <result column="item_type" property="itemType" jdbcType="TINYINT" />
     <result column="item_id" property="itemId" jdbcType="INTEGER" />
     <result column="free_amount" property="freeAmount" jdbcType="DECIMAL" />
@@ -26,7 +25,7 @@
   (
   bill_id,
   bill_pay_id,
-  order_detail_id,
+  bill_detail_id,
   item_type,
   item_id,
   free_amount,
@@ -39,7 +38,7 @@
   )
   VALUES
   <foreach collection ="list" item="it" index= "index" separator =",">
-    (#{it.billId}, #{it.billPayId}, #{it.orderDetailId}, #{it.itemType}, #{it.itemId}, #{it.freeAmount},
+    (#{it.billId}, #{it.billPayId}, #{it.billDetailId}, #{it.itemType}, #{it.itemId}, #{it.freeAmount},
     #{it.receivedAmount}, #{it.inservice}, #{it.crtId}, #{it.crtTime}, #{it.uptId}, #{it.uptTime})
   </foreach>
   ON DUPLICATE KEY UPDATE
@@ -48,4 +47,26 @@
   upt_id = VALUES(upt_id),
   upt_time = VALUES(upt_time)
   </insert>
+
+  <select id="statisitcsItemPayShareDetails" resultType="com.yunya.models.report.StatEmpPay">
+    SELECT
+      bbd.org_id AS orgId,
+      bbd.executor_id AS dentistId,
+      bbd.item_type AS itemType,
+      bbd.item_id AS itemId,
+      SUM(IFNULL(bbps.free_amount, 0)) AS freePaymentWorkload,
+      SUM(IFNULL(bbps.received_amount, 0)) AS receivedWorkload
+    FROM base_bill_detail bbd
+    LEFT JOIN base_bill_pay_share bbps ON bbps.bill_detail_id=bbd.bill_detail_id
+    INNER JOIN base_bill_pay bbp ON bbp.bill_pay_id=bbps.bill_pay_id
+    <where>
+      bbps.inservice = true
+      AND DATE_FORMAT(bbp.payee_date, '%Y%m%d') = #{payDate}
+      AND bbd.org_id = #{orgId}
+      AND bbd.executor_id = #{executorId}
+      AND bbd.item_type = #{itemType}
+      AND bbd.item_id = #{itemId}
+    </where>
+    GROUP BY bbd.org_id, bbd.executor_id, bbps.item_type, bbps.item_id
+  </select>
 </mapper>

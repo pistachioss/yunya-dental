@@ -8,25 +8,13 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.MemberExpendRecordMapper;
 import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
-import com.yunya.middletable.dao.report.BaseBillMapper;
-import com.yunya.middletable.dao.report.BaseBillPayDetailMapper;
-import com.yunya.middletable.dao.report.BaseBillPayMapper;
-import com.yunya.middletable.dao.report.BaseBillPayShareMapper;
-import com.yunya.middletable.dao.treatment.BillPayDetailRecordMapper;
-import com.yunya.middletable.dao.treatment.BillPayRecordMapper;
-import com.yunya.middletable.dao.treatment.BillPayShareDetailMapper;
-import com.yunya.middletable.dao.treatment.OrderDetailMapper;
+import com.yunya.middletable.dao.report.*;
+import com.yunya.middletable.dao.treatment.*;
 import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
-import com.yunya.models.report.BaseBill;
-import com.yunya.models.report.BaseBillPay;
-import com.yunya.models.report.BaseBillPayDetail;
-import com.yunya.models.report.BaseBillPayShare;
-import com.yunya.models.treatment.BillPayDetailRecord;
-import com.yunya.models.treatment.BillPayRecord;
-import com.yunya.models.treatment.BillPayShareDetail;
-import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.report.*;
+import com.yunya.models.treatment.*;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +63,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private BillPayShareDetailMapper billPayShareDetailMapper;
   /** 中间表项目分摊明细 */
   @Autowired private BaseBillPayShareMapper baseBillPayShareMapper;
+  /** 订单项目实收明细 */
+  @Autowired private OrderDetailPayRecordMapper orderDetailPayRecordMapper;
+  /** 账单明细 */
+  @Autowired private BaseBillDetailMapper baseBillDetailMapper;
   /** 线程池 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -94,6 +86,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    */
   public void operateBillPay(MessageModel msg) {
     Integer dataId = (Integer) msg.getParamMap().get("id");
+    Integer orderRecordId = (Integer) msg.getParamMap().get("orderRecordId");
     BaseBillPay baseBillPay = generateBaseBillPay(dataId);
     Integer operateType = msg.getOperateType();
     switch (operateType) {
@@ -106,7 +99,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           // 保存收费记录明细
           log.info("保存收费记录明细baseBillPay: {}",baseBillPay);
           saveBillPayDetailRecord(dataId);
-          saveBillPayShareDetailRecord(dataId);
+          saveBillPayShareDetailRecord(baseBillPay, orderRecordId);
           if(!chain.isEmpty()){
             Iterator<Integer> iterator = chain.keySet().iterator();
             while (iterator.hasNext()) {
@@ -132,26 +125,55 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   /**
    * 账单收费项目分摊明细保存
    *
-   * @param billPayId
+   * @param baseBillPay
+   * @param orderRecordId 如果非空表示查账单所有收费
    */
-  private void saveBillPayShareDetailRecord(Integer billPayId) {
+  private void saveBillPayShareDetailRecord(BaseBillPay baseBillPay, Integer orderRecordId) {
+    Integer billPayId = baseBillPay.getBillPayId();
     BaseBillPayShare detail = new BaseBillPayShare();
-    detail.setBillPayId(billPayId);
+    detail.setBillId(orderRecordId);
+    if (StringHelper.isNull(orderRecordId)) {
+      detail.setBillPayId(billPayId);
+    }
     baseBillPayShareMapper.delete(detail);
     BillPayShareDetail query = new BillPayShareDetail();
     query.setInservice(true);
-    query.setBillPayId(billPayId);
+    query.setOrderRecordId(orderRecordId);
+    if (StringHelper.isNull(orderRecordId)) {
+      query.setBillPayId(billPayId);
+    }
     List<BillPayShareDetail> shares = billPayShareDetailMapper.select(query);
     List<BaseBillPayShare> datas = new ArrayList<>();
     shares.forEach(vo->{
       BaseBillPayShare data = new BaseBillPayShare();
       BeanUtil.copyProperties(vo, data);
       data.setBillId(vo.getOrderRecordId());
+      data.setBillDetailId(vo.getOrderDetailId());
       datas.add(data);
     });
     if (StringHelper.isNotEmpty(datas)) {
       baseBillPayShareMapper.batchSave(datas);
+      updateBaseBillDetailIncome(baseBillPay.getBillId());
     }
+  }
+
+  /**
+   * 更新账单明细中的已收和免单金额
+   *
+   * @param orderRecordId
+   */
+  private void updateBaseBillDetailIncome(Integer orderRecordId) {
+    OrderDetailPayRecord query = new OrderDetailPayRecord();
+    query.setInservice(true);
+    query.setOrderRecordId(orderRecordId);
+    List<OrderDetailPayRecord> orderDetailPays = orderDetailPayRecordMapper.select(query);
+    orderDetailPays.forEach(vo->{
+      BaseBillDetail entity = new BaseBillDetail();
+      entity.setBillDetailId(vo.getOrderDetailId());
+      entity.setReceivedAmount(vo.getReceivedAmount());
+      entity.setFreeAmount(vo.getFreeAmount());
+      baseBillDetailMapper.updateByPrimaryKeySelective(entity);
+    });
   }
 
   /**
@@ -170,6 +192,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     BaseBill baseBill = baseBillMapper.selectOne(bill);
     if (StringHelper.isNotNull(baseBill)) {
       statEmpPayBiz.statisticsEmployeeByPayDate(orderDetails, baseBill, baseBillPay);
+//      statEmpPayBiz.statisticsEmployeeByPayDate0(orderDetails, baseBill, baseBillPay);
     }
   }
 
@@ -315,7 +338,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                           mapper.insertSelective(baseBillPay);
                           // 保存收费记录明细
                           saveBillPayDetailRecord(billPayBillPayId);
-                          saveBillPayShareDetailRecord(billPayBillPayId);
+                          // 保存收费分摊明细
+                          saveBillPayShareDetailRecord(baseBillPay, null);
                         }
                       }
                     }

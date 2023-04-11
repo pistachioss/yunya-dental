@@ -60,9 +60,13 @@ public class BaseBillDetail {
   /** 单价 */
   private BigDecimal price;
 
-  /** 项目收费金额 */
+  /** 项目收费金额（含免单） */
   @Column(name = "received_amount")
   private BigDecimal receivedAmount;
+
+  /** 项目免单金额 */
+  @Column(name = "free_amount")
+  private BigDecimal freeAmount;
 
   /** 开单备注 */
   private String remark;

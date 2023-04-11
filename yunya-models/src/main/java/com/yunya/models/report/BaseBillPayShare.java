@@ -23,8 +23,8 @@ public class BaseBillPayShare {
     /**
      * 订单明细ID
      */
-    @Column(name = "order_detail_id")
-    private Integer orderDetailId;
+    @Column(name = "bill_detail_id")
+    private Integer billDetailId;
 
     /**
      * 项目类型：0-价目，1-商品
@@ -117,17 +117,17 @@ public class BaseBillPayShare {
      *
      * @return order_detail_id - 订单明细ID
      */
-    public Integer getOrderDetailId() {
-        return orderDetailId;
+    public Integer getBillDetailId() {
+        return billDetailId;
     }
 
     /**
      * 设置订单明细ID
      *
-     * @param orderDetailId 订单明细ID
+     * @param billDetailId 订单明细ID
      */
-    public void setOrderDetailId(Integer orderDetailId) {
-        this.orderDetailId = orderDetailId;
+    public void setBillDetailId(Integer billDetailId) {
+        this.billDetailId = billDetailId;
     }
 
     /**

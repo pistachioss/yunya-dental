@@ -9,6 +9,7 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.modules.treatment.biz.BillPayShareDetailBiz;
 import com.yunya.modules.treatment.biz.TollBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -39,6 +40,8 @@ public class TollController {
 
   /** 注入对象 */
   @Autowired private TollBiz tollBiz;
+
+  @Autowired private BillPayShareDetailBiz billPayShareDetailBiz;
 
   /**
    * 匹配订单列表优惠信息
@@ -169,7 +172,7 @@ public class TollController {
   @PostMapping("/generate/sharedDetail")
   @CurrentUser
   public ResponseResult generateItemPaySharedDetail(@RequestParam("orderRecordId") Integer orderRecordId, @RequestParam("billPayId") Integer billPayId) {
-    tollBiz.generateItemPaySharedDetail(orderRecordId, billPayId);
+    billPayShareDetailBiz.shullfeItemPaySharedDetail(orderRecordId, billPayId);
     return ResponseUtil.success();
   }
 }

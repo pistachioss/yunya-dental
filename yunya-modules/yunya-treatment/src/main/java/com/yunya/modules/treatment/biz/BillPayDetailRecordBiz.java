@@ -39,9 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillPay;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
@@ -76,6 +74,8 @@ public class BillPayDetailRecordBiz
   @Autowired private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
   /** 患者服务 */
   @Autowired private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
+  /** 收费项目分摊明细 */
+  @Autowired private BillPayShareDetailBiz billPayShareDetailBiz;
 
   /**
    * 根据收费记录ID查询入账明细列表
@@ -251,8 +251,12 @@ public class BillPayDetailRecordBiz
           payDetail.setCrtName(name);
           mapper.insertSelective(payDetail);
         });
+    billPayShareDetailBiz.shullfeItemPaySharedDetail(orderRecordId);
     // 发送消息更新中间表收费记录以及收费明细
-    rabbitMqServiceFeign.sendMessage(billPayRecordId, 1, BaseBillPay);
+    Map<String, Object> param = new HashMap<>();
+    param.put("id", billPayRecordId);
+    param.put("orderRecordId", orderRecordId);
+    rabbitMqServiceFeign.sendMessage(param, 1, BaseBillPay);
     redisUtils.delete(redisKey);
   }
 

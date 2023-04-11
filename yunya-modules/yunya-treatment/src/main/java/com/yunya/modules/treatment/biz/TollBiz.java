@@ -19,7 +19,6 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
-import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
 import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
@@ -40,7 +39,6 @@ import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
-import com.yunya.modules.treatment.mapper.BillPayShareDetailMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +46,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -107,10 +104,8 @@ public class TollBiz {
   @Autowired private BillPayDetailRecordMapper billPayDetailRecordMapper;
   /** 就诊记录 */
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
-  
-  /** 账单收费分摊明细 */
-  @Autowired private BillPayShareDetailMapper billPayShareDetailMapper;
-  @Autowired private IItemPaySharedAmount iItemPaySharedAmount;
+  /** 收费项目分摊明细 */
+  @Autowired private BillPayShareDetailBiz billPayShareDetailBiz;
 
   /**
    * 根据优惠信息匹配订单优惠
@@ -563,6 +558,8 @@ public class TollBiz {
     }
     // 保存收费明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, payments);
+    // 保存收费项目分摊明细
+    billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, payments, orderRecordId, billPayRecordId);
     orderRecord.setStatus(BusinessConstants.ORDER_FINISH_STATUS);
     orderRecord.setUpdId(userId);
     orderRecord.setUpdName(name);
@@ -1954,11 +1951,6 @@ public class TollBiz {
     int i = billPayRecordMapper.insertSelective(billPayRecord);
     // 保存收费记录入账明细
     Integer billPayRecordId = billPayRecord.getId();
-    // 本次实收金额
-    BigDecimal thisReceivedAmount = BigDecimal.ZERO;
-    // 本次免单金额
-    BigDecimal thisFreeAmount = BigDecimal.ZERO;
-    itemPaySharedAmount(thisFreeAmount, thisReceivedAmount, orderRecordId, billPayRecordId);
     if (StringHelper.isNotEmpty(prepaymentAccounts)) {
       usePrepaymentAccount(
           prepaymentAccounts, patientId, treatmentId, orderRecordId, billRecordId, billPayRecordId);
@@ -1969,6 +1961,8 @@ public class TollBiz {
     }
     // 保存收费记录支付方式明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
+    // 保存收费项目分摊明细
+    billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, paymentModels, orderRecordId, billPayRecordId);
     // 发送消息同步账单，账单收费
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
@@ -2145,32 +2139,6 @@ public class TollBiz {
   }
 
   /**
-   * 本次收费分摊明细
-   *
-   * @param thisFreeAmount 本次收费的免单金额
-   * @param thisReceivedAmount 本次收费的实收金额
-   * @param orderRecordId 订单id
-   * @param billPayId 收费id
-   */
-  public void itemPaySharedAmount(BigDecimal thisFreeAmount, BigDecimal thisReceivedAmount, Integer orderRecordId, Integer billPayId) {
-    Integer optId = Integer.parseInt(BaseContextHandler.getUserID());
-    // 查询本次收费之前的项目实收和免单
-    List<BillPayShareDetailVO> itemPayDetails = orderDetailPayRecordBiz.findItemPayDetailDeadlineBillPayId(orderRecordId, billPayId);
-    // 根据分摊规则生成项目的实收和免单分摊数据
-    BillPayShareDetail[] result = iItemPaySharedAmount.generateSharedDetails(thisFreeAmount, thisReceivedAmount, billPayId, itemPayDetails, optId);
-    List<BillPayShareDetail> shareDetails = Arrays.stream(result)
-            .filter(vo->StringHelper.isNotNull(vo) && (StringHelper.gtZero(vo.getFreeAmount()) || StringHelper.gtZero(vo.getReceivedAmount())))
-            .collect(Collectors.toList());
-    if(StringHelper.isEmpty(shareDetails)) {
-      log.error("账单收费：{}没有可分摊的项目", billPayId);
-      return;
-    }
-    // 批量保存（默认新增，唯一索引重复时，数据更新）
-    billPayShareDetailMapper.batchSave(shareDetails);
-    // 更新项目已收和免单分摊总计
-    orderDetailPayRecordBiz.statOrderDetailPayItemTotal(orderRecordId);
-  }
-  /**
    * 校验账单是否允许收欠费
    *
    * @param treatmentRecordId 就诊记录ID
@@ -2316,30 +2284,5 @@ public class TollBiz {
     BigDecimal receiptAmount =
         billPayDetailRecordMapper.selectReceiptAmountOfPrepaid(billRecordId, item.getId());
     return amount.subtract(receiptAmount);
-  }
-
-  public void generateItemPaySharedDetail(Integer orderRecordId, Integer billPayId) {
-    Example example = new Example(BillPayDetailRecord.class);
-    example.orderBy("billPayRecordId");
-    Example.Criteria c = example.createCriteria();
-    c.andEqualTo("inservice", true).andEqualTo("orderRecordId", orderRecordId).andEqualTo("billPayRecordId", billPayId);
-    List<BillPayDetailRecord> details = billPayDetailRecordMapper.selectByExample(example);
-    Map<String, BigDecimal[]> map = new LinkedHashMap<>(16);
-    for (BillPayDetailRecord vo : details) {
-      BigDecimal amount = vo.getAmount();
-      String key = StringHelper.joinWith(",", vo.getOrderRecordId(), vo.getBillPayRecordId());
-      BigDecimal[] amounts = map.computeIfAbsent(key, k -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
-      Integer accountItemId = vo.getAccountItemId();
-      if (accountItemId==23 || accountItemId==26) {
-        amounts[0] = amounts[0].add(amount);
-      } else {
-        amounts[1] = amounts[1].add(amount);
-      }
-    }
-    map.forEach((key, amounts)->{
-      String[] keys = StringHelper.split(key, ",");
-      itemPaySharedAmount(amounts[0], amounts[1], Integer.parseInt(keys[0]), Integer.parseInt(keys[1]));
-    });
-    rabbitMqServiceFeign.sendMessage(billPayId, 0, BaseBillPay);
   }
 }

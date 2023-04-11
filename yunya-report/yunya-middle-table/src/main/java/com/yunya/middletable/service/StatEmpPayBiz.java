@@ -9,6 +9,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
+import com.yunya.middletable.dao.report.BaseBillPayShareMapper;
 import com.yunya.middletable.dao.report.StatEmpPayMapper;
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseBillPay;
@@ -45,6 +46,8 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
     @Autowired private RedisLockBiz redisLockBiz;
     /** 账单明细*/
     @Autowired private BaseBillDetailMapper baseBillDetailMapper;
+    /** 收费分摊明细 */
+    @Autowired private BaseBillPayShareMapper baseBillPayShareMapper;
     /** 多线程 */
     @Resource(name = "customizeThreadPool")
     private ExecutorService importExcelThreadPool;
@@ -61,22 +64,75 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         Date date = new Date(System.currentTimeMillis());
         Integer payDate = DateUtil.date2Number(baseBillPay.getPayeeDate());
         if (StringHelper.isNotEmpty(orderDetails)) {
-            Set<String> keys = new HashSet<>();
-            Set<Integer> executorIds = new HashSet<>();
             orderDetails.forEach(vo->{
                 Integer executorId = vo.getExecutorId();
-                StatEmpPay entity = new StatEmpPay();
-                entity.setOrgId(orgId);
-                entity.setDentistId(executorId);
-                entity.setPayDate(payDate);
-                entity.setItemType(vo.getType());
-                entity.setItemId(vo.getBillingItemId());
-                mapper.deleteByPrimaryKey(entity);
-                if (vo.getInservice() && !ObjectUtils.isEmpty(executorId)) {
-                    executorIds.add(executorId);
+                StatEmpPay query = new StatEmpPay();
+                if (StringHelper.isNotNull(executorId)) {
+                    query.setOrgId(orgId);
+                    query.setDentistId(executorId);
+                    query.setPayDate(payDate);
+                    query.setItemType(vo.getType());
+                    query.setItemId(vo.getBillingItemId());
+                    mapper.delete(query);
+                    List<StatEmpPay> details = baseBillPayShareMapper.statisitcsItemPayShareDetails(
+                            orgId, payDate, executorId, vo.getType(), vo.getBillingItemId());
+                    if (StringHelper.isNotEmpty(details)) {
+                        Integer payeeUserId = baseBillPay.getPayeeUserId();
+                        details.forEach(entity -> {
+                            entity.setPayDate(payDate);
+                            entity.setCrtId(payeeUserId);
+                            entity.setCrtTime(date);
+                            mapper.insertSelective(entity);
+                        });
+                    }
                 }
-                keys.add(executorId + "," + vo.getType() + "," + vo.getBillingItemId());
             });
+        }
+    }
+
+    /**
+     * 移除旧的统计数据
+     *
+     * @param keys
+     * @param orderDetails
+     * @param orgId
+     * @param payDate
+     * @return
+     */
+    private Set<Integer> removeOldStatisticsData(Set<String> keys, List<OrderDetail> orderDetails, Integer orgId, Integer payDate) {
+        Set<Integer> executorIds = new HashSet<>();
+        orderDetails.forEach(vo->{
+            Integer executorId = vo.getExecutorId();
+            StatEmpPay entity = new StatEmpPay();
+            entity.setOrgId(orgId);
+            entity.setDentistId(executorId);
+            entity.setPayDate(payDate);
+            entity.setItemType(vo.getType());
+            entity.setItemId(vo.getBillingItemId());
+            mapper.delete(entity);
+            if (vo.getInservice() && !ObjectUtils.isEmpty(executorId)) {
+                executorIds.add(executorId);
+            }
+            keys.add(executorId + "," + vo.getType() + "," + vo.getBillingItemId());
+        });
+        return executorIds;
+    }
+
+    /**
+     * 账单收费时统计执行人的账单相关数据
+     *
+     * @param orderDetails
+     * @param bill
+     * @param baseBillPay
+     */
+    @Deprecated
+    public void statisticsEmployeeByPayDate0(List<OrderDetail> orderDetails, BaseBill bill, BaseBillPay baseBillPay) {
+        Integer orgId = bill.getOrgId();
+        Date date = new Date(System.currentTimeMillis());
+        Integer payDate = DateUtil.date2Number(baseBillPay.getPayeeDate());
+        if (StringHelper.isNotEmpty(orderDetails)) {
+            Set<String> keys = new HashSet<>();
+            Set<Integer> executorIds = removeOldStatisticsData(keys, orderDetails, orgId, payDate);
             if (StringHelper.isNotEmpty(executorIds)) {
                 List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId, null,
                         payDate, null, executorIds);
