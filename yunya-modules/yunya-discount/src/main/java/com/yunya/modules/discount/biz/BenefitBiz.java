@@ -300,7 +300,6 @@ public class BenefitBiz {
         if (CollectionUtils.isNotEmpty(cardBenefits)) {
             Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
             listMap.forEach((k, v) -> {
-                OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
                 BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
                 if (itemBenefitAmount.compareTo(BigDecimal.ZERO) == 0) {
                     return;
@@ -309,6 +308,7 @@ public class BenefitBiz {
                         .filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
                         .map(CardBenefit::getSupplyWorkload).reduce(BigDecimal.ZERO, BigDecimal::add);
                 log.info("查询账单优惠明细，开单明细id：{}，计算补入工作量：{}", k, supplyWorkTotalLoad);
+                OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
                 vo.setOrderDetailId(k);
                 vo.setItemBenefitAmount(itemBenefitAmount);
                 //按照优惠提交顺序排序
@@ -337,26 +337,25 @@ public class BenefitBiz {
 
         List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(summary.getOrderId(), AuthDiscountBenefit.class, authDiscountBenefitMapper, null);
         if (CollectionUtils.isNotEmpty(authBenefit)) {
-            Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().filter(vo->vo.getItemType().equals(1)).collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
+            Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream()/*.filter(vo->vo.getItemType().equals(1))*/.collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
             listMap.forEach((k, v) -> {
-                OrderBenefitDetailVo vo = resultMap.computeIfAbsent(k, o->new OrderBenefitDetailVo());
                 BigDecimal itemBenefitAmount = v.stream().map(AuthDiscountBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-                if (itemBenefitAmount.compareTo(BigDecimal.ZERO) == 0) {
-                    return;
+                if (itemBenefitAmount.compareTo(BigDecimal.ZERO) > 0) {
+                    OrderBenefitDetailVo vo = resultMap.computeIfAbsent(k, o->new OrderBenefitDetailVo());
+                    vo.setOrderDetailId(k);
+                    vo.setItemBenefitAmount(vo.getItemBenefitAmount().add(itemBenefitAmount));
+                    List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
+                        ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
+                        benefitVo.setBenefitType(AUTH_BENEFIT_TYPE);
+                        benefitVo.setBenefitAmount(obj.getBenefitAmount());
+                        benefitVo.setBenefitId(summary.getAuthorizedId());
+                        SysUserInfoDetail author = summary.getAuthorizedId() == null ? null :
+                                systemServiceFeign.findSysUserEmployeeInfoByUserId(summary.getAuthorizedId());
+                        benefitVo.setBenefitName(author == null ? null : author.getName());
+                        return benefitVo;
+                    }).collect(toList());
+                    vo.getItemBenefitList().addAll(itemBenefits);
                 }
-                vo.setOrderDetailId(k);
-                vo.setItemBenefitAmount(vo.getItemBenefitAmount().add(itemBenefitAmount));
-                List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
-                    ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
-                    benefitVo.setBenefitType(AUTH_BENEFIT_TYPE);
-                    benefitVo.setBenefitAmount(obj.getBenefitAmount());
-                    benefitVo.setBenefitId(summary.getAuthorizedId());
-                    SysUserInfoDetail author = summary.getAuthorizedId() == null ? null :
-                            systemServiceFeign.findSysUserEmployeeInfoByUserId(summary.getAuthorizedId());
-                    benefitVo.setBenefitName(author == null ? null : author.getName());
-                    return benefitVo;
-                }).collect(toList());
-                vo.getItemBenefitList().addAll(itemBenefits);
             });
         }
         return new ArrayList<>(resultMap.values());
