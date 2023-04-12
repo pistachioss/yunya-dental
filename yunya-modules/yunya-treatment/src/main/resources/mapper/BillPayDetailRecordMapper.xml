@@ -203,7 +203,7 @@
             <if test="orderRecordId != null">
                 AND bpdr.order_record_id = #{orderRecordId}
             </if>
-            <if test="orderRecordId != null">
+            <if test="billPayId != null">
                 AND bpdr.bill_pay_record_id = #{billPayId}
             </if>
         </where>

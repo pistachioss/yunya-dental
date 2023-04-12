@@ -19,7 +19,6 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillPay;
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
 import static com.yunya.framework.common.enums.ExceptionCode.INTERNAL_SERVER_ERROR;
 
@@ -70,7 +69,7 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
     public void saveItemPaySharedAmount(BigDecimal totalCharge, Set<PaymentModel> payments, Integer orderRecordId, Integer billPayId) {
         BigDecimal freeAmount = extrationFreeAmount(totalCharge, payments);
         BigDecimal receivedAmount = totalCharge.subtract(freeAmount);
-        saveItemPaySharedAmount(receivedAmount, freeAmount, orderRecordId, billPayId);
+        saveItemPaySharedAmount(freeAmount, receivedAmount, orderRecordId, billPayId);
     }
 
     /**
@@ -106,7 +105,6 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      * @param orderRecordId
      */
     public void shullfeItemPaySharedDetail(Integer orderRecordId) {
-        removeByUniqueKey(orderRecordId, null, null);
         shullfeItemPaySharedDetail(orderRecordId, null);
     }
 
@@ -118,13 +116,20 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      * @param orderDetailId
      */
     public void removeByUniqueKey(Integer orderRecordId, Integer billPayId, Integer orderDetailId) {
-        if (StringHelper.isAllNull(orderDetailId, billPayId, orderDetailId)) {
+        if (StringHelper.isAllNull(orderRecordId, billPayId, orderDetailId)) {
             throw new ClientServiceException(INTERNAL_SERVER_ERROR);
         }
         mapper.removeByUniqueKey(orderRecordId, billPayId, orderDetailId);
     }
 
+    /**
+     * 洗牌并生成项目分摊数据
+     *
+     * @param orderRecordId
+     * @param billPayId
+     */
     public void shullfeItemPaySharedDetail(Integer orderRecordId, Integer billPayId) {
+        removeByUniqueKey(orderRecordId, billPayId, null);
         List<BillPayDetailRecord> details = billPayDetailRecordMapper.selectBillPayDetailList(orderRecordId, billPayId);
         Map<String, BigDecimal[]> map = new LinkedHashMap<>(16);
         for (BillPayDetailRecord vo : details) {
@@ -142,7 +147,7 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
             String[] keys = StringHelper.split(key, ",");
             int billPayRecordId = Integer.parseInt(keys[1]);
             saveItemPaySharedAmount(amounts[0], amounts[1], Integer.parseInt(keys[0]), billPayRecordId);
-            rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
+//            rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
         });
     }
 }

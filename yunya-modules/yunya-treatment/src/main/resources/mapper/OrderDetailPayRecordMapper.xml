@@ -157,7 +157,7 @@
                 sum(received_amount) AS received_amount
             FROM bill_pay_share_detail
             <where>
-                inservice=true
+                inservice = true
                 AND order_record_id = #{orderRecordId}
                 AND bill_pay_id &lt; #{billPayId}
             </where>
