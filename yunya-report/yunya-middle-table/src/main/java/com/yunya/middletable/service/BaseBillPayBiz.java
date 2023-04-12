@@ -153,8 +153,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     });
     if (StringHelper.isNotEmpty(datas)) {
       baseBillPayShareMapper.batchSave(datas);
-      updateBaseBillDetailIncome(baseBillPay.getBillId());
     }
+    updateBaseBillDetailIncome(baseBillPay.getBillId());
   }
 
   /**

@@ -107,18 +107,18 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      * @param orderRecordId
      */
     public void shullfeItemPaySharedDetail(Integer orderRecordId) {
-        removeByFeignKey(orderRecordId, null, null);
+        removeByUniqueKey(orderRecordId, null, null);
         shullfeItemPaySharedDetail(orderRecordId, null);
     }
 
     /**
-     * 通过外键删除
+     * 通过联合键删除
      *
      * @param orderRecordId
      * @param billPayId
      * @param orderDetailId
      */
-    private void removeByFeignKey(Integer orderRecordId, Integer billPayId, Integer orderDetailId) {
+    public void removeByUniqueKey(Integer orderRecordId, Integer billPayId, Integer orderDetailId) {
         Example example = new Example(BillPayShareDetail.class);
         Example.Criteria c = example.createCriteria();
         c.andEqualTo("inservice", true)
