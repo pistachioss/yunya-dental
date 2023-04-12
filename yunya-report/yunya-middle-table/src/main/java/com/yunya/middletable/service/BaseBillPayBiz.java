@@ -99,7 +99,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           // 保存收费记录明细
           log.info("保存收费记录明细baseBillPay: {}",baseBillPay);
           saveBillPayDetailRecord(dataId);
-          saveBillPayShareDetailRecord(baseBillPay, orderRecordId);
           if(!chain.isEmpty()){
             Iterator<Integer> iterator = chain.keySet().iterator();
             while (iterator.hasNext()) {
@@ -117,7 +116,11 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
       default:
-        statisticsInPayDate(dataId);
+        if (StringHelper.isNull(baseBillPay)) {
+          baseBillPay = record2BaseReport(billPayRecordMapper.selectByPrimaryKey(dataId));
+        }
+        saveBillPayShareDetailRecord(baseBillPay, orderRecordId);
+        statisticsInPayDate(baseBillPay);
         break;
     }
   }
@@ -179,10 +182,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   /**
    * 账单收费时统计执行人的账单相关数据
    *
-   * @param dataId
+   * @param baseBillPay
    */
-  private void statisticsInPayDate(Integer dataId) {
-    BaseBillPay baseBillPay = record2BaseReport(billPayRecordMapper.selectByPrimaryKey(dataId));
+  private void statisticsInPayDate(BaseBillPay baseBillPay) {
     Integer billId = baseBillPay.getBillId();
     OrderDetail query = new OrderDetail();
     query.setOrderRecordId(billId);

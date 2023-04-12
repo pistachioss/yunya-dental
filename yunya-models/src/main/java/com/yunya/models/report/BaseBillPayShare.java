@@ -51,11 +51,6 @@ public class BaseBillPayShare {
     private BigDecimal receivedAmount;
 
     /**
-     * 状态：0-禁用，1-启用
-     */
-    private Boolean inservice;
-
-    /**
      * 创建人id
      */
     @Column(name = "crt_id")
@@ -200,24 +195,6 @@ public class BaseBillPayShare {
      */
     public void setReceivedAmount(BigDecimal receivedAmount) {
         this.receivedAmount = receivedAmount;
-    }
-
-    /**
-     * 获取状态：0-禁用，1-启用
-     *
-     * @return inservice - 状态：0-禁用，1-启用
-     */
-    public Boolean getInservice() {
-        return inservice;
-    }
-
-    /**
-     * 设置状态：0-禁用，1-启用
-     *
-     * @param inservice 状态：0-禁用，1-启用
-     */
-    public void setInservice(Boolean inservice) {
-        this.inservice = inservice;
     }
 
     /**

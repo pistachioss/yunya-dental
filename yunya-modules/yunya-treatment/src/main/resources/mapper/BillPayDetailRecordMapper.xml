@@ -189,4 +189,24 @@
         </where>
         GROUP by bpdr.order_record_id
     </select>
+
+    <select id="selectBillPayDetailList" resultType="com.yunya.models.treatment.BillPayDetailRecord">
+        SELECT
+            bpdr.bill_pay_record_id as billPayRecordId,
+            bpdr.id,
+            bpdr.order_record_id AS orderRecordId,
+            bpdr.account_item_id as accountItemId,
+            bpdr.amount as amount
+        FROM bill_pay_detail_record bpdr
+        <where>
+            bpdr.inservice = true
+            <if test="orderRecordId != null">
+                AND bpdr.order_record_id = #{orderRecordId}
+            </if>
+            <if test="orderRecordId != null">
+                AND bpdr.bill_pay_record_id = #{billPayId}
+            </if>
+        </where>
+        ORDER BY bpdr.bill_pay_record_id
+    </select>
 </mapper>

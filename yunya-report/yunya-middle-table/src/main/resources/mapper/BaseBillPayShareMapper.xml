@@ -12,7 +12,6 @@
     <result column="item_id" property="itemId" jdbcType="INTEGER" />
     <result column="free_amount" property="freeAmount" jdbcType="DECIMAL" />
     <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
@@ -30,7 +29,6 @@
   item_id,
   free_amount,
   received_amount,
-  inservice,
   crt_id,
   crt_time,
   upt_id,
@@ -39,7 +37,7 @@
   VALUES
   <foreach collection ="list" item="it" index= "index" separator =",">
     (#{it.billId}, #{it.billPayId}, #{it.billDetailId}, #{it.itemType}, #{it.itemId}, #{it.freeAmount},
-    #{it.receivedAmount}, #{it.inservice}, #{it.crtId}, #{it.crtTime}, #{it.uptId}, #{it.uptTime})
+    #{it.receivedAmount}, #{it.crtId}, #{it.crtTime}, #{it.uptId}, #{it.uptTime})
   </foreach>
   ON DUPLICATE KEY UPDATE
   free_amount = VALUES(free_amount),
@@ -60,8 +58,7 @@
     LEFT JOIN base_bill_pay_share bbps ON bbps.bill_detail_id=bbd.bill_detail_id
     INNER JOIN base_bill_pay bbp ON bbp.bill_pay_id=bbps.bill_pay_id
     <where>
-      bbps.inservice = true
-      AND DATE_FORMAT(bbp.payee_date, '%Y%m%d') = #{payDate}
+      DATE_FORMAT(bbp.payee_date, '%Y%m%d') = #{payDate}
       AND bbd.org_id = #{orgId}
       AND bbd.executor_id = #{executorId}
       AND bbd.item_type = #{itemType}

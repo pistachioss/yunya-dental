@@ -88,4 +88,15 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
       @Param("query") CategoryIncomeQuery query,
       @Param("payIds") List<Integer> payIds,
       @Param("inservice") Boolean inservice);
+
+  /**
+   * 根据订单id或收费id查询收费入账明细
+   *
+   * @param orderRecordId
+   * @param billPayId
+   * @return
+   */
+  List<BillPayDetailRecord> selectBillPayDetailList(
+          @Param("orderRecordId") Integer orderRecordId,
+          @Param("billPayId") Integer billPayId);
 }

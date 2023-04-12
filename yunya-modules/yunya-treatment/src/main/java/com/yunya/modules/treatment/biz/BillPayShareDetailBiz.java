@@ -5,7 +5,7 @@ import com.yunya.feign.treatment.domain.model.PaymentModel;
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayShareDetail;
@@ -14,15 +14,14 @@ import com.yunya.modules.treatment.mapper.BillPayShareDetailMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillPay;
-import static com.yunya.framework.common.constant.BusinessConstants.PAYMENT_BY_CUSTOMER_FREE;
-import static com.yunya.framework.common.constant.BusinessConstants.PAYMENT_BY_EMPLOYEE_FREE;
+import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
+import static com.yunya.framework.common.enums.ExceptionCode.INTERNAL_SERVER_ERROR;
 
 /**
  * @author: chenlin
@@ -53,7 +52,7 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
         BigDecimal freePayment = BigDecimal.ZERO;
         for (PaymentModel payment : payments) {
             Integer accountItemId = payment.getAccountItemId();
-            if (PAYMENT_BY_CUSTOMER_FREE==accountItemId || PAYMENT_BY_EMPLOYEE_FREE==accountItemId) {
+            if (FREE_PAYMENT_ID.contains(accountItemId)) {
                 freePayment = freePayment.add(payment.getAmount());
             }
         }
@@ -119,33 +118,21 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      * @param orderDetailId
      */
     public void removeByUniqueKey(Integer orderRecordId, Integer billPayId, Integer orderDetailId) {
-        Example example = new Example(BillPayShareDetail.class);
-        Example.Criteria c = example.createCriteria();
-        c.andEqualTo("inservice", true)
-            .andEqualTo("orderRecordId", orderRecordId)
-            .andEqualTo("billPayId", billPayId)
-            .andEqualTo("orderDetailId", orderDetailId);
-        BillPayShareDetail entity = new BillPayShareDetail();
-        entity.setInservice(false);
-        entity.setUptTime(DateUtil.now());
-        mapper.updateByExample(entity, example);
+        if (StringHelper.isAllNull(orderDetailId, billPayId, orderDetailId)) {
+            throw new ClientServiceException(INTERNAL_SERVER_ERROR);
+        }
+        mapper.removeByUniqueKey(orderRecordId, billPayId, orderDetailId);
     }
 
     public void shullfeItemPaySharedDetail(Integer orderRecordId, Integer billPayId) {
-        Example example = new Example(BillPayDetailRecord.class);
-        example.orderBy("billPayRecordId");
-        Example.Criteria c = example.createCriteria();
-        c.andEqualTo("inservice", true)
-            .andEqualTo("orderRecordId", orderRecordId)
-            .andEqualTo("billPayRecordId", billPayId);
-        List<BillPayDetailRecord> details = billPayDetailRecordMapper.selectByExample(example);
+        List<BillPayDetailRecord> details = billPayDetailRecordMapper.selectBillPayDetailList(orderRecordId, billPayId);
         Map<String, BigDecimal[]> map = new LinkedHashMap<>(16);
         for (BillPayDetailRecord vo : details) {
             BigDecimal amount = vo.getAmount();
             String key = StringHelper.joinWith(",", vo.getOrderRecordId(), vo.getBillPayRecordId());
             BigDecimal[] amounts = map.computeIfAbsent(key, k -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
             Integer accountItemId = vo.getAccountItemId();
-            if (accountItemId==23 || accountItemId==26) {
+            if (FREE_PAYMENT_ID.contains(accountItemId)) {
                 amounts[0] = amounts[0].add(amount);
             } else {
                 amounts[1] = amounts[1].add(amount);

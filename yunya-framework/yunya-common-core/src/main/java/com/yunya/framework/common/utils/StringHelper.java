@@ -547,10 +547,8 @@ public class StringHelper extends StringUtils {
    */
   public static boolean isAnyNull(Object...objs) {
     if (!ArrayUtils.isEmpty(objs)) {
-      int size = objs.length;
-      for (int i = 0; i < size; ++i) {
-        Object obj = objs[i];
-        if (isNull(obj)) {
+      for (int i = 0; i < objs.length; ++i) {
+        if (isNull(objs[i])) {
           return true;
         }
       }
@@ -665,5 +663,23 @@ public class StringHelper extends StringUtils {
 
   public static boolean geZero(BigDecimal value) {
     return ge(value, BigDecimal.ZERO);
+  }
+
+  /**
+   * 判断一组对象是否全部为null
+   *
+   * @param objs
+   * @return
+   */
+  public static boolean isAllNull(Object ...objs) {
+    if (!ArrayUtils.isEmpty(objs)) {
+      for (int i = 0; i < objs.length; ++i) {
+        if (isNotNull(objs[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 }

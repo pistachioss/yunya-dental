@@ -48,4 +48,19 @@
     upt_id = VALUES(upt_id),
     upt_time = VALUES(upt_time)
   </insert>
+
+  <update id="removeByUniqueKey">
+    UPDATE bill_pay_share_detail
+    SET inservice = false, upt_time = now()
+    <where>
+        inservice = true
+        AND order_record_id = #{orderRecordId}
+        <if test="billPayId != null">
+            AND bill_pay_id = #{billPayId}
+        </if>
+        <if test="orderDetailId != null">
+            AND order_detail_id = #{orderDetailId}
+        </if>
+    </where>
+  </update>
 </mapper>
