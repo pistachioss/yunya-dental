@@ -228,7 +228,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
       throw new ClientServiceException("撤销收费失败，账单记录不存在！", QUERY_RESULT_INVALID);
     }
     String billDate = DateUtil.format(billRecord.getCrtTime(), "yyyy-MM");
-    if (DateUtil.compareDate(now, billDate) != 0) {
+    if (DateUtil.sliceUpDateRange(now, billDate).size() != 1) {
       throw new ClientServiceException("非当月账单，不可撤销收费，请联系财务！", QUERY_RESULT_INVALID);
     }
 
