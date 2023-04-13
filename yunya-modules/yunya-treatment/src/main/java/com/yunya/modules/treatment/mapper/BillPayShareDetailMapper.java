@@ -9,7 +9,7 @@ import java.util.List;
 public interface BillPayShareDetailMapper extends Mapper<BillPayShareDetail> {
     void batchSave(List<BillPayShareDetail> shareDetails);
 
-    void removeByUniqueKey(
+    void removeByCombinationKey(
             @Param("orderRecordId") Integer orderRecordId,
             @Param("billPayId") Integer billPayId,
             @Param("orderDetailId") Integer orderDetailId);

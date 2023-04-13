@@ -5,7 +5,6 @@ import com.yunya.feign.treatment.domain.model.PaymentModel;
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayShareDetail;
@@ -19,8 +18,8 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillPay;
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
-import static com.yunya.framework.common.enums.ExceptionCode.INTERNAL_SERVER_ERROR;
 
 /**
  * @author: chenlin
@@ -93,7 +92,7 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
             log.error("账单收费：{}没有可分摊的项目", billPayId);
             return;
         }
-        // 批量保存（默认新增，唯一索引重复时，数据更新）
+        // 批量保存
         mapper.batchSave(shareDetails);
         // 更新项目已收和免单分摊总计
         orderDetailPayRecordBiz.statOrderDetailPayItemTotal(orderRecordId);
@@ -109,17 +108,17 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
     }
 
     /**
-     * 通过联合键删除
+     * 通过组合键删除
      *
      * @param orderRecordId
      * @param billPayId
      * @param orderDetailId
      */
-    public void removeByUniqueKey(Integer orderRecordId, Integer billPayId, Integer orderDetailId) {
-        if (StringHelper.isAllNull(orderRecordId, billPayId, orderDetailId)) {
-            throw new ClientServiceException(INTERNAL_SERVER_ERROR);
-        }
-        mapper.removeByUniqueKey(orderRecordId, billPayId, orderDetailId);
+    public void removeByCombinationKey(Integer orderRecordId, Integer billPayId, Integer orderDetailId) {
+//        if (StringHelper.isAllNull(orderRecordId, billPayId, orderDetailId)) {
+//            throw new ClientServiceException(INTERNAL_SERVER_ERROR);
+//        }
+        mapper.removeByCombinationKey(orderRecordId, billPayId, orderDetailId);
     }
 
     /**
@@ -129,7 +128,7 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      * @param billPayId
      */
     public void shullfeItemPaySharedDetail(Integer orderRecordId, Integer billPayId) {
-        removeByUniqueKey(orderRecordId, billPayId, null);
+        removeByCombinationKey(orderRecordId, billPayId, null);
         List<BillPayDetailRecord> details = billPayDetailRecordMapper.selectBillPayDetailList(orderRecordId, billPayId);
         Map<String, BigDecimal[]> map = new LinkedHashMap<>(16);
         for (BillPayDetailRecord vo : details) {
@@ -147,7 +146,7 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
             String[] keys = StringHelper.split(key, ",");
             int billPayRecordId = Integer.parseInt(keys[1]);
             saveItemPaySharedAmount(amounts[0], amounts[1], Integer.parseInt(keys[0]), billPayRecordId);
-//            rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
+            rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
         });
     }
 }

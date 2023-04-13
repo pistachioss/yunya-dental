@@ -141,7 +141,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
     // 发送消息同步中间表账单相关数据
     if (result > 0) {
-      billPayShareDetailBiz.removeByUniqueKey(billRecord.getOrderRecordId(), billPayRecordId, null);
+      billPayShareDetailBiz.removeByCombinationKey(billRecord.getOrderRecordId(), billPayRecordId, null);
       // 删除账单收费记录
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 2, BaseBillPay);
       // 更新治疗计划项目核销数量

@@ -20,7 +20,6 @@
     <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
-  <!--默认新增，唯一索引重复时，数据更新-->
   <insert id="batchSave">
     INSERT INTO bill_pay_share_detail
     (
@@ -42,14 +41,9 @@
       (#{it.orderRecordId}, #{it.billPayId}, #{it.orderDetailId}, #{it.itemType}, #{it.itemId}, #{it.freeAmount},
        #{it.receivedAmount}, #{it.inservice}, #{it.crtId}, #{it.crtTime}, #{it.uptId}, #{it.uptTime})
     </foreach>
-    ON DUPLICATE KEY UPDATE
-    free_amount = VALUES(free_amount),
-    received_amount = VALUES(received_amount),
-    upt_id = VALUES(upt_id),
-    upt_time = VALUES(upt_time)
   </insert>
 
-  <update id="removeByUniqueKey">
+  <update id="removeByCombinationKey">
     UPDATE bill_pay_share_detail
     SET inservice = false, upt_time = now()
     <where>

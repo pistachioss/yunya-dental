@@ -39,11 +39,6 @@
     (#{it.billId}, #{it.billPayId}, #{it.billDetailId}, #{it.itemType}, #{it.itemId}, #{it.freeAmount},
     #{it.receivedAmount}, #{it.crtId}, #{it.crtTime}, #{it.uptId}, #{it.uptTime})
   </foreach>
-  ON DUPLICATE KEY UPDATE
-  free_amount = VALUES(free_amount),
-  received_amount = VALUES(received_amount),
-  upt_id = VALUES(upt_id),
-  upt_time = VALUES(upt_time)
   </insert>
 
   <select id="statisitcsItemPayShareDetails" resultType="com.yunya.models.report.StatEmpPay">

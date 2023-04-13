@@ -957,7 +957,7 @@ public class TollBiz {
    */
   private BigDecimal totalItemCharge(BigDecimal totalCharge, OrderDetailPayRecord detailPayRecord) {
     BigDecimal actualAmount = detailPayRecord.getActualReceivable();
-    BigDecimal receivedAmount = detailPayRecord.getReceivedAmount();
+    BigDecimal receivedAmount = StringHelper.defaultBigDecimal(detailPayRecord.getReceivedAmount());
     if (StringHelper.gt(actualAmount, receivedAmount)) {
       // 项目缺口
       BigDecimal gap = actualAmount.subtract(receivedAmount);
