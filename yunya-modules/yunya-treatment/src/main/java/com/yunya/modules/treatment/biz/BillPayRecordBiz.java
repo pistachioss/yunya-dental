@@ -17,6 +17,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -206,6 +207,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
       throw new ClientServiceException("收费记录撤销失败，当前收费记录正在被操作，请稍后再试！", QUERY_RESULT_INVALID);
     }
 
+
     BillPayRecord billPayRecord = mapper.selectByPrimaryKey(billPayRecordId);
     if (null == billPayRecord) {
       throw new ClientServiceException("撤销收费失败，收费记录不存在！", QUERY_RESULT_INVALID);
@@ -217,6 +219,19 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     }
 
     Integer orderRecordId = billPayRecord.getOrderRecordId();
+    String now = DateTime.now().toString("yyyy-MM");
+    BillRecord query = new BillRecord();
+    query.setInservice(true);
+    query.setOrderRecordId(orderRecordId);
+    BillRecord billRecord = billRecordMapper.selectOne(query);
+    if (StringHelper.isNull(billRecord)) {
+      throw new ClientServiceException("撤销收费失败，账单记录不存在！", QUERY_RESULT_INVALID);
+    }
+    String billDate = DateUtil.format(billRecord.getCrtTime(), "yyyy-MM");
+    if (DateUtil.sliceUpDateRange(now, billDate).size() != 1) {
+      throw new ClientServiceException("非当月账单，不可撤销收费，请联系财务！", QUERY_RESULT_INVALID);
+    }
+
     BillPayRecord entity = new BillPayRecord();
     entity.setOrderRecordId(orderRecordId);
     entity.setInservice(true);
