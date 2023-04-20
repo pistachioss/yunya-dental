@@ -65,6 +65,12 @@ public class PatientExpInfoVo implements Serializable {
     @ApiModelProperty("职业字典明细ID")
     private Integer profession;
 
+    @ApiModelProperty("婚姻状况(0-单身 1-已婚)")
+    private Integer marry;
+
+    @ApiModelProperty("生育情况(0-无孩 1-有孩)")
+    private Integer childStatus;
+
     /**
      * 遗传病史
      */

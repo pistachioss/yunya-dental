@@ -11,6 +11,8 @@
     <result column="useful_phone" property="usefulPhone" jdbcType="VARCHAR" />
     <result column="identity" property="identity" jdbcType="VARCHAR" />
     <result column="profession" property="profession" jdbcType="INTEGER" />
+    <result column="marry" property="marry" jdbcType="INTEGER" />
+    <result column="child_status" property="childStatus" jdbcType="INTEGER" />
     <result column="heredity" property="heredity" jdbcType="VARCHAR" />
     <result column="other_health" property="otherHealth" jdbcType="VARCHAR" />
     <result column="brush_times" property="brushTimes" jdbcType="INTEGER" />
@@ -47,7 +49,7 @@
   <sql id="PatientExpInfo_Column_List">
     id,patient_id patientId,patient_kind patientkind,useful_phone usefulPhone,identity,profession,heredity,other_health otherHealth,brush_times brushTimes,brush_time brushTime,brush_hardness brushHardness,smoking_age smokingAge,
     smoking_num smokingNum,use_electric_brush useElectricBrush,use_collutory useCollutory,use_floss useFloss,bruxism, pregnancy_week pregnancyWeek, is_feed_baby feedBaBy, guardian, address,province,city,country,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,
-    upt_id uptId,upd_name updName,upd_time updTime, emergency_phone emergencyPhone, employer, e_mail eMail, state, treat_advice treatAdvice
+    upt_id uptId,upd_name updName,upd_time updTime, emergency_phone emergencyPhone, employer, e_mail eMail, state, treat_advice treatAdvice,marry,child_status
   </sql>
 
   <!--根据患者id查询患者扩展信息-->
