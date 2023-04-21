@@ -112,7 +112,7 @@ public class ScrmTagBiz {
         Map<Integer, String> patientWx = getPatientExpWx(expInfos);
         return expInfos.stream()
                 .filter(t -> Objects.nonNull(t.getChildStatus()))
-                .collect(groupingBy(t -> Objects.equals(0, t.getChildStatus()) ? "无孩" : "有孩", collectingAndThen(toList(), list -> list.stream().map(t -> {
+                .collect(groupingBy(t -> Objects.equals(0, t.getChildStatus()) ? "无孩子" : "有孩", collectingAndThen(toList(), list -> list.stream().map(t -> {
                     WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
                     bindTagVO.setPatientId(t.getPatientId());
                     bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
