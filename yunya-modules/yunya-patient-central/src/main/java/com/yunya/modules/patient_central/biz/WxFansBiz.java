@@ -482,10 +482,10 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
                 .whenComplete((r, e) -> log.info("{}，当前时间同步完成", DateUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss"))).join();
     }
 
-    public List<WorkWxPatientBindVO> wechatRelateList(String unionId) {
+    public List<WorkWxPatientBindVO> wechatRelateList(Collection<String> unionIds) {
         Example example = new Example(WxFansBind.class);
         example.createCriteria()
-                .andEqualTo("unionId", unionId);
+                .andIn("unionId", unionIds);
         List<WxFansBind> wxFansBinds = wxFansBindMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(wxFansBinds)) {
             return Lists.newArrayList();
@@ -500,9 +500,11 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
                 .orElse(Lists.newArrayList()).stream()
                 .collect(Collectors.toMap(DictionaryItem::getId, DictionaryItem::getName));
         return wxFansBinds.stream().map(t -> {
-            PatientBaseInfoVo baseInfoVo = patientMap.get(t.getPatientId());
+            Integer patientId = t.getPatientId();
+            PatientBaseInfoVo baseInfoVo = patientMap.get(patientId);
             WorkWxPatientBindVO vo = new WorkWxPatientBindVO();
-            vo.setPatientId(t.getPatientId());
+            vo.setPatientId(patientId);
+            vo.setUnionId(t.getUnionId());
             if (Objects.nonNull(baseInfoVo)) {
                 vo.setPatientName(baseInfoVo.getName());
                 vo.setMobile(baseInfoVo.getMobile());
