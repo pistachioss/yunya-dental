@@ -482,16 +482,19 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
                 .whenComplete((r, e) -> log.info("{}，当前时间同步完成", DateUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss"))).join();
     }
 
-    public List<WorkWxPatientBindVO> wechatRelateList(Collection<String> unionIds) {
+    public List<WorkWxPatientBindVO> wechatRelateList(Collection<Integer> patientIds) {
+        if (CollectionUtils.isEmpty(patientIds)) {
+            log.info("患者绑定微信用户参数为空");
+            return Lists.newArrayList();
+        }
         Example example = new Example(WxFansBind.class);
         example.createCriteria()
-                .andIn("unionId", unionIds);
+                .andIn("patientId", patientIds);
         List<WxFansBind> wxFansBinds = wxFansBindMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(wxFansBinds)) {
             return Lists.newArrayList();
         }
-        List<Integer> patientIds = wxFansBinds.stream().map(WxFansBind::getPatientId).collect(Collectors.toList());
-        Map<Integer, PatientBaseInfoVo> patientMap = Optional.of(patientBaseInfoBiz.findPatientInfoByIds(patientIds, null))
+        Map<Integer, PatientBaseInfoVo> patientMap = Optional.of(patientBaseInfoBiz.findPatientInfoByIds(new ArrayList<>(patientIds), null))
                 .orElse(Lists.newArrayList()).stream()
                 .collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
 

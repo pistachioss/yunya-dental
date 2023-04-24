@@ -37,7 +37,7 @@ public class WechatRest {
 
     @ApiOperation("企微、小程序、公众号-客户患者关系列表")
     @PostMapping(value = "/white/wechat/user/relate")
-    public List<WorkWxPatientBindVO> wechatRelateList(@NotBlank @RequestBody Collection<String> unionIds) {
+    public List<WorkWxPatientBindVO> wechatRelateList(@NotBlank @RequestBody Collection<Integer> unionIds) {
         return wxFansBiz.wechatRelateList(unionIds);
     }
 }
