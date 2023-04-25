@@ -36,8 +36,14 @@ public class WechatRest {
     }
 
     @ApiOperation("企微、小程序、公众号-客户患者关系列表")
-    @PostMapping(value = "/white/wechat/user/relate")
-    public List<WorkWxPatientBindVO> wechatRelateList(@NotBlank @RequestBody Collection<Integer> unionIds) {
-        return wxFansBiz.wechatRelateList(unionIds);
+    @GetMapping(value = "/white/wechat/user/relate",produces="application/json")
+    public ResponseResult<List<WorkWxPatientBindVO>> wechatRelateList(@NotBlank @RequestParam String unionId) {
+        return ResponseUtil.success( wxFansBiz.wechatRelateList(unionId));
     }
+
+    @PostMapping(value = "/white/wechat/patient/relate")
+    public List<WorkWxPatientBindVO> wechatRelateList( @RequestBody Collection<Integer> unionIds) {
+        return wxFansBiz.patientRelateList(unionIds);
+    }
+
 }

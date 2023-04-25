@@ -482,7 +482,18 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
                 .whenComplete((r, e) -> log.info("{}，当前时间同步完成", DateUtil.format(LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss"))).join();
     }
 
-    public List<WorkWxPatientBindVO> wechatRelateList(Collection<Integer> patientIds) {
+    public List<WorkWxPatientBindVO> wechatRelateList(String unionId) {
+        Example example = new Example(WxFansBind.class);
+        example.createCriteria()
+                .andEqualTo("unionId", unionId);
+        List<WxFansBind> wxFansBinds = wxFansBindMapper.selectByExample(example);
+        if (CollectionUtils.isEmpty(wxFansBinds)) {
+            return Lists.newArrayList();
+        }
+        return assembleRelate(wxFansBinds);
+    }
+
+    public List<WorkWxPatientBindVO> patientRelateList(Collection<Integer> patientIds) {
         if (CollectionUtils.isEmpty(patientIds)) {
             log.info("患者绑定微信用户参数为空");
             return Lists.newArrayList();
@@ -494,10 +505,15 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         if (CollectionUtils.isEmpty(wxFansBinds)) {
             return Lists.newArrayList();
         }
+        return assembleRelate(wxFansBinds);
+    }
+
+    private List<WorkWxPatientBindVO> assembleRelate(List<WxFansBind> wxFansBinds) {
+        List<Integer> patientIds = wxFansBinds.stream().map(WxFansBind::getPatientId).collect(Collectors.toList());
+
         Map<Integer, PatientBaseInfoVo> patientMap = Optional.of(patientBaseInfoBiz.findPatientInfoByIds(new ArrayList<>(patientIds), null))
                 .orElse(Lists.newArrayList()).stream()
                 .collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
-
         DictionaryItemModel model = new DictionaryItemModel();
         Map<Integer, String> dictionaryMap = Optional.of(systemServiceFeign.findDictionaryItemList(model))
                 .orElse(Lists.newArrayList()).stream()
