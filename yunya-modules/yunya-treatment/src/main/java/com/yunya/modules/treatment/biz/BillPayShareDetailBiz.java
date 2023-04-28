@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.treatment.domain.model.PaymentModel;
+import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -104,7 +105,9 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      * @param orderRecordId
      */
     public void shullfeItemPaySharedDetail(Integer orderRecordId) {
-        shullfeItemPaySharedDetail(orderRecordId, null);
+        BillPayShareDetailQuery query = new BillPayShareDetailQuery();
+        query.setOrderRecordId(orderRecordId);
+        shullfeItemPaySharedDetail(query);
     }
 
     /**
@@ -124,12 +127,11 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
     /**
      * 洗牌并生成项目分摊数据
      *
-     * @param orderRecordId
-     * @param billPayId
+     * @param query
      */
-    public void shullfeItemPaySharedDetail(Integer orderRecordId, Integer billPayId) {
-        removeByCombinationKey(orderRecordId, billPayId, null);
-        List<BillPayDetailRecord> details = billPayDetailRecordMapper.selectBillPayDetailList(orderRecordId, billPayId);
+    public void shullfeItemPaySharedDetail(BillPayShareDetailQuery query) {
+        removeByCombinationKey(query.getOrderRecordId(), query.getBillPayId(), null);
+        List<BillPayDetailRecord> details = billPayDetailRecordMapper.selectBillPayDetailList(query);
         Map<String, BigDecimal[]> map = new LinkedHashMap<>(16);
         for (BillPayDetailRecord vo : details) {
             BigDecimal amount = vo.getAmount();

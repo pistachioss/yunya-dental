@@ -200,11 +200,35 @@
         FROM bill_pay_detail_record bpdr
         <where>
             bpdr.inservice = true
-            <if test="orderRecordId != null">
-                AND bpdr.order_record_id = #{orderRecordId}
+            <if test="query.dateType==0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
             </if>
-            <if test="billPayId != null">
-                AND bpdr.bill_pay_record_id = #{billPayId}
+            <if test="query.dateType==1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bpdr.crt_time, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bpdr.crt_time, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.orderRecordId != null">
+                AND bpdr.order_record_id = #{query.orderRecordId}
+            </if>
+            <if test="query.billPayId != null">
+                AND bpdr.bill_pay_record_id = #{query.billPayId}
             </if>
         </where>
         ORDER BY bpdr.bill_pay_record_id

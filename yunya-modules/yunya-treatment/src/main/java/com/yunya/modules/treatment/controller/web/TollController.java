@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.model.TollDebtModel;
 import com.yunya.feign.treatment.domain.model.TollModel;
+import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
@@ -171,8 +172,8 @@ public class TollController {
   @ApiOperation("根据账单id或收费id生成项目收费分摊明细")
   @PostMapping("/generate/sharedDetail")
   @CurrentUser
-  public ResponseResult generateItemPaySharedDetail(@RequestParam("orderRecordId") Integer orderRecordId, @RequestParam("billPayId") Integer billPayId) {
-    billPayShareDetailBiz.shullfeItemPaySharedDetail(orderRecordId, billPayId);
+  public ResponseResult generateItemPaySharedDetail(@RequestBody BillPayShareDetailQuery query) {
+    billPayShareDetailBiz.shullfeItemPaySharedDetail(query);
     return ResponseUtil.success();
   }
 }

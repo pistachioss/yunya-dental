@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.mapper;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
+import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.models.treatment.BillPayDetailRecord;
@@ -92,11 +93,8 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
   /**
    * 根据订单id或收费id查询收费入账明细
    *
-   * @param orderRecordId
-   * @param billPayId
+   * @param query
    * @return
    */
-  List<BillPayDetailRecord> selectBillPayDetailList(
-          @Param("orderRecordId") Integer orderRecordId,
-          @Param("billPayId") Integer billPayId);
+  List<BillPayDetailRecord> selectBillPayDetailList(@Param("query") BillPayShareDetailQuery query);
 }
