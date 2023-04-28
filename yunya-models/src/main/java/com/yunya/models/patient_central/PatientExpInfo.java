@@ -40,6 +40,15 @@ public class PatientExpInfo {
      * 职业字典明细ID 职业对应字典ID
      */
     private Integer profession;
+    /**
+     * 婚姻状况(0-单身 1-已婚)
+     */
+    private Integer marry;
+    /**
+     * 生育情况(0-无孩 1-有孩)
+     */
+    @Column(name = "child_status")
+    private Integer childStatus;
 
     /**
      * 遗传病史
@@ -799,5 +808,21 @@ public class PatientExpInfo {
 
     public void setTreatAdvice(String treatAdvice) {
         this.treatAdvice = treatAdvice;
+    }
+
+    public Integer getMarry() {
+        return marry;
+    }
+
+    public void setMarry(Integer marry) {
+        this.marry = marry;
+    }
+
+    public Integer getChildStatus() {
+        return childStatus;
+    }
+
+    public void setChildStatus(Integer childStatus) {
+        this.childStatus = childStatus;
     }
 }

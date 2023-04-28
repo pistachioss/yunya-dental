@@ -8,11 +8,8 @@ import com.yunya.feign.patient_central.domain.vo.web.WxWechatbindAppListVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
-import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
-import com.yunya.feign.wechat.enums.TemplateEnum;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.patient_central.WxFans;
 import com.yunya.models.patient_central.WxFansBind;
@@ -22,16 +19,12 @@ import com.yunya.modules.patient_central.mapper.WxFansBindMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 
 
 /**
@@ -212,5 +205,13 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
                 item.setDictionaryName(dicMap.get(item.getDictionaryId() + "").getName())
         );
         return list;
+    }
+
+    public List<WxFansBind> listWxByPatientIds(Collection<Integer> patientIds) {
+        Example example = new Example(WxFansBind.class);
+        example.createCriteria()
+                .andEqualTo("bind", true)
+                .andIn("patientId", patientIds);
+        return mapper.selectByExample(example);
     }
 }

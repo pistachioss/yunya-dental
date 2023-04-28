@@ -490,19 +490,40 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         if (CollectionUtils.isEmpty(wxFansBinds)) {
             return Lists.newArrayList();
         }
+        return assembleRelate(wxFansBinds);
+    }
+
+    public List<WorkWxPatientBindVO> patientRelateList(Collection<Integer> patientIds) {
+        if (CollectionUtils.isEmpty(patientIds)) {
+            log.info("患者绑定微信用户参数为空");
+            return Lists.newArrayList();
+        }
+        Example example = new Example(WxFansBind.class);
+        example.createCriteria()
+                .andIn("patientId", patientIds);
+        List<WxFansBind> wxFansBinds = wxFansBindMapper.selectByExample(example);
+        if (CollectionUtils.isEmpty(wxFansBinds)) {
+            return Lists.newArrayList();
+        }
+        return assembleRelate(wxFansBinds);
+    }
+
+    private List<WorkWxPatientBindVO> assembleRelate(List<WxFansBind> wxFansBinds) {
         List<Integer> patientIds = wxFansBinds.stream().map(WxFansBind::getPatientId).collect(Collectors.toList());
-        Map<Integer, PatientBaseInfoVo> patientMap = Optional.of(patientBaseInfoBiz.findPatientInfoByIds(patientIds, null))
+
+        Map<Integer, PatientBaseInfoVo> patientMap = Optional.of(patientBaseInfoBiz.findPatientInfoByIds(new ArrayList<>(patientIds), null))
                 .orElse(Lists.newArrayList()).stream()
                 .collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
-
         DictionaryItemModel model = new DictionaryItemModel();
         Map<Integer, String> dictionaryMap = Optional.of(systemServiceFeign.findDictionaryItemList(model))
                 .orElse(Lists.newArrayList()).stream()
                 .collect(Collectors.toMap(DictionaryItem::getId, DictionaryItem::getName));
         return wxFansBinds.stream().map(t -> {
-            PatientBaseInfoVo baseInfoVo = patientMap.get(t.getPatientId());
+            Integer patientId = t.getPatientId();
+            PatientBaseInfoVo baseInfoVo = patientMap.get(patientId);
             WorkWxPatientBindVO vo = new WorkWxPatientBindVO();
-            vo.setPatientId(t.getPatientId());
+            vo.setPatientId(patientId);
+            vo.setUnionId(t.getUnionId());
             if (Objects.nonNull(baseInfoVo)) {
                 vo.setPatientName(baseInfoVo.getName());
                 vo.setMobile(baseInfoVo.getMobile());
