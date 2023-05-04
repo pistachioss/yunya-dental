@@ -3,7 +3,6 @@ package com.yunya.modules.treatment.task;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.TreatmentRecord;
@@ -54,7 +53,6 @@ public class AutoChargeTask {
   @Resource private BillRecordBiz billRecordBiz;
   /** 中间表 */
   @Resource private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
-  @Resource private RedisUtils redisUtils;
 
   /**
    * 定时任务自动收费
