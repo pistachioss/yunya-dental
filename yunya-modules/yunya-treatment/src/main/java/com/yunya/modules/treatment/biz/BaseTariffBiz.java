@@ -11,19 +11,10 @@ import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.treatment.domain.form.*;
-import com.yunya.feign.treatment.domain.model.BaseTariffAssociationImportModel;
-import com.yunya.feign.treatment.domain.model.BaseTariffImportModel;
-import com.yunya.feign.treatment.domain.model.BaseTariffModel;
-import com.yunya.feign.treatment.domain.model.ClinicItemPriceModel;
-import com.yunya.feign.treatment.domain.model.TariffUniteModel;
+import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.BaseTariffAssociationQueryForm;
 import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
-import com.yunya.feign.treatment.domain.vo.BaseTariffAssociationExportVO;
-import com.yunya.feign.treatment.domain.vo.BaseTariffAssociationVO;
-import com.yunya.feign.treatment.domain.vo.BaseTariffExportVO;
-import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
-import com.yunya.feign.treatment.domain.vo.BaseTariffVO;
-import com.yunya.feign.treatment.domain.vo.ClinicItemPriceVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.CommonConstants;
@@ -36,7 +27,6 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.modules.treatment.mapper.*;
-import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,13 +40,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -65,12 +49,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
-import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
-import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
-import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
-import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
 /**
@@ -318,11 +297,11 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
         throw new ClientServiceException("修改失败，价目表编号'" + number + "'已存在！", NAME_IS_OCCUPIED);
       }
     }
-    String categoryNumber = resultDataTariffCategoryNumber.substring(0, 3);
-    String itemNumber = number.substring(0, 3);
-    if (!categoryNumber.equals(itemNumber)) {
-      throw new ClientServiceException("修改失败，价目表编号前3位与价目表分类编号前3位不同！", PARAMETERS_IS_ILLEGAL);
-    }
+//    String categoryNumber = resultDataTariffCategoryNumber.substring(0, 3);
+//    String itemNumber = number.substring(0, 3);
+//    if (!categoryNumber.equals(itemNumber)) {
+//      throw new ClientServiceException("修改失败，价目表编号前3位与价目表分类编号前3位不同！", PARAMETERS_IS_ILLEGAL);
+//    }
     BeanUtils.copyProperties(form, entity);
     entity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(name));
     entity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));

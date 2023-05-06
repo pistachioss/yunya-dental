@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -39,4 +40,10 @@ public class WechatRest {
     public ResponseResult<List<WorkWxPatientBindVO>> wechatRelateList(@NotBlank @RequestParam String unionId) {
         return ResponseUtil.success( wxFansBiz.wechatRelateList(unionId));
     }
+
+    @PostMapping(value = "/white/wechat/patient/relate")
+    public List<WorkWxPatientBindVO> wechatRelateList( @RequestBody Collection<Integer> unionIds) {
+        return wxFansBiz.patientRelateList(unionIds);
+    }
+
 }

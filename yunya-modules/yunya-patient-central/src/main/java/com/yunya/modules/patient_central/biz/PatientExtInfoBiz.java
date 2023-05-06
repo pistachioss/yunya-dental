@@ -6,6 +6,10 @@ import com.yunya.modules.patient_central.mapper.PatientExtInfoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 简单介绍:</br> 患者其他信息（标签,疾病史,过敏原） 业务成
@@ -19,5 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = Exception.class)
 public class PatientExtInfoBiz extends BaseBiz<PatientExtInfoMapper, PatientExtInfo> {
 
-  @Autowired private PatientExtInfoMapper patientExtInfoMapper;
+    @Autowired
+    private PatientExtInfoMapper patientExtInfoMapper;
+
+    public List<PatientExtInfo> listByTagType(Collection<Integer> type) {
+        Example example = new Example(PatientExtInfo.class);
+        example.createCriteria()
+                .andIn("dictItemId", type);
+        return patientExtInfoMapper.selectByExample(example);
+    }
 }
