@@ -183,4 +183,12 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
           @Param("query") MultiClinicDateRangeQueryForm query,
           @Param("employeeIds") List<Integer> employeeIds,
           @Param("datePattern") String datePattern);
+
+  /**
+   * 医生接诊统计列表
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeDiagnosisInfoVO> selectEmployeeReceptionList(@Param("query") MultiClinicDateRangeQueryForm query);
 }

@@ -2926,4 +2926,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     setDistinctBillIds(query);
     return mapper.selectBillDetailItemList(query);
   }
+
+  public List<EmployeeTariffWorkloadVO> findExecutorTariffItemStatistics(MultiClinicDateRangeQueryForm query) {
+    return mapper.selectExecutorTariffItemStatistics(query);
+  }
 }

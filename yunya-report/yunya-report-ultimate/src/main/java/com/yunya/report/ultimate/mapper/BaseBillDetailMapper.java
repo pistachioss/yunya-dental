@@ -602,4 +602,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return
    */
   List<BillItemReceivableAmountVO> selectBillItemReceivableAmountList(@Param("billIds") Collection<Integer> billIds);
+
+  List<EmployeeTariffWorkloadVO> selectExecutorTariffItemStatistics(@Param("query") MultiClinicDateRangeQueryForm query);
 }

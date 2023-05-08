@@ -754,4 +754,14 @@ public class BaseTreatmentProcessBiz
   public List<StatTreatVO> findTreatVisitPatientList(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds, String datePattern) {
     return mapper.selectTreatVisitPatientList(query, employeeIds, datePattern);
   }
+
+  /**
+   * 医生接诊统计列表
+   *
+   * @param query
+   * @return
+   */
+  public List<EmployeeDiagnosisInfoVO> findEmployeeReceptionList(MultiClinicDateRangeQueryForm query) {
+    return mapper.selectEmployeeReceptionList(query);
+  }
 }

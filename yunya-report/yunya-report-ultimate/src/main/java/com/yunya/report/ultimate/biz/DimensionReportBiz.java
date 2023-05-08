@@ -16,10 +16,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.PageUtl;
-import com.yunya.framework.common.utils.SortUtil;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -105,6 +102,8 @@ public class DimensionReportBiz {
     private StatEmpPrivilegeBiz statEmpPrivilegeBiz;
     @Autowired
     private BaseBillPayBiz baseBillPayBiz;
+    @Autowired
+    private BaseTariffInfoBiz baseTariffInfoBiz;
     @Resource(name = "customizeThreadPool")
     private ThreadPoolExecutor threadPool;
 
@@ -3399,5 +3398,62 @@ public class DimensionReportBiz {
         }
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "365卡艾芽卡就诊人数统计表");
         excelUtil.exportExcel(response, result, "365卡艾芽卡就诊人数统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
+    }
+
+    public DynamicHeaderPageInfo<JSONObject> dentistThroughBusinessStatistics(MultiClinicDateRangeQueryForm query) {
+        // 全部员工
+        ClinicEmployeeWorkloadQuery empQuery = new ClinicEmployeeWorkloadQuery();
+        BeanUtil.copyProperties(query, empQuery);
+        List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(empQuery, false);
+        // 全部价目
+        List<ItemInfoVO> itemInfos = baseTariffInfoBiz.findItemInfoList(0);
+        // 接诊人数统计
+        List<EmployeeDiagnosisInfoVO> receptions = baseTreatmentProcessBiz.findEmployeeReceptionList(query);
+        Map<Integer, EmployeeDiagnosisInfoVO> receptionMap = Optional.ofNullable(receptions).orElseGet(ArrayList::new).stream().collect(toMap(EmployeeDiagnosisInfoVO::getEmployeeId, Function.identity()));
+        // 经手项目统计
+        List<EmployeeTariffWorkloadVO> itemCount = baseBillDetailBiz.findExecutorTariffItemStatistics(query);
+        List<JSONObject> data = new ArrayList<>();
+        Map<String, String> titleMap = new LinkedHashMap<>();
+        employees.forEach(employee->{
+            Integer employeeId = employee.getEmployeeId();
+            EmployeeDiagnosisInfoVO reception = receptionMap.get(employeeId);
+            Integer treatVisitsNum = 0;
+            Integer treatVisitsTimes = 0;
+            if (StringHelper.isNotNull(reception)) {
+                treatVisitsNum = reception.getTreatVisitsNum();
+                treatVisitsTimes = reception.getTreatVisitsTimes();
+            }
+            JSONObject obj = new JSONObject();
+            obj.put("employeeName", employee.getEmployeeName());
+            obj.put("treatVisitsNum", treatVisitsNum);
+            obj.put("treatVisitsTimes", treatVisitsTimes);
+            titleMap.put("employeeName", "医生姓名");
+            titleMap.put("treatVisitsNum", "接诊人数");
+            titleMap.put("treatVisitsTimes", "接诊人次");
+            itemInfos.forEach(it->{
+                Integer itemId = it.getItemId();
+                BigDecimal workload = BigDecimal.ZERO;
+                for (EmployeeTariffWorkloadVO item : itemCount) {
+                    if (item.getEmployeeId().equals(employeeId) && item.getItemId().equals(itemId)) {
+                        workload = item.getWorkload();
+                    }
+                }
+                obj.put(itemId.toString(), workload);
+                titleMap.put(itemId.toString(), it.getItemName() + "（" + it.getItemNum().trim() + "）");
+            });
+            data.add(obj);
+        });
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo(data);
+        pageInfo.setMap(titleMap);
+        return pageInfo;
+    }
+
+    public void dentistThroughBusinessStatisticsExport(MultiClinicDateRangeQueryForm query, HttpServletResponse response) throws IOException {
+        query.setWhetherPage(false);
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dentistThroughBusinessStatistics(query);
+        List<JSONObject> result = pageInfo.getList();
+        ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+        String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "医生经手业务统计表");
+        excelUtil.exportExcel(response, result, "医生经手业务统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
 }
