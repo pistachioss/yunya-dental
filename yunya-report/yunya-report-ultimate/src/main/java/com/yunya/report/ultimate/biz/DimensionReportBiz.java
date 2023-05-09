@@ -3404,6 +3404,7 @@ public class DimensionReportBiz {
         // 全部员工
         ClinicEmployeeWorkloadQuery empQuery = new ClinicEmployeeWorkloadQuery();
         BeanUtil.copyProperties(query, empQuery);
+        filterDentistPost(empQuery);
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(empQuery, false);
         // 全部价目
         List<ItemInfoVO> itemInfos = baseTariffInfoBiz.findItemInfoList(0);
