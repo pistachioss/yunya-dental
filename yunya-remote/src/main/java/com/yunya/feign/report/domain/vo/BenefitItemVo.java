@@ -17,6 +17,7 @@ public class BenefitItemVo {
 	private String couponName;
 	@ApiModelProperty("项目id")
 	private Integer itemId;
+	private Integer itemType;
 	@ApiModelProperty("项目编号")
 	private String itemNo;
 	@ApiModelProperty("项目名称")
@@ -31,5 +32,7 @@ public class BenefitItemVo {
 	private Integer remainingQuantity;
 	@ApiModelProperty("app是否显示")
 	private Integer isShowApp;
+	@ApiModelProperty(value = "0-禁用 1-启用")
+	private Boolean inservice;
 
 }

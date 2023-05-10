@@ -514,4 +514,10 @@ public interface RemoteTreatmentServiceFeign {
    */
   @GetMapping("/rpc/treatment/trajectory/{patientId}")
   List<PatientEventVO> findPatientTreatmentTrajectory(@PathVariable(value = "patientId") Integer patientId);
+
+  @RequestMapping(value = "/rpc/oral/ids", method = RequestMethod.POST)
+  public List<BaseOralTariff> listOralTariffByIds(@RequestBody Collection<Integer> ids);
+
+  @RequestMapping(value = "/rpc/tariff/ids", method = RequestMethod.POST)
+  public List<BaseTariff> listTariffByIds(@RequestBody Collection<Integer> ids);
 }

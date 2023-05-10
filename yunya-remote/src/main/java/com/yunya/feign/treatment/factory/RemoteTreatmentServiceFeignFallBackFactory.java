@@ -309,4 +309,14 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   public List<PatientEventVO> findPatientTreatmentTrajectory(Integer patientId) {
     return null;
   }
+
+  @Override
+  public List<BaseOralTariff> listOralTariffByIds(Collection<Integer> ids) {
+    return null;
+  }
+
+  @Override
+  public List<BaseTariff> listTariffByIds(Collection<Integer> ids) {
+    return null;
+  }
 }

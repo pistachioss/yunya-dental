@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.enums.TemplateDataEnum;
 import com.yunya.framework.common.utils.StringHelper;
@@ -15,6 +16,8 @@ import com.yunya.models.report.BaseCoupon;
 import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BasePatient;
+import com.yunya.models.tariff.BaseOralTariff;
+import com.yunya.models.tariff.BaseTariff;
 import com.yunya.report.ultimate.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -27,14 +30,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.yunya.feign.wechat.enums.TemplateEnum.*;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 /**
  * @author xiangyang
@@ -51,6 +50,8 @@ public class DiscountBiz {
   @Resource private RemoteDiscountFeign discountFeign;
   @Resource private BaseEmployeeMapper employeeMapper;
   @Resource private BasePatientMapper patientMapper;
+  @Resource
+  private RemoteTreatmentServiceFeign treatmentServiceFeign;
 
   /**
    * 产品售出激活统计
@@ -567,6 +568,7 @@ public class DiscountBiz {
     vo.setUseVos(new PageInfo<>(page));
     List<BenefitItemVo> itemVos = benefitMapper.listItemUseById(cardId);
     vo.setItemVos(itemVos);
+    checkItemStatus(itemVos);
     return vo;
   }
 
@@ -813,5 +815,24 @@ public class DiscountBiz {
             "%s%s%s%s",
             "销售渠道消费报表统计", query.getActivationStartDate(), "-", query.getActivationEndDate());
     excelUtil.exportExcel(response, list.getList(), "卡券消费统计列表", fileName);
+  }
+
+  private void checkItemStatus(List<BenefitItemVo> itemVos) {
+    Map<Integer, Set<Integer>> itemMap = itemVos.stream()
+            .collect(groupingBy(BenefitItemVo::getItemType, mapping(BenefitItemVo::getItemId, toSet())));
+    Set<Integer> itemId0 = itemMap.get(0);
+    Set<Integer> itemId1 = itemMap.get(1);
+    if (CollectionUtils.isNotEmpty(itemId0)) {
+      List<BaseTariff> baseTariffs = treatmentServiceFeign.listTariffByIds(itemId0);
+      Map<Integer, Boolean> collect = baseTariffs.stream().collect(toMap(BaseTariff::getId, BaseTariff::getInservice));
+      itemVos.stream().filter(t -> Objects.equals(0, t.getItemType()) && collect.containsKey(t.getItemId()))
+              .forEach(t -> t.setInservice(collect.get(t.getItemId())));
+    }
+    if (CollectionUtils.isNotEmpty(itemId1)) {
+      List<BaseOralTariff> tariffs = treatmentServiceFeign.listOralTariffByIds(itemId1);
+      Map<Integer, Boolean> collect = tariffs.stream().collect(toMap(BaseOralTariff::getId, BaseOralTariff::getInservice));
+      itemVos.stream().filter(t -> Objects.equals(1, t.getItemType()) && collect.containsKey(t.getItemId()))
+              .forEach(t -> t.setInservice(collect.get(t.getItemId())));
+    }
   }
 }
