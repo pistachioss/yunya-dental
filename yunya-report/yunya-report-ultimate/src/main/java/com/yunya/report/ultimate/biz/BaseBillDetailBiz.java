@@ -12,6 +12,7 @@ import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicEmloyeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -2927,7 +2928,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return mapper.selectBillDetailItemList(query);
   }
 
-  public List<EmployeeTariffWorkloadVO> findExecutorTariffItemStatistics(MultiClinicDateRangeQueryForm query) {
+  public List<EmployeeTariffWorkloadVO> findExecutorTariffItemStatistics(MultiClinicEmloyeeDateRangeQueryForm query) {
     return mapper.selectExecutorTariffItemStatistics(query);
   }
 }
