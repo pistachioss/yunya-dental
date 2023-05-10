@@ -11,6 +11,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicEmloyeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
@@ -761,7 +762,7 @@ public class BaseTreatmentProcessBiz
    * @param query
    * @return
    */
-  public List<EmployeeDiagnosisInfoVO> findEmployeeReceptionList(MultiClinicDateRangeQueryForm query) {
-    return mapper.selectEmployeeReceptionList(query);
+  public List<EmployeeDiagnosisInfoVO> findEmployeeReceptionStatistics(MultiClinicEmloyeeDateRangeQueryForm query) {
+    return mapper.selectEmployeeReceptionStatistics(query);
   }
 }

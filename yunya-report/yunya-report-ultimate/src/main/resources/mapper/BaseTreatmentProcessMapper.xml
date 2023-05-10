@@ -1222,7 +1222,7 @@
         </where>
     </select>
 
-    <select id="selectEmployeeReceptionList"
+    <select id="selectEmployeeReceptionStatistics"
             resultType="com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO">
         SELECT
             btp.registered_dentist_id AS employeeId,
@@ -1234,6 +1234,12 @@
             <if test="query.orgIds!=null and query.orgIds.size()>0">
                 and btp.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.employeeIds!=null and query.employeeIds.size()>0">
+                and btp.registered_dentist_id in
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>

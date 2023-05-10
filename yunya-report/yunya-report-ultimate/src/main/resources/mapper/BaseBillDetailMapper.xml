@@ -6117,6 +6117,12 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="query.employeeIds!=null and query.employeeIds.size()>0">
+                AND bbd.executor_id in
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT(bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
