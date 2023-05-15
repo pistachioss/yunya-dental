@@ -2,6 +2,9 @@ package com.yunya.modules.patient_central.biz;
 
 import com.google.common.collect.Maps;
 import com.yunya.feign.patient_central.domain.vo.WxFansBindTagVO;
+import com.yunya.feign.report.RemoteReportServiceFeign;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
+import com.yunya.feign.report.domain.vo.BasePatientActivityDayVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -39,6 +42,8 @@ public class ScrmTagBiz {
     private PatientExtInfoBiz extInfoBiz;
     @Resource
     private PatientExpInfoMapper expInfoMapper;
+    @Resource
+    private RemoteReportServiceFeign remoteReportServiceFeign;
 
     public Map<String, Set<WxFansBindTagVO>> ageTag(TreeMap<Integer, String> ageMap) {
         List<PatientBaseInfo> baseInfos = getAll();
@@ -186,5 +191,48 @@ public class ScrmTagBiz {
             map = wxFansBinds.stream().collect(toMap(WxFansBind::getPatientId, WxFansBind::getUnionId, (o, v) -> o));
         }
         return map;
+    }
+
+    /**
+     * 活跃度标签待打患者
+     *
+     * @return
+     */
+    public Map<String, Set<WxFansBindTagVO>> activityDegreeTag() {
+        List<BasePatientActivityDayVO> patients = remoteReportServiceFeign.findPatientDayOfLastVisit();
+        Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientActivityDayVO::getPatientId).collect(toSet()));
+        return patients.stream()
+                .collect(
+                    groupingBy(
+                        patient->patient.getTagName(),
+                        collectingAndThen(toList(), list -> list.stream().map(t -> {
+                            WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
+                            bindTagVO.setPatientId(t.getPatientId());
+                            bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
+                            return bindTagVO;
+                        }).collect(toSet()))
+                    ));
+    }
+
+    /**
+     * 诊疗频率标签待打的患者列表
+     *
+     * @param query
+     * @return
+     */
+    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(DateRangeQueryForm query) {
+        List<BasePatientActivityDayVO> patients = remoteReportServiceFeign.findPatientFrequencyOfTreatment(query);
+        Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientActivityDayVO::getPatientId).collect(toSet()));
+        return patients.stream()
+                .collect(
+                        groupingBy(
+                                patient->patient.getTagName(),
+                                collectingAndThen(toList(), list -> list.stream().map(t -> {
+                                    WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
+                                    bindTagVO.setPatientId(t.getPatientId());
+                                    bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
+                                    return bindTagVO;
+                                }).collect(toSet()))
+                        ));
     }
 }

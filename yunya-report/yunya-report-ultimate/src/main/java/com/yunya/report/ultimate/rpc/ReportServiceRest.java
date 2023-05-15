@@ -2,12 +2,15 @@ package com.yunya.report.ultimate.rpc;
 
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
+import com.yunya.feign.report.domain.vo.BasePatientActivityDayVO;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.models.report.CreditsShop;
 import com.yunya.report.ultimate.biz.BaseTreatmentProcessBiz;
 import com.yunya.report.ultimate.biz.DiscountBiz;
 import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
+import com.yunya.report.ultimate.biz.tag.PatientTreatmentTagBiz;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +27,8 @@ public class ReportServiceRest {
     private BaseTreatmentProcessBiz baseTreatmentProcessBiz;
     @Resource
     private PatientBaseInfoBiz patientBaseInfoBiz;
+    @Resource
+    private PatientTreatmentTagBiz patientTreatmentTagBiz;
 
     @PostMapping("/card/{cardId}/item/usage")
     public List<BenefitItemVo> listWxCouponsUseItem(@PathVariable(value = "cardId") Integer cardId) {
@@ -48,5 +53,27 @@ public class ReportServiceRest {
     @GetMapping("/patient/{patientId}/lastPatientCredits")
     CreditsShop lastPatientCredits(@PathVariable("patientId") Integer patiendId) {
         return patientBaseInfoBiz.lastPatientCredits(patiendId);
+    }
+
+    /**
+     * 患者的活跃度
+     *
+     * @return
+     */
+    @GetMapping("/patient/activity/day")
+    public List<BasePatientActivityDayVO> findPatientDayOfLastVisit() {
+        return patientTreatmentTagBiz.findPatientDayOfLastVisit();
+    }
+
+
+    /**
+     * 患者的诊疗频率
+     *
+     * @param query
+     * @return
+     */
+    @PostMapping("/patient/frequency-treatment")
+    List<BasePatientActivityDayVO> findPatientFrequencyOfTreatment(DateRangeQueryForm query) {
+        return patientTreatmentTagBiz.findPatientFrequencyOfTreatment(query);
     }
 }
