@@ -83,6 +83,24 @@
         order by pbio.crt_time desc
     </select>
 
+    <!-- 查询推荐与亲属数量 -->
+    <select id="selectKinRecomByPatientId"
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientKinRecomVo">
+        select pbio.id patientId, ifnull(pbio2.RecomQty, 0) as 'RecomQty', ifnull(pkr2.KinQty, 0) as 'KinQty'
+        from patient_base_info pbio
+        left join (
+        select pbio.origin_id, count(*) as 'RecomQty'
+        from patient_base_info pbio
+        where pbio.origin_type = 2
+        group by pbio.origin_id
+        ) pbio2 on pbio.id = pbio2.origin_id
+        left join (
+        select pkr.patient_id, count(*) as 'KinQty'
+        from patient_kin_relation pkr
+        group by pkr.patient_id
+        ) pkr2 on pbio.id = pkr2.patient_id
+    </select>
+
     <!-- 根据id查询患者推荐关系拓展图 -->
     <select id="findRecommendRelationById"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientRecommendRelationVo">

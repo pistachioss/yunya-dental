@@ -45,4 +45,9 @@ public class ScrmTagRest {
     public Map<String, Set<WxFansBindTagVO>> childTag() {
         return scrmTagBiz.childTag();
     }
+
+    @PostMapping(value = "/white/patient/tag/fission")
+    public Map<String, Set<WxFansBindTagVO>> fissionTag() {
+        return scrmTagBiz.fissionTag();
+    }
 }

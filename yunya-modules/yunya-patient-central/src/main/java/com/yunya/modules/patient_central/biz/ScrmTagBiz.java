@@ -2,6 +2,7 @@ package com.yunya.modules.patient_central.biz;
 
 import com.google.common.collect.Maps;
 import com.yunya.feign.patient_central.domain.vo.WxFansBindTagVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientKinRecomVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -120,6 +121,25 @@ public class ScrmTagBiz {
                 }).collect(toSet()))));
     }
 
+  /**
+   * 裂变能力
+   * @return
+   */
+  public Map<String, Set<WxFansBindTagVO>> fissionTag() {
+        List<PatientKinRecomVo> kinRecomVoList = getKinRecomQtyAll();
+        if (CollectionUtils.isEmpty(kinRecomVoList)) {
+            return Maps.newHashMap();
+        }
+        Map<Integer, String> patientWx = getPatientKinCommWx(kinRecomVoList);
+        return kinRecomVoList.stream()
+                .collect(groupingBy(t -> t.getSumQty() <= 2 ? "裂变能力弱" : t.getSumQty() >= 5 ? "koc" : "裂变能力一般", collectingAndThen(toList(), list -> list.stream().map(t -> {
+                    WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
+                    bindTagVO.setPatientId(t.getPatientId());
+                    bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
+                    return bindTagVO;
+                }).collect(toSet()))));
+    }
+
     private String calAgeKey(TreeMap<Integer, String> ageMap, PatientBaseInfo baseInfo) {
         Date date = new Date();
         Integer between = DateUtil.differFromDate(baseInfo.getBirthday(), date);
@@ -142,6 +162,10 @@ public class ScrmTagBiz {
 
     private List<PatientExpInfo> getExpAll() {
         return expInfoMapper.selectAll();
+    }
+
+    private List<PatientKinRecomVo> getKinRecomQtyAll() {
+        return patientBaseInfoMapper.selectKinRecomByPatientId();
     }
 
     private Map<Integer, String> mapDict(String type, Map<String, Long> tagMap) {
@@ -176,6 +200,11 @@ public class ScrmTagBiz {
 
     private Map<Integer, String> getPatientExpWx(List<PatientExpInfo> expInfos) {
         Set<Integer> patientIds = expInfos.stream().map(PatientExpInfo::getPatientId).collect(toSet());
+        return mapWxPatient(patientIds);
+    }
+
+    private Map<Integer, String> getPatientKinCommWx(List<PatientKinRecomVo> kinRecomVoList) {
+        Set<Integer> patientIds = kinRecomVoList.stream().map(PatientKinRecomVo::getPatientId).collect(toSet());
         return mapWxPatient(patientIds);
     }
 
