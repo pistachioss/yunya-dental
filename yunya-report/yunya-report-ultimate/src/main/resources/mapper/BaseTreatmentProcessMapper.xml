@@ -1274,9 +1274,14 @@
 
     <select id="selectPatientRegisteredList" resultType="com.yunya.models.report.BaseTreatmentProcess">
         SELECT
-            patient_id AS patientId,
-            registered_date AS registeredDate,
-        FROM base_treatment_process btp
+            bp.patient_id AS patientId,
+            btp.registered_date AS registeredDate
+        FROM base_patient bp
+        LEFT JOIN (
+            SELECT
+                patient_id,
+                registered_date
+            FROM base_treatment_process btp
         <where>
             btp.registered_dentist_id > 0
             <if test="query.dateType==0">
@@ -1304,5 +1309,6 @@
                 </if>
             </if>
         </where>
+        ) btp ON bp.patient_id=btp.patient_id
     </select>
 </mapper>

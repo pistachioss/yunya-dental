@@ -28,10 +28,16 @@ public enum ActivityDegreeEnum {
         this.range = range;
     }
 
-    public static ActivityDegreeEnum getEnum(Integer dayOfSinceLastVisit) {
+    /**
+     * 根据指定值获取对应活跃度枚举
+     *
+     * @param dayOfLastVisit
+     * @return
+     */
+    public static ActivityDegreeEnum getEnum(Integer dayOfLastVisit) {
         for (ActivityDegreeEnum valEnum : ActivityDegreeEnum.values()) {
             Integer[] range = valEnum.getRange();
-            if (NumberUtil.betweenAnd(dayOfSinceLastVisit, range)) {
+            if (NumberUtil.betweenAnd(dayOfLastVisit, range)) {
                 return valEnum;
             }
         }

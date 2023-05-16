@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import com.yunya.feign.patient_central.domain.vo.WxFansBindTagVO;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
-import com.yunya.feign.report.domain.vo.BasePatientActivityDayVO;
+import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -199,8 +199,8 @@ public class ScrmTagBiz {
      * @return
      */
     public Map<String, Set<WxFansBindTagVO>> activityDegreeTag() {
-        List<BasePatientActivityDayVO> patients = remoteReportServiceFeign.findPatientDayOfLastVisit();
-        Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientActivityDayVO::getPatientId).collect(toSet()));
+        List<BasePatientBehaviorTagVO> patients = remoteReportServiceFeign.findPatientDayOfLastVisit();
+        Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientBehaviorTagVO::getPatientId).collect(toSet()));
         return patients.stream()
                 .collect(
                     groupingBy(
@@ -221,8 +221,8 @@ public class ScrmTagBiz {
      * @return
      */
     public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(DateRangeQueryForm query) {
-        List<BasePatientActivityDayVO> patients = remoteReportServiceFeign.findPatientFrequencyOfTreatment(query);
-        Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientActivityDayVO::getPatientId).collect(toSet()));
+        List<BasePatientBehaviorTagVO> patients = remoteReportServiceFeign.findPatientFrequencyOfTreatment(query);
+        Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientBehaviorTagVO::getPatientId).collect(toSet()));
         return patients.stream()
                 .collect(
                         groupingBy(

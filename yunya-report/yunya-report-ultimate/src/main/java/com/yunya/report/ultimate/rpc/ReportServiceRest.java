@@ -3,7 +3,7 @@ package com.yunya.report.ultimate.rpc;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
-import com.yunya.feign.report.domain.vo.BasePatientActivityDayVO;
+import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.models.report.CreditsShop;
@@ -61,7 +61,7 @@ public class ReportServiceRest {
      * @return
      */
     @GetMapping("/patient/activity/day")
-    public List<BasePatientActivityDayVO> findPatientDayOfLastVisit() {
+    public List<BasePatientBehaviorTagVO> findPatientDayOfLastVisit() {
         return patientTreatmentTagBiz.findPatientDayOfLastVisit();
     }
 
@@ -73,7 +73,7 @@ public class ReportServiceRest {
      * @return
      */
     @PostMapping("/patient/frequency-treatment")
-    List<BasePatientActivityDayVO> findPatientFrequencyOfTreatment(DateRangeQueryForm query) {
+    public List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(@RequestBody DateRangeQueryForm query) {
         return patientTreatmentTagBiz.findPatientFrequencyOfTreatment(query);
     }
 }

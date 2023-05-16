@@ -215,5 +215,5 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    * 距离末诊就诊的患者
    * @return
    */
-  List<BasePatientActivityDayVO> selectPatientDayOfLastVisit();
+  List<PatientCountVO> selectPatientDayOfLastVisit();
 }

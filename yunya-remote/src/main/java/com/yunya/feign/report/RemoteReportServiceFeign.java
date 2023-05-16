@@ -5,7 +5,7 @@ import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
-import com.yunya.feign.report.domain.vo.BasePatientActivityDayVO;
+import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.report.factory.RemoteReportServiceFactory;
@@ -50,7 +50,7 @@ public interface RemoteReportServiceFeign {
      * @return
      */
     @GetMapping("api/patient/activity/day")
-    List<BasePatientActivityDayVO> findPatientDayOfLastVisit();
+    List<BasePatientBehaviorTagVO> findPatientDayOfLastVisit();
 
     /**
      * 患者的诊疗频率
@@ -59,5 +59,5 @@ public interface RemoteReportServiceFeign {
      * @return
      */
     @PostMapping("/api/patient/frequency-treatment")
-    List<BasePatientActivityDayVO> findPatientFrequencyOfTreatment(DateRangeQueryForm query);
+    List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(@RequestBody DateRangeQueryForm query);
 }

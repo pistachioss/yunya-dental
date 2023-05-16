@@ -1180,10 +1180,10 @@
     </select>
 
     <select id="selectPatientDayOfLastVisit"
-            resultType="com.yunya.feign.report.domain.vo.BasePatientActivityDayVO">
+            resultType="com.yunya.feign.report.domain.vo.PatientCountVO">
         SELECT
             patient_id AS patientId,
-            TIMESTAMPDIFF(DAY, bp.last_visit_date, now()) AS dayOfLastVisit
+            TIMESTAMPDIFF(DAY, bp.last_visit_date, now()) AS count
         FROM base_patient bp
         WHERE bp.last_visit_date is not null
     </select>

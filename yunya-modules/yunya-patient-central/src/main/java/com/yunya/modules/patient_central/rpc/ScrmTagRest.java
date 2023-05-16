@@ -3,6 +3,7 @@ package com.yunya.modules.patient_central.rpc;
 import com.yunya.feign.patient_central.domain.vo.WxFansBindTagVO;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.modules.patient_central.biz.ScrmTagBiz;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,13 +48,13 @@ public class ScrmTagRest {
         return scrmTagBiz.childTag();
     }
 
-    @PostMapping("/white/patient/tag/activity-degree")
+    @GetMapping("/white/patient/tag/activity-degree")
     public Map<String, Set<WxFansBindTagVO>> activityDegreeTag() {
         return scrmTagBiz.activityDegreeTag();
     }
 
     @PostMapping("/white/patient/tag/frequency-treatment")
-    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(DateRangeQueryForm query) {
+    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(@RequestBody DateRangeQueryForm query) {
         return scrmTagBiz.frequencyOfTreatmentTag(query);
     }
 }

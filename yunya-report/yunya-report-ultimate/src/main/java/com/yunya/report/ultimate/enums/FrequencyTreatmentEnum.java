@@ -10,9 +10,9 @@ import com.yunya.framework.common.utils.NumberUtil;
  */
 public enum FrequencyTreatmentEnum {
 
-    HIGH_FREQUENCY("高频", new Integer[]{0, 2}),
+    LOW_FREQUENCY("低频", new Integer[]{0, 2}),
     MEDIUM_FREQUENCY("中频", new Integer[]{3, 5}),
-    LOW_FREQUENCY("低频", new Integer[]{6, null}),
+    HIGH_FREQUENCY("高频", new Integer[]{6, null}),
     ;
 
     /** 频率名称 */
@@ -26,10 +26,10 @@ public enum FrequencyTreatmentEnum {
         this.range = range;
     }
 
-    public static FrequencyTreatmentEnum getEnum(Integer dayOfSinceLastVisit) {
+    public static FrequencyTreatmentEnum getEnum(Integer times) {
         for (FrequencyTreatmentEnum valEnum : values()) {
             Integer[] range = valEnum.getRange();
-            if (NumberUtil.betweenAnd(dayOfSinceLastVisit, range)) {
+            if (NumberUtil.betweenAnd(times, range)) {
                 return valEnum;
             }
         }
