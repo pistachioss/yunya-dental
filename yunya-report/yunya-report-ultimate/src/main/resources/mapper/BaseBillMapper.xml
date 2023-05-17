@@ -923,7 +923,7 @@
         left join base_tariff_info bti on bbd.item_id = bti.item_id and bbd.item_type = bti.item_type
         left join base_bill bb on bbd.bill_id = bb.bill_id
         where bti.item_num in ('T05003', 'T05004', 'T05006', 'Z000284', 'Z000151', 'Z000249')
-        and datediff(bb.bill_date, now()) &lt; 300
+        and datediff(now(), bb.bill_date) &lt; 300
         group by bb.patient_id
         ) bbd2 on bp.patient_id = bbd2.patient_id
         where bbd1.patient_id is not null or bbd2.patient_id is not null
