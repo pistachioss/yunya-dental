@@ -2,6 +2,10 @@ package com.yunya.modules.patient_central.biz;
 
 import com.google.common.collect.Maps;
 import com.yunya.feign.patient_central.domain.vo.WxFansBindTagVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientKinRecomVo;
+import com.yunya.feign.report.RemoteReportServiceFeign;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
+import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
