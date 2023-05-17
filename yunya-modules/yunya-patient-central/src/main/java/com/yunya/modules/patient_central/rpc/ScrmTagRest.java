@@ -72,4 +72,24 @@ public class ScrmTagRest {
     public Map<String, Set<WxFansBindTagVO>> hasItemTag() {
         return scrmTagBiz.hasItemTag();
     }
+
+    @PostMapping(value = "/white/patient/tag/location")
+    public Map<String, Set<WxFansBindTagVO>> locationTag() {
+        return scrmTagBiz.locationTag();
+    }
+
+    @PostMapping(value = "/white/patient/tag/profession")
+    public Map<String, Set<WxFansBindTagVO>> professionTag() {
+        return scrmTagBiz.professionTag();
+    }
+
+    @PostMapping(value = "/white/patient/tag/dental")
+    public Map<String, Set<WxFansBindTagVO>> dentalHistoryTag() {
+        return scrmTagBiz.dentalHistoryTag();
+    }
+
+    @PostMapping(value = "/white/patient/tag/couponActive")
+    public Map<String, Set<WxFansBindTagVO>> couponActiveTag() {
+        return scrmTagBiz.couponActiveTag();
+    }
 }

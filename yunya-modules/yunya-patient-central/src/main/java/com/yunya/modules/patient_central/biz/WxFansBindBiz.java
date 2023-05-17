@@ -4,7 +4,6 @@ package com.yunya.modules.patient_central.biz;
 import com.yunya.feign.patient_central.domain.query.WxFansBindForm;
 import com.yunya.feign.patient_central.domain.query.WxUserQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansWithMobile;
 import com.yunya.feign.patient_central.domain.vo.web.WxWechatbindAppListVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
@@ -304,7 +303,8 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         Example example = new Example(WxFansBind.class);
         example.createCriteria()
                 .andEqualTo("bind", true)
-                .andIn("patientId", patientIds);
+                .andIn("patientId", patientIds)
+                .andIsNotNull("unionId");
         return mapper.selectByExample(example);
     }
 }
