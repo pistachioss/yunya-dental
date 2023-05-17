@@ -307,4 +307,12 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
                 .andIsNotNull("unionId");
         return mapper.selectByExample(example);
     }
+
+    public List<WxFansBind> listWxByNotPatientIds(Collection<Integer> patientIds) {
+        Example example = new Example(WxFansBind.class);
+        example.createCriteria()
+                .andEqualTo("bind", true)
+                .andNotIn("patientId", patientIds);
+        return mapper.selectByExample(example);
+    }
 }
