@@ -103,20 +103,22 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         Date date = new Date();
         List<WxFansBind>saveList = new ArrayList();
         List<WxFans>upList = new ArrayList();
+        //获取全部患者
+        List<PatientBaseInfo>plist = patientBaseInfoMapper.select(patientBaseInfo);
         for(WxFans fans:list){
-            if(!fans.getRegisterMobile().isEmpty()){
+            if(fans.getRegisterMobile()!=null){
                 WxFansBind wxFansBind = new WxFansBind();
-                patientBaseInfo.setMobile(fans.getRegisterMobile());
-                List<PatientBaseInfo>plist = patientBaseInfoMapper.select(patientBaseInfo);
+                List<PatientBaseInfo> result =
+                        plist.stream().filter(student -> fans.getRegisterMobile().equals(student.getMobile())).collect(Collectors.toList());
                 //处理微信粉丝表绑定状态以及卡主ID
                 WxFans upfans = new WxFans();
                 upfans.setId(fans.getId());
                 upfans.setBind(true);
                 upfans.setBindTime(date);
                 //同一手机号有多个患者
-                if(plist.size() > 1){
-                    for (int i = 0; i < plist.size(); i++) {
-                        wxFansBind.setPatientId(plist.get(i).getId());
+                if(result.size() > 1){
+                    for (int i = 0; i < result.size(); i++) {
+                        wxFansBind.setPatientId(result.get(i).getId());
                         wxFansBind.setOpenId(fans.getOpenId());
                         wxFansBind.setUnionId(fans.getUnionId());
                         wxFansBind.setBind(true);
@@ -125,16 +127,18 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
                         if(i==0){
                             wxFansBind.setDictionaryId(142);
                             wxFansBind.setIsOwner(true);
-                            upfans.setPatientId(plist.get(i).getId());
+                            upfans.setPatientId(result.get(i).getId());
                         }else{
                             wxFansBind.setDictionaryId(120);
                             wxFansBind.setIsOwner(false);
                         }
                         wxFansBind.setCrtTime(date);
                     }
+                    saveList.add(wxFansBind);
+                    upList.add(upfans);
                     //同一手机号有一个患者
-                }else if(plist.size() == 1){
-                    wxFansBind.setPatientId(plist.get(0).getId());
+                }else if(result.size() == 1){
+                    wxFansBind.setPatientId(result.get(0).getId());
                     wxFansBind.setOpenId(fans.getOpenId());
                     wxFansBind.setUnionId(fans.getUnionId());
                     wxFansBind.setBind(true);
@@ -144,12 +148,12 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
                     wxFansBind.setIsOwner(true);
                     wxFansBind.setIsVip(true);
                     upfans.setPatientId(plist.get(0).getId());
+                    saveList.add(wxFansBind);
+                    upList.add(upfans);
                 }
-                saveList.add(wxFansBind);
-                upList.add(upfans);
+
             }
         }
-
        if(saveList.size()>0){
            if(upList.size()>0){
                wxFansMapper.updateList(upList);
