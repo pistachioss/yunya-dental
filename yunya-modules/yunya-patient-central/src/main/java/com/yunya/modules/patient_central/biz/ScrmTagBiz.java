@@ -205,23 +205,21 @@ public class ScrmTagBiz {
         List<PatientHasBillItemVO> hasItemAll1 = hasItemAll.stream().filter(t->t.getHad1() > 0).collect(toList());
         List<PatientHasBillItemVO> hasItemAll2 = hasItemAll.stream().filter(t->t.getHad2() > 0).collect(toList());
 
-        if (CollectionUtils.isEmpty(hasItemAll1)) {
-            return Maps.newHashMap();
+        if (!CollectionUtils.isEmpty(hasItemAll1)) {
+            Map<Integer, String> patientWx1 = getPatientHasItemWx(hasItemAll1);
+            rst.put("电动牙刷", hasItemAll1.stream()
+                    .map(t -> {
+                        WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
+                        bindTagVO.setPatientId(t.getPatientId());
+                        bindTagVO.setUnionId(patientWx1.get(t.getPatientId()));
+                        return bindTagVO;
+                    }).collect(toSet()));
         }
-        Map<Integer, String> patientWx1 = getPatientHasItemWx(hasItemAll1);
-        rst.put("电动牙刷", hasItemAll1.stream()
-                .map(t -> {
-                    WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
-                    bindTagVO.setPatientId(t.getPatientId());
-                    bindTagVO.setUnionId(patientWx1.get(t.getPatientId()));
-                    return bindTagVO;
-                }).collect(toSet()));
 
-        if (CollectionUtils.isEmpty(hasItemAll2)) {
-            return Maps.newHashMap();
+        if (!CollectionUtils.isEmpty(hasItemAll2)) {
+            List<WxFansBindTagVO> patientWx2 = getPatientHasItemWx2(hasItemAll2);
+            rst.put("待洁牙", new HashSet<>(patientWx2));
         }
-        List<WxFansBindTagVO> patientWx2 = getPatientHasItemWx2(hasItemAll2);
-        rst.put("待洁牙", new HashSet<>(patientWx2));
         return rst;
     }
 
