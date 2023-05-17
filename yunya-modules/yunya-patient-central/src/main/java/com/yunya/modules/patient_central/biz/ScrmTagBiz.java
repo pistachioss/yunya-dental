@@ -230,7 +230,7 @@ public class ScrmTagBiz {
         Map<Integer, String> patientWx = getPatientExpWx(expInfos);
         return expInfos.stream()
                 .filter(t -> Objects.nonNull(t.getCountry()))
-                .collect(groupingBy(t -> location.getOrDefault(t.getCountry(), "xx"), collectingAndThen(toList(), list -> list.stream().map(t -> {
+                .collect(groupingBy(t -> location.getOrDefault(t.getCountry(), "杭州市外"), collectingAndThen(toList(), list -> list.stream().map(t -> {
                     WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
                     bindTagVO.setPatientId(t.getPatientId());
                     bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
