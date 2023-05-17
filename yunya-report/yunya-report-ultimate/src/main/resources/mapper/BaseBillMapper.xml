@@ -894,6 +894,17 @@
         group by bb.patient_id
     </select>
 
+    <!-- 查询患者消费信息 -->
+    <select id="selectPatientCostInfoList" resultType="com.yunya.feign.report.domain.vo.PatientCostInfoVO">
+        select
+        patient_id AS patientId,
+        sum(bb.actual_amount) as cumulativeConsumption,
+        sum(bb.received_amount) as receivedAmount,
+        sum(bb.debt_amount) as totalArrears
+        from base_bill bb
+        group by bb.patient_id
+    </select>
+
     <select id="selectBaseBenefitInfoByBillId" resultType="com.yunya.feign.report.domain.vo.BaseBenefitInfoVO">
         SELECT
             bb.order_detail_id as orderDetailId,

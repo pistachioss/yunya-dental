@@ -6,6 +6,8 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientKinRecomVo;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
+import com.yunya.feign.report.RemoteReportServiceFeign;
+import com.yunya.feign.report.domain.vo.PatientCostInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -126,11 +128,11 @@ public class ScrmTagBiz {
                 }).collect(toSet()))));
     }
 
-  /**
-   * 裂变能力
-   * @return
-   */
-  public Map<String, Set<WxFansBindTagVO>> fissionTag() {
+    /**
+     * 裂变能力
+     * @return
+     */
+    public Map<String, Set<WxFansBindTagVO>> fissionTag() {
         List<PatientKinRecomVo> kinRecomVoList = getKinRecomQtyAll();
         if (CollectionUtils.isEmpty(kinRecomVoList)) {
             return Maps.newHashMap();
@@ -138,6 +140,25 @@ public class ScrmTagBiz {
         Map<Integer, String> patientWx = getPatientKinCommWx(kinRecomVoList);
         return kinRecomVoList.stream()
                 .collect(groupingBy(t -> t.getSumQty() <= 2 ? "裂变能力弱" : t.getSumQty() >= 5 ? "koc" : "裂变能力一般", collectingAndThen(toList(), list -> list.stream().map(t -> {
+                    WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
+                    bindTagVO.setPatientId(t.getPatientId());
+                    bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
+                    return bindTagVO;
+                }).collect(toSet()))));
+    }
+
+    /**
+     * 裂变能力
+     * @return
+     */
+    public Map<String, Set<WxFansBindTagVO>> costTag() {
+        List<PatientCostInfoVO> costAll = getCostAll();
+        if (CollectionUtils.isEmpty(costAll)) {
+            return Maps.newHashMap();
+        }
+        Map<Integer, String> patientWx = getPatientCostWx(costAll);
+        return costAll.stream()
+                .collect(groupingBy(t -> t.getTotalArrears().doubleValue() <= 20000 ? "低消费能力" : t.getTotalArrears().doubleValue() > 50000 ? "高消费能力" : "中消费能力", collectingAndThen(toList(), list -> list.stream().map(t -> {
                     WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
                     bindTagVO.setPatientId(t.getPatientId());
                     bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
@@ -171,6 +192,10 @@ public class ScrmTagBiz {
 
     private List<PatientKinRecomVo> getKinRecomQtyAll() {
         return patientBaseInfoMapper.selectKinRecomByPatientId();
+    }
+
+    private List<PatientCostInfoVO> getCostAll() {
+        return remoteReportServiceFeign.getCostList();
     }
 
     private Map<Integer, String> mapDict(String type, Map<String, Long> tagMap) {
@@ -210,6 +235,11 @@ public class ScrmTagBiz {
 
     private Map<Integer, String> getPatientKinCommWx(List<PatientKinRecomVo> kinRecomVoList) {
         Set<Integer> patientIds = kinRecomVoList.stream().map(PatientKinRecomVo::getPatientId).collect(toSet());
+        return mapWxPatient(patientIds);
+    }
+
+    private Map<Integer, String> getPatientCostWx(List<PatientCostInfoVO> costInfoVOList) {
+        Set<Integer> patientIds = costInfoVOList.stream().map(PatientCostInfoVO::getPatientId).collect(toSet());
         return mapWxPatient(patientIds);
     }
 

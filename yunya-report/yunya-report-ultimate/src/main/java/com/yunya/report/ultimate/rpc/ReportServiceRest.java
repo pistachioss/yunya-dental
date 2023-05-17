@@ -5,12 +5,14 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
+import com.yunya.feign.report.domain.vo.PatientCostInfoVO;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.models.report.CreditsShop;
 import com.yunya.report.ultimate.biz.BaseTreatmentProcessBiz;
 import com.yunya.report.ultimate.biz.DiscountBiz;
 import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
 import com.yunya.report.ultimate.biz.tag.PatientTreatmentTagBiz;
+import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +31,8 @@ public class ReportServiceRest {
     private PatientBaseInfoBiz patientBaseInfoBiz;
     @Resource
     private PatientTreatmentTagBiz patientTreatmentTagBiz;
+    @Resource
+    private BaseBillMapper baseBillMapper;
 
     @PostMapping("/card/{cardId}/item/usage")
     public List<BenefitItemVo> listWxCouponsUseItem(@PathVariable(value = "cardId") Integer cardId) {
@@ -75,5 +79,10 @@ public class ReportServiceRest {
     @PostMapping("/patient/frequency-treatment")
     public List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(@RequestBody DateRangeQueryForm query) {
         return patientTreatmentTagBiz.findPatientFrequencyOfTreatment(query);
+    }
+
+    @PostMapping(value = "/patient/bill/costlist")
+    List<PatientCostInfoVO> costlist() {
+        return baseBillMapper.selectPatientCostInfoList();
     }
 }

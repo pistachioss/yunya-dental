@@ -62,4 +62,9 @@ public class ScrmTagRest {
     public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(@RequestBody DateRangeQueryForm query) {
         return scrmTagBiz.frequencyOfTreatmentTag(query);
     }
+
+    @PostMapping(value = "/white/patient/tag/cost")
+    public Map<String, Set<WxFansBindTagVO>> costTag() {
+        return scrmTagBiz.costTag();
+    }
 }
