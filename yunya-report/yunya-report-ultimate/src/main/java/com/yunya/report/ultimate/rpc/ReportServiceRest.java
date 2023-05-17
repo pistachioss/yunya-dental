@@ -87,7 +87,7 @@ public class ReportServiceRest {
         return baseBillMapper.selectPatientCostInfoList();
     }
 
-    @PostMapping(value = "/patient/bill/hasItemlist")
+    @PostMapping(value = "/patient/bill/hasitemlist")
     List<PatientHasBillItemVO> hasItemlist() {
         return baseBillMapper.selectPatientBillItemList();
     }
