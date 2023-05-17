@@ -143,6 +143,17 @@ public class TreatmentServiceRest {
   }
 
   /**
+   * 根据ids查询商品项目列表
+   *
+   * @param ids ids
+   * @return List<BaseOralTariff>
+   */
+  @RequestMapping(value = "/oral/ids", method = RequestMethod.POST)
+  public List<BaseOralTariff> listOralTariffByIds(@RequestBody Collection<Integer> ids) {
+    return baseOralTariffBiz.listOralTariffByIds(ids);
+  }
+
+  /**
    * 根据价目表分类ID查询价目表分类信息
    *
    * @param id 价目表分类ID
@@ -196,6 +207,11 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/tariff/list", method = RequestMethod.POST)
   public List<BaseTariff> findBaseTariffList(@RequestBody BaseTariff entity) {
     return baseTariffBiz.selectList(entity);
+  }
+
+  @RequestMapping(value = "/tariff/ids", method = RequestMethod.POST)
+  public List<BaseTariff> listTariffByIds(@RequestBody Collection<Integer> ids) {
+    return baseTariffBiz.listTariffByIds(ids);
   }
 
   /**

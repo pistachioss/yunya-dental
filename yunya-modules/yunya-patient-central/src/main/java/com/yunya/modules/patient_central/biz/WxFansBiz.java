@@ -123,6 +123,12 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         List<WxFansVo> list = mapper.findListByName(wxFansQueryForm);
         return list;
     }
+
+    public List<WxFans> findAllListWithMobile() {
+        List<WxFans> list = mapper.findAllListWithMobile();
+        return list;
+    }
+
     public WxWechatMapAndBindFansVo findMapList(WxFansMapQueryForm wxFansMapQueryForm) {
         DictionaryItemModel model = new DictionaryItemModel();
         List<DictionaryItem> dicList = systemServiceFeign.findDictionaryItemList(model);

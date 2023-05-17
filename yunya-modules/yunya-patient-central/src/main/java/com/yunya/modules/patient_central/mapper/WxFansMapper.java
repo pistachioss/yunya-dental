@@ -16,6 +16,8 @@ public interface WxFansMapper extends Mapper<WxFans> {
 
     List<WxFansVo> findListByName(WxFanByNameForm wxFanByNameForm);
 
+    List<WxFans> findAllListWithMobile();
+
     List<WxWechatMapFansVo> findMapList(WxFansMapQueryForm wxFansMapQueryForm);
 
     WxWechatMapBindNumFansVo findNumBind(WxFansMapQueryForm wxFansMapQueryForm);

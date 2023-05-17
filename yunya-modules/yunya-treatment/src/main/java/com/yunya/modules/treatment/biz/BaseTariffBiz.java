@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -1571,5 +1572,14 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       return new ArrayList<>();
     }
     return mapper.selectByIds(ids);
+  }
+
+  public List<BaseTariff> listTariffByIds(Collection<Integer> ids) {
+    if (org.apache.commons.collections4.CollectionUtils.isEmpty(ids)) {
+      return Lists.newArrayList();
+    }
+    Example example = new Example(BaseTariff.class);
+    example.createCriteria().andIn("id", ids);
+    return mapper.selectByExample(example);
   }
 }
