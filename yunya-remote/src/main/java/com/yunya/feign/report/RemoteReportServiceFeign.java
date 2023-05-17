@@ -5,10 +5,7 @@ import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
-import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
-import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
-import com.yunya.feign.report.domain.vo.BenefitItemVo;
-import com.yunya.feign.report.domain.vo.PatientCostInfoVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.report.factory.RemoteReportServiceFactory;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
@@ -64,4 +61,7 @@ public interface RemoteReportServiceFeign {
 
     @RequestMapping(value = "/api/patient/bill/costlist",method = RequestMethod.POST)
     List<PatientCostInfoVO> getCostList();
+
+    @RequestMapping(value = "/api/patient/bill/hasitemlist",method = RequestMethod.POST)
+    List<PatientHasBillItemVO> getHasItemList();
 }

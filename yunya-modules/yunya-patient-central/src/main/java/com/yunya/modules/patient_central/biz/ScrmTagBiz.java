@@ -8,6 +8,7 @@ import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.vo.PatientCostInfoVO;
+import com.yunya.feign.report.domain.vo.PatientHasBillItemVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 
@@ -166,6 +168,36 @@ public class ScrmTagBiz {
                 }).collect(toSet()))));
     }
 
+    /**
+     * 定期维护
+     * @return
+     */
+    public Map<String, Set<WxFansBindTagVO>> hasItemTag() {
+        List<PatientHasBillItemVO> hasItemAll = getHasItemAll();
+        if (CollectionUtils.isEmpty(hasItemAll)) {
+            return Maps.newHashMap();
+        }
+        Map<Integer, String> patientWx = getPatientHasItemWx(hasItemAll);
+        Map<String, Set<WxFansBindTagVO>> rst = new HashMap<>();
+        rst.put("电动牙刷", hasItemAll.stream()
+                .filter(t->t.getHad1() > 0)
+                .map(t -> {
+                    WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
+                    bindTagVO.setPatientId(t.getPatientId());
+                    bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
+                    return bindTagVO;
+                }).collect(toSet()));
+        rst.put("待洁牙", hasItemAll.stream()
+                .filter(t->t.getHad2() > 0)
+                .map(t -> {
+                    WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
+                    bindTagVO.setPatientId(t.getPatientId());
+                    bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
+                    return bindTagVO;
+                }).collect(toSet()));
+        return rst;
+    }
+
     private String calAgeKey(TreeMap<Integer, String> ageMap, PatientBaseInfo baseInfo) {
         Date date = new Date();
         Integer between = DateUtil.differFromDate(baseInfo.getBirthday(), date);
@@ -196,6 +228,10 @@ public class ScrmTagBiz {
 
     private List<PatientCostInfoVO> getCostAll() {
         return remoteReportServiceFeign.getCostList();
+    }
+
+    private List<PatientHasBillItemVO> getHasItemAll() {
+        return remoteReportServiceFeign.getHasItemList();
     }
 
     private Map<Integer, String> mapDict(String type, Map<String, Long> tagMap) {
@@ -240,6 +276,11 @@ public class ScrmTagBiz {
 
     private Map<Integer, String> getPatientCostWx(List<PatientCostInfoVO> costInfoVOList) {
         Set<Integer> patientIds = costInfoVOList.stream().map(PatientCostInfoVO::getPatientId).collect(toSet());
+        return mapWxPatient(patientIds);
+    }
+
+    private Map<Integer, String> getPatientHasItemWx(List<PatientHasBillItemVO> hasItemVOList) {
+        Set<Integer> patientIds = hasItemVOList.stream().map(PatientHasBillItemVO::getPatientId).collect(toSet());
         return mapWxPatient(patientIds);
     }
 

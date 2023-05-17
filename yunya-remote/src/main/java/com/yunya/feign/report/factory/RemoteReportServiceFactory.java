@@ -9,6 +9,7 @@ import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.report.domain.vo.PatientCostInfoVO;
+import com.yunya.feign.report.domain.vo.PatientHasBillItemVO;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.models.report.CreditsShop;
 
@@ -64,5 +65,10 @@ public class RemoteReportServiceFactory implements RemoteReportServiceFeign {
     @Override
     public List<PatientCostInfoVO> getCostList() {
       return null;
+    }
+
+    @Override
+    public List<PatientHasBillItemVO> getHasItemList() {
+        return null;
     }
 }

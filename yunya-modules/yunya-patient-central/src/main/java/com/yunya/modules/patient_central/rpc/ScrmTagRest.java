@@ -67,4 +67,9 @@ public class ScrmTagRest {
     public Map<String, Set<WxFansBindTagVO>> costTag() {
         return scrmTagBiz.costTag();
     }
+
+    @PostMapping(value = "/white/patient/tag/hasitem")
+    public Map<String, Set<WxFansBindTagVO>> hasItemTag() {
+        return scrmTagBiz.hasItemTag();
+    }
 }

@@ -905,6 +905,26 @@
         group by bb.patient_id
     </select>
 
+    <!-- 查询患者消费信息 -->
+    <select id="selectPatientBillItemList" resultType="com.yunya.feign.report.domain.vo.PatientHasBillItemVO">
+        select bb.patient_id, count(bbd1.bill_id) as 'had1', count(bbd2.bill_id) as 'had2'
+        from base_bill bb
+        left join (
+        select bbd.bill_id
+        from base_bill_detail bbd
+        left join base_tariff_info bti on bbd.item_id = bti.item_id and bbd.item_type = bti.item_type
+        where bti.item_num in ('T16155', 'T16156')
+        ) bbd1 on bb.bill_id = bbd1.bill_id
+        left join (
+        select bbd.bill_id
+        from base_bill_detail bbd
+        left join base_tariff_info bti on bbd.item_id = bti.item_id and bbd.item_type = bti.item_type
+        where bti.item_num in ('T05003', 'T05004', 'T05006', 'Z000284', 'Z000151', 'Z000249')
+        ) bbd2 on bb.bill_id = bbd2.bill_id
+        where bbd1.bill_id is not null or bbd2.bill_id is not null
+        group by bb.patient_id
+    </select>
+
     <select id="selectBaseBenefitInfoByBillId" resultType="com.yunya.feign.report.domain.vo.BaseBenefitInfoVO">
         SELECT
             bb.order_detail_id as orderDetailId,
