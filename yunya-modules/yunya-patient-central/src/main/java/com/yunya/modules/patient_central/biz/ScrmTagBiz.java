@@ -402,7 +402,7 @@ public class ScrmTagBiz {
     }
 
     private List<WxFansBindTagVO> mapWxPatientNotIn(Set<Integer> patientIds) {
-        List<WxFansBind> wxFansBinds = wxFansBindBiz.listWxByPatientIds(patientIds);
+        List<WxFansBind> wxFansBinds = wxFansBindBiz.listWxByNotPatientIds(patientIds);
         List<WxFansBindTagVO> rst = wxFansBinds.stream().map(t -> {
             WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
             bindTagVO.setPatientId(t.getPatientId());
