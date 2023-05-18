@@ -44,12 +44,10 @@ public enum ProfessionEnum {
                 List<String> codes = Arrays.asList(useWayEnum.getCode().split(","));
                 if (codes.contains(code)) {
                     return useWayEnum.getValue();
-                } else {
-                    return Profession_014.getValue();
                 }
             }
         }
-        return null;
+        return Profession_014.getValue();
     }
 
     public String getCode() {
