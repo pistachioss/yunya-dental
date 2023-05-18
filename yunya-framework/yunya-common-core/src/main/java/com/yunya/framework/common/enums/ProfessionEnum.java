@@ -9,9 +9,6 @@ import java.util.List;
  */
 public enum ProfessionEnum {
     Profession_001("卫生", "医生护理"),
-    /**
-     * 医学影像和放射治疗
-     */
     Profession_002("教师,文教", "科研教师"),
     Profession_003("治安人员", "公务员"),
     Profession_004("IT工程师", "it信息技术"),
@@ -35,36 +32,35 @@ public enum ProfessionEnum {
         this.value = value;
     }
 
-    public String getCode() {
-        return code;
-    }
-    public String getValue() {
-        return value;
-    }
-
     /**
      * 根据code获取value
+     *
      * @param code code
      * @return value
      */
-    public static String getValue(String code)
-    {
-        if(code != null)
-        {
-            for(ProfessionEnum useWayEnum : values())
-            {
+    public static String getValue(String code) {
+        if (code != null) {
+            for (ProfessionEnum useWayEnum : values()) {
                 List<String> codes = Arrays.asList(useWayEnum.getCode().split(","));
-                if(codes.contains(code))
-                {
+                if (codes.contains(code)) {
                     return useWayEnum.getValue();
+                } else {
+                    return Profession_014.getValue();
                 }
             }
         }
         return null;
     }
 
-    public boolean equals(String code)
-    {
+    public String getCode() {
+        return code;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public boolean equals(String code) {
         return this.code.equals(code);
     }
 }
