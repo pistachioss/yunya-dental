@@ -104,9 +104,10 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         List<WxFans>upList = new ArrayList();
         //获取全部患者
         List<PatientBaseInfo>plist = patientBaseInfoMapper.select(patientBaseInfo);
+        list = list.stream().filter(student -> "16657113075".equals(student.getRegisterMobile())).collect(Collectors.toList());
         for(WxFans fans:list){
             if(fans.getRegisterMobile()!=null){
-                WxFansBind wxFansBind = new WxFansBind();
+                WxFansBind wxFansBind;
                 List<PatientBaseInfo> result =
                         plist.stream().filter(student -> fans.getRegisterMobile().equals(student.getMobile())).collect(Collectors.toList());
                 //处理微信粉丝表绑定状态以及卡主ID
@@ -117,6 +118,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
                 //同一手机号有多个患者
                 if(result.size() > 1){
                     for (int i = 0; i < result.size(); i++) {
+                        wxFansBind = new WxFansBind();
                         wxFansBind.setPatientId(result.get(i).getId());
                         wxFansBind.setOpenId(fans.getOpenId());
                         wxFansBind.setUnionId(fans.getUnionId());
@@ -132,11 +134,12 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
                             wxFansBind.setIsOwner(false);
                         }
                         wxFansBind.setCrtTime(date);
+                        saveList.add(wxFansBind);
                     }
-                    saveList.add(wxFansBind);
                     upList.add(upfans);
                     //同一手机号有一个患者
                 }else if(result.size() == 1){
+                    wxFansBind = new WxFansBind();
                     wxFansBind.setPatientId(result.get(0).getId());
                     wxFansBind.setOpenId(fans.getOpenId());
                     wxFansBind.setUnionId(fans.getUnionId());
