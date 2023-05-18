@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.biz.tag;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.domain.vo.PatientCountVO;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.report.ultimate.enums.ActivityDegreeEnum;
@@ -53,13 +54,13 @@ public class PatientTreatmentTagBiz {
      * @return
      */
     public List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(DateRangeQueryForm query) {
-        Map<Integer, Set<Date>> registeredDateMap = new HashMap<>();
+        Map<Integer, Set<String>> registeredDateMap = new HashMap<>();
         List<BaseTreatmentProcess> treatments = baseTreatmentProcessMapper.selectPatientRegisteredList(query);
         treatments.forEach(treatment->{
             Integer patientId = treatment.getPatientId();
             Date registeredDate = treatment.getRegisteredDate();
-            Set<Date> dates = registeredDateMap.computeIfAbsent(patientId, HashSet::new);
-            dates.add(registeredDate);
+            Set<String> dates = registeredDateMap.computeIfAbsent(patientId, HashSet::new);
+            dates.add(DateUtil.format(registeredDate));
         });
         List<BasePatientBehaviorTagVO> result = new ArrayList<>();
         registeredDateMap.forEach((patientId, dates)->{
