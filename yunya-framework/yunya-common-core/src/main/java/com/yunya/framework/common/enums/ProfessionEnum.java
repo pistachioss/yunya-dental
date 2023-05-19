@@ -17,7 +17,7 @@ public enum ProfessionEnum {
     Profession_007("金融业", "金融业"),
     Profession_008("服务业", "咨询培训"),
     Profession_009("餐旅业", "旅游休闲"),
-    Profession_010("交通运输", "交通运输"),
+    Profession_010("交通运输业", "交通运输"),
     Profession_011("军人", "军人"),
     Profession_012("制造业", "制造业"),
     Profession_013("个体经营,微商", "创业/自由职业"),
