@@ -104,7 +104,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         List<WxFans>upList = new ArrayList();
         //获取全部患者
         List<PatientBaseInfo>plist = patientBaseInfoMapper.select(patientBaseInfo);
-        list = list.stream().filter(student -> "16657113075".equals(student.getRegisterMobile())).collect(Collectors.toList());
+//        list = list.stream().filter(student -> "16657113075".equals(student.getRegisterMobile())).collect(Collectors.toList());
         for(WxFans fans:list){
             if(fans.getRegisterMobile()!=null){
                 WxFansBind wxFansBind;
