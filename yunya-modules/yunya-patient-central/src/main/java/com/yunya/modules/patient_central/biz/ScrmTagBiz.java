@@ -184,7 +184,7 @@ public class ScrmTagBiz {
         }
         Map<Integer, String> patientWx = getPatientCostWx(costAll);
         return costAll.stream()
-                .collect(groupingBy(t -> t.getTotalArrears().doubleValue() <= 20000 ? "低消费能力" : t.getTotalArrears().doubleValue() > 50000 ? "高消费能力" : "中消费能力", collectingAndThen(toList(), list -> list.stream().map(t -> {
+                .collect(groupingBy(t -> t.getCumulativeConsumption().doubleValue() <= 20000 ? "低消费能力" : t.getCumulativeConsumption().doubleValue() > 50000 ? "高消费能力" : "中消费能力", collectingAndThen(toList(), list -> list.stream().map(t -> {
                     WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
                     bindTagVO.setPatientId(t.getPatientId());
                     bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
