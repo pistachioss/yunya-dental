@@ -138,6 +138,13 @@
         order by wf.crt_time desc
     </select>
 
+    <select id="findAllListWithMobile" resultType="com.yunya.models.patient_central.WxFans">
+    SELECT
+	pbi.mobile as registerMobile
+    FROM
+	wx_fans_bind wb
+    LEFT JOIN patient_base_info pbi ON pbi.id = wb.patient_id
+    </select>
 
     <select id="findListByName" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
         select wf.id,wf.register_name as name,wf.head_imgurl as headImgurl,wf.open_id as openId,wf.register_mobile as
@@ -410,6 +417,27 @@
                 <foreach collection="list" item="item" index="index">
                     <if test="item.address != null and item.address != ''">
                         when `id` = #{item.id} then #{item.address}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="bind = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.bind != null">
+                        when `id` = #{item.id} then #{item.bind}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="bind_time = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.bindTime != null">
+                        when `id` = #{item.id} then #{item.bindTime}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="patient_id = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.patientId != null">
+                        when `id` = #{item.id} then #{item.patientId}
                     </if>
                 </foreach>
             </trim>

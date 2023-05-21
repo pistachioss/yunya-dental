@@ -1367,4 +1367,13 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
             });
     return collect;
   }
+
+  public List<BaseOralTariff> listOralTariffByIds(Collection<Integer> ids) {
+    if (org.apache.commons.collections4.CollectionUtils.isEmpty(ids)) {
+      return Lists.newArrayList();
+    }
+    Example example = new Example(BaseOralTariff.class);
+    example.createCriteria().andIn("id", ids);
+    return mapper.selectByExample(example);
+  }
 }

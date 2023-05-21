@@ -4,11 +4,10 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
-import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
-import com.yunya.feign.report.domain.vo.BenefitItemVo;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.report.factory.RemoteReportServiceFactory;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
-import com.yunya.feign.wechat.domain.vo.WxAppointConfirmPushVo;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.report.CreditsShop;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -42,4 +41,27 @@ public interface RemoteReportServiceFeign {
 
     @RequestMapping(value = "/api/patient/{patientId}/lastPatientCredits",method = RequestMethod.GET)
     CreditsShop lastPatientCredits(@PathVariable("patientId")Integer patiendId);
+
+    /**
+     * 患者的距末次就诊天数
+     *
+     * @return
+     */
+    @GetMapping("api/patient/activity/day")
+    List<BasePatientBehaviorTagVO> findPatientDayOfLastVisit();
+
+    /**
+     * 患者的诊疗频率
+     *
+     * @param query
+     * @return
+     */
+    @PostMapping("/api/patient/frequency-treatment")
+    List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(@RequestBody DateRangeQueryForm query);
+
+    @RequestMapping(value = "/api/patient/bill/costlist",method = RequestMethod.POST)
+    List<PatientCostInfoVO> getCostList();
+
+    @RequestMapping(value = "/api/patient/bill/hasitemlist",method = RequestMethod.POST)
+    List<PatientHasBillItemVO> getHasItemList();
 }

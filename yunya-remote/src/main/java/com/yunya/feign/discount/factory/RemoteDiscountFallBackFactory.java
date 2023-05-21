@@ -6,7 +6,10 @@ import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.MixMatchBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
-import com.yunya.feign.discount.domain.query.*;
+import com.yunya.feign.discount.domain.query.CardSaleQuery;
+import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
+import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.ivy_mini.domain.bo.ProductBO;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
@@ -21,6 +24,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author xiangyang
@@ -159,6 +163,11 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
 
     @Override
     public ResponseResult saveMixMatchBenefit(MixMatchBenefitModel model) {
+        return null;
+    }
+
+    @Override
+    public Map<Integer, Long> listTwoYearsActive() {
         return null;
     }
 

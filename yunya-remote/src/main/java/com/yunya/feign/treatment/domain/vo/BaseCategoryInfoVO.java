@@ -27,6 +27,9 @@ public class BaseCategoryInfoVO implements Serializable {
     @ApiModelProperty(value = "分类编号")
     private String categoryNumber;
 
+    @ApiModelProperty(value = "0-禁用 1-启用")
+    private Boolean inservice;
+
     /** 基础价目表明细列表 */
     private List<BaseItemInfoVO> items;
 }

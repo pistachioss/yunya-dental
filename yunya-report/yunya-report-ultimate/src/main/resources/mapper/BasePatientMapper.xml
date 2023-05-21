@@ -1178,4 +1178,13 @@
         LEFT JOIN base_employee be ON be.user_id = btp.registered_dentist_id
         LEFT JOIN base_organization bo ON bo.org_id = btp.org_id
     </select>
+
+    <select id="selectPatientDayOfLastVisit"
+            resultType="com.yunya.feign.report.domain.vo.PatientCountVO">
+        SELECT
+            patient_id AS patientId,
+            TIMESTAMPDIFF(DAY, bp.last_visit_date, now()) AS count
+        FROM base_patient bp
+        WHERE bp.last_visit_date is not null
+    </select>
 </mapper>

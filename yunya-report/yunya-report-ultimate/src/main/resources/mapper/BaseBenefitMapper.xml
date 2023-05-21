@@ -283,6 +283,7 @@
 
     <select id="listItemUseById" resultType="com.yunya.feign.report.domain.vo.BenefitItemVo">
         select `bci`.`item_id`,
+               `bti`.`item_type`,
                `bti`.`item_name`,
                 `bci`.`is_show_app` as isShowApp,
                `bci`.`quantity`                                          as `originalQuantity`,

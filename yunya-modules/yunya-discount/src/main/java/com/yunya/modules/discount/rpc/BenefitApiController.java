@@ -36,6 +36,7 @@ import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author xiangyang
@@ -187,5 +188,10 @@ public class BenefitApiController {
     @CurrentUser
     public ResponseResult saveMixMatchBenefit(@Valid @RequestBody MixMatchBenefitModel model) {
         return benefitBiz.saveMixMatchBenefit(model);
+    }
+
+    @GetMapping("/card/listTwoYearsActive")
+    public Map<Integer, Long> listTwoYearsActive() {
+        return cardBiz.listTwoYearsActive();
     }
 }

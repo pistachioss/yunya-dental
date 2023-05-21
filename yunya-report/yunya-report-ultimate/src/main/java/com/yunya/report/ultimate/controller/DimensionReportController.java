@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.DoubleDateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicEmloyeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.CampusAchievementCompareVO;
 import com.yunya.feign.report.domain.vo.CardCouponUsedDetailVO;
 import com.yunya.feign.report.domain.vo.ClinicAchievementVO;
@@ -562,6 +563,35 @@ public class DimensionReportController {
             HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
             throws Exception {
         dimesionReportBiz.card365AndAiyaAndTreatNumStatisticsExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 公司端报表-报表统计-医生经手业务统计表
+     *
+     * @param query
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-医生经手业务统计表")
+    @PostMapping("/dentist/statistics")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> dentistThroughBusinessStatistics(
+            @RequestBody @Validated MultiClinicEmloyeeDateRangeQueryForm query) throws Exception {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.dentistThroughBusinessStatistics(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出医生经手业务统计表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-医生经手业务统计表导出")
+    @PostMapping(value = "/dentist/statistics/export", name = "公司端报表-报表统计-运营报表-医生经手业务统计表导出")
+    public ResponseResult<T> dentistThroughBusinessStatisticsExport(
+            HttpServletResponse response, @RequestBody @Validated MultiClinicEmloyeeDateRangeQueryForm query)
+            throws Exception {
+        dimesionReportBiz.dentistThroughBusinessStatisticsExport(query, response);
         return ResponseUtil.success(null);
     }
 }

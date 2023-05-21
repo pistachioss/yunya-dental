@@ -3,7 +3,9 @@ package com.yunya.report.ultimate.mapper;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicEmloyeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.wechat.domain.vo.WxAppointConfirmPushVo;
 import com.yunya.models.report.BaseTreatmentProcess;
@@ -183,4 +185,14 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
           @Param("query") MultiClinicDateRangeQueryForm query,
           @Param("employeeIds") List<Integer> employeeIds,
           @Param("datePattern") String datePattern);
+
+  /**
+   * 医生接诊统计列表
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeDiagnosisInfoVO> selectEmployeeReceptionStatistics(@Param("query") MultiClinicEmloyeeDateRangeQueryForm query);
+
+  List<BaseTreatmentProcess> selectPatientRegisteredList(@Param("query") DateRangeQueryForm query);
 }

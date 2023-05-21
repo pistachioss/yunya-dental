@@ -3,6 +3,7 @@ package com.yunya.feign.emr;
 import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffModel;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,4 +33,7 @@ public interface RemoteEmrServiceFeign {
      */
     @PostMapping("/api/emr/treatPlan/orderWithPlanDetail")
     Map<Integer, List<Integer>> findOrderWithPlanDetailById(@RequestBody List<Integer> orderDetailIds);
+
+    @GetMapping("/api/emr/Orthodontics/patient")
+    public List<Integer> listOrthodonticsPatient();
 }

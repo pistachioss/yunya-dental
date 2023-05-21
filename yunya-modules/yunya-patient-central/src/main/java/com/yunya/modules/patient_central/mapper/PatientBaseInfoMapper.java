@@ -50,7 +50,13 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @return List<PatientRecommendRelationVo>
    */
   List<PatientRecommendRelationVo> selectListByPatientId(
-      @Param("form") PatientRecommendRelationQueryForm form);
+          @Param("form") PatientRecommendRelationQueryForm form);
+
+  /**
+   * 查询患者的推荐和亲属数量
+   * @return
+   */
+  List<PatientKinRecomVo> selectKinRecomByPatientId();
 
   /**
    * 根据id查询患者推荐关系拓展图

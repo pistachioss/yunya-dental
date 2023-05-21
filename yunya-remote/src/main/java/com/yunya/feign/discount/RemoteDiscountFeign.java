@@ -31,6 +31,7 @@ import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(
         name = YunyaServiceNameConstants.YUNYA_DISCOUNT,
@@ -148,4 +149,7 @@ public interface RemoteDiscountFeign {
     @ApiOperation("混搭优惠明细保存")
     @PostMapping("/order/benefit/mixMatch/save")
     ResponseResult saveMixMatchBenefit(@Valid @RequestBody MixMatchBenefitModel model);
+
+    @GetMapping("/card/listTwoYearsActive")
+    Map<Integer, Long> listTwoYearsActive();
 }

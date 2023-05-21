@@ -11,15 +11,13 @@ import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.DoubleDateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicEmloyeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.PageUtl;
-import com.yunya.framework.common.utils.SortUtil;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -105,6 +103,8 @@ public class DimensionReportBiz {
     private StatEmpPrivilegeBiz statEmpPrivilegeBiz;
     @Autowired
     private BaseBillPayBiz baseBillPayBiz;
+    @Autowired
+    private BaseTariffInfoBiz baseTariffInfoBiz;
     @Resource(name = "customizeThreadPool")
     private ThreadPoolExecutor threadPool;
 
@@ -496,7 +496,7 @@ public class DimensionReportBiz {
                 billItemFuture.get(), reVisitFuture.get(), groupByOrgId);
     }
 
-    private void filterDentistPost(ClinicEmployeeWorkloadQuery query) {
+    private List<Integer> filterDentistPost(ClinicEmployeeWorkloadQuery query) {
         Integer[] employeeIds = query.getEmployeeIds();
         SysUserEmployeeModel empQuery = new SysUserEmployeeModel();
         empQuery.setPostGroupId(Collections.singletonList(DENTIST_GROUP_ID));
@@ -513,12 +513,15 @@ public class DimensionReportBiz {
             empQuery.setUserIds(Arrays.asList(employeeIds));
         }
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(empQuery);
+        List<Integer> empIds = null;
         if (StringHelper.isEmpty(employees)) {
             employeeIds = new Integer[]{-1};// 未查到
         } else {
             employeeIds = employees.stream().map(SysUserInfoDetail::getUserId).toArray(Integer[]::new);
+            empIds = employees.stream().map(SysUserInfoDetail::getUserId).collect(toList());
         }
         query.setEmployeeIds(employeeIds);
+        return empIds;
     }
 
     private void updEmployeeId2Query(List<ClinicEmployeBonusCoefficientVO> employees, ClinicEmployeeWorkloadQuery query) {
@@ -3399,5 +3402,70 @@ public class DimensionReportBiz {
         }
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "365卡艾芽卡就诊人数统计表");
         excelUtil.exportExcel(response, result, "365卡艾芽卡就诊人数统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
+    }
+
+    public DynamicHeaderPageInfo<JSONObject> dentistThroughBusinessStatistics(MultiClinicEmloyeeDateRangeQueryForm query) throws Exception {
+        List<JSONObject> data = new ArrayList<>();
+        Map<String, String> titleMap = new LinkedHashMap<>();
+        // 全部员工
+        ClinicEmployeeWorkloadQuery empQuery = new ClinicEmployeeWorkloadQuery();
+        BeanUtil.copyProperties(query, empQuery);
+        query.setEmployeeIds(filterDentistPost(empQuery));
+        List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(empQuery, false);
+        // 全部价目
+//        Future<List<ItemInfoVO>> itemInfoFuture = threadPool.submit(()->baseTariffInfoBiz.findItemInfoList(0));
+//        // 接诊人数统计
+//        Future<List<EmployeeDiagnosisInfoVO>> receptionFutrue = threadPool.submit(()-> baseTreatmentProcessBiz.findEmployeeReceptionStatistics(query));
+//        // 经手项目统计
+//        Future<List<EmployeeTariffWorkloadVO>> itemCountFuture = threadPool.submit(()->baseBillDetailBiz.findExecutorTariffItemStatistics(query));
+//        List<EmployeeTariffWorkloadVO> itemCount = itemCountFuture.get();
+//        List<ItemInfoVO> itemInfos = itemInfoFuture.get();
+//        Map<Integer, EmployeeDiagnosisInfoVO> receptionMap = Optional.ofNullable(receptionFutrue.get()).orElseGet(ArrayList::new).stream().collect(toMap(EmployeeDiagnosisInfoVO::getEmployeeId, Function.identity()));
+
+        List<ItemInfoVO> itemInfos = baseTariffInfoBiz.findItemInfoList(0);
+        List<EmployeeDiagnosisInfoVO> receptions = baseTreatmentProcessBiz.findEmployeeReceptionStatistics(query);
+        List<EmployeeTariffWorkloadVO> itemCount = baseBillDetailBiz.findExecutorTariffItemStatistics(query);
+        Map<Integer, EmployeeDiagnosisInfoVO> receptionMap = Optional.ofNullable(receptions).orElseGet(ArrayList::new).stream().collect(toMap(EmployeeDiagnosisInfoVO::getEmployeeId, Function.identity()));
+        employees.forEach(employee->{
+            Integer employeeId = employee.getEmployeeId();
+            EmployeeDiagnosisInfoVO reception = receptionMap.get(employeeId);
+            Integer treatVisitsNum = 0;
+            Integer treatVisitsTimes = 0;
+            if (StringHelper.isNotNull(reception)) {
+                treatVisitsNum = reception.getTreatVisitsNum();
+                treatVisitsTimes = reception.getTreatVisitsTimes();
+            }
+            JSONObject obj = new JSONObject();
+            obj.put("employeeName", employee.getEmployeeName());
+            obj.put("treatVisitsNum", treatVisitsNum);
+            obj.put("treatVisitsTimes", treatVisitsTimes);
+            titleMap.put("employeeName", "医生姓名");
+            titleMap.put("treatVisitsNum", "接诊人数");
+            titleMap.put("treatVisitsTimes", "接诊人次");
+            itemInfos.forEach(it->{
+                Integer itemId = it.getItemId();
+                BigDecimal workload = BigDecimal.ZERO;
+                for (EmployeeTariffWorkloadVO item : itemCount) {
+                    if (item.getEmployeeId().equals(employeeId) && item.getItemId().equals(itemId)) {
+                        workload = item.getWorkload();
+                    }
+                }
+                obj.put(itemId.toString(), workload);
+                titleMap.put(itemId.toString(), it.getItemName() + "（" + it.getItemNum().trim() + "）");
+            });
+            data.add(obj);
+        });
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo(data);
+        pageInfo.setMap(titleMap);
+        return pageInfo;
+    }
+
+    public void dentistThroughBusinessStatisticsExport(MultiClinicEmloyeeDateRangeQueryForm query, HttpServletResponse response) throws Exception {
+        query.setWhetherPage(false);
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dentistThroughBusinessStatistics(query);
+        List<JSONObject> result = pageInfo.getList();
+        ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+        String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "医生经手业务统计表");
+        excelUtil.exportExcel(response, result, "医生经手业务统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
 }

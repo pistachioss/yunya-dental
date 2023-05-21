@@ -40,4 +40,7 @@ public class BaseItemInfoVO implements Serializable {
     /** 价格 */
     @ApiModelProperty(value = "价格")
     private BigDecimal price;
+
+    @ApiModelProperty(value = "0-禁用 1-启用")
+    private Boolean inservice;
 }
