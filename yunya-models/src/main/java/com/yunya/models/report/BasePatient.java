@@ -173,6 +173,20 @@ public class BasePatient {
     private String vipLogoOld;
 
     /**
+     * 患者标签，id串
+     */
+    @Column(name = "patient_ext0")
+    private String patientExt0;
+
+    public String getPatientExt0() {
+        return patientExt0;
+    }
+
+    public void setPatientExt0(String patientExt0) {
+        this.patientExt0 = patientExt0;
+    }
+
+    /**
      * 获取患者来源名称
      * @return originTypeName
      */

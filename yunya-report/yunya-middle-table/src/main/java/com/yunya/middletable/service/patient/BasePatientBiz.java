@@ -6,19 +6,13 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.domain.vo.PatientTreatInfoVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.middletable.dao.patient.PatientBaseInfoMapper;
-import com.yunya.middletable.dao.patient.PatientGroupRelationMapper;
-import com.yunya.middletable.dao.patient.PatientOriginMapper;
-import com.yunya.middletable.dao.patient.PatientPrepaymentsInfoMapper;
+import com.yunya.middletable.dao.patient.*;
 import com.yunya.middletable.dao.report.BasePatientGroupRelationMapper;
 import com.yunya.middletable.dao.report.BasePatientMapper;
 import com.yunya.middletable.dao.report.BasePatientMemberMapper;
 import com.yunya.middletable.dao.system.DictionaryItemMapper;
 import com.yunya.middletable.service.BaseTreatmentProcessBiz;
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientGroupRelation;
-import com.yunya.models.patient_central.PatientOrigin;
-import com.yunya.models.patient_central.PatientPrepaymentsInfo;
+import com.yunya.models.patient_central.*;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientGroupRelation;
 import com.yunya.models.report.BasePatientMember;
@@ -63,6 +57,8 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   @Resource private PatientBaseInfoMapper patientBaseInfoMapper;
 
   @Resource private PatientOriginMapper patientOriginMapper;
+
+  @Resource private PatientExtInfoMapper patientExtInfoMapper;
 
   @Resource private BasePatientMemberBiz basePatientMemberBiz;
 
@@ -115,7 +111,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
 
   /**
-   * 保存患者分组关系
+   * 保存患者分组关系 和 标签
    *
    * @param patientId
    */
@@ -137,6 +133,15 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         basePatientGroupRelationMapper.insertSelective(entity);
       });
     }
+    Example example2 = new Example(PatientGroupRelation.class);
+    Example.Criteria c2 = example.createCriteria();
+    c2.andEqualTo("patientId", patientId);
+    c2.andEqualTo("type", 0);
+    List<PatientExtInfo> extInfoVos = patientExtInfoMapper.selectByExample(example2);
+    BasePatient basePatient = new BasePatient();
+    basePatient.setPatientId(patientId);
+    basePatient.setPatientExt0(extInfoVos.stream().map(e->e.getDictItemId()).toString());
+    mapper.updateByPrimaryKeySelective(basePatient);
   }
 
   public Date getDateTime(String dateStr){
