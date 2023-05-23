@@ -18,6 +18,7 @@ import com.yunya.models.report.BasePatientGroupRelation;
 import com.yunya.models.report.BasePatientMember;
 import com.yunya.models.system.DictionaryItem;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
 import static java.util.stream.Collectors.toMap;
@@ -140,7 +142,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     List<PatientExtInfo> extInfoVos = patientExtInfoMapper.selectByExample(example2);
     BasePatient basePatient = new BasePatient();
     basePatient.setPatientId(patientId);
-    basePatient.setPatientExt0(extInfoVos.stream().map(e->e.getDictItemId()).toString());
+    basePatient.setPatientExt0(StringUtils.join(extInfoVos.stream().map(e->e.getDictItemId()).collect(Collectors.toList()), ','));
     mapper.updateByPrimaryKeySelective(basePatient);
   }
 
