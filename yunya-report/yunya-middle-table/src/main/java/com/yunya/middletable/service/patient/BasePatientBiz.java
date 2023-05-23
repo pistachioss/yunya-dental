@@ -134,7 +134,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
       });
     }
     Example example2 = new Example(PatientExtInfo.class);
-    Example.Criteria c2 = example.createCriteria();
+    Example.Criteria c2 = example2.createCriteria();
     c2.andEqualTo("patientId", patientId);
     c2.andEqualTo("type", 0);
     List<PatientExtInfo> extInfoVos = patientExtInfoMapper.selectByExample(example2);
