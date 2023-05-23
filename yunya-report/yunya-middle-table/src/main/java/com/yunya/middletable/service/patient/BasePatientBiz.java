@@ -133,7 +133,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         basePatientGroupRelationMapper.insertSelective(entity);
       });
     }
-    Example example2 = new Example(PatientGroupRelation.class);
+    Example example2 = new Example(PatientExtInfo.class);
     Example.Criteria c2 = example.createCriteria();
     c2.andEqualTo("patientId", patientId);
     c2.andEqualTo("type", 0);
