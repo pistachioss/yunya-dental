@@ -12,6 +12,7 @@ import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
+import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.*;
@@ -25,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -82,6 +85,19 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public Integer syncUnionId(SyncUnionIdForm form){
        return wxFansBindMapper.syncUnionId(form);
+    }
+
+    public List<WaitingPatientInfoVO> selectIsBind(List<WaitingPatientInfoVO> registeredList){
+        for(WaitingPatientInfoVO waitingPatientInfoVO:registeredList){
+            WxFansBind wxFansBind = new WxFansBind();
+            wxFansBind.setPatientId(waitingPatientInfoVO.getPatientId());
+            wxFansBind.setBind(true);
+            int a = wxFansBindMapper.selectCount(wxFansBind);
+            if(a>0){
+                waitingPatientInfoVO.setIsBind(true);
+            }
+        }
+        return registeredList;
     }
 
     public PageInfo<WxWechatFansVo> findWechatList(WxFansWechatQueryForm wxFansQueryForm) {

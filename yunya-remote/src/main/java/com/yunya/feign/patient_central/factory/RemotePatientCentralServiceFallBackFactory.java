@@ -8,6 +8,7 @@ import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.vo.ClinicChargeItemVO;
+import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.patient_central.*;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     @Override
     public void syncUnionId(SyncUnionIdForm form) {
 
+    }
+
+    @Override
+    public List<WaitingPatientInfoVO> selectIsBind(List<WaitingPatientInfoVO> form) {
+        return null;
     }
 
     @Override
