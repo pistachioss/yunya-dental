@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.patient_central.factory.RemotePatientCentralServiceFallBackFactory;
 import com.yunya.feign.system.vo.ClinicChargeItemVO;
+import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
@@ -33,7 +34,13 @@ import java.util.List;
   @RequestMapping(value = "/api/syncUnionId", method = RequestMethod.POST)
   void syncUnionId(
           @RequestBody SyncUnionIdForm form);
-
+  /**
+   * 同步老数据UnionId
+   *
+   */
+  @RequestMapping(value = "/api/selectIsBind", method = RequestMethod.POST)
+  List<WaitingPatientInfoVO> selectIsBind(
+          @RequestBody List<WaitingPatientInfoVO> form);
   /**
    * 患者信息模糊查询暴露接口
    *

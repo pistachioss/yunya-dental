@@ -74,6 +74,10 @@ public class WaitingPatientInfoVO implements Serializable {
   @ApiModelProperty("沟通标识")
   private Boolean isCommunicate = false;
 
+  /** 是否绑定 */
+  @ApiModelProperty("是否绑定")
+  private Boolean isBind = false;
+
   /********************************  预约信息 *********************************/
   /** 预约id */
   @ApiModelProperty("预约id")

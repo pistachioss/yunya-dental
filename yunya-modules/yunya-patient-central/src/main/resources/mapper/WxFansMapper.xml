@@ -119,8 +119,10 @@
         LEFT JOIN wx_fans_bind wfb ON wf.open_id = wfb.open_id
         LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
         <where>
-            <if test="startTime !=null and endTime != null">
+            <if test="startTime !=null">
                 and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+            </if>
+            <if test="endTime != null">
                 and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(DATE_ADD(#{endTime},INTERVAL '1'
                 DAY),'%Y-%m-%d')
             </if>

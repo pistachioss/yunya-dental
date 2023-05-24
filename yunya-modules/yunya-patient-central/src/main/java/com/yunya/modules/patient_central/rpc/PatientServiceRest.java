@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.vo.ClinicChargeItemVO;
+import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -64,6 +65,12 @@ public class PatientServiceRest {
   @RequestMapping(value = "/syncUnionId", method = RequestMethod.POST)
   public Integer syncUnionId(@RequestBody @Validated SyncUnionIdForm form) {
    return wxFansBiz.syncUnionId(form);
+  }
+
+  @ApiOperation("查询患者是否已被绑定")
+  @RequestMapping(value = "/selectIsBind", method = RequestMethod.POST)
+  public List<WaitingPatientInfoVO> selectIsBind(@RequestBody @Validated List<WaitingPatientInfoVO> registeredList) {
+    return wxFansBiz.selectIsBind(registeredList);
   }
 
   @ApiOperation("保存公众号粉丝绑定")
