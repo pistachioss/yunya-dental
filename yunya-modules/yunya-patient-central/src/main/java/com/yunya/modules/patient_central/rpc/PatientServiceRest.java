@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.rpc;
 
+import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
 import com.yunya.feign.ivy_mini.domain.form.WxSaveFansForm;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
@@ -7,6 +8,7 @@ import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.vo.ClinicChargeItemVO;
+import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -71,6 +73,18 @@ public class PatientServiceRest {
   @RequestMapping(value = "/selectIsBind", method = RequestMethod.POST)
   public List<WaitingPatientInfoVO> selectIsBind(@RequestBody @Validated List<WaitingPatientInfoVO> registeredList) {
     return wxFansBiz.selectIsBind(registeredList);
+  }
+
+  @ApiOperation("查询患者是否已被绑定")
+  @RequestMapping(value = "/selectIsBind2", method = RequestMethod.POST)
+  public List<AppointmentUnDonePatientInfoVO> selectIsBind2(@RequestBody @Validated List<AppointmentUnDonePatientInfoVO> registeredList) {
+    return wxFansBiz.selectIsBind2(registeredList);
+  }
+
+  @ApiOperation("查询患者是否已被绑定")
+  @RequestMapping(value = "/selectIsBind3", method = RequestMethod.POST)
+  public List<TreatmentPatientInfoVO> selectIsBind3(@RequestBody @Validated List<TreatmentPatientInfoVO> registeredList) {
+    return wxFansBiz.selectIsBind3(registeredList);
   }
 
   @ApiOperation("保存公众号粉丝绑定")

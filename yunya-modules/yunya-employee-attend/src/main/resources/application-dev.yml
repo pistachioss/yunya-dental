@@ -1,11 +1,11 @@
 # 开发环境，nacos连215开发环境
 spring:
   datasource:
-    host: 192.168.31.90
+    host: community.yunya365.com
     port: 3306
     username: sa
     password: Admin001!
-    name: dev_yunya_employee_attend
+    name: test_yunya_employee_attend
 
   cloud:
     nacos:

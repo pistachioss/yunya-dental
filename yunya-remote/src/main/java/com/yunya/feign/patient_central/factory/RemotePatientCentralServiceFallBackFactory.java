@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.factory;
 
 
+import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
 import com.yunya.feign.ivy_mini.domain.form.WxSaveFansForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
@@ -8,6 +9,7 @@ import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.vo.ClinicChargeItemVO;
+import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.patient_central.*;
@@ -38,6 +40,16 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
 
     @Override
     public List<WaitingPatientInfoVO> selectIsBind(List<WaitingPatientInfoVO> form) {
+        return null;
+    }
+
+    @Override
+    public List<AppointmentUnDonePatientInfoVO> selectIsBind2(List<AppointmentUnDonePatientInfoVO> form) {
+        return null;
+    }
+
+    @Override
+    public List<TreatmentPatientInfoVO> selectIsBind3(List<TreatmentPatientInfoVO> form) {
         return null;
     }
 

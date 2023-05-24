@@ -2504,21 +2504,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             setPatientInfo(resultList, patientIds,appointIds,dentistIds,assistentIds,deptRoomIds);
         }
 
-        // 设置redis缓冲
-        /*if (StringHelper.isNotEmpty(resultList)) {
-            resultList.forEach(appointmentUnDonePatientInfoVO -> {
-                Integer patientId = appointmentUnDonePatientInfoVO.getPatientId();
-                Integer id = appointmentUnDonePatientInfoVO.getId();
-                String redisKey = RedisConstants.setKey(RedisConstants.REDIS_KEY_APPOINTMENT_UN_DONE,
-                        queryForm.getCurrentDate(),
-                        String.valueOf(id),
-                        String.valueOf(queryForm.getDentistId()),
-                        String.valueOf(patientId));
-                if (!redisUtils.hasKey(redisKey)) {
-                    redisUtils.set(redisKey,appointmentUnDonePatientInfoVO,3600);
-                }
-            });
-        }*/
+        resultList = remotePatientCentralServiceFeign.selectIsBind2(resultList);
         return new PageInfo<>(resultList);
     }
 

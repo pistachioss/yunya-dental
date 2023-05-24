@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central;
 
+import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
 import com.yunya.feign.ivy_mini.domain.form.WxSaveFansForm;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
@@ -7,6 +8,7 @@ import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.patient_central.factory.RemotePatientCentralServiceFallBackFactory;
 import com.yunya.feign.system.vo.ClinicChargeItemVO;
+import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
@@ -41,6 +43,14 @@ import java.util.List;
   @RequestMapping(value = "/api/selectIsBind", method = RequestMethod.POST)
   List<WaitingPatientInfoVO> selectIsBind(
           @RequestBody List<WaitingPatientInfoVO> form);
+
+  @RequestMapping(value = "/api/selectIsBind2", method = RequestMethod.POST)
+  List<AppointmentUnDonePatientInfoVO> selectIsBind2(
+          @RequestBody List<AppointmentUnDonePatientInfoVO> form);
+
+  @RequestMapping(value = "/api/selectIsBind3", method = RequestMethod.POST)
+  List<TreatmentPatientInfoVO> selectIsBind3(
+          @RequestBody List<TreatmentPatientInfoVO> form);
   /**
    * 患者信息模糊查询暴露接口
    *
