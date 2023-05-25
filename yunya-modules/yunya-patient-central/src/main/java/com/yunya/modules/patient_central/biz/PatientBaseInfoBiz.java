@@ -274,7 +274,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 患者分组
     savePatientGroupRelation(patientId, patientBaseInfoModel.getGroupIds());
     redisUtils.delete(PATIENT_BASE_INFO + patientId);
-    sendMessages(patientId, 1);
 
     PatientExpInfo patientExpInfo = new PatientExpInfo();
     PatientExpInfoModel patientExpInfoModel = patientExtendInfoModel.getPatientExpInfoModel();
@@ -334,6 +333,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       }
       this.patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
     }
+    // 通知更新放最后
+    sendMessages(patientId, 1);
   }
 
   /**

@@ -47,6 +47,12 @@ public class WxFansController {
     @PostMapping("/list")
     public ResponseResult<PageInfo<WxFansVo>> findList(
             @RequestBody @Validated WxFansQueryForm wxFansQueryForm) {
+        if(wxFansQueryForm.getStartTime()==null
+                && wxFansQueryForm.getEndTime()==null
+                && wxFansQueryForm.getIsBind()==null
+                && wxFansQueryForm.getName().isEmpty()){
+            return ResponseUtil.error("请输入手机号码或选择日期查询",null);
+        }
         return ResponseUtil.success(
                wxFansBiz.findList(wxFansQueryForm));
     }

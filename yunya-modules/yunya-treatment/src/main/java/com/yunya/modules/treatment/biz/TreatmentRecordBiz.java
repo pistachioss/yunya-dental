@@ -115,6 +115,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Resource private RemoteTreatmentOtherFeign remoteTreatmentOther;
   /** 挂号服务 */
   @Resource private RegisteredBiz registeredBiz;
+  /** 患者中心服务 */
 
   @Resource private RemoteReportServiceFeign remoteMiddleTableServiceFeign;
 
@@ -400,6 +401,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     } else {
       treatingList = new ArrayList<>();
     }
+    treatingList = patientServiceFeign.selectIsBind3(treatingList);
     return new PageInfo<>(treatingList);
   }
 

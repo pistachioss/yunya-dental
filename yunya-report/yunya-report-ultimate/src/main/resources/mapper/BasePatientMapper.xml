@@ -688,6 +688,9 @@
                     AND bpg.group_id = #{query.patientGroupId}
                 )
             </if>
+            <if test="query.patientExtId0 != null">
+                and FIND_IN_SET(#{query.patientExtId0}, bp.patient_ext0)
+            </if>
         </where>
         <if test="query.limitName">
             order by bp.`name`
