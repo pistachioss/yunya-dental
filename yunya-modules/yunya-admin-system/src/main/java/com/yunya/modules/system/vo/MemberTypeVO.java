@@ -25,9 +25,24 @@ public class MemberTypeVO implements Serializable {
   /** 会员卡名称 */
   @ApiModelProperty("会员卡名称")
   private String name;
+  /** 对应藤卡会员 */
+  @ApiModelProperty("对应藤卡会员")
+  private String oldName;
   /** 续费金额 */
   @ApiModelProperty("续费金额")
   private BigDecimal renewalAmount;
+  /** 充值达标获卡金额 */
+  @ApiModelProperty("充值达标获卡金额")
+  private BigDecimal rechargeMaxAmount;
+  /** 累计消费达标获卡金额 */
+  @ApiModelProperty("累计消费达标获卡金额")
+  private BigDecimal totalAmount;
+  /** 差额补齐获卡金额 */
+  @ApiModelProperty("差额补齐获卡金额")
+  private BigDecimal rechargeSubAmount;
+  /** 会员等级对应充值起充额 */
+  @ApiModelProperty("会员等级对应充值起充额")
+  private BigDecimal rechargeMinAmount;
   /** 年限 */
   @ApiModelProperty("年限（续费有效期）")
   private Integer ageLimit;
