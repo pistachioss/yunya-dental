@@ -523,7 +523,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
 
     patientMemberChangeLog.setPatientId(patientMemberInfo.getPatientId());
     patientMemberChangeLog.setMemberTypeId(patientMemberInfo.getMemberTypeId());
-    patientMemberChangeLog.setOrgId(patientMemberInfo.getOrgId());
+    patientMemberChangeLog.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     // 获取门诊简称
     OrganizationInfo organizationInfo =
         this.remoteSystemServiceFeign.findOrgInfoByOrgId(patientMemberInfo.getOrgId());
