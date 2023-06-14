@@ -7,6 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -53,6 +54,12 @@ public class PatientOrigin {
      */
     @Column(name = "qr_code_path")
     private String qrCodePath;
+
+    /**
+     * 赠金返点比例
+     */
+    @Column(name = "gift_rebate_rate")
+    private BigDecimal giftRebateRate;
 
     /**
      * 是否允许操作（编辑、删除）

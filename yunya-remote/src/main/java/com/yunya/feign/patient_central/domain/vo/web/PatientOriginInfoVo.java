@@ -113,4 +113,9 @@ public class PatientOriginInfoVo implements Serializable {
      * 二维码url
      */
     private String codeUrl;
+
+    /**
+     * 赠金返点比例
+     */
+    private String giftRebateRate;
 }

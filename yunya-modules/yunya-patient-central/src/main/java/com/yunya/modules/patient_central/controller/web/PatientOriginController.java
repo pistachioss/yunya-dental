@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -79,6 +80,18 @@ public class PatientOriginController {
   @PostMapping("/update")
   public ResponseResult update(@RequestBody PatientOriginForm patientOriginForm) {
     return this.patientOriginBiz.update(patientOriginForm);
+  }
+
+  /**
+   * 修改赠金返点比例
+   *
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("修改患者来源")
+  @PostMapping("/giftrebaterate")
+  public ResponseResult updateGift(@RequestBody PatientOriginForm patientOriginForm) {
+    return this.patientOriginBiz.updateRate(patientOriginForm);
   }
 
   /**
