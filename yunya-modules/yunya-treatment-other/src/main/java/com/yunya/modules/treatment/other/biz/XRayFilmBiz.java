@@ -121,9 +121,9 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
         if (null == xRayFilm) {
             throw new ClientServiceException("数据不存在",OperationCodeConstants.DATA_NOT_EXIST);
         }
-        Date crtTime = xRayFilm.getCrtTime();
-        // 判断图片是否可以编辑
-        TreatmentOtherUtils.enableEditImage(crtTime);
+//        Date crtTime = xRayFilm.getCrtTime();
+//         判断图片是否可以编辑
+//        TreatmentOtherUtils.enableEditImage(crtTime);
         xRayFilm.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         xRayFilm.setUpdName(BaseContextHandler.getName());
         xRayFilm.setUpdTime(new Date(System.currentTimeMillis()));

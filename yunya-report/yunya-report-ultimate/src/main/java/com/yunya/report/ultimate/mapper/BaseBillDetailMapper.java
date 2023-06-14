@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.mapper;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicEmloyeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.StatEmpBill;
@@ -602,4 +603,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return
    */
   List<BillItemReceivableAmountVO> selectBillItemReceivableAmountList(@Param("billIds") Collection<Integer> billIds);
+
+  List<EmployeeTariffWorkloadVO> selectExecutorTariffItemStatistics(@Param("query") MultiClinicEmloyeeDateRangeQueryForm query);
 }

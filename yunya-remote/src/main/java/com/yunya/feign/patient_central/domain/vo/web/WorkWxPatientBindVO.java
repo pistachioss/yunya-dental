@@ -20,6 +20,8 @@ public class WorkWxPatientBindVO {
     private String patientName;
     @ApiModelProperty("患者Id")
     private Integer patientId;
+    @ApiModelProperty("unionid")
+    private String unionId;
     @ApiModelProperty("关系名称")
     private String dictionaryName;
     @ApiModelProperty("关系字典ID")

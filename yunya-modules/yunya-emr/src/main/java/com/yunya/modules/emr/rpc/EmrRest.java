@@ -1,11 +1,13 @@
 package com.yunya.modules.emr.rpc;
 
 import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffModel;
+import com.yunya.modules.emr.biz.MedicalOrthodonticsRecordBiz;
 import com.yunya.modules.emr.biz.TreatPlanDetailBiz;
 import com.yunya.modules.emr.biz.TreatPlanRecordBiz;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,8 @@ public class EmrRest {
 
   @Autowired private TreatPlanRecordBiz treatPlanRecordBiz;
   @Autowired private TreatPlanDetailBiz treatPlanDetailBiz;
+  @Resource
+  private MedicalOrthodonticsRecordBiz medicalOrthodonticsRecordBiz;
 
   @PostMapping("/treatPlan/recalculate/{userId}")
   public void recalculatePlanStatusById(@PathVariable(value = "userId") Integer userId, @RequestBody List<Integer> planIds) {
@@ -48,5 +52,10 @@ public class EmrRest {
   @PostMapping("/treatPlan/orderWithPlanDetail")
   public Map<Integer, List<Integer>> findOrderWithPlanDetailById(@RequestBody List<Integer> orderDetailIds) {
     return treatPlanDetailBiz.findOrderWithPlanDetailById(orderDetailIds);
+  }
+
+  @GetMapping("/Orthodontics/patient")
+  public List<Integer> listOrthodonticsPatient() {
+    return medicalOrthodonticsRecordBiz.listOrthodonticsPatient();
   }
 }

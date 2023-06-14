@@ -24,6 +24,9 @@ public enum EmrError implements RestError {
     DEADLINE_BEYOND_NOW(30019, "选择的允许变更截止时间不能早于操作当天时间"),
     ADD_CHANGE_PASS_NOT_REPEAT_SUBMIT(30020, "该条就诊记录的病历新增申请已审核通过，请勿重复申请！"),
     UPDATE_CHANGE_PASS_REPEAT_SUBMIT(30021, "该条就诊记录的病历修改申请已审核通过，请勿重复申请！"),
+    XHQ_PC_ERROR(30022, "西湖区获取批次任务异常"),
+    XHQ_DC_ERROR(30023, "西湖区获取单次任务异常"),
+    XHQ_DATA_NULL(30024, "%s,西湖区没有病例数据"),
     ;
     private final Integer code;
     private final String message;

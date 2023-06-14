@@ -173,7 +173,6 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
         Example example = new Example(QztDoctor.class);
         example.createCriteria()
                 .andEqualTo("enableCert", true);
-        example.selectProperties("id", "doctorName", "practiceClinic", "relateUserIds");
         return mapper.selectByExample(example);
     }
 
@@ -216,8 +215,7 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
     public List<Company> certCompanys() {
         Example example = new Example(Company.class);
         example.createCriteria()
-                .andEqualTo("enableQztSync", true);
-        example.selectProperties("id", "name", "qztInstitutionCode");
+                .andEqualTo("enableQztSync", true).orEqualTo("enableXhqSync", true);
         return companyMapper.selectByExample(example);
     }
 }

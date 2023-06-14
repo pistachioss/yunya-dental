@@ -24,6 +24,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
+import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSED_STATUS;
+import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESS_FINISH_STATUS;
 
 /**
  * 简介: 自动收费定时任务
@@ -63,7 +65,7 @@ public class AutoChargeTask {
     List<Integer> treatmentRecordIds =
         treatmentRecordBiz.getTreatCompletedList(
             DateUtil.format(new Date(), "yyyy-MM-dd"),
-            BusinessConstants.TREATMENT_PROCESSED_STATUS);
+            TREATMENT_PROCESSED_STATUS);
     if (!CollectionUtils.isEmpty(treatmentRecordIds)) {
       List<OrderRecord> orderRecords = orderRecordBiz.getUnCheckedOrderRecords(treatmentRecordIds);
       if (!CollectionUtils.isEmpty(orderRecords)) {
@@ -73,24 +75,27 @@ public class AutoChargeTask {
                 executorService.submit(
                     () -> {
                       try {
+                        Integer treatmentId = orderRecord.getTreatmentRecordId();
                         // 更新就诊记录状态为离店
                         TreatmentRecord treatmentRecord = new TreatmentRecord();
-                        treatmentRecord.setId(orderRecord.getTreatmentRecordId());
+                        treatmentRecord.setId(treatmentId);
                         treatmentRecord.setStatus(
-                            BusinessConstants.TREATMENT_PROCESS_FINISH_STATUS);
-                        treatmentRecordBiz.updateTreatmentStatus(treatmentRecord);
-                        // 保存账单记录
-                        BillRecord billRecord = buildBillRecord(orderRecord);
-                        billRecordBiz.insertBillRecord(billRecord);
-                        // 保存开单明细收费记录
-                        tollBiz.saveOrderDetailPayRecordWithNoDiscount(BigDecimal.ZERO,
-                            orderRecord.getId(), billRecord.getId(), true);
-                        // 更新开单状态为结账
-                        orderRecord.setStatus(BusinessConstants.ORDER_FINISH_STATUS);
-                        int i = orderRecordBiz.updateOrderStatus(orderRecord);
-                        if (i > 0) {
-                          rabbitMqServiceFeign.sendMessage(billRecord.getOrderRecordId(), 0, BaseBill);
-                          log.info("发送中间表开单记录同步消息{}", "开单记录ID：-------》》》" + billRecord.getOrderRecordId());
+                            TREATMENT_PROCESS_FINISH_STATUS);
+                        int result = treatmentRecordBiz.updateTreatmentStatus(treatmentRecord, treatmentId, TREATMENT_PROCESSED_STATUS);
+                        if (result > 0) {
+                          // 保存账单记录
+                          BillRecord billRecord = buildBillRecord(orderRecord);
+                          billRecordBiz.insertBillRecord(billRecord);
+                          // 保存开单明细收费记录
+                          tollBiz.saveOrderDetailPayRecordWithNoDiscount(
+                              BigDecimal.ZERO, orderRecord.getId(), billRecord.getId(), true);
+                          // 更新开单状态为结账
+                          orderRecord.setStatus(BusinessConstants.ORDER_FINISH_STATUS);
+                          int i = orderRecordBiz.updateOrderStatus(orderRecord);
+                          if (i > 0) {
+                            rabbitMqServiceFeign.sendMessage(billRecord.getOrderRecordId(), 0, BaseBill);
+                            log.info("发送中间表开单记录同步消息{}", "开单记录ID：-------》》》" + billRecord.getOrderRecordId());
+                          }
                         }
                       } finally {
                         countDownLatch.countDown();

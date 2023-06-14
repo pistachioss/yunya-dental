@@ -8,30 +8,26 @@ import com.yunya.feign.patient_central.domain.vo.web.WxWechatbindAppListVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
-import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
-import com.yunya.feign.wechat.enums.TemplateEnum;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.WxFans;
 import com.yunya.models.patient_central.WxFansBind;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.WxFansBindMapper;
+import com.yunya.modules.patient_central.mapper.WxFansMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 
 
 /**
@@ -51,6 +47,8 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
     public static String BEN_REN = "本人";
     @Autowired
     private WxFansBiz wxFansBiz;
+    @Autowired
+    private WxFansMapper wxFansMapper;
     @Autowired
     private PatientBaseInfoMapper patientBaseInfoMapper;
     @Resource
@@ -77,6 +75,96 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         }
         return a;
     }
+
+    public Integer allBind() {
+        WxFans wxFans = new WxFans();
+        wxFans.setBind(false);
+        wxFans.setFansStatus(2);
+        //未绑定患者的微信用户list
+        List<WxFans>list = wxFansBiz.selectList(wxFans).parallelStream().filter(Objects::nonNull).collect(Collectors.toList());
+        //已绑定微信的患者手机号list
+        List<WxFans>moblieList = wxFansBiz.findAllListWithMobile().parallelStream().filter(Objects::nonNull).collect(Collectors.toList());
+
+        //未绑定患者的微信用户list并去除已绑定其他人的患者手机号
+//        List<WxFans> collect = list.stream()
+//                .filter(u -> moblieList.contains(u.getRegisterMobile()))
+//                .collect(Collectors.toList());
+        List<WxFans>removelist = new ArrayList<>();
+       for(WxFans wx:list){
+           for(WxFans wxmb:moblieList){
+               if(wxmb.getRegisterMobile().equals(wx.getRegisterMobile())){
+                   removelist.add(wx);
+               }
+           }
+       }
+        list.removeAll(removelist);
+        PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
+        Date date = new Date();
+        List<WxFansBind>saveList = new ArrayList();
+        List<WxFans>upList = new ArrayList();
+        //获取全部患者
+        List<PatientBaseInfo>plist = patientBaseInfoMapper.select(patientBaseInfo);
+//        list = list.stream().filter(student -> "16657113075".equals(student.getRegisterMobile())).collect(Collectors.toList());
+        for(WxFans fans:list){
+            if(fans.getRegisterMobile()!=null){
+                WxFansBind wxFansBind;
+                List<PatientBaseInfo> result =
+                        plist.stream().filter(student -> fans.getRegisterMobile().equals(student.getMobile())).collect(Collectors.toList());
+                //处理微信粉丝表绑定状态以及卡主ID
+                WxFans upfans = new WxFans();
+                upfans.setId(fans.getId());
+                upfans.setBind(true);
+                upfans.setBindTime(date);
+                //同一手机号有多个患者
+                if(result.size() > 1){
+                    for (int i = 0; i < result.size(); i++) {
+                        wxFansBind = new WxFansBind();
+                        wxFansBind.setPatientId(result.get(i).getId());
+                        wxFansBind.setOpenId(fans.getOpenId());
+                        wxFansBind.setUnionId(fans.getUnionId());
+                        wxFansBind.setBind(true);
+                        wxFansBind.setBindTime(date);
+                        wxFansBind.setIsVip(true);
+                        if(i==0){
+                            wxFansBind.setDictionaryId(142);
+                            wxFansBind.setIsOwner(true);
+                            upfans.setPatientId(result.get(i).getId());
+                        }else{
+                            wxFansBind.setDictionaryId(120);
+                            wxFansBind.setIsOwner(false);
+                        }
+                        wxFansBind.setCrtTime(date);
+                        saveList.add(wxFansBind);
+                    }
+                    upList.add(upfans);
+                    //同一手机号有一个患者
+                }else if(result.size() == 1){
+                    wxFansBind = new WxFansBind();
+                    wxFansBind.setPatientId(result.get(0).getId());
+                    wxFansBind.setOpenId(fans.getOpenId());
+                    wxFansBind.setUnionId(fans.getUnionId());
+                    wxFansBind.setBind(true);
+                    wxFansBind.setBindTime(date);
+                    wxFansBind.setDictionaryId(142);
+                    wxFansBind.setCrtTime(date);
+                    wxFansBind.setIsOwner(true);
+                    wxFansBind.setIsVip(true);
+                    upfans.setPatientId(plist.get(0).getId());
+                    saveList.add(wxFansBind);
+                    upList.add(upfans);
+                }
+
+            }
+        }
+       if(saveList.size()>0){
+           if(upList.size()>0){
+               wxFansMapper.updateList(upList);
+           }
+           return  mapper.batchInsert(saveList);
+       }
+       return 0;
+    }
+
 
     public Integer bind(WxFansBindForm wxFansBindForm) {
 
@@ -212,5 +300,22 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
                 item.setDictionaryName(dicMap.get(item.getDictionaryId() + "").getName())
         );
         return list;
+    }
+
+    public List<WxFansBind> listWxByPatientIds(Collection<Integer> patientIds) {
+        Example example = new Example(WxFansBind.class);
+        example.createCriteria()
+                .andEqualTo("bind", true)
+                .andIn("patientId", patientIds)
+                .andIsNotNull("unionId");
+        return mapper.selectByExample(example);
+    }
+
+    public List<WxFansBind> listWxByNotPatientIds(Collection<Integer> patientIds) {
+        Example example = new Example(WxFansBind.class);
+        example.createCriteria()
+                .andEqualTo("bind", true)
+                .andNotIn("patientId", patientIds);
+        return mapper.selectByExample(example);
     }
 }

@@ -1221,4 +1221,94 @@
             </if>
         </where>
     </select>
+
+    <select id="selectEmployeeReceptionStatistics"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO">
+        SELECT
+            btp.registered_dentist_id AS employeeId,
+            COUNT( btp.treatment_id ) AS treatVisitsTimes,
+            COUNT( DISTINCT btp.patient_id ) AS treatVisitsNum
+        FROM base_treatment_process btp
+        <where>
+            and btp.treat_end_time IS NOT NULL
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                and btp.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.employeeIds!=null and query.employeeIds.size()>0">
+                and btp.registered_dentist_id in
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType==0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.treat_end_time, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.treat_end_time, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY btp.registered_dentist_id
+    </select>
+
+
+    <select id="selectPatientRegisteredList" resultType="com.yunya.models.report.BaseTreatmentProcess">
+        SELECT
+            bp.patient_id AS patientId,
+            btp.registered_date AS registeredDate
+        FROM base_patient bp
+        LEFT JOIN (
+            SELECT
+                patient_id,
+                registered_date
+            FROM base_treatment_process btp
+        <where>
+            btp.registered_dentist_id > 0
+            <if test="query.dateType==0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.registered_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.registered_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.registered_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.registered_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.registered_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.registered_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) btp ON bp.patient_id=btp.patient_id
+    </select>
 </mapper>

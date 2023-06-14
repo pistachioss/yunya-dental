@@ -29,7 +29,9 @@ public class AppointmentUnDonePatientInfoVO implements Serializable {
   /** 初/复诊 */
   @ApiModelProperty("初/复诊;0-初诊，1-复诊")
   private Byte firstVisit;
-
+  /** 是否绑定 */
+  @ApiModelProperty("是否绑定")
+  private Boolean isBind = false;
   /******************************* 患者信息 ********************************/
   /** 患者id */
   @ApiModelProperty("患者id")

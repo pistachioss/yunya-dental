@@ -894,6 +894,41 @@
         group by bb.patient_id
     </select>
 
+    <!-- 查询患者消费信息 -->
+    <select id="selectPatientCostInfoList" resultType="com.yunya.feign.report.domain.vo.PatientCostInfoVO">
+        select
+        patient_id AS patientId,
+        sum(bb.actual_amount) as cumulativeConsumption,
+        sum(bb.received_amount) as receivedAmount,
+        sum(bb.debt_amount) as totalArrears
+        from base_bill bb
+        group by bb.patient_id
+    </select>
+
+    <!-- 查询患者消费信息 -->
+    <select id="selectPatientBillItemList" resultType="com.yunya.feign.report.domain.vo.PatientHasBillItemVO">
+        select bp.patient_id, ifnull(bbd1.had1, 0) as 'had1', ifnull(bbd2.had2, 0) as 'had2'
+        from base_patient bp
+        left join (
+        select bb.patient_id, 1 as 'had1'
+        from base_bill_detail bbd
+        left join base_tariff_info bti on bbd.item_id = bti.item_id and bbd.item_type = bti.item_type
+        left join base_bill bb on bbd.bill_id = bb.bill_id
+        where bti.item_num in ('T16155', 'T16156')
+        group by bb.patient_id
+        ) bbd1 on bp.patient_id = bbd1.patient_id
+        left join (
+        select bb.patient_id, 1 as 'had2'
+        from base_bill_detail bbd
+        left join base_tariff_info bti on bbd.item_id = bti.item_id and bbd.item_type = bti.item_type
+        left join base_bill bb on bbd.bill_id = bb.bill_id
+        where bti.item_num in ('T05003', 'T05004', 'T05006', 'Z000284', 'Z000151', 'Z000249')
+        and datediff(now(), bb.bill_date) &lt; 300
+        group by bb.patient_id
+        ) bbd2 on bp.patient_id = bbd2.patient_id
+        where bbd1.patient_id is not null or bbd2.patient_id is not null
+    </select>
+
     <select id="selectBaseBenefitInfoByBillId" resultType="com.yunya.feign.report.domain.vo.BaseBenefitInfoVO">
         SELECT
             bb.order_detail_id as orderDetailId,

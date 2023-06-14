@@ -64,4 +64,7 @@ public class PatientManageQuery extends PageQuery {
     private Integer[] lastOrgId;
     @ApiModelProperty(value = "生日时间")
     private String birthday;
+    /** 患者标签Id*/
+    @ApiModelProperty("患者标签id")
+    private Integer patientExtId0;
 }

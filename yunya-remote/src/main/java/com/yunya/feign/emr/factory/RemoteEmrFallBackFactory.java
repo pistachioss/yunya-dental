@@ -27,4 +27,9 @@ public class RemoteEmrFallBackFactory implements RemoteEmrServiceFeign {
     public Map<Integer, List<Integer>> findOrderWithPlanDetailById(List<Integer> orderDetailIds) {
         return null;
     }
+
+    @Override
+    public List<Integer> listOrthodonticsPatient() {
+        return null;
+    }
 }

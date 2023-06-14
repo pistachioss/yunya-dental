@@ -304,11 +304,11 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       }
     }
 
-    String categoryNumber = resultDataOralTariffCategoryNumber.substring(0, 3);
-    String itemNumber = number.substring(0, 3);
-    if (!categoryNumber.equals(itemNumber)) {
-      throw new ClientServiceException("修改失败，商品商品编号前3位与商品分类编号前3位不同！", PARAMETERS_IS_ILLEGAL);
-    }
+//    String categoryNumber = resultDataOralTariffCategoryNumber.substring(0, 3);
+//    String itemNumber = number.substring(0, 3);
+//    if (!categoryNumber.equals(itemNumber)) {
+//      throw new ClientServiceException("修改失败，商品商品编号前3位与商品分类编号前3位不同！", PARAMETERS_IS_ILLEGAL);
+//    }
 
     BeanUtils.copyProperties(form, entity);
     entity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(name));
@@ -1366,5 +1366,14 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
               t.setProductCategoryName(category.getName());
             });
     return collect;
+  }
+
+  public List<BaseOralTariff> listOralTariffByIds(Collection<Integer> ids) {
+    if (org.apache.commons.collections4.CollectionUtils.isEmpty(ids)) {
+      return Lists.newArrayList();
+    }
+    Example example = new Example(BaseOralTariff.class);
+    example.createCriteria().andIn("id", ids);
+    return mapper.selectByExample(example);
   }
 }

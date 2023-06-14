@@ -3,6 +3,7 @@ package com.yunya.modules.patient_central.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
 import com.yunya.feign.ivy_mini.domain.bo.WeChatSessionBO;
 import com.yunya.feign.ivy_mini.domain.form.WxSaveFansForm;
 import com.yunya.feign.ivy_mini.domain.form.WxUserInfoForm;
@@ -12,6 +13,8 @@ import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
+import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
+import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.*;
@@ -25,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -84,6 +89,43 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
        return wxFansBindMapper.syncUnionId(form);
     }
 
+    public List<WaitingPatientInfoVO> selectIsBind(List<WaitingPatientInfoVO> registeredList){
+        for(WaitingPatientInfoVO waitingPatientInfoVO:registeredList){
+            WxFansBind wxFansBind = new WxFansBind();
+            wxFansBind.setPatientId(waitingPatientInfoVO.getPatientId());
+            wxFansBind.setBind(true);
+            int a = wxFansBindMapper.selectCount(wxFansBind);
+            if(a>0){
+                waitingPatientInfoVO.setIsBind(true);
+            }
+        }
+        return registeredList;
+    }
+    public List<AppointmentUnDonePatientInfoVO> selectIsBind2(List<AppointmentUnDonePatientInfoVO> registeredList){
+        for(AppointmentUnDonePatientInfoVO waitingPatientInfoVO:registeredList){
+            WxFansBind wxFansBind = new WxFansBind();
+            wxFansBind.setPatientId(waitingPatientInfoVO.getPatientId());
+            wxFansBind.setBind(true);
+            int a = wxFansBindMapper.selectCount(wxFansBind);
+            if(a>0){
+                waitingPatientInfoVO.setIsBind(true);
+            }
+        }
+        return registeredList;
+    }
+    public List<TreatmentPatientInfoVO> selectIsBind3(List<TreatmentPatientInfoVO> registeredList){
+        for(TreatmentPatientInfoVO waitingPatientInfoVO:registeredList){
+            WxFansBind wxFansBind = new WxFansBind();
+            wxFansBind.setPatientId(waitingPatientInfoVO.getPatientId());
+            wxFansBind.setBind(true);
+            int a = wxFansBindMapper.selectCount(wxFansBind);
+            if(a>0){
+                waitingPatientInfoVO.setIsBind(true);
+            }
+        }
+        return registeredList;
+    }
+
     public PageInfo<WxWechatFansVo> findWechatList(WxFansWechatQueryForm wxFansQueryForm) {
         if (wxFansQueryForm.getWhetherPage()) {
             PageHelper.startPage(wxFansQueryForm.getPageNum(), wxFansQueryForm.getPageSize());
@@ -123,6 +165,12 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         List<WxFansVo> list = mapper.findListByName(wxFansQueryForm);
         return list;
     }
+
+    public List<WxFans> findAllListWithMobile() {
+        List<WxFans> list = mapper.findAllListWithMobile();
+        return list;
+    }
+
     public WxWechatMapAndBindFansVo findMapList(WxFansMapQueryForm wxFansMapQueryForm) {
         DictionaryItemModel model = new DictionaryItemModel();
         List<DictionaryItem> dicList = systemServiceFeign.findDictionaryItemList(model);
@@ -490,19 +538,40 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         if (CollectionUtils.isEmpty(wxFansBinds)) {
             return Lists.newArrayList();
         }
+        return assembleRelate(wxFansBinds);
+    }
+
+    public List<WorkWxPatientBindVO> patientRelateList(Collection<Integer> patientIds) {
+        if (CollectionUtils.isEmpty(patientIds)) {
+            log.info("患者绑定微信用户参数为空");
+            return Lists.newArrayList();
+        }
+        Example example = new Example(WxFansBind.class);
+        example.createCriteria()
+                .andIn("patientId", patientIds);
+        List<WxFansBind> wxFansBinds = wxFansBindMapper.selectByExample(example);
+        if (CollectionUtils.isEmpty(wxFansBinds)) {
+            return Lists.newArrayList();
+        }
+        return assembleRelate(wxFansBinds);
+    }
+
+    private List<WorkWxPatientBindVO> assembleRelate(List<WxFansBind> wxFansBinds) {
         List<Integer> patientIds = wxFansBinds.stream().map(WxFansBind::getPatientId).collect(Collectors.toList());
-        Map<Integer, PatientBaseInfoVo> patientMap = Optional.of(patientBaseInfoBiz.findPatientInfoByIds(patientIds, null))
+
+        Map<Integer, PatientBaseInfoVo> patientMap = Optional.of(patientBaseInfoBiz.findPatientInfoByIds(new ArrayList<>(patientIds), null))
                 .orElse(Lists.newArrayList()).stream()
                 .collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
-
         DictionaryItemModel model = new DictionaryItemModel();
         Map<Integer, String> dictionaryMap = Optional.of(systemServiceFeign.findDictionaryItemList(model))
                 .orElse(Lists.newArrayList()).stream()
                 .collect(Collectors.toMap(DictionaryItem::getId, DictionaryItem::getName));
         return wxFansBinds.stream().map(t -> {
-            PatientBaseInfoVo baseInfoVo = patientMap.get(t.getPatientId());
+            Integer patientId = t.getPatientId();
+            PatientBaseInfoVo baseInfoVo = patientMap.get(patientId);
             WorkWxPatientBindVO vo = new WorkWxPatientBindVO();
-            vo.setPatientId(t.getPatientId());
+            vo.setPatientId(patientId);
+            vo.setUnionId(t.getUnionId());
             if (Objects.nonNull(baseInfoVo)) {
                 vo.setPatientName(baseInfoVo.getName());
                 vo.setMobile(baseInfoVo.getMobile());

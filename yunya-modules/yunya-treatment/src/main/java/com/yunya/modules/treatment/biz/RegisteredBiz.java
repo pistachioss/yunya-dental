@@ -326,6 +326,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<WaitingPatientInfoVO> registeredList = mapper.selectRegisteredList((byte) 0, queryForm);
+    registeredList = remotePatientCentralServiceFeign.selectIsBind(registeredList);
     if (StringHelper.isNotEmpty(registeredList)) {
       // 预约ID集合
       List<Integer> appointIds = new ArrayList<>();

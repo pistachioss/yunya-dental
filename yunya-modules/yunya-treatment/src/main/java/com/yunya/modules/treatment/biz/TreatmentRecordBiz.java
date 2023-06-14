@@ -115,6 +115,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Resource private RemoteTreatmentOtherFeign remoteTreatmentOther;
   /** 挂号服务 */
   @Resource private RegisteredBiz registeredBiz;
+  /** 患者中心服务 */
 
   @Resource private RemoteReportServiceFeign remoteMiddleTableServiceFeign;
 
@@ -400,6 +401,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     } else {
       treatingList = new ArrayList<>();
     }
+    treatingList = patientServiceFeign.selectIsBind3(treatingList);
     return new PageInfo<>(treatingList);
   }
 
@@ -1725,8 +1727,20 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     return mapper.selectAllTreatCompletedList(treatDate, treatmentProcessedStatus);
   }
 
-  public void updateTreatmentStatus(TreatmentRecord treatmentRecord) {
-    mapper.updateByPrimaryKeySelective(treatmentRecord);
+  /**
+   * 更新就诊记录的状态（乐观锁）
+   *
+   * @param treatmentRecord 待更新的就诊数据
+   * @param treatmentId 就诊记录id
+   * @param statusInDB 当前就诊记录在数据库中就诊状态
+   * @return
+   */
+  public int updateTreatmentStatus(TreatmentRecord treatmentRecord, Integer treatmentId, Byte statusInDB) {
+    Example example = new Example(TreatmentRecord.class);
+    example.createCriteria()
+            .andEqualTo("id", treatmentId)
+            .andEqualTo("status", statusInDB);
+    return mapper.updateByExampleSelective(treatmentRecord, example);
   }
 
   /**

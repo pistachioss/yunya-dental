@@ -20,6 +20,7 @@
         <id column="categoryId" property="categoryId" jdbcType="INTEGER"/>
         <result column="categoryName" property="categoryName" jdbcType="VARCHAR"/>
         <result column="categoryNumber" property="categoryNumber" jdbcType="VARCHAR"/>
+        <result column="inservice1" property="inservice" jdbcType="BIT"/>
         <collection property="items" ofType="com.yunya.feign.treatment.domain.vo.BaseItemInfoVO">
             <id column="id" property="id" jdbcType="INTEGER"/>
             <result column="item_number" property="itemNumber" jdbcType="VARCHAR"/>
@@ -27,6 +28,7 @@
             <result column="name" property="name" jdbcType="VARCHAR"/>
             <result column="price" property="price" jdbcType="DECIMAL"/>
             <result column="pinyin" property="pinyin" jdbcType="VARCHAR"/>
+            <result column="inservice" property="inservice" jdbcType="BIT"/>
         </collection>
     </resultMap>
 
@@ -210,7 +212,9 @@
         bt.`name`,
         bt.unit,
         bt.pinyin,
-        bt.price
+        bt.price,
+        btc.inservice as inservice1,
+        bt.inservice
         FROM base_tariff_category btc
         LEFT JOIN base_tariff bt ON bt.tariff_category_id = btc.id
         <where>
@@ -236,7 +240,9 @@
         bt.`name`,
         bt.unit,
         bt.pinyin,
-        bt.price
+        bt.price,
+        btc.inservice as inservice1,
+        bt.inservice
         FROM base_oral_tariff_category btc
         LEFT JOIN base_oral_tariff bt ON bt.oral_tariff_category_id = btc.id
         <where>

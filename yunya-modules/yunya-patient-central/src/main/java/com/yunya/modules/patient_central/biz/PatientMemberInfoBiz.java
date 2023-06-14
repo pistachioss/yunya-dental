@@ -520,13 +520,13 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (memberType != null) {
       patientMemberChangeLog.setMemberCardName(memberType.getName());
     }
-
+    int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
     patientMemberChangeLog.setPatientId(patientMemberInfo.getPatientId());
     patientMemberChangeLog.setMemberTypeId(patientMemberInfo.getMemberTypeId());
-    patientMemberChangeLog.setOrgId(patientMemberInfo.getOrgId());
+    patientMemberChangeLog.setOrgId(orgId);
     // 获取门诊简称
     OrganizationInfo organizationInfo =
-        this.remoteSystemServiceFeign.findOrgInfoByOrgId(patientMemberInfo.getOrgId());
+        this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
     if (organizationInfo != null) {
       patientMemberChangeLog.setOrgName(organizationInfo.getAbbreviation());
     }
@@ -559,7 +559,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientMember.setUpdName(BaseContextHandler.getName());
     patientMember.setUpdTime(new Date());
-    patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+//    patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     this.mapper.updateByPrimaryKeySelective(patientMember);
     this.cardLog(patientMember, "变更", "更新");
     remoteRabbitMqServiceFeign.sendMessage(

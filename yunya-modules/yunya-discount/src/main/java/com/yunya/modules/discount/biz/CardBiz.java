@@ -3050,6 +3050,20 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         }).collect(Collectors.toList());
     }
 
+    public  Map<Integer, Long> listTwoYearsActive() {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        LocalDateTime twoYearsAgo = currentDateTime.minusYears(1);
+        Example example = new Example(Card.class);
+        example.selectProperties("patientId");
+        example.createCriteria().andIn("status", Lists.newArrayList(2,3,4))
+                .andBetween("activeDate", twoYearsAgo, currentDateTime);
+        List<Card> cards = mapper.selectByExample(example);
+        return cards.stream().collect(groupingBy(Card::getPatientId, counting())).entrySet()
+                .stream()
+                .filter(entry -> entry.getValue() >= 2)
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
     /**
      * 设置兑换券、套餐券、折扣券、代金券的优惠项目明细
      *

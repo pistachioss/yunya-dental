@@ -6,7 +6,6 @@ import lombok.ToString;
 
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -56,6 +55,12 @@ public class PatientExpInfoModel implements Serializable {
      */
     @ApiModelProperty(value = "职业字典明细ID 职业对应字典ID")
     private Integer profession;
+
+    @ApiModelProperty("婚姻状况(0-单身 1-已婚)")
+    private Integer marry;
+
+    @ApiModelProperty("生育情况(0-无孩 1-有孩)")
+    private Integer childStatus;
 
     /**
      * 遗传病史
