@@ -520,13 +520,13 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (memberType != null) {
       patientMemberChangeLog.setMemberCardName(memberType.getName());
     }
-
+    int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
     patientMemberChangeLog.setPatientId(patientMemberInfo.getPatientId());
     patientMemberChangeLog.setMemberTypeId(patientMemberInfo.getMemberTypeId());
-    patientMemberChangeLog.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    patientMemberChangeLog.setOrgId(orgId);
     // 获取门诊简称
     OrganizationInfo organizationInfo =
-        this.remoteSystemServiceFeign.findOrgInfoByOrgId(patientMemberInfo.getOrgId());
+        this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
     if (organizationInfo != null) {
       patientMemberChangeLog.setOrgName(organizationInfo.getAbbreviation());
     }
