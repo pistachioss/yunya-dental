@@ -1349,7 +1349,7 @@ public class DimensionReportBiz {
     }
 
     private Map<String, BigDecimal> clinicEmployeeWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds, Function<BillExecutorItemVO, String> keyFunc) throws ExecutionException, InterruptedException {
-        // 门诊的实收、免单
+        // 门诊的实收、划扣核销、免单
         Future<List<BillExecutorItemVO>> payFuture = multiFindClinicEmployeeWorkload(query, employeeIds);
         // 门诊的补入
         Future<List<BillExecutorItemVO>> couponFuture = multiFindClinicEmployeeCouponWorkload(query, employeeIds);
@@ -1357,36 +1357,29 @@ public class DimensionReportBiz {
         // 门诊的退费
         List<BillExecutorItemVO> refunds = multiFindClinicEmployeeRefundWorkload(query, employeeIds).get();
         Map<String, BigDecimal> result = new HashMap<>();
-        // 工作量=实收-免单-退费+补入
+        // 工作量=实收+划扣核销+补入-免单-退费
         if (StringHelper.isNotEmpty(pays)) {
             pays.forEach(vo->{
                 String key = keyFunc.apply(vo);
-                BigDecimal totalWorkload = result.get(key);
-                if (totalWorkload == null) {
-                    totalWorkload = new BigDecimal("0.00");
-                }
-                BigDecimal workload = vo.getReceivedWorkload().subtract(vo.getFreePaymentWorkload());
-                result.put(key, totalWorkload.add(workload));
+                BigDecimal totalWorkload = result.computeIfAbsent(key, k->new BigDecimal("0.00"));
+                result.put(key,
+                        totalWorkload.add(vo.getReceivedWorkload()
+                            .add(vo.getSwipeWorkload())
+                            .subtract(vo.getFreePaymentWorkload())));
             });
         }
         List<BillExecutorItemVO> coupons = couponFuture.get();
         if (StringHelper.isNotEmpty(coupons)) {
             coupons.forEach(vo -> {
                 String key = keyFunc.apply(vo);
-                BigDecimal totalWorkload = result.get(key);
-                if (totalWorkload == null) {
-                    totalWorkload = new BigDecimal("0.00");
-                }
+                BigDecimal totalWorkload = result.computeIfAbsent(key, k->new BigDecimal("0.00"));
                 result.put(key, totalWorkload.add(vo.getCouponWorkload()));
             });
         }
         if (StringHelper.isNotEmpty(refunds)) {
             refunds.forEach(vo -> {
                 String key = keyFunc.apply(vo);
-                BigDecimal totalWorkload = result.get(key);
-                if (totalWorkload == null) {
-                    totalWorkload = new BigDecimal("0.00");
-                }
+                BigDecimal totalWorkload = result.computeIfAbsent(key, k->new BigDecimal("0.00"));
                 result.put(key, totalWorkload.subtract(vo.getRefundWorkload()));
             });
         }

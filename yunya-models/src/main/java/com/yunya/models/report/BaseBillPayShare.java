@@ -51,25 +51,16 @@ public class BaseBillPayShare {
     private BigDecimal receivedAmount;
 
     /**
-     * 创建人id
+     * 执行人id
      */
-    @Column(name = "crt_id")
-    private Integer crtId;
+    @Column(name = "executor_id")
+    private Integer executorId;
 
     /**
-     * 创建时间
+     * 收费日期
      */
-    @Column(name = "crt_time")
-    private Date crtTime;
-
-    @Column(name = "upt_id")
-    private Integer uptId;
-
-    /**
-     * 更新时间
-     */
-    @Column(name = "upt_time")
-    private Date uptTime;
+    @Column(name = "pay_date")
+    private Date payDate;
 
     /**
      * 获取订单id
@@ -198,70 +189,38 @@ public class BaseBillPayShare {
     }
 
     /**
-     * 获取创建人id
+     * 获取执行人id
      *
-     * @return crt_id - 创建人id
+     * @return executor_id - 执行人id
      */
-    public Integer getCrtId() {
-        return crtId;
+    public Integer getExecutorId() {
+        return executorId;
     }
 
     /**
-     * 设置创建人id
+     * 设置执行人id
      *
-     * @param crtId 创建人id
+     * @param executorId 执行人id
      */
-    public void setCrtId(Integer crtId) {
-        this.crtId = crtId;
+    public void setExecutorId(Integer executorId) {
+        this.executorId = executorId;
     }
 
     /**
-     * 获取创建时间
+     * 获取收费日期
      *
-     * @return crt_time - 创建时间
+     * @return pay_date - 收费日期
      */
-    public Date getCrtTime() {
-        return crtTime;
+    public Date getPayDate() {
+        return payDate;
     }
 
     /**
-     * 设置创建时间
+     * 设置收费日期
      *
-     * @param crtTime 创建时间
+     * @param payDate 收费日期
      */
-    public void setCrtTime(Date crtTime) {
-        this.crtTime = crtTime;
-    }
-
-    /**
-     * @return upt_id
-     */
-    public Integer getUptId() {
-        return uptId;
-    }
-
-    /**
-     * @param uptId
-     */
-    public void setUptId(Integer uptId) {
-        this.uptId = uptId;
-    }
-
-    /**
-     * 获取更新时间
-     *
-     * @return upt_time - 更新时间
-     */
-    public Date getUptTime() {
-        return uptTime;
-    }
-
-    /**
-     * 设置更新时间
-     *
-     * @param uptTime 更新时间
-     */
-    public void setUptTime(Date uptTime) {
-        this.uptTime = uptTime;
+    public void setPayDate(Date payDate) {
+        this.payDate = payDate;
     }
 }

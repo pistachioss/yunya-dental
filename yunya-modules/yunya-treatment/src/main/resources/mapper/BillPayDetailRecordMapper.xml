@@ -190,14 +190,16 @@
         GROUP by bpdr.order_record_id
     </select>
 
-    <select id="selectBillPayDetailList" resultType="com.yunya.models.treatment.BillPayDetailRecord">
+    <select id="selectBillPayDetailList" resultType="com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO">
         SELECT
             bpdr.bill_pay_record_id as billPayRecordId,
-            bpdr.id,
+            bpdr.id AS billPayDetailRecordId,
             bpdr.order_record_id AS orderRecordId,
             bpdr.account_item_id as accountItemId,
-            bpdr.amount as amount
+            bpdr.amount as amount,
+            bpdr.crt_time AS crtTime
         FROM bill_pay_detail_record bpdr
+        LEFT JOIN bill_pay_record bpr ON bpr.id = bpdr.bill_pay_record_id
         <where>
             bpdr.inservice = true
             <if test="query.dateType==0">

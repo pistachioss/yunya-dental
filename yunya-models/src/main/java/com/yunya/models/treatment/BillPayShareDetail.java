@@ -57,30 +57,16 @@ public class BillPayShareDetail {
     private BigDecimal receivedAmount;
 
     /**
-     * 状态：0-禁用，1-启用
+     * 执行人id
      */
-    private Boolean inservice;
+    @Column(name = "executor_id")
+    private Integer executorId;
 
     /**
-     * 创建人id
+     * 收费时间
      */
-    @Column(name = "crt_id")
-    private Integer crtId;
-
-    /**
-     * 创建时间
-     */
-    @Column(name = "crt_time")
-    private Date crtTime;
-
-    @Column(name = "upt_id")
-    private Integer uptId;
-
-    /**
-     * 更新时间
-     */
-    @Column(name = "upt_time")
-    private Date uptTime;
+    @Column(name = "pay_date")
+    private Date payDate;
 
     /**
      * 获取分摊记录id
@@ -227,88 +213,38 @@ public class BillPayShareDetail {
     }
 
     /**
-     * 获取状态：0-禁用，1-启用
+     * 获取执行人id
      *
-     * @return inservice - 状态：0-禁用，1-启用
+     * @return crt_id - 执行人id
      */
-    public Boolean getInservice() {
-        return inservice;
+    public Integer getExecutorId() {
+        return executorId;
     }
 
     /**
-     * 设置状态：0-禁用，1-启用
+     * 设置执行人id
      *
-     * @param inservice 状态：0-禁用，1-启用
+     * @param executorId 执行人id
      */
-    public void setInservice(Boolean inservice) {
-        this.inservice = inservice;
+    public void setExecutorId(Integer executorId) {
+        this.executorId = executorId;
     }
 
     /**
-     * 获取创建人id
+     * 获取收费时间
      *
-     * @return crt_id - 创建人id
+     * @return crt_time - 收费时间
      */
-    public Integer getCrtId() {
-        return crtId;
+    public Date getPayDate() {
+        return payDate;
     }
 
     /**
-     * 设置创建人id
+     * 设置收费时间
      *
-     * @param crtId 创建人id
+     * @param payDate 收费时间
      */
-    public void setCrtId(Integer crtId) {
-        this.crtId = crtId;
-    }
-
-    /**
-     * 获取创建时间
-     *
-     * @return crt_time - 创建时间
-     */
-    public Date getCrtTime() {
-        return crtTime;
-    }
-
-    /**
-     * 设置创建时间
-     *
-     * @param crtTime 创建时间
-     */
-    public void setCrtTime(Date crtTime) {
-        this.crtTime = crtTime;
-    }
-
-    /**
-     * @return upt_id
-     */
-    public Integer getUptId() {
-        return uptId;
-    }
-
-    /**
-     * @param uptId
-     */
-    public void setUptId(Integer uptId) {
-        this.uptId = uptId;
-    }
-
-    /**
-     * 获取更新时间
-     *
-     * @return upt_time - 更新时间
-     */
-    public Date getUptTime() {
-        return uptTime;
-    }
-
-    /**
-     * 设置更新时间
-     *
-     * @param uptTime 更新时间
-     */
-    public void setUptTime(Date uptTime) {
-        this.uptTime = uptTime;
+    public void setPayDate(Date payDate) {
+        this.payDate = payDate;
     }
 }

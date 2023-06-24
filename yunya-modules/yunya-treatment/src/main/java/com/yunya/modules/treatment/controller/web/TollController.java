@@ -9,6 +9,7 @@ import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BillPayShareDetailBiz;
 import com.yunya.modules.treatment.biz.TollBiz;
@@ -169,11 +170,14 @@ public class TollController {
     return ResponseUtil.success(result);
   }
 
-  @ApiOperation("根据账单id或收费id生成项目收费分摊明细")
+  @ApiOperation("根据条件在treatment库生成项目收费分摊明细，不同步中间表")
   @PostMapping("/generate/sharedDetail")
-  @CurrentUser
   public ResponseResult generateItemPaySharedDetail(@RequestBody BillPayShareDetailQuery query) {
-    billPayShareDetailBiz.shullfeItemPaySharedDetail(query);
+    DateUtil.dur("bill_pay_share_detail分摊数据生成", o->{
+      billPayShareDetailBiz.deleteByBillDateRange(query);
+      billPayShareDetailBiz.shullfeItemPaySharedDetail(query);
+      return null;
+    });
     return ResponseUtil.success();
   }
 }

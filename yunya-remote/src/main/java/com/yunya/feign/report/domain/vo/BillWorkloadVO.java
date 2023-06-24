@@ -33,6 +33,9 @@ public class BillWorkloadVO implements Serializable {
   /** 已收金额合计 */
   @ApiModelProperty("已收金额合计")
   private BigDecimal receivedAmount;
+  /** 账单划扣卡核销工作量 */
+  @ApiModelProperty("账单划扣卡核销工作量")
+  private BigDecimal swipeWorkload;
   /** 免单支付金额合计 */
   @ApiModelProperty("免单支付金额合计")
   private BigDecimal freePayAmount;

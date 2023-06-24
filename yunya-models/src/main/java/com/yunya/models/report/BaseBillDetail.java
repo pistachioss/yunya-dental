@@ -42,9 +42,6 @@ public class BaseBillDetail {
   /** 项目ID */
   @Column(name = "item_id")
   private Integer itemId;
-  /** 项目名称 */
-  @Column(name = "item_name")
-  private Integer itemName;
 
   /** 项目类型（0-价目表；1-商品） */
   @Column(name = "item_type")
@@ -67,6 +64,14 @@ public class BaseBillDetail {
   /** 项目免单金额 */
   @Column(name = "free_amount")
   private BigDecimal freeAmount;
+
+  /** 划扣卡核销工作量 */
+  @Column(name = "swipe_workload")
+  private BigDecimal swipeWorkload;
+
+  /** 划扣卡补入工作量 */
+  @Column(name = "swipe_coupon_workload")
+  private BigDecimal swipeCouponWorkload;
 
   /** 开单备注 */
   private String remark;

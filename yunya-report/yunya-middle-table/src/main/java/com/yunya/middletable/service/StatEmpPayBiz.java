@@ -62,6 +62,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
     public void statisticsEmployeeByPayDate(List<OrderDetail> orderDetails, BaseBill bill, BaseBillPay baseBillPay) {
         Integer orgId = bill.getOrgId();
         Date date = new Date(System.currentTimeMillis());
+        String payeeDate = DateUtil.format(baseBillPay.getPayeeDate());
         Integer payDate = DateUtil.date2Number(baseBillPay.getPayeeDate());
         if (StringHelper.isNotEmpty(orderDetails)) {
             orderDetails.forEach(vo->{
@@ -75,7 +76,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                     query.setItemId(vo.getBillingItemId());
                     mapper.delete(query);
                     List<StatEmpPay> details = baseBillPayShareMapper.statisitcsItemPayShareDetails(
-                            orgId, payDate, executorId, vo.getType(), vo.getBillingItemId());
+                            orgId, payeeDate, payeeDate, executorId, vo.getType(), vo.getBillingItemId());
                     if (StringHelper.isNotEmpty(details)) {
                         Integer payeeUserId = baseBillPay.getPayeeUserId();
                         details.forEach(entity -> {
@@ -270,7 +271,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
      * @param form
      * @throws InterruptedException
      */
-    public void pullPayDateStatistics(PullForm form) throws InterruptedException {
+    public void pullPayDateStatisticsOld(PullForm form) throws InterruptedException {
         Date now = new Date(System.currentTimeMillis());
         String startDate = form.getStartDate();
         String endDate = form.getEndDate();
@@ -356,5 +357,44 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
      */
     private void insertBatch(List<StatEmpPay> datas) {
         mapper.insertBatch(datas);
+    }
+
+    /**
+     * 批量拉取
+     *
+     * @param form
+     * @throws InterruptedException
+     */
+    public void pullPayDateStatistics(PullForm form) throws InterruptedException {
+        Date now = new Date(System.currentTimeMillis());
+        String startDate = form.getStartDate();
+        String endDate = form.getEndDate();
+        deleteData(startDate, endDate);
+        List<StatEmpPay> details = baseBillPayShareMapper.statisitcsItemPayShareDetails(
+                63, startDate, endDate, 734, (byte) 0, null);
+        if (StringHelper.isNotEmpty(details)) {
+            List<StatEmpPay> datas = new ArrayList<>();
+            details.forEach(entity -> {
+                entity.setCrtId(entity.getDentistId());
+                entity.setCrtTime(now);
+                datas.add(entity);
+            });
+            List<Future> resultFutures = new ArrayList<>();
+            List<List<StatEmpPay>> partition = Lists.partition(datas, 1000);
+            CountDownLatch latch = new CountDownLatch(partition.size());
+            partition.forEach(vo -> resultFutures.add(
+                    importExcelThreadPool.submit(() -> {
+                        try {
+                            insertBatch(vo);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            latch.countDown();
+                        }
+                    })
+            ));
+            latch.await();
+            BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
+        }
     }
 }

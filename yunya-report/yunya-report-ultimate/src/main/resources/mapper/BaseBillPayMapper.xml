@@ -2100,33 +2100,33 @@
         bb.bill_id AS billId,
         bb.org_id AS billOrgId,
         IFNULL(bb.actual_amount,0) AS actualAmount,
+        IFNULL(bb.swipe_workload,0) AS swipeWorkload,
         IFNULL(SUM(bbp.received_amount),0) AS receivedAmount,
         IFNULL(SUM(bbpd.freePayAmount),0) AS freePayAmount
         FROM
         base_bill_pay bbp
         LEFT JOIN (
-        SELECT
-        bb.org_id,
-        bb.bill_id,
-        bb.bill_date,
-        bb.actual_amount
-        FROM
-        base_bill bb
-        <where>
-            AND bb.bill_date IS NOT NULL
-            AND bb.actual_amount &gt; 0
-            <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND bb.org_id IN
-                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
+            SELECT
+                bb.org_id,
+                bb.bill_id,
+                bb.bill_date,
+                bb.actual_amount,
+                bb.swipe_workload
+            FROM base_bill bb
+            <where>
+                AND bb.bill_date IS NOT NULL
+                AND bb.actual_amount &gt; 0
+                <if test="query.orgIds != null and query.orgIds.length > 0">
+                    AND bb.org_id IN
+                    <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
         ) bb ON bbp.bill_id = bb.bill_id
         LEFT JOIN (
-        SELECT bill_pay_id,IFNULL(SUM(principal_amount),0) AS freePayAmount FROM base_bill_pay_detail
-        WHERE account_item_id IN (23,26) AND type=2
-        GROUP BY bill_pay_id
+            SELECT bill_pay_id,IFNULL(SUM(principal_amount),0) AS freePayAmount FROM base_bill_pay_detail
+            WHERE account_item_id IN (23,26) AND type=2 GROUP BY bill_pay_id
         ) bbpd ON bbpd.bill_pay_id=bbp.bill_pay_id
         <where>
             AND bbp.received_amount &gt; 0

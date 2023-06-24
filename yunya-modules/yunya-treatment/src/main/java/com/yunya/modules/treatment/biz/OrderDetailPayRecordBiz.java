@@ -120,7 +120,7 @@ public class OrderDetailPayRecordBiz
    * 根据订单id查询订单在billPayId截止之前的项目收费明细
    *
    * @param orderRecordId
-   * @param billPayId
+   * @param billPayId 查询条件传递值到返回列表中
    * @return
    */
   public List<BillPayShareDetailVO> findItemPayDetailDeadlineBillPayId(Integer orderRecordId, Integer billPayId) {

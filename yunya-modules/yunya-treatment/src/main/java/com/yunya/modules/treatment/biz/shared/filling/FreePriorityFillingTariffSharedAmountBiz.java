@@ -1,16 +1,12 @@
-package com.yunya.modules.treatment.biz;
+package com.yunya.modules.treatment.biz.shared.filling;
 
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayShareDetail;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 项目金额分摊：
@@ -23,41 +19,34 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@Service
-public class FreePriorityFillingTariffSharedAmountBiz implements IItemPaySharedAmount{
+//@Service
+public class FreePriorityFillingTariffSharedAmountBiz extends AbstractFillingSharedAmountBiz {
 
     @Override
-    public BillPayShareDetail[] generateSharedDetails(BigDecimal thisFreeAmount, BigDecimal thisReceivedAmount, Integer billPayId, List<BillPayShareDetailVO> itemPayDetails, Integer optId) {
-        Date now = new Date(System.currentTimeMillis());
+    public Collection<BillPayShareDetail> generateSharedDetails(BigDecimal thisFreeAmount, BigDecimal thisReceivedAmount, List<BillPayShareDetailVO> itemPayDetails, Date payDate) {
         int size = itemPayDetails.size();
-        BillPayShareDetail[] result = new BillPayShareDetail[size];
+        Map<Integer, BillPayShareDetail> result = new HashMap<>(size);
         // 【本次收费中的免单，本次收费中的实收，项目欠费，价目已收，商品已收】
         BigDecimal[] payment = {thisFreeAmount, thisReceivedAmount, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
 
         // 优先填充
         for (int i=0,j=size-1; i < size; i++,j--) {
             BillPayShareDetailVO tariffDetail = itemPayDetails.get(i);
-            BillPayShareDetailVO oralDetail = itemPayDetails.get(j);
             BillPayShareDetail tariffShared = priorityFilling(tariffDetail, payment);
-            if (StringHelper.isNotNull(tariffShared)) {
-                computeIfAbsent(result, i, tariffShared, billPayId, optId, now);
-            }
+            computeIfAbsent(result, i, tariffShared, payDate);
+
+            BillPayShareDetailVO oralDetail = itemPayDetails.get(j);
             BillPayShareDetail oralShared = priorityFilling(oralDetail, payment);
-            if (StringHelper.isNotNull(oralShared)) {
-                computeIfAbsent(result, j, oralShared, billPayId, optId, now);
-            }
+            computeIfAbsent(result, j, oralShared, payDate);
         }
 
         // 过剩填充
-        for (int j=size-1; j >=0; j--) {
-            BillPayShareDetailVO itemPayDetail = itemPayDetails.get(j);
-            BillPayShareDetail detail = residualFilling(itemPayDetail, payment);
-            if (StringHelper.isNotNull(detail)) {
-                computeIfAbsent(result, j, detail, billPayId, optId, now);
-            }
+        for (int i=size-1; i >=0; i--) {
+            BillPayShareDetail detail = residualFilling(itemPayDetails.get(i), payment);
+            computeIfAbsent(result, i, detail, payDate);
         }
 
-        return result;
+        return result.values();
     }
 
     /**
@@ -108,38 +97,14 @@ public class FreePriorityFillingTariffSharedAmountBiz implements IItemPaySharedA
     }
 
     /**
-     * 如果列表指定index上对象不存在，则将新对象添加，否则更新费用
-     *
-     * @param result 列表
-     * @param index 位置
-     * @param shareDetail 新对象
-     * @param billPayId
-     * @param optId
-     * @param now
-     */
-    private void computeIfAbsent(BillPayShareDetail[] result, int index, BillPayShareDetail shareDetail, Integer billPayId, Integer optId, Date now) {
-        BillPayShareDetail o = result[index];
-        if (StringHelper.isNull(o)) {
-            shareDetail.setBillPayId(billPayId);
-            shareDetail.setCrtId(optId);
-            shareDetail.setCrtTime(now);
-            shareDetail.setUptId(optId);
-            shareDetail.setUptTime(now);
-            result[index] = shareDetail;
-        } else {
-            o.setFreeAmount(o.getFreeAmount().add(shareDetail.getFreeAmount()));
-            o.setReceivedAmount(o.getReceivedAmount().add(shareDetail.getReceivedAmount()));
-        }
-    }
-
-    /**
      * 费用优先填充：免单金额优先往价目上填充，实收金额优先往商品上填充，
      *
      * @param detail
      * @param payment
      * @return
      */
-    private BillPayShareDetail priorityFilling(BillPayShareDetailVO detail, BigDecimal[] payment) {
+    @Override
+    public BillPayShareDetail priorityFilling(BillPayShareDetailVO detail, BigDecimal[] payment) {
         Byte itemType = detail.getItemType();
         BigDecimal actualAmount = detail.getActualReceivable();
         BigDecimal totalReceived = detail.getItemRecAmount().add(detail.getItemFreeAmount());
@@ -168,41 +133,9 @@ public class FreePriorityFillingTariffSharedAmountBiz implements IItemPaySharedA
         return shareDetail;
     }
 
-    /**
-     * 金额分摊规则
-     *
-     * @param payments 本次收费列表
-     * @param index 收费单元所在位置
-     * @return
-     */
-    public BigDecimal sharedAmount(BigDecimal[] payments, Integer index) {
-        BigDecimal thisPayAmount = payments[index];
-        BigDecimal sharedAmount = BigDecimal.ZERO;
-        BigDecimal gap = payments[2];
-        BigDecimal filling = gap.subtract(thisPayAmount);
-        if (StringHelper.geZero(filling)) {
-            sharedAmount = thisPayAmount;
-            thisPayAmount = BigDecimal.ZERO;
-            // 缺口更新
-            gap = filling;
-        } else {
-            sharedAmount = gap;
-            // 填充后的剩余
-            thisPayAmount = filling.abs();
-            // 缺口更新
-            gap = BigDecimal.ZERO;
-        }
-        payments[2] = gap;
-        payments[index] = thisPayAmount;
-        return sharedAmount;
-    }
-
-
     @Deprecated
     public List<BillPayShareDetail> generateSharedDetails0(BigDecimal thisFreeAmount, BigDecimal thisReceivedAmount, Integer billPayId, List<BillPayShareDetailVO> itemPayDetails) {
         List<BillPayShareDetail> result = new ArrayList<>();
-        Integer optId = Integer.parseInt(BaseContextHandler.getUserID());
-        Date now = new Date(System.currentTimeMillis());
         BigDecimal[] payments = {thisFreeAmount, thisReceivedAmount, BigDecimal.ZERO};
         for (BillPayShareDetailVO detail : itemPayDetails) {
             BigDecimal actualAmount = detail.getActualReceivable();
@@ -229,11 +162,8 @@ public class FreePriorityFillingTariffSharedAmountBiz implements IItemPaySharedA
             shareDetail.setOrderRecordId(detail.getOrderRecordId());
             shareDetail.setFreeAmount(freeShared);
             shareDetail.setReceivedAmount(receivedShared);
-            shareDetail.setInservice(true);
-            shareDetail.setCrtId(optId);
-            shareDetail.setCrtTime(now);
-            shareDetail.setUptId(optId);
-            shareDetail.setUptTime(now);
+//            shareDetail.setExecutorId(executorId);
+//            shareDetail.setPayDate(payDate);
             result.add(shareDetail);
         }
         return result;

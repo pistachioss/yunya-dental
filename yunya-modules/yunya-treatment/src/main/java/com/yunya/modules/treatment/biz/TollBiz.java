@@ -559,7 +559,7 @@ public class TollBiz {
     // 保存收费明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, payments);
     // 保存收费项目分摊明细
-    billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, payments, orderRecordId, billPayRecordId);
+    billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, payments, orderRecordId, billPayRecord);
     orderRecord.setStatus(BusinessConstants.ORDER_FINISH_STATUS);
     orderRecord.setUpdId(userId);
     orderRecord.setUpdName(name);
@@ -1962,7 +1962,7 @@ public class TollBiz {
     // 保存收费记录支付方式明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
     // 保存收费项目分摊明细
-    billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, paymentModels, orderRecordId, billPayRecordId);
+    billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, paymentModels, orderRecordId, billPayRecord);
     // 发送消息同步账单，账单收费
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);

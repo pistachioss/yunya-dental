@@ -1,15 +1,17 @@
 package com.yunya.modules.treatment.biz;
 
-import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.treatment.domain.model.PaymentModel;
 import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
+import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.models.treatment.BillPayDetailRecord;
+import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.BillPayShareDetail;
+import com.yunya.modules.treatment.biz.shared.IItemPaySharedAmount;
 import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
+import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayShareDetailMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,6 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillPay;
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
 
 /**
@@ -38,16 +39,16 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
     @Autowired private OrderDetailPayRecordBiz orderDetailPayRecordBiz;
     /** 账单收费方式明细 */
     @Autowired private BillPayDetailRecordMapper billPayDetailRecordMapper;
-    @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+    /** 账单收费记录 */
+    @Autowired private BillPayRecordMapper billPayRecordMapper;
 
     /**
      * 提取其他入账方式中的免单总额
      *
-     * @param totalCharge 总收费（含免单）
      * @param payments 其他入账方式（含免单）
      * @return
      */
-    private BigDecimal extrationFreeAmount(BigDecimal totalCharge, Set<PaymentModel> payments) {
+    private BigDecimal extrationFreeAmount(Set<PaymentModel> payments) {
         BigDecimal freePayment = BigDecimal.ZERO;
         for (PaymentModel payment : payments) {
             Integer accountItemId = payment.getAccountItemId();
@@ -64,12 +65,12 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      * @param totalCharge 付款总额
      * @param payments 其他入账方式
      * @param orderRecordId 订单id
-     * @param billPayId 本次收费id
+     * @param billPay 本次收费记录
      */
-    public void saveItemPaySharedAmount(BigDecimal totalCharge, Set<PaymentModel> payments, Integer orderRecordId, Integer billPayId) {
-        BigDecimal freeAmount = extrationFreeAmount(totalCharge, payments);
+    public void saveItemPaySharedAmount(BigDecimal totalCharge, Set<PaymentModel> payments, Integer orderRecordId, BillPayRecord billPay) {
+        BigDecimal freeAmount = extrationFreeAmount(payments);
         BigDecimal receivedAmount = totalCharge.subtract(freeAmount);
-        saveItemPaySharedAmount(freeAmount, receivedAmount, orderRecordId, billPayId);
+        saveItemPaySharedAmount(freeAmount, receivedAmount, orderRecordId, billPay.getId(), billPay.getCrtTime());
     }
 
     /**
@@ -78,19 +79,18 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      * @param thisFreeAmount 本次收费的免单金额
      * @param thisReceivedAmount 本次收费的实收金额
      * @param orderRecordId 订单id
-     * @param billPayId 收费id
+     * @param payDate 收费日期
      */
-    public void saveItemPaySharedAmount(BigDecimal thisFreeAmount, BigDecimal thisReceivedAmount, Integer orderRecordId, Integer billPayId) {
-        Integer optId = Integer.parseInt(BaseContextHandler.getUserID());
+    public void saveItemPaySharedAmount(BigDecimal thisFreeAmount, BigDecimal thisReceivedAmount, Integer orderRecordId, Integer billPayId, Date payDate) {
         // 查询本次收费之前的项目实收和免单
         List<BillPayShareDetailVO> itemPayDetails = orderDetailPayRecordBiz.findItemPayDetailDeadlineBillPayId(orderRecordId, billPayId);
         // 根据分摊规则生成项目的实收和免单分摊数据
-        BillPayShareDetail[] result = iItemPaySharedAmount.generateSharedDetails(thisFreeAmount, thisReceivedAmount, billPayId, itemPayDetails, optId);
-        List<BillPayShareDetail> shareDetails = Arrays.stream(result)
+        Collection<BillPayShareDetail> result = iItemPaySharedAmount.generateSharedDetails(thisFreeAmount, thisReceivedAmount, itemPayDetails, payDate);
+        List<BillPayShareDetail> shareDetails = result.stream()
                 .filter(vo-> StringHelper.isNotNull(vo) && (StringHelper.gtZero(vo.getFreeAmount()) || StringHelper.gtZero(vo.getReceivedAmount())))
                 .collect(Collectors.toList());
-        if(StringHelper.isEmpty(shareDetails)) {
-            log.error("账单收费：{}没有可分摊的项目", billPayId);
+        if (StringHelper.isEmpty(shareDetails)) {
+            log.error("账单收费：{}没有可分摊的项目",  billPayId);
             return;
         }
         // 批量保存
@@ -125,30 +125,44 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
     }
 
     /**
-     * 洗牌并生成项目分摊数据
+     * 对指定账单或指定收费进行洗牌，并重新生成项目分摊数据
      *
      * @param query
      */
     public void shullfeItemPaySharedDetail(BillPayShareDetailQuery query) {
         removeByCombinationKey(query.getOrderRecordId(), query.getBillPayId(), null);
-        List<BillPayDetailRecord> details = billPayDetailRecordMapper.selectBillPayDetailList(query);
-        Map<String, BigDecimal[]> map = new LinkedHashMap<>(16);
-        for (BillPayDetailRecord vo : details) {
+        List<BillPayDetailRecordVO> details = billPayDetailRecordMapper.selectBillPayDetailList(query);
+        Map<Integer, JSONObject> map = new LinkedHashMap<>(16);
+        for (BillPayDetailRecordVO vo : details) {
             BigDecimal amount = vo.getAmount();
-            String key = StringHelper.joinWith(",", vo.getOrderRecordId(), vo.getBillPayRecordId());
-            BigDecimal[] amounts = map.computeIfAbsent(key, k -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
-            Integer accountItemId = vo.getAccountItemId();
-            if (FREE_PAYMENT_ID.contains(accountItemId)) {
-                amounts[0] = amounts[0].add(amount);
+            Integer key = vo.getBillPayRecordId();
+            JSONObject billPay = map.computeIfAbsent(key, k->{
+                JSONObject obj = new JSONObject();
+                obj.put("freeAmount", BigDecimal.ZERO);
+                obj.put("receivedAmount", BigDecimal.ZERO);
+                obj.put("payDate", vo.getCrtTime());
+                obj.put("orderRecordId", vo.getOrderRecordId());
+                return obj;
+            });
+            if (FREE_PAYMENT_ID.contains(vo.getAccountItemId())) {
+                BigDecimal freeAmount = StringHelper.defaultBigDecimal(billPay.getBigDecimal("freeAmount"));
+                billPay.put("freeAmount", freeAmount.add(amount));
             } else {
-                amounts[1] = amounts[1].add(amount);
+                BigDecimal receivedAmount = StringHelper.defaultBigDecimal(billPay.getBigDecimal("receivedAmount"));
+                billPay.put("receivedAmount", receivedAmount.add(amount));
             }
         }
-        map.forEach((key, amounts)->{
-            String[] keys = StringHelper.split(key, ",");
-            int billPayRecordId = Integer.parseInt(keys[1]);
-            saveItemPaySharedAmount(amounts[0], amounts[1], Integer.parseInt(keys[0]), billPayRecordId);
-            rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
+        map.forEach((billPayId, billPay)->{
+            saveItemPaySharedAmount(billPay.getBigDecimal("freeAmount"),
+                    billPay.getBigDecimal("receivedAmount"),
+                    billPay.getInteger("orderRecordId"),
+                    billPayId,
+                    billPay.getDate("payDate"));
+//            rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
         });
+    }
+
+    public void deleteByBillDateRange(BillPayShareDetailQuery query) {
+        mapper.removeByBillDateRange(query);
     }
 }

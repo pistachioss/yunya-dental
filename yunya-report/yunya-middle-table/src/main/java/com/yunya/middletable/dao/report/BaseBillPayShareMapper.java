@@ -14,13 +14,17 @@ public interface BaseBillPayShareMapper extends Mapper<BaseBillPayShare> {
     /**
      * 统计指定门诊、指定日期、指定执行人下的各项目的总免单和总实收
      * @param orgId
-     * @param payDate
+     * @param startDate
+     * @param endDate
      * @param executorId
+     * @param itemType
+     * @param itemId
      * @return
      */
     List<StatEmpPay> statisitcsItemPayShareDetails(
             @Param("orgId") Integer orgId,
-            @Param("payDate") Integer payDate,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
             @Param("executorId") Integer executorId,
             @Param("itemType") Byte itemType,
             @Param("itemId") Integer itemId);

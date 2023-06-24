@@ -524,7 +524,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                 BigDecimal actualAmount = vo.getActualAmount();
                 BigDecimal receivedAmount = vo.getReceivedAmount();
                 BigDecimal workloaded = BigDecimal.ZERO;
-                // 非工作量=商品总应收/订单总应收*实收
+                // 非工作量=商品总应收/订单总应收*实收 + 划扣卡核销工作量（商品）
                 if (actualAmount.compareTo(BigDecimal.ZERO) > 0
                         && receivedAmount.compareTo(BigDecimal.ZERO) > 0) {
                   workloaded =
@@ -537,16 +537,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                 if (overageAmount.compareTo(BigDecimal.ZERO)>0) {
                   workloaded = workloaded.subtract(overageAmount);
                 }
-                Map<Integer, BigDecimal> res = result.get(month);
-                if (res == null) {
-                  res = new HashMap<>(16);
-                }
-                BigDecimal workload = res.get(orgId);
-                if (workload == null) {
-                  workload = BigDecimal.ZERO;
-                }
+                workloaded = workloaded.add(vo.getSwipeWorkload());
+                Map<Integer, BigDecimal> res = result.computeIfAbsent(month, k->new HashMap<>());
+                BigDecimal workload = res.computeIfAbsent(orgId, k->BigDecimal.ZERO);
                 res.put(orgId, workload.add(workloaded));
-                result.put(month, res);
               });
     }
     return result;

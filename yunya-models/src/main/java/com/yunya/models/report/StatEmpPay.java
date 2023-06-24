@@ -50,6 +50,12 @@ public class StatEmpPay {
     private BigDecimal receivedWorkload;
 
     /**
+     * 划扣卡核销工作量
+     */
+    @Column(name = "swipe_workload")
+    private BigDecimal swipeWorkload;
+
+    /**
      * 免单工作量
      */
     @Column(name = "free_payment_workload")
@@ -175,10 +181,38 @@ public class StatEmpPay {
         this.receivedWorkload = receivedWorkload;
     }
 
+    /**
+     * 获取划扣卡核销工作量
+     *
+     * @return
+     */
+    public BigDecimal getSwipeWorkload() {
+        return swipeWorkload;
+    }
+
+    /**
+     * 设置划扣卡核销工作量
+     *
+     * @param swipeWorkload
+     */
+    public void setSwipeWorkload(BigDecimal swipeWorkload) {
+        this.swipeWorkload = swipeWorkload;
+    }
+
+    /**
+     * 获取免单工作量
+     *
+     * @return
+     */
     public BigDecimal getFreePaymentWorkload() {
         return freePaymentWorkload;
     }
 
+    /**
+     * 设置免单工作量
+     *
+     * @param freePaymentWorkload
+     */
     public void setFreePaymentWorkload(BigDecimal freePaymentWorkload) {
         this.freePaymentWorkload = freePaymentWorkload;
     }

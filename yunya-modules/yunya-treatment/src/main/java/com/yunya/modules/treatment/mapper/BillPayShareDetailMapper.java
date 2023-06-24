@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.models.treatment.BillPayShareDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -13,4 +14,6 @@ public interface BillPayShareDetailMapper extends Mapper<BillPayShareDetail> {
             @Param("orderRecordId") Integer orderRecordId,
             @Param("billPayId") Integer billPayId,
             @Param("orderDetailId") Integer orderDetailId);
+
+    void removeByBillDateRange(@Param("query") BillPayShareDetailQuery query);
 }

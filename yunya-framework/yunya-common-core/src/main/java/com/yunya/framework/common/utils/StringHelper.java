@@ -653,6 +653,16 @@ public class StringHelper extends StringUtils {
   }
 
   /**
+   * 小于等于0
+   *
+   * @param value
+   * @return
+   */
+  public static boolean leZero(BigDecimal value) {
+    return le(value, BigDecimal.ZERO);
+  }
+
+  /**
    * 大于0
    * @param value
    * @return
@@ -661,6 +671,12 @@ public class StringHelper extends StringUtils {
     return gt(value, BigDecimal.ZERO);
   }
 
+  /**
+   * 大于等于0
+   *
+   * @param value
+   * @return
+   */
   public static boolean geZero(BigDecimal value) {
     return ge(value, BigDecimal.ZERO);
   }

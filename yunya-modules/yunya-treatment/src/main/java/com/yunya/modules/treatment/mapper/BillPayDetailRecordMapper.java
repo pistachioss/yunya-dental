@@ -96,5 +96,5 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    * @param query
    * @return
    */
-  List<BillPayDetailRecord> selectBillPayDetailList(@Param("query") BillPayShareDetailQuery query);
+  List<BillPayDetailRecordVO> selectBillPayDetailList(@Param("query") BillPayShareDetailQuery query);
 }

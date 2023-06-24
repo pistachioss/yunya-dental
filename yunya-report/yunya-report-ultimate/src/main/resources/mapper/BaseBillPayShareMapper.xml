@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseBillPayShareMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBillPayShare" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="bill_id" property="billId" jdbcType="INTEGER" />
+    <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER" />
+    <result column="bill_detail_id" property="billDetailId" jdbcType="INTEGER" />
+    <result column="item_type" property="itemType" jdbcType="TINYINT" />
+    <result column="item_id" property="itemId" jdbcType="INTEGER" />
+    <result column="free_amount" property="freeAmount" jdbcType="DECIMAL" />
+    <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+    <result column="executor_id" property="executorId" jdbcType="INTEGER" />
+    <result column="pay_date" property="payDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+
+
+  <!-- 根据条件查询员工个人已收工作量明细列表 -->
+  <select id="selectEmployeePersonalReceivedWorkloadDetailList"
+          resultType="com.yunya.feign.report.domain.vo.EmployeePersonalReceivedWorkloadDetailVO">
+    SELECT
+      bbp.billId,
+      bbp.billPayId,
+      DATE_FORMAT(bbp.orderDate, '%Y-%m-%d') AS orderDate,
+      DATE_FORMAT(bbp.billDate, '%Y-%m-%d') AS billDate,
+      bbp.billNum,
+      bbp.orgId,
+      bbp.orgName,
+      bbp.patientId,
+      bbp.patientName,
+      bbp.mobile,
+      bbp.age,
+      DATE_FORMAT(bbp.payeeDate, '%Y-%m-%d %H:%i') AS chargeDate,
+      bbp.receivedAmount AS receivedWorkload
+    FROM (
+    SELECT
+    bbp.bill_pay_id as billPayId,
+    bbp.received_amount AS receivedAmount,
+    bbp.bill_id AS billId,
+    bbp.pay_date AS payeeDate,
+    bb.org_id AS orgId,
+    bb.abbreviation AS orgName,
+    bb.patient_id AS patientId,
+    bb.order_date AS orderDate,
+    bb.bill_date AS billDate,
+    bb.bill_num AS billNum,
+    bb.patientName,
+    bb.pinyinName,
+    bb.age,
+    bb.mobile
+    FROM (
+    SELECT
+    bill_id,
+    bill_pay_id,
+    pay_date,
+    SUM(received_amount) AS received_amount
+    FROM base_bill_pay_share
+    <where>
+      <if test="query.isConsulter == 0">
+        AND executor_id = #{query.employeeId}
+      </if>
+      <if test="query.dateType == 0">
+        <if test="query.startDate != null and query.startDate != ''">
+          AND DATE_FORMAT(pay_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          AND DATE_FORMAT(pay_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+        </if>
+      </if>
+      <if test="query.dateType == 1">
+        <if test="query.startDate != null and query.startDate != ''">
+          AND DATE_FORMAT(pay_date, '%Y-%m' ) &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          AND DATE_FORMAT(pay_date, '%Y-%m' ) &lt;= #{query.endDate}
+        </if>
+      </if>
+      <if test="query.dateType == 2">
+        <if test="query.startDate != null and query.startDate != ''">
+          AND DATE_FORMAT(pay_date, '%Y' ) &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          AND DATE_FORMAT(pay_date, '%Y' ) &lt;= #{query.endDate}
+        </if>
+      </if>
+    </where>
+    GROUP BY bill_id, bill_pay_id, pay_date
+    ) bbp
+    INNER JOIN (
+    SELECT
+    bb.org_id,
+    bo.abbreviation,
+    bb.patient_id,
+    bb.bill_id,
+    bb.order_date,
+    bb.bill_date,
+    bb.bill_num,
+    bp.`name` AS patientName,
+    bp.pinyin_name AS pinyinName,
+    TIMESTAMPDIFF(YEAR, bp.birthday,CURDATE()) AS age,
+    bp.mobile AS mobile
+    FROM base_bill bb
+    LEFT JOIN base_organization bo ON bb.org_id = bo.org_id
+    LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+    <where>
+      AND bb.actual_amount > 0
+      <if test="query.orgId != null">
+        AND bb.org_id = #{query.orgId}
+      </if>
+    </where>
+    ) bb ON bbp.bill_id = bb.bill_id
+    <where>
+      AND bbp.received_amount > 0
+    </where>
+    ) bbp
+    <where>
+      <if test="query.keyword != null and query.keyword != ''">
+        AND concat(IFNULL(bbp.patientName, ''), IFNULL(bbp.pinyinName, ''), IFNULL(bbp.mobile, '')) Like
+        concat('%', #{query.keyword}, '%')
+      </if>
+      <if test="query.billNum != null and query.billNum != ''">
+        AND bbp.billNum LIKE concat('%', #{query.billNum} ,'%')
+      </if>
+      <if test="query.billDate != null and query.billDate != ''">
+        AND DATE_FORMAT(bbp.billDate, '%Y-%m-%d') = #{query.billDate}
+      </if>
+    </where>
+    GROUP BY
+    bbp.billPayId
+    ORDER BY
+    bbp.billDate DESC,
+    bbp.billNum DESC
+  </select>
+</mapper>
