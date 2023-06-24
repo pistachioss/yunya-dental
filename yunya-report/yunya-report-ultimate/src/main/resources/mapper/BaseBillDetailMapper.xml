@@ -1682,6 +1682,33 @@
     <!-- 根据条件查询员工已收工作量明细列表 -->
     <select id="selectEmployeeReceivedDetailList"
             resultType="com.yunya.feign.report.domain.vo.EmployeeReceivedDetailWorkloadVO">
+        SELECT
+            bbps.bill_detail_id AS orderDetailId,
+            bbps.item_type AS itemType,
+            bbps.item_id AS itemId,
+            bti.item_name AS itemName,
+            bti.item_num AS itemNum,
+            sum(received_amount) AS receivedWorkload
+        FROM base_bill_pay_share bbps
+        LEFT JOIN base_tariff_info bti ON bbps.item_type = bti.item_type AND bbps.item_id = bti.item_id
+        <where>
+            <if test="query.billPayId != null">
+                and bbps.bill_pay_id = #{query.billPayId}
+            </if>
+            <if test="query.isConsulter == 0">
+                AND bbps.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND bbd.consulter_id = #{query.employeeId}
+            </if>
+        </where>
+        GROUP BY bbps.bill_detail_id, bbps.item_type, bbps.item_id
+        ORDER BY bbps.bill_pay_id
+    </select>
+
+    <!-- 根据条件查询员工已收工作量明细列表 -->
+    <select id="selectEmployeeReceivedDetailList0"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeReceivedDetailWorkloadVO">
         select
         bbd.orderDetailId,
         bbd.itemType,
