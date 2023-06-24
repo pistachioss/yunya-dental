@@ -1751,8 +1751,37 @@
         ) bbd on bbp.billId = bbd.bill_id
     </select>
 
-    <!-- 根据条件查询员工已收工作量明细列表 -->
+    <!-- 根据条件查询员工免单工作量明细列表 -->
     <select id="selectEmployeeFreePaymentDetailList"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeReceivedDetailWorkloadVO">
+        SELECT
+            bbps.bill_detail_id AS orderDetailId,
+            bbps.item_type AS itemType,
+            bbps.item_id AS itemId,
+            bti.item_num AS itemNum,
+            bti.item_name AS itemName,
+            IFNULL(bbps.free_amount, 0) AS freePaymentWorkload
+        FROM (
+            SELECT
+                bill_detail_id,
+                item_type,
+                item_id,
+                SUM(free_amount) AS free_amount
+            FROM base_bill_pay_share
+            <where>
+                free_amount > 0
+                AND bill_Pay_id = #{query.billPayId}
+                AND executor_id = #{query.employeeId}
+            </where>
+            GROUP BY bill_detail_id, item_type, item_id
+        ) bbps
+        LEFT JOIN base_tariff_info bti ON bbps.item_type = bti.item_type
+        AND bbps.item_id = bti.item_id
+        ORDER BY bbps.bill_detail_id
+    </select>
+
+    <!-- 根据条件查询员工已收工作量明细列表 -->
+    <select id="selectEmployeeFreePaymentDetailList0"
             resultType="com.yunya.feign.report.domain.vo.EmployeeReceivedDetailWorkloadVO">
         SELECT * FROM(
         SELECT
@@ -6405,5 +6434,108 @@
             </if>
         </where>
         GROUP BY bbd.item_type, bbd.item_id, bbd.executor_id
+    </select>
+
+    <!--根据条件查询员工免单工作量明细列表-->
+    <select id="selectEmployeeFreeWorkloadDetail"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeFreepaymentWorkloadDetailVO">
+        SELECT
+            ${query.employeeId} AS employeeId,
+            bbp.bill_pay_id as billPayId,
+            bo.abbreviation,
+            bb.bill_id AS billId,
+            bbp.org_id as orgId,
+            bb.bill_num AS billNum,
+            DATE_FORMAT(bbp.payee_date,'%Y-%m-%d %H:%i:%s') AS chargeDate,
+            DATE_FORMAT(bb.order_date,'%Y-%m-%d') AS orderDate,
+            DATE_FORMAT(bb.bill_date,'%Y-%m-%d %H:%i:%s') AS billDate,
+            bp.`name` AS patientName,
+            TIMESTAMPDIFF(YEAR, bp.birthday,CURDATE()) AS age,
+            bp.mobile,
+            IFNULL(bbps.free_amount, 0) AS freePaymentWorkload
+        FROM base_bill_pay bbp
+        LEFT JOIN base_bill bb ON bbp.bill_id=bb.bill_id
+        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+        LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
+        INNER JOIN (
+            SELECT
+                bill_pay_id,
+                SUM(free_amount) free_amount
+            FROM base_bill_pay_share
+            <where>
+                AND bbps.executor_id > 0
+                <if test="query.employeeId !=null">
+                    and bbps.executor_id = #{query.employeeId}
+                </if>
+            </where>
+            GROUP BY bill_pay_id
+        ) bbps ON bbps.bill_pay_id = bbp.bill_pay_id
+        <where>
+            bbps.free_amount > 0
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                and concat(IFNULL(bp.name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) Like
+                concat('%', #{query.keyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and bb.bill_num like concat('', #{query.billNum} ,'%')
+            </if>
+            <if test="query.billDate != null and query.billDate != ''">
+                and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') = #{query.billDate}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bbp.payee_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bbp.payee_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bbd.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bbd.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bb.bill_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bb.bill_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ORDER BY
+        bb.order_date DESC,
+        bb.bill_num DESC
     </select>
 </mapper>

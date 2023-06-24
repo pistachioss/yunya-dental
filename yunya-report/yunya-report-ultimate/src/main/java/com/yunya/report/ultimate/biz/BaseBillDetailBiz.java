@@ -752,6 +752,21 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public PageInfo<EmployeeFreepaymentWorkloadDetailVO> findEmployeeFreepaymentWorkloadDetailList(
       EmployeePersonalWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeFreepaymentWorkloadDetailVO> resultList = mapper.selectEmployeeFreeWorkloadDetail(query);
+    return new PageInfo<>(resultList);
+  }
+  /**
+   * 根据条件查询员工个人免单支付工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeFreepaymentWorkloadDetailVO>
+   */
+  @Deprecated
+  public PageInfo<EmployeeFreepaymentWorkloadDetailVO> findEmployeeFreepaymentWorkloadDetailList0(
+      EmployeePersonalWorkloadDetailQuery query) {
     EmployeeWorkloadQuery workloadQuery = new EmployeeWorkloadQuery();
     workloadQuery.setWhetherPage(false);
     workloadQuery.setDateType(query.getDateType());
@@ -980,39 +995,39 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         mapper.selectEmployeeFreePaymentDetailList(query);
 
     // 免单支付
-    if (StringHelper.isNotEmpty(resultList)) {
-      List<BillItemAmountSharedVO> details =
-          mapper.selectBillDetailByBillIds(
-              Collections.singletonList(query.getBillId()), query.getIsConsulter());
-      details =
-          details.stream()
-              .filter(vo -> vo.getItemActualAmount().compareTo(BigDecimal.ZERO) > 0)
-              .collect(Collectors.toList());
-      Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
-      BaseBillPayDetailVO freeVO = sumFreePayments(query.getBillPayId());
-      Map<String, BigDecimal> amounts = new HashMap<>(16);
-      for (BillItemAmountSharedVO detail : details) {
-        Integer executorId = detail.getExecutorId();
-        Integer itemId = detail.getItemId();
-        Byte itemType = detail.getItemType();
-        if (query.getEmployeeId().equals(executorId)) {
-          BigDecimal free =
-              defaultFree(
-                  freeVO.getPrincipalAmount(), itemType, billAmountMap.get(detail.getBillId()));
-          amounts.put(itemId + "," + itemType, detail.getItemFreePaymentRatio().multiply(free));
-        }
-      }
-      resultList.forEach(
-          vo -> {
-            Integer itemId = vo.getItemId();
-            Byte itemType = vo.getItemType();
-            BigDecimal amount = amounts.get(itemId + "," + itemType);
-            if (amount == null) {
-              amount = BigDecimal.ZERO;
-            }
-            vo.setFreePaymentWorkload(amount);
-          });
-    }
+//    if (StringHelper.isNotEmpty(resultList)) {
+//      List<BillItemAmountSharedVO> details =
+//          mapper.selectBillDetailByBillIds(
+//              Collections.singletonList(query.getBillId()), query.getIsConsulter());
+//      details =
+//          details.stream()
+//              .filter(vo -> vo.getItemActualAmount().compareTo(BigDecimal.ZERO) > 0)
+//              .collect(Collectors.toList());
+//      Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
+//      BaseBillPayDetailVO freeVO = sumFreePayments(query.getBillPayId());
+//      Map<String, BigDecimal> amounts = new HashMap<>(16);
+//      for (BillItemAmountSharedVO detail : details) {
+//        Integer executorId = detail.getExecutorId();
+//        Integer itemId = detail.getItemId();
+//        Byte itemType = detail.getItemType();
+//        if (query.getEmployeeId().equals(executorId)) {
+//          BigDecimal free =
+//              defaultFree(
+//                  freeVO.getPrincipalAmount(), itemType, billAmountMap.get(detail.getBillId()));
+//          amounts.put(itemId + "," + itemType, detail.getItemFreePaymentRatio().multiply(free));
+//        }
+//      }
+//      resultList.forEach(
+//          vo -> {
+//            Integer itemId = vo.getItemId();
+//            Byte itemType = vo.getItemType();
+//            BigDecimal amount = amounts.get(itemId + "," + itemType);
+//            if (amount == null) {
+//              amount = BigDecimal.ZERO;
+//            }
+//            vo.setFreePaymentWorkload(amount);
+//          });
+//    }
     return new PageInfo<>(resultList);
   }
 

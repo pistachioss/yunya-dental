@@ -605,4 +605,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   List<BillItemReceivableAmountVO> selectBillItemReceivableAmountList(@Param("billIds") Collection<Integer> billIds);
 
   List<EmployeeTariffWorkloadVO> selectExecutorTariffItemStatistics(@Param("query") MultiClinicEmloyeeDateRangeQueryForm query);
+
+  /**
+   * 根据条件查询员工免单工作量明细列表
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeFreepaymentWorkloadDetailVO> selectEmployeeFreeWorkloadDetail(@Param("query") EmployeePersonalWorkloadDetailQuery query);
 }
