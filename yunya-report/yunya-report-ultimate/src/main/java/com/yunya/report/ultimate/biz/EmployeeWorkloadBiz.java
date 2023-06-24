@@ -76,11 +76,11 @@ public class EmployeeWorkloadBiz {
     Future<List<ClinicEmployeBonusCoefficientVO>> employee =
         multiFindClinicEmployeeCartesianProduct(query);
 
-    // 门诊员工的应收工作量
+    // 门诊员工的应收工作量（含划扣卡核销工作量）
     Future<Map<String, BigDecimal>> receivableWorkload =
         findClinicEmployeeReceivableWorkload(query);
 
-    // 门诊员工的实收工作量
+    // 门诊员工的实收工作量（含免单）
     Future<Map<String, BigDecimal>> receivedWorkload =
         findClinicEmployeeReceivedWorkload(query, true);
 
@@ -235,7 +235,7 @@ public class EmployeeWorkloadBiz {
   }
 
   /**
-   * 员工工作量=实收工作量+补入工作量-退费工作量-免单支付工作量
+   * 员工工作量=实收工作量+划扣卡核销工作量+补入工作量-退费工作量-免单支付工作量
    *
    * @param vo
    * @return
@@ -245,6 +245,7 @@ public class EmployeeWorkloadBiz {
     BigDecimal supplementWorkload = vo.getSupplementWorkload();
     BigDecimal refundWorkload = vo.getRefundWorkload();
     BigDecimal freePaymentWorkload = vo.getFreePaymentWorkload();
+      // TODO: 2023/6/25 需补充划扣卡核销工作量
     return receivedWorkload
         .add(supplementWorkload)
         .subtract(refundWorkload)
@@ -332,7 +333,7 @@ public class EmployeeWorkloadBiz {
   }
 
   /**
-   * 多线程查询门诊员工的实收工作量
+   * 多线程查询门诊员工的实收工作量（含免单）
    *
    * @param query
    * @param groupByOrgId
@@ -349,7 +350,7 @@ public class EmployeeWorkloadBiz {
   }
 
   /**
-   * 多线程查询门诊员工的应收工作量
+   * 多线程查询门诊员工的应收工作量（含划扣卡核销工作量）
    *
    * @param query
    * @return
