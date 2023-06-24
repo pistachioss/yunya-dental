@@ -1283,7 +1283,7 @@
         (
         SELECT
         bbd.bill_id,
-        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS actualWorkload
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount + bbd.swipe_workload ) AS actualWorkload
         FROM
         base_bill_detail bbd
         <where>
@@ -1386,7 +1386,7 @@
         bti.item_name as itemName,
         bbd.price * bbd.quantity as originalPrice,
         bbd.discount_amount as discountAmount,
-        bbd.price * bbd.quantity - bbd.discount_amount as actualWorkload
+        bbd.price * bbd.quantity - bbd.discount_amount + bbd.swipe_workload as actualWorkload
         from
         base_bill_detail bbd
         left join base_tariff_info bti on bbd.item_type = bti.item_type
