@@ -35,6 +35,7 @@ import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCoupon;
 
@@ -187,6 +188,19 @@ public class VoucherDiscountItemController {
                     t.setUpdTime(date);
                     t.setCrtTime(date);
                 });
+
+                CouponCommonInfo commonInfo = couponCommonInfoBiz.selectById(specialPackageCouponItem.getCouponId());
+                if (Objects.equals(5, commonInfo.getType().intValue())) {
+                    BigDecimal saleAmount = new BigDecimal("0");
+                    for(SpecialPackageCouponItemForm pi:specialPackageCouponItemForms){
+                        saleAmount = saleAmount.add(pi.getSaleAmount());
+                    }
+                    CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
+                    couponCommonInfo.setId(specialPackageCouponItemForms.get(0).getCouponId());
+                    couponCommonInfo.setSoldAmount(saleAmount);
+                    //插入卡券售出金额
+                    couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
+                }
             }
             return ResponseUtil.success(voucherDiscountItemBiz.saveSpecial(specialPackageCouponItemForms));
         }

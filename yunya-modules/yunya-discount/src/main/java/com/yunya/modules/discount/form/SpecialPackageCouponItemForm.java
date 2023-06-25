@@ -76,4 +76,10 @@ public class SpecialPackageCouponItemForm {
 
   /** 更新时间 */
   private Date updTime;
+
+    @ApiModelProperty("项目单价")
+    private BigDecimal unitPrice;
+
+    @ApiModelProperty("项目原价")
+    private BigDecimal price;
 }

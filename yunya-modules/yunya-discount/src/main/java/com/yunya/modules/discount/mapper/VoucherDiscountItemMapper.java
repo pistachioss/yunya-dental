@@ -19,4 +19,5 @@ public interface VoucherDiscountItemMapper extends Mapper<VoucherDiscountItem> {
 
     List<VouDisAfterOptimizationVO> findListAfterOptimization(VoucherDiscountItem voucherDiscountItem);
 
+    int saveDeductionPeriod(List<SpecialPackageCouponItemForm> list);
 }

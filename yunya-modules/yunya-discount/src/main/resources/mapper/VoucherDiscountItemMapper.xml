@@ -92,4 +92,29 @@
     <select id="findListAfterOptimization" resultType="com.yunya.feign.discount.domain.vo.VouDisAfterOptimizationVO">
 
     </select>
+    <insert id="saveDeductionPeriod"  parameterType="com.yunya.modules.discount.form.SpecialPackageCouponItemForm">
+        INSERT INTO deduction_item_period (
+        id,
+        coupon_id,
+        type,
+        item_id,
+        package_unit_price,
+        sale_amount,
+        count,
+        workload_load,
+        unit_price,
+        price,
+        is_show_app,
+        crt_id,
+        crt_time
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id}, #{item.couponId},#{item.type}
+            ,#{item.itemId}
+            ,#{item.packageUnitPrice},#{item.saleAmount}
+            ,#{item.count},#{item.workloadRate},#{item.unitPrice},#{item.price},#{item.isShowApp}
+            ,#{item.crtId},#{item.crtTime})
+        </foreach>
+    </insert>
 </mapper>

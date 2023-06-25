@@ -29,7 +29,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class DeductionPackageCouponBiz extends BaseBiz<DeductionPackageCouponMapper, DeductionCoupon> {
+public class DeductionCouponBiz extends BaseBiz<DeductionPackageCouponMapper, DeductionCoupon> {
 
     //划扣券编码类型
     private static final String DEDUCTION_PACKAGE_COUPON_TYPE = "HK";

@@ -4,11 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -34,7 +30,7 @@ public class CouponCommonInfoQueryForm {
     /**
      * 卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）
      */
-    @ApiModelProperty("卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）")
+    @ApiModelProperty("卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券；4-划扣券）")
     @NotNull(message = "卡券类型不能为空")
     private Integer type;
 

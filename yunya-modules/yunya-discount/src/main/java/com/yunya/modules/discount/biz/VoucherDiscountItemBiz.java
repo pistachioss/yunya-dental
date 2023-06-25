@@ -12,8 +12,8 @@ import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.BaseTariffCategory;
 import com.yunya.modules.discount.form.PackageCouponItemForm;
 import com.yunya.modules.discount.form.SpecialPackageCouponItemForm;
-import com.yunya.modules.discount.mapper.VoucherDiscountItemMapper;
 import com.yunya.modules.discount.form.VoucherDiscountItemForm;
+import com.yunya.modules.discount.mapper.VoucherDiscountItemMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCoupon;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponItem;
 
 /**
@@ -42,6 +40,8 @@ public class VoucherDiscountItemBiz extends BaseBiz<VoucherDiscountItemMapper, V
     private RemoteRabbitMqServiceFeign mqServiceFeign;
     @Autowired
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
+    @Resource
+    private DeductionPeriodBiz deductionPeriodBiz;
 
     public int saveVouAndDis(List<VoucherDiscountItemForm> list) {
         int a = mapper.saveVouAndDis(list);
@@ -61,6 +61,7 @@ public class VoucherDiscountItemBiz extends BaseBiz<VoucherDiscountItemMapper, V
 
     public int saveSpecial(List<SpecialPackageCouponItemForm> list) {
         int a = mapper.saveSpecial(list);
+        deductionPeriodBiz.save(list);
         if (a > 0 && list.size() > 0) {
             mqServiceFeign.sendMessage(list.get(0).getCouponId(), BusinessConstants.ADD, BaseCouponItem);
         }
