@@ -157,7 +157,7 @@
         </where>
         GROUP BY bill_id, month
     ) bbps
-    LEFT JOIN (
+    INNER JOIN (
       SELECT
       bb.org_id,
       bb.bill_id,
