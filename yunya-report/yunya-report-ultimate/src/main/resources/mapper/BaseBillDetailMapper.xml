@@ -3382,6 +3382,7 @@
         bb.bill_date desc,
         bb.bill_num desc
     </select>
+
     <!-- 查询订单实收工作量总和 -->
     <select id="selectBillTotalWorkload" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
         SELECT
@@ -3412,6 +3413,7 @@
         </where>
         GROUP BY bbd.bill_id
     </select>
+
     <!-- 根据订单ID列表查询非工作量总和 -->
     <select id="selectBillTotalNotWorkload" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
         SELECT
@@ -6463,9 +6465,9 @@
                 SUM(free_amount) free_amount
             FROM base_bill_pay_share
             <where>
-                AND bbps.executor_id > 0
+                AND executor_id > 0
                 <if test="query.employeeId !=null">
-                    and bbps.executor_id = #{query.employeeId}
+                    and executor_id = #{query.employeeId}
                 </if>
             </where>
             GROUP BY bill_pay_id

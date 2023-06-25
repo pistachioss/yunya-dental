@@ -172,7 +172,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     orderDetailPays.forEach(vo->{
       BaseBillDetail entity = new BaseBillDetail();
       entity.setBillDetailId(vo.getOrderDetailId());
-      entity.setReceivedAmount(vo.getReceivedAmount());
+      entity.setReceivedAmount(vo.getReceivedAmount().add(vo.getFreeAmount()));
       entity.setFreeAmount(vo.getFreeAmount());
       baseBillDetailMapper.updateByPrimaryKeySelective(entity);
     });

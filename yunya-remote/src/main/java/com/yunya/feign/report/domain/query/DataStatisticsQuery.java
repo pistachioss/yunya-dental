@@ -49,4 +49,8 @@ public class DataStatisticsQuery extends PageQuery implements Serializable {
   @ApiModelProperty(value = "入账方式id列表")
   private Collection<Integer> payIds;
   private Collection<Integer> billIds;
+
+  /** 是否存在执行人 */
+  @ApiModelProperty("是否存在执行人，默认为true")
+  private Boolean existsExecutor = true;
 }

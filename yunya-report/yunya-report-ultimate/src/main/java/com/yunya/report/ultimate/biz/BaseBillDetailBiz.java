@@ -1312,10 +1312,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       if (goal == null) {
         goal = BigDecimal.ZERO;
       }
-      BigDecimal[] workloads = workloadCompleted.get(orgId);
-      if (workloads == null) {
-        workloads = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
-      }
+      BigDecimal[] workloads = workloadCompleted.computeIfAbsent(orgId, k->new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
       BigDecimal monthWorkload = workloads[0].setScale(2, BigDecimal.ROUND_HALF_UP); // 实际值
       BigDecimal curWorkload = workloads[1]; // 今日完成
       BigDecimal completedPercentage = BigDecimal.ZERO; // 完成度
