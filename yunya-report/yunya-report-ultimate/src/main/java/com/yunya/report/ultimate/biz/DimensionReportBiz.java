@@ -1018,7 +1018,7 @@ public class DimensionReportBiz {
                 oralIds.addAll(StringHelper.split2IntList(oralIdStr, ","));
             }
         });
-        // 门诊的实收、免单
+        // 门诊的实收、划扣卡核销、免单
         Future<List<BillExecutorItemVO>> workloadFuture = multiFindClinicEmployeeWorkload(query, null);
         // 门诊的补入
         Future<List<BillExecutorItemVO>> couponFuture = multiFindClinicEmployeeCouponWorkload(query, null);
@@ -1148,6 +1148,7 @@ public class DimensionReportBiz {
 
     /**
      * 员工工作量统计转换为门诊工作量统计
+     *  工作量=实收（不含免单）+划扣卡核销工作量+补入-退费
      * @param pays
      * @param refunds
      * @param oralIds
@@ -1166,7 +1167,7 @@ public class DimensionReportBiz {
                 if (totalWorkload == null) {
                     totalWorkload = new BigDecimal("0.00");
                 }
-                BigDecimal workload = vo.getReceivedWorkload().subtract(vo.getFreePaymentWorkload());
+                BigDecimal workload = vo.getReceivedWorkload().add(vo.getSwipeWorkload());
                 orgWorkloadMap.put(orgId, totalWorkload.add(workload));
                 Integer itemId = vo.getItemId();
                 String key = orgId + ",";
