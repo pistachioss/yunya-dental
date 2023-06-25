@@ -1485,6 +1485,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<BillWorkloadVO> receivedWorkload = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(query);
     Map<String, Map<Integer, BigDecimal>> workloadMap =
         baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query, receivedWorkload);
+    query.setExistsExecutor(false);
+    receivedWorkload = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(query);
     Map<String, Map<Integer, BigDecimal>> nonWorkloadMap =
         baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(receivedWorkload);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
@@ -1603,21 +1605,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return year;
   }
 
-  private BigDecimal computeOrgWorkload(
-      Integer orgId,
-      List<String> chainMonthList,
+  private BigDecimal computeOrgWorkload(Integer orgId, List<String> chainMonthList,
       Map<String, Map<Integer, BigDecimal>> workloadMap) {
     BigDecimal result = BigDecimal.ZERO;
     for (String month : chainMonthList) {
       Map<Integer, BigDecimal> midMap = workloadMap.get(month);
-      if (midMap == null) {
-        midMap = new HashMap<>(16);
+      if (StringHelper.isNotNull(midMap)) {
+        BigDecimal workload = midMap.get(orgId);
+        if (StringHelper.isNotNull(workload)) {
+          result = result.add(workload);
+        }
       }
-      BigDecimal workload = midMap.get(orgId);
-      if (workload == null) {
-        workload = BigDecimal.ZERO;
-      }
-      result = result.add(workload);
     }
     return result;
   }

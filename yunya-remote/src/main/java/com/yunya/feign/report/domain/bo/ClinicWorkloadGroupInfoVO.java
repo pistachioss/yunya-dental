@@ -45,6 +45,10 @@ public class ClinicWorkloadGroupInfoVO implements Serializable {
   /** 首次收费工作量合计 */
   @ApiModelProperty("首次收费工作量合计")
   private BigDecimal firstReceivedWorkload;
+
+  @ApiModelProperty("首次划扣卡核销工作量合计")
+  private BigDecimal firstSwipeWorkload;
+
   /** 首次收费免单工作量合计 */
   @ApiModelProperty("首次收费免单工作量合计")
   private BigDecimal firstFreePayWorkload;

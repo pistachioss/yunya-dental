@@ -221,6 +221,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         BigDecimal receivedAmount = vo.getReceivedAmount();
         BigDecimal freePayAmount = vo.getFreeAmount();
         BigDecimal firstReceivedWorkload = BigDecimal.ZERO;
+        BigDecimal firstSwipeWorkload = BigDecimal.ZERO;
         BigDecimal firstCouponWorkload = BigDecimal.ZERO;
         BigDecimal firstFreePayWorkload = BigDecimal.ZERO;
         BigDecimal arrearsReceivedWorkload = BigDecimal.ZERO;
@@ -251,6 +252,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         ClinicWorkloadGroupInfoVO monthWorkload = workloads[0];
         monthWorkload.setFirstReceivedWorkload(
             monthWorkload.getFirstReceivedWorkload().add(firstReceivedWorkload));
+        monthWorkload.setFirstSwipeWorkload(
+                monthWorkload.getFirstSwipeWorkload().add(firstSwipeWorkload));
         monthWorkload.setFirstCouponWorkload(
             monthWorkload.getFirstCouponWorkload().add(firstCouponWorkload));
         monthWorkload.setFirstFreePayWorkload(
@@ -271,6 +274,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           ClinicWorkloadGroupInfoVO curWorkload = workloads[1];
           curWorkload.setFirstReceivedWorkload(
               curWorkload.getFirstReceivedWorkload().add(firstReceivedWorkload));
+          curWorkload.setFirstSwipeWorkload(
+                curWorkload.getFirstSwipeWorkload().add(firstSwipeWorkload));
           curWorkload.setFirstCouponWorkload(
               curWorkload.getFirstCouponWorkload().add(firstCouponWorkload));
           curWorkload.setFirstFreePayWorkload(
@@ -565,7 +570,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * @return
    */
   public List<BillWorkloadVO> findReceivedWorkloadsGroupByMonth(DataStatisticsQuery query) {
-    return mapper.selectRecievedWorkloadsGroupByMonth(query);//1.6
+//    return mapper.selectRecievedWorkloadsGroupByMonth(query);//1.6
+    return baseBillPayShareMapper.selectRecievedWorkloadsGroupByMonth(query);
   }
 
   /**
@@ -575,6 +581,71 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * @return
    */
   public Map<String, Map<Integer, BigDecimal>> computeWorkloadGroupOrgIdAndMonth(
+          DataStatisticsQuery query, List<BillWorkloadVO> workloads) {
+    Map<String, Map<Integer, BigDecimal>> result = new HashMap<>(16);
+    List<BillRecordWorkloadVO> couponWorkloads = findCouponWorkloadGroupByPrivilegeDate(query);
+    List<BillOfRefundWorkloadVO> totalRefundWorkload =
+        refundBiz.findTotalRefundWorkloadGroupByMonth(query);
+    // 工作量=实收工作量(含免单)+划扣卡核销工作量+补入工作量-退费工作量
+    if (StringHelper.isNotEmpty(workloads)) {
+      workloads.forEach(
+          vo -> {
+            String month = vo.getMonth();
+            Integer orgId = vo.getBillOrgId();
+            BigDecimal workload = vo.getReceivedAmount().add(vo.getSwipeWorkload());
+            Map<Integer, BigDecimal> res = result.computeIfAbsent(month, k->new HashMap<>(16));
+            BigDecimal orgWorkload = res.get(orgId);
+            if (orgWorkload == null) {
+              orgWorkload = BigDecimal.ZERO;
+            }
+            res.put(orgId, orgWorkload.add(workload));
+          });
+    }
+    if (StringHelper.isNotEmpty(couponWorkloads)) {
+      couponWorkloads.forEach(
+          vo -> {
+            String month = vo.getMonth();
+            Integer orgId = vo.getBillOrgId();
+            Map<Integer, BigDecimal> res = result.get(month);
+            if (res == null) {
+              res = new HashMap<>(16);
+            }
+            BigDecimal workload = res.get(orgId);
+            if (workload == null) {
+              workload = BigDecimal.ZERO;
+            }
+            res.put(orgId, workload.add(vo.getBillTotalCouponWorkload()));
+            result.put(month, res);
+          });
+    }
+    if (StringHelper.isNotEmpty(totalRefundWorkload)) {
+      totalRefundWorkload.forEach(
+          vo -> {
+            String month = vo.getMonth();
+            Integer orgId = vo.getOrgId();
+            Map<Integer, BigDecimal> res = result.get(month);
+            if (res == null) {
+              res = new HashMap<>(16);
+            }
+            BigDecimal workload = res.get(orgId);
+            if (workload == null) {
+              workload = BigDecimal.ZERO;
+            }
+            res.put(orgId, workload.subtract(vo.getTotalRefundWorkload()));
+            result.put(month, res);
+          });
+    }
+    return result;
+  }
+
+  /**
+   * 计算工作总量，按门诊和月份分组
+   * @param query
+   * @param workloads
+   * @return
+   */
+  @Deprecated
+  public Map<String, Map<Integer, BigDecimal>> computeWorkloadGroupOrgIdAndMonth0(
           DataStatisticsQuery query, List<BillWorkloadVO> workloads) {
     Map<String, Map<Integer, BigDecimal>> result = new HashMap<>(16);
     Set<Integer> billIds =
@@ -618,6 +689,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
               }
               freeWorkload = freeWorkload.add(freePayAmount);
             }
+
             Map<Integer, BigDecimal> res = result.get(month);
             if (res == null) {
               res = new HashMap<>(16);
@@ -674,6 +746,29 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * @return
    */
   public Map<String, Map<Integer, BigDecimal>> computeNotWorkloadGroupOrgIdAndMonth(List<BillWorkloadVO> workloads) {
+    Map<String, Map<Integer, BigDecimal>> result = new HashMap<>(16);
+    if (StringHelper.isNotEmpty(workloads)) {
+      workloads.forEach(
+              vo -> {
+                String month = vo.getMonth();
+                Integer orgId = vo.getBillOrgId();
+                BigDecimal workload = vo.getReceivedAmount().add(vo.getSwipeWorkload());
+                // 非工作量=实收工作量（含免单）+划扣卡核销工作量（商品）
+                Map<Integer, BigDecimal> res = result.computeIfAbsent(month, k->new HashMap<>());
+                BigDecimal orgWorkload = res.computeIfAbsent(orgId, k->BigDecimal.ZERO);
+                res.put(orgId, orgWorkload.add(workload));
+              });
+    }
+    return result;
+  }
+  /**
+   * 计算非工作总量，按门诊和月份分组
+   *
+   * @param workloads
+   * @return
+   */
+  @Deprecated
+  public Map<String, Map<Integer, BigDecimal>> computeNotWorkloadGroupOrgIdAndMonth0(List<BillWorkloadVO> workloads) {
     Map<String, Map<Integer, BigDecimal>> result = new HashMap<>(16);
     Set<Integer> billIds =
             workloads.stream().map(BillWorkloadVO::getBillId).collect(Collectors.toSet());
@@ -849,9 +944,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     return result;
   }
 
+  /**
+   * 工作量=实收（含免单）+划扣卡工作量+补入-退费-免单
+   * @param monthWorkload
+   * @param totalRefundWorkload
+   * @return
+   */
   private BigDecimal computeTotalClinicWorkload(
           ClinicWorkloadGroupInfoVO monthWorkload, BigDecimal totalRefundWorkload) {
     BigDecimal firstReceivedWorkload = monthWorkload.getFirstReceivedWorkload();
+    BigDecimal firstSwipeWorkload = monthWorkload.getFirstSwipeWorkload();
     BigDecimal firstCouponWorkload = monthWorkload.getFirstCouponWorkload();
     BigDecimal firstFreePayWorkload = monthWorkload.getFirstFreePayWorkload();
     BigDecimal arrearsReceivedWorkload = monthWorkload.getArrearsReceivedWorkload();
@@ -861,7 +963,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     BigDecimal beCollectedCouponWorkload = monthWorkload.getBeCollectedCouponWorkload();
     BigDecimal beCollectedFreePayWorkload = monthWorkload.getBeCollectedFreePayWorkload();
     firstReceivedWorkload =
-            firstReceivedWorkload.add(firstCouponWorkload).subtract(firstFreePayWorkload);
+            firstReceivedWorkload.add(firstSwipeWorkload).add(firstCouponWorkload).subtract(firstFreePayWorkload);
     firstReceivedWorkload =
             firstReceivedWorkload.add(
                     arrearsReceivedWorkload.add(arrearsCouponWorkload.subtract(arrearsFreePayWorkload)));

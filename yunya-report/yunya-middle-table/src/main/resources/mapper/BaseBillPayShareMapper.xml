@@ -12,6 +12,7 @@
     <result column="item_id" property="itemId" jdbcType="INTEGER" />
     <result column="free_amount" property="freeAmount" jdbcType="DECIMAL" />
     <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+    <result column="swipe_workload" property="swipeWorkload" jdbcType="DECIMAL" />
     <result column="executor_id" property="executorId" jdbcType="INTEGER" />
     <result column="pay_date" property="payDate" jdbcType="TIMESTAMP" />
   </resultMap>
@@ -20,11 +21,11 @@
   <insert id="batchSave">
   INSERT INTO base_bill_pay_share
   (bill_id, bill_pay_id, bill_detail_id, item_type, item_id, free_amount,
-  received_amount, executor_id, pay_date)
+  received_amount, swipe_workload, executor_id, pay_date)
   VALUES
   <foreach collection ="list" item="it" index= "index" separator =",">
     (#{it.billId}, #{it.billPayId}, #{it.billDetailId}, #{it.itemType}, #{it.itemId}, #{it.freeAmount},
-    #{it.receivedAmount}, #{it.executorId}, #{it.payDate})
+    #{it.receivedAmount}, #{it.swipeWorkload} #{it.executorId}, #{it.payDate})
   </foreach>
   </insert>
 
@@ -34,10 +35,10 @@
       bbd.executor_id AS dentistId,
       bbd.item_type AS itemType,
       bbd.item_id AS itemId,
-      IFNULL(bbd.swipe_workload, 0) AS swipeWorkload,
       DATE_FORMAT(bbps.pay_date, '%Y%m%d') AS payDate,
       SUM(bbps.free_amount) AS freePaymentWorkload,
-      SUM(bbps.received_amount) AS receivedWorkload
+      SUM(bbps.received_amount) AS receivedWorkload,
+      SUM(bbds.swipe_workload, 0) AS swipeWorkload
     FROM base_bill_detail bbd
     LEFT JOIN base_bill_pay_share bbps ON bbps.bill_detail_id=bbd.bill_detail_id
     <where>

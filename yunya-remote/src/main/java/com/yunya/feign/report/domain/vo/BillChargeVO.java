@@ -34,6 +34,9 @@ public class BillChargeVO implements Serializable {
     /** 实收分摊总额（含免单） */
     @ApiModelProperty("实收分摊总额（含免单）")
     private BigDecimal receivedAmount;
+    /** 划扣卡核销工作量 */
+    @ApiModelProperty("划扣卡核销工作量")
+    private BigDecimal swipeWorkload;
     /** 免单分摊总额 */
     @ApiModelProperty("免单分摊总额")
     private BigDecimal freeAmount;

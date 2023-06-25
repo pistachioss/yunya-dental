@@ -57,6 +57,12 @@ public class BillPayShareDetail {
     private BigDecimal receivedAmount;
 
     /**
+     * 项目划扣卡核销工作量
+     */
+    @Column(name = "swipe_wokload")
+    private BigDecimal swipeWorkload;
+
+    /**
      * 执行人id
      */
     @Column(name = "executor_id")
@@ -210,6 +216,24 @@ public class BillPayShareDetail {
      */
     public void setReceivedAmount(BigDecimal receivedAmount) {
         this.receivedAmount = receivedAmount;
+    }
+
+    /**
+     * 获取划扣卡核销工作量
+     *
+     * @return
+     */
+    public BigDecimal getSwipeWorkload() {
+        return swipeWorkload;
+    }
+
+    /**
+     * 设置划扣卡核销工作量
+     *
+     * @param swipeWorkload
+     */
+    public void setSwipeWorkload(BigDecimal swipeWorkload) {
+        this.swipeWorkload = swipeWorkload;
     }
 
     /**
