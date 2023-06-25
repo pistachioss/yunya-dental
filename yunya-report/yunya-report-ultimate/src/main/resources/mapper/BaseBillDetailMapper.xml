@@ -1442,7 +1442,7 @@
         bill_id,
         bill_pay_id,
         pay_date,
-        SUM(received_amount) AS received_amount
+        SUM(received_amount + free_amount) AS received_amount
         FROM base_bill_pay_share
         <where>
             <if test="query.isConsulter == 0">
@@ -1688,7 +1688,7 @@
             bbps.item_id AS itemId,
             bti.item_name AS itemName,
             bti.item_num AS itemNum,
-            sum(received_amount) AS receivedWorkload
+            sum(received_amount + free_amount) AS receivedWorkload
         FROM base_bill_pay_share bbps
         LEFT JOIN base_tariff_info bti ON bbps.item_type = bti.item_type AND bbps.item_id = bti.item_id
         <where>
