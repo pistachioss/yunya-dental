@@ -1349,7 +1349,7 @@ public class DimensionReportBiz {
     }
 
     private Map<String, BigDecimal> clinicEmployeeWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds, Function<BillExecutorItemVO, String> keyFunc) throws ExecutionException, InterruptedException {
-        // 门诊的实收、划扣核销、免单
+        // 门诊的实收、划扣核销
         Future<List<BillExecutorItemVO>> payFuture = multiFindClinicEmployeeWorkload(query, employeeIds);
         // 门诊的补入
         Future<List<BillExecutorItemVO>> couponFuture = multiFindClinicEmployeeCouponWorkload(query, employeeIds);
@@ -1357,15 +1357,15 @@ public class DimensionReportBiz {
         // 门诊的退费
         List<BillExecutorItemVO> refunds = multiFindClinicEmployeeRefundWorkload(query, employeeIds).get();
         Map<String, BigDecimal> result = new HashMap<>();
-        // 工作量=实收+划扣核销+补入-免单-退费
+        // 工作量=实收（不含免单）+划扣核销+补入-退费
         if (StringHelper.isNotEmpty(pays)) {
             pays.forEach(vo->{
                 String key = keyFunc.apply(vo);
                 BigDecimal totalWorkload = result.computeIfAbsent(key, k->new BigDecimal("0.00"));
                 result.put(key,
                         totalWorkload.add(vo.getReceivedWorkload()
-                            .add(vo.getSwipeWorkload())
-                            .subtract(vo.getFreePaymentWorkload())));
+                            .add(vo.getSwipeWorkload())));
+//                            .subtract(vo.getFreePaymentWorkload())));
             });
         }
         List<BillExecutorItemVO> coupons = couponFuture.get();
