@@ -2499,6 +2499,7 @@ public class DimensionReportBiz {
         queryForm.setStartDate(DateUtil.yearStart(query.getStartDate() + "-01"));
         queryForm.setEndDate(DateUtil.yearEnd(query.getEndDate() + "-01"));
         queryForm.setOrgIds(query.getOrgIds().toArray(new Integer[0]));
+        queryForm.setExistsExecutor(false);
         List<BillWorkloadVO> workloads = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(queryForm);
         Map<String, Map<Integer, BigDecimal>> nonWorkloadDateMap
                 = baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(workloads);
