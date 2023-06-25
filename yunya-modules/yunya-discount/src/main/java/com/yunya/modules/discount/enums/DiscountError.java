@@ -65,7 +65,7 @@ public enum DiscountError implements RestError {
     RECHARGE_TIME_OUT(55, "该卡券已过充值截止时间，不可以充值！"),
     RECHARGE_HAS_RECHARGED(56,"该卡券已被充值，不可以再次充值！"),
     RECHARGE_NOT_SOLD(57, "该充值卡未售出，不可以充值！"),
-    BENEFIT_PACKAGE_ITEM_EMPTY(58,"套餐券项目为空,请添加项目后再保存"),
+    BENEFIT_PACKAGE_ITEM_EMPTY(58,"项目为空,请添加项目后再保存"),
     CARD_ALL_USED(59, "卡券已全部使用"),
     OTHER_CARD_IS_ACTIVATED(60, "第三方平台卡券已激活"),
     OTHER_CARD_NOT_ALLOW_DELETE(61, "患者不允许删除共有产品"),

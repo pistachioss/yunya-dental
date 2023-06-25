@@ -171,7 +171,7 @@ public class VoucherDiscountItemController {
      * @return
      */
     @PostMapping("/saveSpecial")
-    @ApiOperation("新增和修改套餐券适用项目(每次修改都会清空之前关联的项目，所以要传回所有的适用项目进行重新新增)")
+    @ApiOperation("新增和修改套餐券、划扣券适用项目(每次修改都会清空之前关联的项目，所以要传回所有的适用项目进行重新新增)")
     @CurrentUser
     public ResponseResult saveSpecial(@RequestBody @Valid List<SpecialPackageCouponItemForm> specialPackageCouponItemForms) {
         Date date = new Date();

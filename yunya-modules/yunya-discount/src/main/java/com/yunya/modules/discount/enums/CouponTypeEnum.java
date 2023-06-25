@@ -10,6 +10,7 @@ public enum CouponTypeEnum {
     SPECIAL_PACKAGE(3, "套餐券"),
     RECHARGE(4, "充值卡"),
     MEMBER_CARD(99, "会员卡"),
+    DEDUCTION(5, "划扣券"),
     ;
 
     private Integer code;
