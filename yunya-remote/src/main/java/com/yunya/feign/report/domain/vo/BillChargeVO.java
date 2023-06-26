@@ -46,4 +46,7 @@ public class BillChargeVO implements Serializable {
     /** 账单时间 */
     @ApiModelProperty("账单时间")
     private Date billDate;
+    /** 执行人id */
+    @ApiModelProperty("执行人id")
+    private Integer executorId;
 }

@@ -15,16 +15,18 @@ public interface BaseBillPayShareMapper extends Mapper<BaseBillPayShare> {
      * 根据条件查询收费记录ID、订单ID列表
      *
      * @param query 查询条件
+     * @param isExecutor 是否查询执行人
      * @return list
      */
-    List<BillChargeVO> selectBillIdsAndBillPayIds(@Param("query") DataStatisticsQuery query);
+    List<BillChargeVO> selectBillIdsAndBillPayIds(@Param("query") DataStatisticsQuery query, @Param("isExecutor") Boolean isExecutor);
 
     /**
      * 根据月份分组求已收工作量合计
      *
-     * @param query
+     * @param query 查询条件
+     * @param isExecutor 是否查询执行人
      * @return
      */
     List<BillWorkloadVO> selectRecievedWorkloadsGroupByMonth(
-            @Param("query") DataStatisticsQuery query);
+            @Param("query") DataStatisticsQuery query, @Param("isExecutor") Boolean isExecutor);
 }

@@ -25,31 +25,34 @@
     bbp.payee_date AS payeeDate,
     IFNULL(bbps.received_amount, 0) AS receivedAmount,
     IFNULL(bbps.free_amount, 0) AS freeAmount,
-    IFNULL(bbps.swipe_workload, 0) AS freeAmount,
+    IFNULL(bbps.swipe_workload, 0) AS swipeWorkload,
     bb.org_id AS billOrgId,
     bb.bill_id AS billId,
     bb.bill_date AS billDate,
-    bb.actual_amount AS actualAmount
+    bbps.executor_id AS executorId
     FROM base_bill_pay bbp
     LEFT JOIN (
         SELECT
             bill_pay_id,
-            pay_date,
+            executor_id,
             SUM(received_amount + free_amount) AS received_amount,
             SUM(free_amount) AS free_amount,
             SUM(swipe_workload) AS swipe_workload
         FROM base_bill_pay_share
         <where>
-          <if test="query.existsExecutor != null">
-            <if test="query.existsExecutor">
+          <if test="isExecutor != null">
+            <if test="isExecutor">
               AND executor_id > 0
             </if>
-            <if test="!query.existsExecutor">
+            <if test="!isExecutor">
               AND executor_id is null
             </if>
           </if>
         </where>
         GROUP BY bill_pay_id
+        <if test="isExecutor == null">
+            , executor_id
+        </if>
     ) bbps ON bbp.bill_pay_id = bbps.bill_pay_id
     INNER JOIN (
       SELECT
@@ -122,11 +125,11 @@
             SUM(swipe_workload) AS swipe_workload
         FROM base_bill_pay_share
         <where>
-          <if test="query.existsExecutor != null">
-            <if test="query.existsExecutor">
+          <if test="isExecutor != null">
+            <if test="isExecutor">
               AND executor_id > 0
             </if>
-            <if test="!query.existsExecutor">
+            <if test="!isExecutor">
               AND executor_id is null
             </if>
             <if test="query.dateType == 0">

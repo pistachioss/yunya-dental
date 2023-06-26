@@ -663,6 +663,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   public WorkloadStatisticsVO findClinicWorkloadStatistic(DataStatisticsQuery query) {
     WorkloadStatisticsVO resultData = new WorkloadStatisticsVO();
     ClinicWorkloadGroupInfoVO workloadInfo = baseBillPayBiz.generateClinicWorkloadInfo(query);
+    BigDecimal totalBillSwipeWorkload = workloadInfo.getFirstSwipeWorkload();
     BigDecimal totalReceivedWorkload =
         workloadInfo
             .getFirstReceivedWorkload()
@@ -685,8 +686,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                         .getBeCollectedCouponWorkload()
                         .subtract(workloadInfo.getBeCollectedFreePayWorkload())));
     BigDecimal totalRefundWorkload = workloadInfo.getTotalRefundWorkload();
-    resultData.setTotalClinicActualWorkload(totalReceivedWorkload.subtract(totalRefundWorkload));
+    resultData.setTotalClinicActualWorkload(totalReceivedWorkload.subtract(totalRefundWorkload).add(totalBillSwipeWorkload));
     resultData.setTotalReceivedWorkload(totalReceivedWorkload);
+    resultData.setTotalBillSwipeWorkload(totalBillSwipeWorkload);
     resultData.setTotalBillRefundWorkload(totalRefundWorkload);
     resultData.setTotalClinicReceivedWorkload(workloadInfo.getFirstReceivedWorkload());
     resultData.setTotalFreePaymentWorkload(workloadInfo.getFirstFreePayWorkload());
@@ -1482,11 +1484,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setStartDate(minDate);
     query.setEndDate(yearEDate);
     List<String> yearDateList = DateUtil.sliceUpDateRange(yearSDate, yearEDate);
-    List<BillWorkloadVO> receivedWorkload = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(query);
+    List<BillWorkloadVO> receivedWorkload = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(query, true);
     Map<String, Map<Integer, BigDecimal>> workloadMap =
         baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query, receivedWorkload);
-    query.setExistsExecutor(false);
-    receivedWorkload = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(query);
+    receivedWorkload = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(query, false);
     Map<String, Map<Integer, BigDecimal>> nonWorkloadMap =
         baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(receivedWorkload);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
