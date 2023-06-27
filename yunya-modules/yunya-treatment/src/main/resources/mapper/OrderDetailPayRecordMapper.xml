@@ -127,6 +127,7 @@
             od.type AS itemType,
             od.billing_item_id AS itemId,
             od.executor_id AS executorId,
+            od.consulter_id AS consulterId,
             odpr.actual_receivable AS actualReceivable,
             IFNULL(bd.tariffActualAmount, 0) AS tariffActualAmount,
             IFNULL(bd.oralActualAmount, 0) AS oralActualAmount,

@@ -69,6 +69,12 @@ public class BillPayShareDetail {
     private Integer executorId;
 
     /**
+     * 咨询师id
+     */
+    @Column(name = "consulter_id")
+    private Integer consulterId;
+
+    /**
      * 收费时间
      */
     @Column(name = "pay_date")
@@ -252,6 +258,24 @@ public class BillPayShareDetail {
      */
     public void setExecutorId(Integer executorId) {
         this.executorId = executorId;
+    }
+
+    /**
+     * 获取咨询师id
+     *
+     * @return
+     */
+    public Integer getConsulterId() {
+        return consulterId;
+    }
+
+    /**
+     * 设置咨询师id
+     *
+     * @param consulterId
+     */
+    public void setConsulterId(Integer consulterId) {
+        this.consulterId = consulterId;
     }
 
     /**

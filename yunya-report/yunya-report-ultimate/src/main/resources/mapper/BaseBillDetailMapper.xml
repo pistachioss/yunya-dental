@@ -1448,6 +1448,9 @@
             <if test="query.isConsulter == 0">
                 AND executor_id = #{query.employeeId}
             </if>
+            <if test="query.isConsulter == 1">
+                AND consulter_id = #{query.employeeId}
+            </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     AND DATE_FORMAT(pay_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
@@ -1699,7 +1702,7 @@
                 AND bbps.executor_id = #{query.employeeId}
             </if>
             <if test="query.isConsulter == 1">
-                AND bbd.consulter_id = #{query.employeeId}
+                AND bbps.consulter_id = #{query.employeeId}
             </if>
         </where>
         GROUP BY bbps.bill_detail_id, bbps.item_type, bbps.item_id
@@ -1751,37 +1754,8 @@
         ) bbd on bbp.billId = bbd.bill_id
     </select>
 
-    <!-- 根据条件查询员工免单工作量明细列表 -->
-    <select id="selectEmployeeFreePaymentDetailList"
-            resultType="com.yunya.feign.report.domain.vo.EmployeeReceivedDetailWorkloadVO">
-        SELECT
-            bbps.bill_detail_id AS orderDetailId,
-            bbps.item_type AS itemType,
-            bbps.item_id AS itemId,
-            bti.item_num AS itemNum,
-            bti.item_name AS itemName,
-            IFNULL(bbps.free_amount, 0) AS freePaymentWorkload
-        FROM (
-            SELECT
-                bill_detail_id,
-                item_type,
-                item_id,
-                SUM(free_amount) AS free_amount
-            FROM base_bill_pay_share
-            <where>
-                free_amount > 0
-                AND bill_Pay_id = #{query.billPayId}
-                AND executor_id = #{query.employeeId}
-            </where>
-            GROUP BY bill_detail_id, item_type, item_id
-        ) bbps
-        LEFT JOIN base_tariff_info bti ON bbps.item_type = bti.item_type
-        AND bbps.item_id = bti.item_id
-        ORDER BY bbps.bill_detail_id
-    </select>
-
     <!-- 根据条件查询员工已收工作量明细列表 -->
-    <select id="selectEmployeeFreePaymentDetailList0"
+    <select id="selectEmployeeFreePaymentDetailList"
             resultType="com.yunya.feign.report.domain.vo.EmployeeReceivedDetailWorkloadVO">
         SELECT * FROM(
         SELECT
@@ -4826,7 +4800,7 @@
     <select id="selectClinicEmployeeReceivedWorkload"
             resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadVO">
         SELECT
-        bbps.executor_id AS employeeId,
+        if(#{query.isConsulter} = 0, bbps.executor_id, bbps.consulter_id) as employeeId,
         <if test="groupByOrgId">
             bb.org_id AS orgId,
         </if>
@@ -4838,6 +4812,15 @@
                 and bbps.executor_id > 0
                 <if test="query.employeeIds != null and query.employeeIds.length > 0">
                     and bbps.executor_id in
+                    <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+            </if>
+            <if test="query.isConsulter == 1">
+                and bbps.consulter_id > 0
+                <if test="query.employeeIds != null and query.employeeIds.length > 0">
+                    and bbps.consulter_id in
                     <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
                         #{item}
                     </foreach>
@@ -4879,7 +4862,7 @@
         <if test="groupByOrgId">
             bb.org_id,
         </if>
-        bbps.executor_id
+        employeeId
     </select>
 
     <!--查询门诊员工的实收工作量-->
@@ -5058,7 +5041,7 @@
     <select id="selectClinicEmployeeFreePaymentWorkload"
             resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadVO">
         SELECT
-            bbps.executor_id AS employeeId,
+            if(#{query.isConsulter} = 0, bbps.executor_id, bbps.consulter_id) as employeeId,
             bb.org_id AS orgId,
             SUM(bbps.free_amount) AS workload
         FROM base_bill_pay_share bbps
@@ -5068,6 +5051,9 @@
             AND bbps.free_amount > 0
             <if test="query.isConsulter == 0">
                 and bbps.executor_id > 0
+            </if>
+            <if test="query.isConsulter == 1">
+                and bbps.consulter_id > 0
             </if>
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 and bb.org_id in
@@ -5100,7 +5086,7 @@
                 </if>
             </if>
         </where>
-        GROUP BY bbps.executor_id, bb.org_id
+        GROUP BY employeeId, bb.org_id
     </select>
 
     <!--查询门诊员工的免单支付工作量-->
@@ -6466,9 +6452,17 @@
                 SUM(free_amount) free_amount
             FROM base_bill_pay_share
             <where>
-                AND executor_id > 0
-                <if test="query.employeeId !=null">
-                    and executor_id = #{query.employeeId}
+                <if test="query.isConsulter == 0">
+                    AND executor_id > 0
+                    <if test="query.employeeId !=null">
+                        and executor_id = #{query.employeeId}
+                    </if>
+                </if>
+                <if test="query.isConsulter == 1">
+                    AND consulter_id > 0
+                    <if test="query.employeeId !=null">
+                        and consulter_id = #{query.employeeId}
+                    </if>
                 </if>
             </where>
             GROUP BY bill_pay_id

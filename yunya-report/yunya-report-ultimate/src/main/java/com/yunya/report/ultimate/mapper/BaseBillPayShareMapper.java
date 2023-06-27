@@ -2,9 +2,11 @@ package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.BillItemInfoQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.query.EmployeeFreePaymentWorkloadDetailQuery;
 import com.yunya.feign.report.domain.vo.BillChargeVO;
 import com.yunya.feign.report.domain.vo.BillItemReceivedStatisticsVO;
 import com.yunya.feign.report.domain.vo.BillWorkloadVO;
+import com.yunya.feign.report.domain.vo.EmployeeReceivedDetailWorkloadVO;
 import com.yunya.models.report.BaseBillPayShare;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -40,4 +42,12 @@ public interface BaseBillPayShareMapper extends Mapper<BaseBillPayShare> {
      */
     List<BillItemReceivedStatisticsVO> billItemReceivedStatistics(
             @Param("query") BillItemInfoQuery query);
+
+    /**
+     * 根据条件查询员工免单支付工作量明细项目列表
+     *
+     * @param query
+     * @return
+     */
+    List<EmployeeReceivedDetailWorkloadVO> selectEmployeeFreePaymentDetailList(@Param("query") EmployeeFreePaymentWorkloadDetailQuery query);
 }

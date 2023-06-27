@@ -42,6 +42,10 @@ public class BillPayShareDetailVO implements Serializable {
     @ApiModelProperty("执行人id")
     private Integer executorId;
 
+    /** 咨询师id */
+    @ApiModelProperty("咨询师id")
+    private Integer consulterId;
+
     /** 项目应收金额 */
     @ApiModelProperty("项目应收金额")
     private BigDecimal actualReceivable;

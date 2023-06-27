@@ -14,6 +14,7 @@
     <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
     <result column="swipe_workload" property="swipeWorkload" jdbcType="DECIMAL" />
     <result column="executor_id" property="executorId" jdbcType="INTEGER" />
+    <result column="consulter_id" property="consulterId" jdbcType="INTEGER" />
     <result column="pay_date" property="payDate" jdbcType="TIMESTAMP" />
   </resultMap>
 
@@ -21,11 +22,11 @@
   <insert id="batchSave">
   INSERT INTO base_bill_pay_share
   (bill_id, bill_pay_id, bill_detail_id, item_type, item_id, free_amount,
-  received_amount, swipe_workload, executor_id, pay_date)
+  received_amount, swipe_workload, executor_id, consulter_id, pay_date)
   VALUES
   <foreach collection ="list" item="it" index= "index" separator =",">
     (#{it.billId}, #{it.billPayId}, #{it.billDetailId}, #{it.itemType}, #{it.itemId}, #{it.freeAmount},
-    #{it.receivedAmount}, #{it.swipeWorkload} #{it.executorId}, #{it.payDate})
+    #{it.receivedAmount}, #{it.swipeWorkload} #{it.executorId}, #{it.consulterId}, #{it.payDate})
   </foreach>
   </insert>
 
