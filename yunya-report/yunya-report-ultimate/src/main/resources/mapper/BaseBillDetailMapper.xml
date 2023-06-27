@@ -5379,6 +5379,7 @@
         ) bbd
         GROUP BY bbd.itemId,bbd.executorId,bbd.orgId
     </select>
+
     <!--查询项目实收工作量-->
     <select id="allExportfindClinicExecutorTariffReceivedWorkload"
             resultType="com.yunya.feign.report.domain.vo.EmployeeTariffWorkloadVO">

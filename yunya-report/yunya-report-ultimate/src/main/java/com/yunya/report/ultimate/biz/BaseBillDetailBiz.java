@@ -2542,7 +2542,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<PersonalBillItemReceivedWorkloadDetailVO> resultList =
-        mapper.selectPersonalBillItemReceivedWorkloadDetail(query);
+        baseBillPayShareMapper.selectPersonalBillItemReceivedWorkloadDetail(query);
     return new PageInfo<>(resultList);
   }
 
