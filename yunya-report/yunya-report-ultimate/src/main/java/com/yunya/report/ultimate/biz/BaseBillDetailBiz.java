@@ -79,11 +79,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BaseTariffInfoBiz baseTariffInfoBiz;
   /** 就诊信息 */
   @Autowired private BaseOrganizationBiz baseOrganizationBiz;
+  @Autowired private BaseBillPayShareMapper baseBillPayShareMapper;
 
   @Resource(name = "customizeThreadPool")
   private ThreadPoolExecutor threadPool;
 
-  /**
+    /**
    * 根据条件查询账单收入详情列表
    *
    * @param query 查询条件
@@ -2732,6 +2733,23 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   public PageInfo<BillItemReceivedStatisticsVO> billItemReceivedStatistics(
+      BillItemInfoQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    queryCategoryItem(query);
+    List<BillItemReceivedStatisticsVO> resultList = baseBillPayShareMapper.billItemReceivedStatistics(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询个人开单项目实收金额统计明细表
+   *
+   * @param query
+   * @return
+   */
+  @Deprecated
+  public PageInfo<BillItemReceivedStatisticsVO> billItemReceivedStatistics0(
       BillItemInfoQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());

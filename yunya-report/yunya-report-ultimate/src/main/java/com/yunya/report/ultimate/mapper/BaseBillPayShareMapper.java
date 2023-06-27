@@ -1,7 +1,9 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.BillItemInfoQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.vo.BillChargeVO;
+import com.yunya.feign.report.domain.vo.BillItemReceivedStatisticsVO;
 import com.yunya.feign.report.domain.vo.BillWorkloadVO;
 import com.yunya.models.report.BaseBillPayShare;
 import org.apache.ibatis.annotations.Param;
@@ -29,4 +31,13 @@ public interface BaseBillPayShareMapper extends Mapper<BaseBillPayShare> {
      */
     List<BillWorkloadVO> selectRecievedWorkloadsGroupByMonth(
             @Param("query") DataStatisticsQuery query, @Param("isExecutor") Boolean isExecutor);
+
+    /**
+     * 根据条件查询个人开单项目实收金额统计明细表
+     *
+     * @param query
+     * @return
+     */
+    List<BillItemReceivedStatisticsVO> billItemReceivedStatistics(
+            @Param("query") BillItemInfoQuery query);
 }
