@@ -56,10 +56,26 @@ public interface BaseBillPayShareMapper extends Mapper<BaseBillPayShare> {
             @Param("query") BillItemTollWorkloadQuery query);
 
     /**
-     * 查询执行人的项目实收工作量列表
+     * 查询执行人的项目实收工作量列表（含免单）
      *
      * @param query
      * @return
      */
     List<PersonalBillItemReceivedWorkloadDetailVO> selectPersonalBillItemReceivedWorkloadDetail(@Param("query") PersonalBillItemTollAndWorkloadQuery query);
+
+    /**
+     * 查询执行人的项目免单工作量列表
+     *
+     * @param query
+     * @return
+     */
+    List<PersonalBillItemFreeWorkloadDetailVO> selectPersonalBillItemFreeWorkloadDetail(@Param("query") PersonalBillItemTollAndWorkloadQuery query);
+
+    /**
+     * 查询执行人的项目开单工作量一体化列表
+     *
+     * @param query
+     * @return
+     */
+    List<EmployeeTariffWorkloadVO> allExportfindClinicExecutorTariffReceivedWorkload(@Param("query") BillItemTollWorkloadQuery query);
 }
