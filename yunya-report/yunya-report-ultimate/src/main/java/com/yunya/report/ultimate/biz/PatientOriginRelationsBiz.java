@@ -460,7 +460,26 @@ public class PatientOriginRelationsBiz
    * @param response 请求
    * @param query 条件
    */
-  public void exportWorkloadBreakdownList(HttpServletResponse response, ReceiverkLoadQuery query)
+  public void exportWorkloadBreakdownList(HttpServletResponse response, ReceiverkLoadQuery query) throws IOException {
+    List<ReceivedWorkloadDetailsVo> result = findRefereePatientWorkloadBreakdown(query).getList();
+    ExcelUtil<ReceivedWorkloadDetailsVo> excelUtil = new ExcelUtil<>(ReceivedWorkloadDetailsVo.class);
+    String name = "已收工作量明细";
+    if (query.getType() == 2) {
+      name = "免单工作量明细";
+    } else if (query.getType() == 3) {
+      name = "退费明细";
+    } else if (query.getType() == 4) {
+      name = "补入工作量明细";
+    }
+    excelUtil.exportExcel(response, result, name, name);
+  }
+  /**
+   * 员工推荐-各项明细列表-导出
+   *
+   * @param response 请求
+   * @param query 条件
+   */
+  public void exportWorkloadBreakdownList0(HttpServletResponse response, ReceiverkLoadQuery query)
       throws ParseException, IOException {
     ExcelUtil<ReceivedWorkloadDetailsVo> excelUtil = null;
     // 1.已收 2.免单 3.退费 4.补入
