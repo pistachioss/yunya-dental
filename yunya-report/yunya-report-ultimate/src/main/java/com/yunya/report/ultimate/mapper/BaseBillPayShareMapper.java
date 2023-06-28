@@ -1,5 +1,9 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
+import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo;
+import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBillPayShare;
@@ -78,4 +82,20 @@ public interface BaseBillPayShareMapper extends Mapper<BaseBillPayShare> {
      * @return
      */
     List<EmployeeTariffWorkloadVO> allExportfindClinicExecutorTariffReceivedWorkload(@Param("query") BillItemTollWorkloadQuery query);
+
+    /**
+     * 查询员工推荐人的工作量相关数据
+     *
+     * @param query
+     * @return
+     */
+    List<PatientOriginEmployeeVo> selectEmployeeReferrerWorkloadList(@Param("query") PatientOriginEmployeeQuery query);
+
+    /**
+     * 查询被推荐患者产生的各项工作量明细
+     *
+     * @param query
+     * @return
+     */
+    List<ReceivedWorkloadDetailsVo> selectRefereePatientWorkloadBreakdown(@Param("query") ReceiverkLoadQuery query);
 }

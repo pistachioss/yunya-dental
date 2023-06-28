@@ -1,5 +1,7 @@
 package com.yunya.report.ultimate.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
 import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo;
@@ -48,6 +50,22 @@ public class PatientOriginRelationsBiz
   @Resource private BaseBillDetailMapper baseBillDetailMapper;
 
   @Resource private PatientOriginActivityRelationsBiz activityRelationsBiz;
+
+  @Resource private BaseBillPayShareMapper baseBillPayShareMapper;
+
+  /**
+   * 查询员工推荐人的工作量相关数据
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<PatientOriginEmployeeVo> findEmployeeReferrerWorkloadList(PatientOriginEmployeeQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PatientOriginEmployeeVo> result = baseBillPayShareMapper.selectEmployeeReferrerWorkloadList(query);
+    return new PageInfo<>(result);
+  }
 
   /**
    * 员工推荐信息列表
@@ -252,7 +270,9 @@ public class PatientOriginRelationsBiz
    */
   public void exportEmployeeReferralList(
       HttpServletResponse response, PatientOriginEmployeeQuery query) throws IOException {
-    List<PatientOriginEmployeeVo> patientOriginEmployeeVoLists = combinationEmployeeReferral(query);
+//    List<PatientOriginEmployeeVo> patientOriginEmployeeVoLists = combinationEmployeeReferral(query);
+    query.setWhetherPage(false);
+    List<PatientOriginEmployeeVo> patientOriginEmployeeVoLists = findEmployeeReferrerWorkloadList(query).getList();
     ExcelUtil<PatientOriginEmployeeVo> excelUtil = new ExcelUtil<>(PatientOriginEmployeeVo.class);
     excelUtil.exportExcel(response, patientOriginEmployeeVoLists, "员工推荐明细", "员工推荐明细");
   }
@@ -468,5 +488,19 @@ public class PatientOriginRelationsBiz
       default:
         break;
     }
+  }
+
+  /**
+   * 查询被推荐患者产生的各项工作量明细
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<ReceivedWorkloadDetailsVo> findRefereePatientWorkloadBreakdown(ReceiverkLoadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<ReceivedWorkloadDetailsVo> result = baseBillPayShareMapper.selectRefereePatientWorkloadBreakdown(query);
+    return new PageInfo<>(result);
   }
 }

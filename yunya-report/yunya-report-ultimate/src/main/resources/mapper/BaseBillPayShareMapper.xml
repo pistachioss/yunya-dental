@@ -737,4 +737,196 @@
       )
     </where>
   </select>
+
+  <select id="selectEmployeeReferrerWorkloadList"
+          resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo">
+    SELECT
+      ee.user_id  originId,
+      ee.employee_name referrerName,
+      CASE
+      WHEN ee.work_status = 0 THEN '试用'
+      WHEN ee.work_status = 1 THEN '正式'
+      WHEN ee.work_status = 2 THEN '离职'
+      WHEN ee.work_status = 3 THEN '实习' ELSE ''
+      END workStatus,
+      bp.patientNumber,
+      bp.receivedTotalWorkload,
+      bp.freeTotalWorkload,
+      bp.totalRefundAmount,
+      bp.makeUpWorkload
+    FROM base_employee ee
+    INNER JOIN (
+      SELECT
+          bp.origin_id,
+          count(bp.origin_id) AS patientNumber,
+          SUM(bb.received_amount) AS receivedTotalWorkload,
+          SUM(bb.free_amount) AS freeTotalWorkload,
+          SUM(br.refund_amount) AS totalRefundAmount,
+          SUM(bbd.coupon_workload) AS makeUpWorkload
+      FROM base_patient bp
+      LEFT JOIN (
+        SELECT
+            br.patient_id,
+            SUM(br.refund_amount) AS refund_amount
+        FROM base_refund br
+        <where>
+          <if test="query.startDate != null and query.startDate != '' ">
+            and DATE_FORMAT(br.refund_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+          </if>
+          <if test="query.endDate != null and query.endDate != '' " >
+            and DATE_FORMAT(br.refund_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+          </if>
+        </where>
+        GROUP BY br.patient_id
+      ) br ON br.patient_id = bp.patient_id
+      LEFT JOIN (
+        SELECT
+            bb.patient_id,
+            SUM(bbps.received_amount + bbps.free_amount) AS received_amount,
+            SUM(bbps.free_amount) AS free_amount
+        FROM base_bill bb
+        LEFT JOIN base_bill_pay_share bbps ON bbps.bill_id = bb.bill_id
+        <where>
+          bb.bill_date is not null
+          <if test="query.startDate != null and query.startDate != '' ">
+            and DATE_FORMAT(bbps.pay_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+          </if>
+          <if test="query.endDate != null and query.endDate != '' " >
+            and DATE_FORMAT(bbps.pay_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+          </if>
+        </where>
+        GROUP BY bb.patient_id
+      ) bb ON bb.patient_id = bp.patient_id
+      LEFT JOIN (
+        SELECT
+          bb.patient_id,
+          SUM(bbd.coupon_workload) AS coupon_workload
+        FROM base_bill bb
+        LEFT JOIN base_bill_detail bbd ON bbd.bill_id = bb.bill_id
+        <where>
+          AND bbd.coupon_workload > 0
+          <if test="query.startDate != null and query.startDate != '' ">
+            and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+          </if>
+          <if test="query.endDate != null and query.endDate != '' " >
+            and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+          </if>
+        </where>
+        GROUP BY bb.patient_id
+      ) bbd ON bbd.patient_id = bp.patient_id
+      where bp.origin_type = 1
+      GROUP BY bp.origin_id
+    ) bp ON  bp.origin_id = ee.user_id
+    <where>
+      <if test="query.workStatus != null and query.workStatus.size() > 0">
+        and ee.work_status in
+        <foreach collection="query.workStatus" item="workStatus" open="(" separator="," close=")">
+          #{workStatus}
+        </foreach>
+      </if>
+      <if test="query.orgIds != null and query.orgIds.size() > 0">
+        AND EXISTS (
+            SELECT bup.user_id FROM base_user_post bup WHERE bup.user_id = ee.user_id
+            and bup.org_id in
+            <foreach collection="query.orgIds" item="orgId" open="(" separator="," close=")">
+              #{orgId}
+            </foreach>
+        )
+      </if>
+      <if test="query.employeeId != null">
+        and ee.user_id = #{query.employeeId}
+      </if>
+      <if test="query.referrerName != null and query.referrerName != ''">
+        and concat( IFNULL( ee.`employee_name`, '' ))
+        LIKE concat( concat( '%', #{query.referrerName} ), '%' )
+      </if>
+    </where>
+    ORDER BY patientNumber desc
+  </select>
+
+  <select id="selectRefereePatientWorkloadBreakdown"
+          resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo">
+    SELECT
+      bb.bill_id AS billId,
+      bb.patient_id AS patientId,
+      DATE_FORMAT(bp.patient_crt_time, '%Y-%m-%d %H:%i') AS relatedTime,
+      bp.`name`,
+      bp.mobile,
+      DATE_FORMAT(bp.first_visit_date, '%Y-%m-%d %H:%i') AS firstVisitDate,
+      DATE_FORMAT(bp.last_visit_date, '%Y-%m-%d %H:%i') AS lastVisitDate,
+      DATE_FORMAT(bb.order_date, '%Y-%m-%d %H:%i') AS orderDate,
+      bo.abbreviation AS abbreviation,
+      be.employee_name AS employeeName,
+      bti.item_name AS itemName,
+      IF(bp.patient_crt_time>bp.first_visit_date,1,0) isChange,
+      bbd.workload
+    FROM (
+        SELECT
+            bbd.bill_id,
+            bbd.item_type,
+            bbd.item_id,
+          <if test="query.type == 1">
+            SUM(bbps.received_amount + bbps.free_amount) AS workload
+          </if>
+          <if test="query.type == 2">
+            SUM(bbps.free_amount) AS workload
+          </if>
+          <if test="query.type == 3">
+            SUM(brd.refund_amount) AS workload
+          </if>
+          <if test="query.type == 4">
+            bbd.coupon_workload AS workload
+          </if>
+        FROM base_bill_detail bbd
+        <if test="query.type==1 or query.type==2">
+          LEFT JOIN base_bill_pay_share bbps ON bbps.bill_detail_id = bbd.bill_detail_id
+          <where>
+            <if test="query.startDate != null and query.startDate != '' ">
+              and DATE_FORMAT(bbps.pay_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != '' " >
+              and DATE_FORMAT(bbps.pay_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+          </where>
+        </if>
+        <if test="query.type == 3">
+          LEFT JOIN base_refund_detail brd ON brd.bill_detail_id = bbd.bill_detail_id
+          LEFT JOIN base_refund br ON br.refund_id = brd.refund_id
+          <where>
+            <if test="query.startDate != null and query.startDate != '' ">
+              and DATE_FORMAT(br.refund_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != '' " >
+              and DATE_FORMAT(br.refund_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+          </where>
+        </if>
+        <if test="query.type == 4">
+          LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
+          <where>
+            AND bbd.coupon_workload > 0
+            <if test="query.startDate != null and query.startDate != '' ">
+              and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != '' " >
+              and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+          </where>
+        </if>
+        GROUP BY bbd.bill_detail_id
+    ) bbd
+    LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
+    LEFT JOIN base_patient bp ON bp.patient_id = bb.patient_id
+    LEFT JOIN base_tariff_info bti ON bti.item_type = bbd.item_type AND bti.item_id = bbd.item_id
+    LEFT join base_organization bo on bo.org_id = bb.org_id
+    LEFT join base_treatment_process btp on btp.treatment_id = bb.treatment_id
+    LEFT join base_employee be on be.user_id = btp.registered_dentist_id
+    <where>
+      bp.origin_id = #{query.originId}
+      AND bbd.workload > 0
+      <if test="query.condition!=null and query.condition!=''">
+        and concat(IFNULL(bp.`name`, ''),IFNULL(bp.`mobile`, '')) LIKE concat('%', #{query.condition}, '%')
+      </if>
+    </where>
+  </select>
 </mapper>
