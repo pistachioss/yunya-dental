@@ -22,64 +22,90 @@
 
     <!-- 根据患者id 查询患者是否有会员卡关联关系 -->
     <select id="FindMemberBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
-      select id from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
+        select id from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
+    </select>
+
+    <!-- 根据患者id 查询该患者关联的关系 -->
+    <select id="FindMemberBindingRelation2" resultType="Integer">
+        select distinct secondary_card_id from patient_member_relation where master_card_id = #{patientId}
+        and secondary_card_id not in
+        <foreach collection="secondaryCardIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
     </select>
 
     <!-- 根据患者id删除 -->
     <delete id="deleteByPatientId">
-      delete from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
+        delete from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
     </delete>
 
     <!-- 删除关系 -->
     <delete id="deleteMemberRelation">
-       delete from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId} and bind_type =#{bindType}
+        delete from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id =
+        #{secondaryCardId} and bind_type =#{bindType}
+    </delete>
+
+    <!-- 删除关系, 删除卡主所有关系-->
+    <delete id="deleteOtherMemberRelation">
+        delete from patient_member_relation where master_card_id =#{masterCardId} or secondary_card_id =#{masterCardId}
+        <!--        and secondary_card_id not in-->
+        <!--        <foreach collection="secondaryCardIds" item="id" open="(" close=")" separator=",">-->
+        <!--            #{id}-->
+        <!--        </foreach>-->
     </delete>
 
     <!-- 查询关联关系是否已经存在 -->
     <select id="findBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
-    select id,org_id orgId,	master_card_id masterCardId,secondary_card_id secondaryCardId,bind_type bindType,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,	upd_name updName,upd_time updTime
-    from patient_member_relation
-    where master_card_id =#{form.masterCardId} and secondary_card_id =#{form.secondaryCardId} and bind_type =#{form.bindType}
+        select id,org_id orgId, master_card_id masterCardId,secondary_card_id secondaryCardId,bind_type
+        bindType,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId, upd_name
+        updName,upd_time updTime
+        from patient_member_relation
+        where master_card_id =#{form.masterCardId} and secondary_card_id =#{form.secondaryCardId} and bind_type
+        =#{form.bindType}
     </select>
 
     <!-- 查询当前患者是否已是副卡人的副卡人 -->
     <select id="findMemberBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
-     select id,org_id orgId,	master_card_id masterCardId,secondary_card_id secondaryCardId,bind_type bindType,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,	upd_name updName,upd_time updTime
-     from patient_member_relation
-     where master_card_id =#{form.secondaryCardId} and secondary_card_id =#{form.masterCardId} and bind_type =#{form.bindType}
+        select id,org_id orgId, master_card_id masterCardId,secondary_card_id secondaryCardId,bind_type
+        bindType,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId, upd_name
+        updName,upd_time updTime
+        from patient_member_relation
+        where master_card_id =#{form.secondaryCardId} and secondary_card_id =#{form.masterCardId} and bind_type
+        =#{form.bindType}
     </select>
 
     <!-- 查询会员卡绑定信息 -->
     <select id="findMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo">
         SELECT
-            pmio.id,
-            pmrn.secondary_card_id secondaryCardId,
-            pmio.card_number secondaryCardNumber,
-            pmio.member_type_id secondaryMemberTypeId,
-            pbio.NAME secondaryName
+        pmio.id,
+        pmrn.secondary_card_id secondaryCardId,
+        pmio.card_number secondaryCardNumber,
+        pmio.member_type_id secondaryMemberTypeId,
+        pbio.NAME secondaryName
         FROM
-            patient_member_relation pmrn
-            JOIN patient_member_info pmio ON pmrn.master_card_id = pmio.patient_id
-            JOIN patient_base_info pbio ON pmrn.master_card_id = pbio.id
+        patient_member_relation pmrn
+        JOIN patient_member_info pmio ON pmrn.master_card_id = pmio.patient_id
+        JOIN patient_base_info pbio ON pmrn.master_card_id = pbio.id
         WHERE
-            pmrn.secondary_card_id = #{form.patientId}
-            AND pmrn.bind_type = #{form.bindType}
+        pmrn.secondary_card_id = #{form.patientId}
+        AND pmrn.bind_type = #{form.bindType}
     </select>
 
     <!-- 查询关系id -->
     <select id="selectMemberRelationId" resultType="java.lang.Integer">
-        select  id  from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId} and bind_type = #{bindType}
+        select id from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id =
+        #{secondaryCardId} and bind_type = #{bindType}
     </select>
 
     <!-- 根据患者id查询已绑定主卡信息 -->
     <select id="findPatientCardOwnerInfo"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientCardOwnerInfoVo">
         select DISTINCT
-            pmr.master_card_id masterCardId,
-            pbi.name,
-            pmi.card_number cardNumber,
-            pmi.member_type_id memberTypeId,
-            pbi.face_url as faceUrl
+        pmr.master_card_id masterCardId,
+        pbi.name,
+        pmi.card_number cardNumber,
+        pmi.member_type_id memberTypeId,
+        pbi.face_url as faceUrl
         from patient_member_relation pmr join patient_member_info pmi
         on pmr.master_card_id = pmi.patient_id
         join patient_base_info pbi
@@ -89,6 +115,7 @@
 
     <!-- 查询是否存在绑定关系 -->
     <select id="isBindMember" resultType="com.yunya.models.patient_central.PatientMemberRelation">
-        select bind_type bindType from `patient_member_relation` where master_card_id = #{masterCardId}  and secondary_card_id = #{patientId}
+        select bind_type bindType from `patient_member_relation` where master_card_id = #{masterCardId} and
+        secondary_card_id = #{patientId}
     </select>
 </mapper>

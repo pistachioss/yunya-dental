@@ -22,6 +22,12 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
      * @return List<PatientMemberRelation>
      */
     List<PatientMemberRelation> FindMemberBindingRelation(@Param("form") MemberBindingRelationInfoModel form);
+    /**
+     * 根据患者id 查询该患者关联的关系
+     * @param patientId 会员卡关联关系
+     * @return List<PatientMemberRelation>
+     */
+    List<Integer> FindMemberBindingRelation2(@Param("patientId") Integer patientId, @Param("secondaryCardIds") List<Integer> secondaryCardIds);
 
     /**
      * 根据患者id删除
@@ -37,6 +43,14 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
      * @return int
      */
     int deleteMemberRelation(@Param("masterCardId") Integer secondaryCardId,@Param("secondaryCardId") Integer masterCardId,@Param("bindType") Integer bindType);
+
+    /**
+     * 删除关系，删除非secondary_card_id的其它关系
+     * @param secondaryCardIds 副卡人id
+     * @param masterCardId 主卡人id
+     * @return int
+     */
+    int deleteOtherMemberRelation(@Param("masterCardId") Integer masterCardId, @Param("secondaryCardIds") List<Integer> secondaryCardIds);
 
     /**
      * 查询关系id

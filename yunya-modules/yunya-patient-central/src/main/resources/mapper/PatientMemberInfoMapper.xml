@@ -97,7 +97,8 @@
      select pmio.org_id orgId, pmio.patient_id, pmio.id,pmio.card_number cardNumber,pmio.member_type_id memberTypeId,pmio.crt_time crtTime,pbio.name name,
 				CAST((pmio.principal_amount+pmio.bonus_amount) AS decimal(15,2)) memberCardMoneySum,
 				CAST(IFNULL(pmio.principal_amount,0) AS decimal(15,2)) principalAmount,
-				CAST(IFNULL(pmio.bonus_amount,0) AS decimal(15,2)) bonusAmount
+				CAST(IFNULL(pmio.bonus_amount,0) AS decimal(15,2)) bonusAmount,
+                pmio.inservice
       from patient_member_info pmio join  patient_base_info pbio on pmio.patient_id = pbio.id
       where pmio.patient_id =#{id}
     </select>

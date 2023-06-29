@@ -163,6 +163,14 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
   List<PatientCostInfoVO> selectPatientCostInfoById(@Param("patientIds") Collection<Integer> patientIds);
 
   /**
+   * 查询患者累计消费
+   *
+   * @param patientIds
+   * @return PatientCostInfoVO
+   */
+  List<PatientCostInfoVO> selectPatientCashById(@Param("patientIds") Collection<Integer> patientIds);
+
+  /**
    * 查询所有患者消费信息
    * @return
    */
