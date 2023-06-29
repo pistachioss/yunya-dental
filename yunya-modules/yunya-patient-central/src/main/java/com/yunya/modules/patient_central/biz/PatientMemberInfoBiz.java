@@ -299,17 +299,32 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param openCardModel 开卡Model
    */
   public ResponseResult addMemberCard(OpenCardModel openCardModel) {
-    PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
-    patientMemberInfo.setPatientId(openCardModel.getPatientId());
-    patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
-    patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-    patientMemberInfo.setCrtName(BaseContextHandler.getName());
-    generateCardNumber(patientMemberInfo);
-    this.cardLog(patientMemberInfo, "开卡", "");
-    remoteRabbitMqServiceFeign.sendMessage(
-        patientMemberInfo.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
-    remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
+    PatientMemberInfo patientMember = new PatientMemberInfo();
+    patientMember = patientMemberInfoMapper.selectOneByPatientId(openCardModel.getPatientId());
+    if (patientMember == null) {
+      PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
+      patientMemberInfo.setPatientId(openCardModel.getPatientId());
+      patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
+      patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientMemberInfo.setCrtName(BaseContextHandler.getName());
+      generateCardNumber(patientMemberInfo);
+      this.cardLog(patientMemberInfo, "开卡", "");
+      remoteRabbitMqServiceFeign.sendMessage(
+              patientMemberInfo.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
+      remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
+    } else {
+      // 升级开卡，普通会员转VIP
+      patientMember.setMemberTypeId(openCardModel.getMemberTypeId());
+      patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientMember.setUpdName(BaseContextHandler.getName());
+      patientMember.setUpdTime(new Date());
+      patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      this.mapper.updateByPrimaryKeySelective(patientMember);
+      this.cardLog(patientMember, "变更", "更新");
+      remoteRabbitMqServiceFeign.sendMessage(
+              patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
+    }
     return ResponseUtil.success();
   }
 
