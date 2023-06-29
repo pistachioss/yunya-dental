@@ -26,6 +26,12 @@ public class MemberType {
     private String oldName;
 
     /**
+     * 主键ID
+     */
+    @Column(name = "next_level_id")
+    private Integer nextLevelId;
+
+    /**
      * 续费金额
      */
     @Column(name = "renewal_amount")
@@ -128,6 +134,14 @@ public class MemberType {
 
     public void setOldName(String oldName) {
         this.oldName = oldName;
+    }
+
+    public Integer getNextLevelId() {
+        return nextLevelId;
+    }
+
+    public void setNextLevelId(Integer nextLevelId) {
+        this.nextLevelId = nextLevelId;
     }
 
     public BigDecimal getRechargeMaxAmount() {

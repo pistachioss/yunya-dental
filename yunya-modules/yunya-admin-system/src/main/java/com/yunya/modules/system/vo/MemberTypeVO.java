@@ -28,6 +28,9 @@ public class MemberTypeVO implements Serializable {
   /** 对应藤卡会员 */
   @ApiModelProperty("对应藤卡会员")
   private String oldName;
+  /** 次一等级会员ID */
+  @ApiModelProperty("次一等级会员ID")
+  private Integer nextLevelId;
   /** 续费金额 */
   @ApiModelProperty("续费金额")
   private BigDecimal renewalAmount;

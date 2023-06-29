@@ -29,6 +29,9 @@ public class MemberTypeModel implements Serializable {
   @ApiModelProperty(value = "对应藤卡会员", required = true)
   @Size(max = 25, message = "对应藤卡会员长度不能超过25")
   private String oldName;
+  /** 次一等级会员ID */
+  @ApiModelProperty("次一等级会员ID")
+  private Integer nextLevelId;
   /** 类型,0:普通,1:VIP */
   @ApiModelProperty(value = "会员类型", required = true)
   @NotNull(message = "会员类型不能为空！")
