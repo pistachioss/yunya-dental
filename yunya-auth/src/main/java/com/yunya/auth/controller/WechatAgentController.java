@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,12 +26,13 @@ public class WechatAgentController {
      * 微信网页授权地址， 需要人工点击确认的那种
      */
     private static final String AUTH_URL = "https://open.weixin.qq.com/connect/oauth2/authorize"
-    +"?appid={0}&redirect_uri={1}&response_type=code&scope={2}&state={3}&agentid={4}#wechat_redirect";
+                +"?appid={0}&redirect_uri={1}&response_type=code&scope={2}&state={3}&agentid={4}#wechat_redirect";
 
     /**
      * 代理授权域名,换成你自己真实的公网域名！！
      */
-    private static final String OAUTH2_AGENT_HOST = "http://test.ivy2.yunya365.com";
+    @Value("${domainUrl}")
+    private String OAUTH2_AGENT_HOST;
 
     private static final String CODE_URL = "api/auth/white/code?ret={0}";
 
