@@ -2320,6 +2320,21 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(NonMonthCategoryIncomeQuery query) {
+      if (query.getWhetherPage()) {
+          PageHelper.startPage(query.getPageNum(), query.getPageSize());
+      }
+      List<NonMonthCategoryVO> result = baseBillPayShareMapper.selectNonMonthCategoryFreeAmountList(query);
+      return new PageInfo<>(result);
+  }
+
+  /**
+   * 根据条件查询非本期免单金额列表
+   *
+   * @param query
+   * @return
+   */
+  @Deprecated
+  public PageInfo<NonMonthCategoryVO> nonMonthCategoryList0(NonMonthCategoryIncomeQuery query) {
     List<NonMonthCategoryVO> res = new ArrayList<>();
     List<Integer> ids = mapper.selectBillIdsByNonMonth(query);
     if (StringHelper.isNotEmpty(ids)) {

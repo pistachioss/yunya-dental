@@ -929,4 +929,81 @@
       </if>
     </where>
   </select>
+
+  <select id="selectNonMonthCategoryFreeAmountList"
+          resultType="com.yunya.feign.report.domain.vo.NonMonthCategoryVO">
+    SELECT
+        bbps.bill_pay_id AS billPayId,
+        bb.bill_id AS billId,
+        bo.abbreviation,
+        bb.order_amount AS billAmount,
+        bb.actual_amount AS actualAmount,
+        bbps.free_amount AS freeAmount,
+        bbd.coupon_workload AS couponWorkload,
+        DATE_FORMAT(bbps.payee_date,'%Y-%m-%d %H:%i:%s') AS freeDate,
+        DATE_FORMAT(bb.bill_date,'%Y-%m-%d %H:%i:%s') AS billDate,
+        bp.`name` AS patientName,
+        bbpd.freeBillAmount,
+        bbps.category_name AS categoryName
+    FROM (
+      SELECT
+      bbps.bill_pay_id,
+      bbps.bill_id,
+      bbp.payee_date,
+      bti.category_id,
+      bti.category_name,
+      SUM(bbps.free_amount) AS free_amount
+      FROM base_bill_pay_share bbps
+      LEFT JOIN base_bill_pay bbp ON bbp.bill_pay_id = bbps.bill_pay_id
+      LEFT JOIN base_tariff_info bti ON bti.item_type = bbps.item_type AND bti.item_id = bbps.item_id
+      <where>
+        <if test="query.queryDate!=null and query.queryDate!=''">
+          AND DATE_FORMAT(bbps.pay_date, '%Y-%m') = #{query.queryDate}
+        </if>
+      </where>
+      GROUP BY bbps.bill_pay_id, bti.category_id, bti.category_name
+    ) bbps
+    LEFT JOIN base_bill bb ON bbps.bill_id = bb.bill_id
+    LEFT JOIN base_patient bp ON bp.patient_id = bb.patient_id
+    LEFT JOIN base_organization bo ON bo.org_id = bb.org_id
+    LEFT JOIN (
+        SELECT bill_id, SUM(principal_amount) AS freeBillAmount FROM base_bill_pay_detail
+        WHERE account_item_id in (23, 26)
+        GROUP BY bill_id
+    ) bbpd ON bbpd.bill_id = bb.bill_id
+    LEFT JOIN (
+        SELECT
+            bbd.bill_id,
+            bti.category_id,
+            bti.category_name,
+            SUM(bbd.coupon_workload) AS coupon_workload
+        FROM base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
+        LEFT JOIN base_tariff_info bti ON bti.item_type = bbd.item_type AND bti.item_id = bbd.item_id
+        <where>
+          <if test="query.privilegeDate!=null and query.privilegeDate!=''">
+            and DATE_FORMAT(bb.privilege_date, '%Y-%m') = #{query.privilegeDate}
+          </if>
+          <if test="query.privilegeDate==null or query.privilegeDate==''">
+            and EXISTS (
+              select bbp.bill_id from base_bill_pay bbp where bbp.bill_id=bb.bill_id
+              AND DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+              group by bill_id
+            )
+          </if>
+        </where>
+        GROUP BY bbd.bill_id, bti.category_id, bti.category_name
+    ) bbd ON bbps.bill_id = bbd.bill_id AND bbps.category_id = bbd.category_id
+    <where>
+      <if test="query.orgIds!=null and query.orgIds.size()>0">
+        and bb.org_id in
+        <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+      <if test="query.queryDate != null and query.queryDate != ''">
+        and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;&gt; #{query.queryDate}
+      </if>
+    </where>
+  </select>
 </mapper>

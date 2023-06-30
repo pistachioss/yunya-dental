@@ -98,4 +98,12 @@ public interface BaseBillPayShareMapper extends Mapper<BaseBillPayShare> {
      * @return
      */
     List<ReceivedWorkloadDetailsVo> selectRefereePatientWorkloadBreakdown(@Param("query") ReceiverkLoadQuery query);
+
+    /**
+     * 非本月免单金额明细
+     *
+     * @param query
+     * @return
+     */
+    List<NonMonthCategoryVO> selectNonMonthCategoryFreeAmountList(@Param("query") NonMonthCategoryIncomeQuery query);
 }
