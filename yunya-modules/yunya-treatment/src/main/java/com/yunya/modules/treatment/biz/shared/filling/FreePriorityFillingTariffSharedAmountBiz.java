@@ -1,9 +1,9 @@
 package com.yunya.modules.treatment.biz.shared.filling;
 
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
-import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayShareDetail;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -19,7 +19,7 @@ import java.util.*;
  * @description:
  * @since: 1.0.0
  */
-//@Service
+@Service
 public class FreePriorityFillingTariffSharedAmountBiz extends AbstractFillingSharedAmountBiz {
 
     @Override
@@ -72,7 +72,7 @@ public class FreePriorityFillingTariffSharedAmountBiz extends AbstractFillingSha
                 payment[4] = oralRecTmp.add(totalReceived);
             }
             // 已填满的项目不再进行分摊
-            return null;
+            return buildSharedDetail(detail, BigDecimal.ZERO, BigDecimal.ZERO);
         }
         BigDecimal freeShared = BigDecimal.ZERO;
         BigDecimal receivedShared = BigDecimal.ZERO;
@@ -89,11 +89,7 @@ public class FreePriorityFillingTariffSharedAmountBiz extends AbstractFillingSha
         }
         detail.setItemRecAmount(detail.getItemRecAmount().add(receivedShared));
         detail.setItemFreeAmount(detail.getItemFreeAmount().add(freeShared));
-        BillPayShareDetail shareDetail = new BillPayShareDetail();
-        BeanUtil.copyProperties(detail, shareDetail);
-        shareDetail.setFreeAmount(freeShared);
-        shareDetail.setReceivedAmount(receivedShared);
-        return shareDetail;
+        return buildSharedDetail(detail, freeShared, receivedShared);
     }
 
     /**
@@ -112,7 +108,8 @@ public class FreePriorityFillingTariffSharedAmountBiz extends AbstractFillingSha
         BigDecimal gap = actualAmount.subtract(totalReceived);
         if (StringHelper.eqZero(gap)) {
             // 已填满的项目不再进行分摊
-            return null;
+            return buildSharedDetail(detail, BigDecimal.ZERO, BigDecimal.ZERO);
+//            return null;
         }
         BigDecimal freeShared = BigDecimal.ZERO;
         BigDecimal receivedShared = BigDecimal.ZERO;
@@ -126,11 +123,7 @@ public class FreePriorityFillingTariffSharedAmountBiz extends AbstractFillingSha
         }
         detail.setItemRecAmount(detail.getItemRecAmount().add(receivedShared));
         detail.setItemFreeAmount(detail.getItemFreeAmount().add(freeShared));
-        BillPayShareDetail shareDetail = new BillPayShareDetail();
-        BeanUtil.copyProperties(detail, shareDetail);
-        shareDetail.setFreeAmount(freeShared);
-        shareDetail.setReceivedAmount(receivedShared);
-        return shareDetail;
+        return buildSharedDetail(detail, freeShared, receivedShared);
     }
 
     @Deprecated

@@ -1,7 +1,6 @@
 package com.yunya.modules.treatment.biz.shared.filling;
 
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
-import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayShareDetail;
 
@@ -17,6 +16,7 @@ import java.util.*;
  * @description:
  * @since: 1.0.0
  */
+//@Service
 public class ItemFillingSharedAmountBiz extends AbstractFillingSharedAmountBiz {
 
     @Override
@@ -50,7 +50,7 @@ public class ItemFillingSharedAmountBiz extends AbstractFillingSharedAmountBiz {
         BigDecimal gap = actualAmount.subtract(totalReceived);
         if (StringHelper.eqZero(gap)) {
             // 已填满的项目不再进行分摊
-            return null;
+            return buildSharedDetail(detail, BigDecimal.ZERO, BigDecimal.ZERO);
         }
         payment[2] = gap;
         BigDecimal freeShared = sharedAmount(payment, 0);
@@ -60,10 +60,6 @@ public class ItemFillingSharedAmountBiz extends AbstractFillingSharedAmountBiz {
         }
         detail.setItemRecAmount(detail.getItemRecAmount().add(receivedShared));
         detail.setItemFreeAmount(detail.getItemFreeAmount().add(freeShared));
-        BillPayShareDetail shareDetail = new BillPayShareDetail();
-        BeanUtil.copyProperties(detail, shareDetail);
-        shareDetail.setFreeAmount(freeShared);
-        shareDetail.setReceivedAmount(receivedShared);
-        return shareDetail;
+        return buildSharedDetail(detail, freeShared, receivedShared);
     }
 }

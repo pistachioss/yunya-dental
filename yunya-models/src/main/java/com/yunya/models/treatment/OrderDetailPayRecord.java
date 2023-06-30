@@ -89,6 +89,18 @@ public class OrderDetailPayRecord {
     private BigDecimal couponWorkload;
 
     /**
+     * 划扣卡工作量
+     */
+    @Column(name = "swipe_workload")
+    private BigDecimal swipeWorkload;
+
+    /**
+     * 划扣卡补入工作量
+     */
+    @Column(name = "划扣卡补入工作量")
+    private BigDecimal swipeCouponWorkload;
+
+    /**
      * 是否有效
      */
     private Boolean inservice;
@@ -361,6 +373,42 @@ public class OrderDetailPayRecord {
      */
     public void setCouponWorkload(BigDecimal couponWorkload) {
         this.couponWorkload = couponWorkload;
+    }
+
+    /**
+     * 获取划扣卡工作量
+     *
+     * @return
+     */
+    public BigDecimal getSwipeWorkload() {
+        return swipeWorkload;
+    }
+
+    /**
+     * 设置划扣卡工作量
+     *
+     * @param swipeWorkload
+     */
+    public void setSwipeWorkload(BigDecimal swipeWorkload) {
+        this.swipeWorkload = swipeWorkload;
+    }
+
+    /**
+     * 获取划扣卡补入工作量
+     *
+     * @return
+     */
+    public BigDecimal getSwipeCouponWorkload() {
+        return swipeCouponWorkload;
+    }
+
+    /**
+     * 设置划扣卡补入工作量
+     *
+     * @param swipeCouponWorkload
+     */
+    public void setSwipeCouponWorkload(BigDecimal swipeCouponWorkload) {
+        this.swipeCouponWorkload = swipeCouponWorkload;
     }
 
     /**

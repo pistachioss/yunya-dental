@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.biz.shared;
 
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
+import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.models.treatment.BillPayShareDetail;
 
 import java.math.BigDecimal;
@@ -26,4 +27,20 @@ public interface IItemPaySharedAmount {
      * @return
      */
     Collection<BillPayShareDetail> generateSharedDetails(BigDecimal thisFreeAmount, BigDecimal thisReceivedAmount, List<BillPayShareDetailVO> itemPayDetails, Date payDate);
+
+    /**
+     * 构建分摊明细实体
+     *
+     * @param detail
+     * @param freeShared
+     * @param receivedShared
+     * @return
+     */
+    default BillPayShareDetail buildSharedDetail(BillPayShareDetailVO detail, BigDecimal freeShared, BigDecimal receivedShared) {
+        BillPayShareDetail shareDetail = new BillPayShareDetail();
+        BeanUtil.copyProperties(detail, shareDetail);
+        shareDetail.setFreeAmount(freeShared);
+        shareDetail.setReceivedAmount(receivedShared);
+        return shareDetail;
+    }
 }

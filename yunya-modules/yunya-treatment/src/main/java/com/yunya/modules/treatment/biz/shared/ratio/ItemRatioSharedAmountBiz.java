@@ -1,13 +1,10 @@
 package com.yunya.modules.treatment.biz.shared.ratio;
 
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
-import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayShareDetail;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 
 /**
@@ -19,7 +16,7 @@ import java.util.*;
  * @description:
  * @since: 1.0.0
  */
-@Service
+//@Service
 public class ItemRatioSharedAmountBiz extends AbstractRatioSharedAmountBiz{
 
     @Override
@@ -61,48 +58,12 @@ public class ItemRatioSharedAmountBiz extends AbstractRatioSharedAmountBiz{
         BigDecimal gap = itemActualAmount.subtract(totalReceived);
         if (StringHelper.eqZero(gap)) {
             // 已填满的项目不再进行分摊
-            return null;
+            return buildSharedDetail(detail, BigDecimal.ZERO, BigDecimal.ZERO);
         }
         BigDecimal freeShared = sharedAmount(thisCharge[0], itemActualAmount, billActualAmount);
         BigDecimal receivedShared = sharedAmount(thisCharge[1], itemActualAmount, billActualAmount);
         detail.setItemRecAmount(detail.getItemRecAmount().add(receivedShared));
         detail.setItemFreeAmount(detail.getItemFreeAmount().add(freeShared));
-        BillPayShareDetail shareDetail = new BillPayShareDetail();
-        BeanUtil.copyProperties(detail, shareDetail);
-        shareDetail.setFreeAmount(freeShared);
-        shareDetail.setReceivedAmount(receivedShared);
-        return shareDetail;
-    }
-
-    public static void main(String[] args) {
-        Integer t1 = 20;
-        Integer t2 = 300;
-        BigDecimal d1 = new BigDecimal(t1);
-        BigDecimal d2 = new BigDecimal(t1 + t2);
-        BigDecimal d3 = new BigDecimal("100");
-        BigDecimal tarffiFree = d1.divide(d2, 8, RoundingMode.HALF_UP).multiply(d3).setScale(4, RoundingMode.DOWN);
-        System.out.println("价目免单：" + tarffiFree);
-
-        d1 = new BigDecimal(t1);
-        d2 = new BigDecimal(t1 + t2);
-        d3 = new BigDecimal("12");
-        BigDecimal tarffiRec = d1.divide(d2, 8, RoundingMode.HALF_UP).multiply(d3).setScale(4, RoundingMode.DOWN);
-        System.out.println("价目实收：" + tarffiRec);
-
-        d1 = new BigDecimal(t2);
-        d2 = new BigDecimal(t1 + t2);
-        d3 = new BigDecimal("100");
-        BigDecimal oralFree = d1.divide(d2, 8, RoundingMode.HALF_UP).multiply(d3).setScale(4, RoundingMode.DOWN);
-        System.out.println("商品免单：" + oralFree);
-
-        d1 = new BigDecimal(t2);
-        d2 = new BigDecimal(t1 + t2);
-        d3 = new BigDecimal("12");
-        BigDecimal oralRec = d1.divide(d2, 8, RoundingMode.HALF_UP).multiply(d3).setScale(4, RoundingMode.DOWN);
-        System.out.println("商品实收：" + oralRec);
-
-        System.out.println("价目费用：" + (tarffiFree.add(tarffiRec)));
-        System.out.println("商品费用：" + (oralFree.add(oralRec)));
-        System.out.println("总费用：" + (tarffiFree.add(tarffiRec).add(oralFree).add(oralRec)));
+        return buildSharedDetail(detail, freeShared, receivedShared);
     }
 }

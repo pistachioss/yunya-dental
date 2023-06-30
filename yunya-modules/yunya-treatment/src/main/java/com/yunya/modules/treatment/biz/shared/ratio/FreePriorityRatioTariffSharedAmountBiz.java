@@ -1,7 +1,6 @@
 package com.yunya.modules.treatment.biz.shared.ratio;
 
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
-import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayShareDetail;
 
@@ -102,7 +101,7 @@ public class FreePriorityRatioTariffSharedAmountBiz extends AbstractRatioSharedA
                 payment[5] = oralRecTmp.add(totalReceived);
             }
             // 已填满的项目不再进行分摊
-            return null;
+            return buildSharedDetail(detail, BigDecimal.ZERO, BigDecimal.ZERO);
         }
         BigDecimal freeShared = BigDecimal.ZERO;
         BigDecimal receivedShared = BigDecimal.ZERO;
@@ -118,11 +117,7 @@ public class FreePriorityRatioTariffSharedAmountBiz extends AbstractRatioSharedA
         }
         detail.setItemRecAmount(detail.getItemRecAmount().add(receivedShared));
         detail.setItemFreeAmount(detail.getItemFreeAmount().add(freeShared));
-        BillPayShareDetail shareDetail = new BillPayShareDetail();
-        BeanUtil.copyProperties(detail, shareDetail);
-        shareDetail.setFreeAmount(freeShared);
-        shareDetail.setReceivedAmount(receivedShared);
-        return shareDetail;
+        return buildSharedDetail(detail, freeShared, receivedShared);
     }
 
 
@@ -145,7 +140,7 @@ public class FreePriorityRatioTariffSharedAmountBiz extends AbstractRatioSharedA
             payment[2] = payment[0];
             payment[3] = payment[1];
             // 已填满的项目不再进行分摊
-            return null;
+            return buildSharedDetail(detail, BigDecimal.ZERO, BigDecimal.ZERO);
         }
         BigDecimal freeShared = BigDecimal.ZERO;
         BigDecimal receivedShared = BigDecimal.ZERO;
@@ -158,11 +153,7 @@ public class FreePriorityRatioTariffSharedAmountBiz extends AbstractRatioSharedA
         }
         detail.setItemRecAmount(detail.getItemRecAmount().add(receivedShared));
         detail.setItemFreeAmount(detail.getItemFreeAmount().add(freeShared));
-        BillPayShareDetail shareDetail = new BillPayShareDetail();
-        BeanUtil.copyProperties(detail, shareDetail);
-        shareDetail.setFreeAmount(freeShared);
-        shareDetail.setReceivedAmount(receivedShared);
-        return shareDetail;
+        return buildSharedDetail(detail, freeShared, receivedShared);
     }
 
     /**

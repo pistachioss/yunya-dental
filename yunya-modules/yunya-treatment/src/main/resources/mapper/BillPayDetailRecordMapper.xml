@@ -191,48 +191,91 @@
     </select>
 
     <select id="selectBillPayDetailList" resultType="com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO">
-        SELECT
-            bpdr.bill_pay_record_id as billPayRecordId,
-            bpdr.id AS billPayDetailRecordId,
-            bpdr.order_record_id AS orderRecordId,
-            bpdr.account_item_id as accountItemId,
-            bpdr.amount as amount,
-            bpdr.crt_time AS crtTime
-        FROM bill_pay_detail_record bpdr
-        LEFT JOIN bill_pay_record bpr ON bpr.id = bpdr.bill_pay_record_id
-        <where>
-            bpdr.inservice = true
-            <if test="query.dateType==0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+        SELECT * FROM (
+            SELECT
+                bpdr.bill_pay_record_id AS billPayRecordId,
+                bpdr.id AS billPayDetailRecordId,
+                bpdr.order_record_id AS orderRecordId,
+                bpdr.account_item_id AS accountItemId,
+                bpdr.amount AS amount,
+                bpdr.crt_time AS crtTime
+            FROM bill_pay_detail_record bpdr
+            <where>
+                bpdr.inservice = true
+                <if test="query.dateType==0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    </if>
                 </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                <if test="query.dateType==1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
+                    </if>
                 </if>
-            </if>
-            <if test="query.dateType==1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                <if test="query.dateType==2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bpdr.crt_time, '%Y' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpdr.crt_time, '%Y' ) &lt;= #{query.endDate}
+                    </if>
                 </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
+                <if test="query.orderRecordId != null">
+                    AND bpdr.order_record_id = #{query.orderRecordId}
                 </if>
-            </if>
-            <if test="query.dateType==2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bpdr.crt_time, '%Y' ) &gt;= #{query.startDate}
+                <if test="query.billPayId != null">
+                    AND bpdr.bill_pay_record_id = #{query.billPayId}
                 </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bpdr.crt_time, '%Y' ) &lt;= #{query.endDate}
+            </where>
+            UNION ALL
+            SELECT
+                bpr.id AS billPayRecordId,
+                null AS billPayDetailRecordId,
+                bpr.order_record_id AS orderRecordId,
+                null AS accountItemId,
+                bpr.received_amount AS amount,
+                bpr.crt_time AS crtTime
+            FROM bill_pay_record bpr
+            <where>
+                bpr.inservice = true AND bpr.received_amount = 0
+                <if test="query.dateType==0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    </if>
                 </if>
-            </if>
-            <if test="query.orderRecordId != null">
-                AND bpdr.order_record_id = #{query.orderRecordId}
-            </if>
-            <if test="query.billPayId != null">
-                AND bpdr.bill_pay_record_id = #{query.billPayId}
-            </if>
-        </where>
-        ORDER BY bpdr.bill_pay_record_id
+                <if test="query.dateType==1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType==2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.orderRecordId != null">
+                    AND bpr.order_record_id = #{query.orderRecordId}
+                </if>
+                <if test="query.billPayId != null">
+                    AND bpr.id = #{query.billPayId}
+                </if>
+            </where>
+        ) t
+        ORDER BY t.orderRecordId, t.billPayRecordId
     </select>
 </mapper>

@@ -87,7 +87,7 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
         // 根据分摊规则生成项目的实收和免单分摊数据
         Collection<BillPayShareDetail> result = iItemPaySharedAmount.generateSharedDetails(thisFreeAmount, thisReceivedAmount, itemPayDetails, payDate);
         List<BillPayShareDetail> shareDetails = result.stream()
-                .filter(vo-> StringHelper.isNotNull(vo) && (StringHelper.gtZero(vo.getFreeAmount()) || StringHelper.gtZero(vo.getReceivedAmount())))
+                .filter(vo->StringHelper.gtZero(vo.getFreeAmount()) || StringHelper.gtZero(vo.getReceivedAmount()) || StringHelper.gtZero(vo.getSwipeWorkload()))
                 .collect(Collectors.toList());
         if (StringHelper.isEmpty(shareDetails)) {
             log.error("账单收费：{}没有可分摊的项目",  billPayId);

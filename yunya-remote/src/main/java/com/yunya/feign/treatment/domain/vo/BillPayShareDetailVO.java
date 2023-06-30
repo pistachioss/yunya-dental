@@ -65,4 +65,8 @@ public class BillPayShareDetailVO implements Serializable {
     /** 账单商品总应收 */
     @ApiModelProperty("账单商品总应收")
     private BigDecimal oralActualAmount;
+    
+    /** 划扣卡工作量:仅首次收费有数据 */
+    @ApiModelProperty("划扣卡工作量")
+    private BigDecimal swipeWorkload;
 }
