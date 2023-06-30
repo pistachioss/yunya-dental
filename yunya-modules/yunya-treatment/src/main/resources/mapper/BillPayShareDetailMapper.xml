@@ -17,6 +17,7 @@
     <result column="executor_id" property="executorId" jdbcType="INTEGER" />
     <result column="consulter_id" property="consulterId" jdbcType="INTEGER" />
     <result column="pay_date" property="payDate" jdbcType="TIMESTAMP" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
   </resultMap>
 
   <insert id="batchSave">
@@ -32,19 +33,23 @@
         swipe_workload,
         executor_id,
         consulter_id,
-        pay_date
+        pay_date,
+        inservice
     )
     VALUES
     <foreach collection ="list" item="it" index= "index" separator =",">
       (#{it.orderRecordId}, #{it.billPayId}, #{it.orderDetailId}, #{it.itemType}, #{it.itemId},
-        #{it.freeAmount}, #{it.receivedAmount}, IFNULL(#{it.swipeWorkload}, 0), #{it.executorId}, #{it.consulterId}, #{it.payDate})
+        #{it.freeAmount}, #{it.receivedAmount}, IFNULL(#{it.swipeWorkload}, 0), #{it.executorId},
+       #{it.consulterId}, #{it.payDate}, IFNULL(#{it.inservice}, 1))
     </foreach>
   </insert>
 
-  <delete id="removeByCombinationKey">
-    DELETE FROM bill_pay_share_detail
+  <update id="tombstoneByCombinationKey">
+    UPDATE bill_pay_share_detail
+    SET inservice = false
     <where>
-        order_record_id = #{orderRecordId}
+        inservice = true
+        AND order_record_id = #{orderRecordId}
         <if test="billPayId != null">
             AND bill_pay_id = #{billPayId}
         </if>
@@ -52,7 +57,7 @@
             AND order_detail_id = #{orderDetailId}
         </if>
     </where>
-  </delete>
+  </update>
 
   <delete id="removeByBillDateRange">
     DELETE FROM bill_pay_share_detail

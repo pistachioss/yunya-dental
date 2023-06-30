@@ -107,6 +107,7 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
     public void shullfeItemPaySharedDetail(Integer orderRecordId) {
         BillPayShareDetailQuery query = new BillPayShareDetailQuery();
         query.setOrderRecordId(orderRecordId);
+        removeByCombinationKey(query.getOrderRecordId(), query.getBillPayId(), null);
         shullfeItemPaySharedDetail(query);
     }
 
@@ -121,7 +122,8 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
 //        if (StringHelper.isAllNull(orderRecordId, billPayId, orderDetailId)) {
 //            throw new ClientServiceException(INTERNAL_SERVER_ERROR);
 //        }
-        mapper.removeByCombinationKey(orderRecordId, billPayId, orderDetailId);
+        mapper.tombstoneByCombinationKey(orderRecordId, billPayId, orderDetailId);
+        orderDetailPayRecordBiz.statOrderDetailPayItemTotal(orderRecordId);
     }
 
     /**
@@ -130,7 +132,6 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      * @param query
      */
     public void shullfeItemPaySharedDetail(BillPayShareDetailQuery query) {
-        removeByCombinationKey(query.getOrderRecordId(), query.getBillPayId(), null);
         List<BillPayDetailRecordVO> details = billPayDetailRecordMapper.selectBillPayDetailList(query);
         Map<Integer, JSONObject> map = new LinkedHashMap<>(16);
         for (BillPayDetailRecordVO vo : details) {

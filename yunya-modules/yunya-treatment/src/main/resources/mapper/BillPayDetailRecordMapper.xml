@@ -198,13 +198,15 @@
                 bpdr.order_record_id AS orderRecordId,
                 bpdr.account_item_id AS accountItemId,
                 bpdr.amount AS amount,
+                bpdr.inservice,
                 bpdr.crt_time AS crtTime
             FROM bill_pay_detail_record bpdr
             <where>
-                bpdr.inservice = true
+                 AND bpdr.amount > 0
+                 AND bpdr.inservice = true
                 <if test="query.dateType==0">
                     <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                        AND DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
                     </if>
                     <if test="query.endDate != null and query.endDate != ''">
                         and DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
@@ -212,7 +214,7 @@
                 </if>
                 <if test="query.dateType==1">
                     <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                        AND DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
                     </if>
                     <if test="query.endDate != null and query.endDate != ''">
                         and DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
@@ -240,10 +242,12 @@
                 bpr.order_record_id AS orderRecordId,
                 null AS accountItemId,
                 bpr.received_amount AS amount,
+                bpr.inservice,
                 bpr.crt_time AS crtTime
             FROM bill_pay_record bpr
             <where>
-                bpr.inservice = true AND bpr.received_amount = 0
+                bpr.received_amount = 0
+                AND bpr.inservice = true
                 <if test="query.dateType==0">
                     <if test="query.startDate != null and query.startDate != ''">
                         and DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}

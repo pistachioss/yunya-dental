@@ -46,7 +46,7 @@ public class BillPayDetailRecordVO implements Serializable {
   /** 创建时间 */
   @ApiModelProperty("创建时间")
   private Date crtTime;
-  /** 是否末次收费 */
-  @ApiModelProperty("是否末次收费")
-  private Boolean isLastCharge;
+  /** 是否启用 */
+  @ApiModelProperty("是否启用")
+  private Boolean inservice;
 }

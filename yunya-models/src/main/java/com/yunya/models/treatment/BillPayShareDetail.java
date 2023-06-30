@@ -80,6 +80,10 @@ public class BillPayShareDetail {
     @Column(name = "pay_date")
     private Date payDate;
 
+    /** 是否启用 */
+    @Column(name = "inservice")
+    private Boolean inservice;
+
     /**
      * 获取分摊记录id
      *
@@ -294,5 +298,23 @@ public class BillPayShareDetail {
      */
     public void setPayDate(Date payDate) {
         this.payDate = payDate;
+    }
+
+    /**
+     * 获取是否启用
+     *
+     * @return
+     */
+    public Boolean getInservice() {
+        return inservice;
+    }
+
+    /**
+     * 设置是否启用
+     * 
+     * @param inservice
+     */
+    public void setInservice(Boolean inservice) {
+        this.inservice = inservice;
     }
 }

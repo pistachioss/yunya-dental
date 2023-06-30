@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.biz.shared.ratio;
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayShareDetail;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -16,7 +17,7 @@ import java.util.*;
  * @description:
  * @since: 1.0.0
  */
-//@Service
+@Service
 public class ItemRatioSharedAmountBiz extends AbstractRatioSharedAmountBiz{
 
     @Override
