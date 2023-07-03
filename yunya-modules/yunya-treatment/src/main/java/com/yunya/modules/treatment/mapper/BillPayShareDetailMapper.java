@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
+import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.models.treatment.BillPayShareDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -28,4 +29,16 @@ public interface BillPayShareDetailMapper extends Mapper<BillPayShareDetail> {
      * @param query
      */
     void removeByBillDateRange(@Param("query") BillPayShareDetailQuery query);
+
+
+    /**
+     * 根据订单id查询订单在billPayId截止之前的项目收费明细
+     *
+     * @param orderRecordId
+     * @param billPayId 查询条件同时传递值到返回列表中
+     * @return
+     */
+    List<BillPayShareDetailVO> selectItemPayDetailDeadlineBillPayId(
+            @Param("orderRecordId") Integer orderRecordId,
+            @Param("billPayId") Integer billPayId);
 }

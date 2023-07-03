@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * @author: chenlin
@@ -45,6 +46,18 @@ public class BillPayShareDetailVO implements Serializable {
     /** 咨询师id */
     @ApiModelProperty("咨询师id")
     private Integer consulterId;
+    
+    /** 项目原价金额 */
+    @ApiModelProperty("项目原价金额")
+    private BigDecimal receivableAmount;
+
+    /** 账单价目原价总额 */
+    @ApiModelProperty("账单价目原价总额")
+    private BigDecimal tariffReceivableAmount;
+
+    /** 项目原价金额 */
+    @ApiModelProperty("账单商品原价总额")
+    private BigDecimal oralReceivableAmount;
 
     /** 项目应收金额 */
     @ApiModelProperty("项目应收金额")
@@ -69,4 +82,8 @@ public class BillPayShareDetailVO implements Serializable {
     /** 划扣卡工作量:仅首次收费有数据 */
     @ApiModelProperty("划扣卡工作量")
     private BigDecimal swipeWorkload;
+    
+    /** 账单优惠日期 */
+    @ApiModelProperty("账单优惠日期")
+    private Date privilegeDate;
 }

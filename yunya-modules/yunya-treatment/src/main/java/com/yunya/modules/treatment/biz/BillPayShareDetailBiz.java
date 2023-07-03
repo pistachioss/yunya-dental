@@ -6,6 +6,7 @@ import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.BillPayShareDetail;
@@ -83,7 +84,9 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      */
     public void saveItemPaySharedAmount(BigDecimal thisFreeAmount, BigDecimal thisReceivedAmount, Integer orderRecordId, Integer billPayId, Date payDate) {
         // 查询本次收费之前的项目实收和免单
-        List<BillPayShareDetailVO> itemPayDetails = orderDetailPayRecordBiz.findItemPayDetailDeadlineBillPayId(orderRecordId, billPayId);
+        List<BillPayShareDetailVO> itemPayDetails = mapper.selectItemPayDetailDeadlineBillPayId(orderRecordId, billPayId);
+        // 纠正账单在当时的各项目应收金额
+        rectifyActualAmount(itemPayDetails, payDate);
         // 根据分摊规则生成项目的实收和免单分摊数据
         Collection<BillPayShareDetail> result = iItemPaySharedAmount.generateSharedDetails(thisFreeAmount, thisReceivedAmount, itemPayDetails, payDate);
         List<BillPayShareDetail> shareDetails = result.stream()
@@ -97,6 +100,25 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
         mapper.batchSave(shareDetails);
         // 更新项目已收和免单分摊总计
         orderDetailPayRecordBiz.statOrderDetailPayItemTotal(orderRecordId);
+    }
+
+    /**
+     * 纠正账单明细的项目应收金额
+     * 由于账单首次挂账0，在收欠费时使用优惠，导致应收变更，所以当费用对不上时，需要将应收回退到原价状态
+     *
+     * @param itemPayDetails
+     * @param payDate
+     */
+    private void rectifyActualAmount(List<BillPayShareDetailVO> itemPayDetails, Date payDate) {
+        itemPayDetails.forEach(vo -> {
+            Date privilegeDate = vo.getPrivilegeDate();
+            // 本次收费时的应收=原价
+            if (StringHelper.isNotNull(privilegeDate) && payDate.before(privilegeDate)) {
+                vo.setActualReceivable(vo.getReceivableAmount());
+                vo.setTariffActualAmount(vo.getTariffReceivableAmount());
+                vo.setOralActualAmount(vo.getOralReceivableAmount());
+            }
+        });
     }
 
     /**
@@ -133,16 +155,22 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      */
     public void shullfeItemPaySharedDetail(BillPayShareDetailQuery query) {
         List<BillPayDetailRecordVO> details = billPayDetailRecordMapper.selectBillPayDetailList(query);
-        Map<Integer, JSONObject> map = new LinkedHashMap<>(16);
-        for (BillPayDetailRecordVO vo : details) {
+        // 按收费id + 收费时间分组
+        Map<String, JSONObject> map = new LinkedHashMap<>(16);
+        details.forEach(vo->{
             BigDecimal amount = vo.getAmount();
-            Integer key = vo.getBillPayRecordId();
+            Date crtTime = vo.getCrtTime();
+            Integer inservice = vo.getInservice();
+            String key = vo.getBillPayRecordId() + "," + inservice + "," + DateUtil.toDateTime(crtTime);
             JSONObject billPay = map.computeIfAbsent(key, k->{
                 JSONObject obj = new JSONObject();
                 obj.put("freeAmount", BigDecimal.ZERO);
                 obj.put("receivedAmount", BigDecimal.ZERO);
-                obj.put("payDate", vo.getCrtTime());
+                obj.put("payDate", crtTime);
                 obj.put("orderRecordId", vo.getOrderRecordId());
+                if (inservice == -1) {
+                    obj.put("inservice", inservice);
+                }
                 return obj;
             });
             if (FREE_PAYMENT_ID.contains(vo.getAccountItemId())) {
@@ -152,11 +180,19 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
                 BigDecimal receivedAmount = StringHelper.defaultBigDecimal(billPay.getBigDecimal("receivedAmount"));
                 billPay.put("receivedAmount", receivedAmount.add(amount));
             }
-        }
-        map.forEach((billPayId, billPay)->{
+        });
+        map.forEach((key, billPay)->{
+            Integer orderRecordId = billPay.getInteger("orderRecordId");
+            String[] keys = StringHelper.split(key, ",");
+            Integer billPayId = Integer.parseInt(keys[0]);
+            if (StringHelper.isNotNull(billPay.getBoolean("inservice"))) {
+                // 撤销收费或调整入账方式，需对billPayId的分摊明细作废
+                removeByCombinationKey(orderRecordId, billPayId, null);
+                return;
+            }
             saveItemPaySharedAmount(billPay.getBigDecimal("freeAmount"),
                     billPay.getBigDecimal("receivedAmount"),
-                    billPay.getInteger("orderRecordId"),
+                    orderRecordId,
                     billPayId,
                     billPay.getDate("payDate"));
 //            rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);

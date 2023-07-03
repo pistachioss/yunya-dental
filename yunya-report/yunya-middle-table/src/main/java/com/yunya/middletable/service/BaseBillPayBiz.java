@@ -141,6 +141,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     baseBillPayShareMapper.delete(detail);
     BillPayShareDetail query = new BillPayShareDetail();
     query.setOrderRecordId(orderRecordId);
+    query.setInservice(true);
     if (StringHelper.isNull(orderRecordId)) {
       query.setBillPayId(billPayId);
     }

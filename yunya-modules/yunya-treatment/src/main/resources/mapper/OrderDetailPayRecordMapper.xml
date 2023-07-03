@@ -49,10 +49,10 @@
         LEFT JOIN (
             SELECT
                 order_detail_id,
-                SUM(free_amount) + SUM(received_amount) AS received_amount,
+                SUM(free_amount + received_amount) AS received_amount,
                 SUM(free_amount) AS free_amount
             FROM bill_pay_share_detail
-            WHERE order_record_id = #{orderRecordId}
+            WHERE inservice = true AND order_record_id = #{orderRecordId}
             GROUP BY order_detail_id
         ) bpsd ON odpr.order_detail_id = bpsd.order_detail_id
         SET
@@ -119,61 +119,5 @@
             </if>
         </where>
         order by br.crt_time desc
-    </select>
-
-    <!--根据订单id查询订单在billPayId截止之前的项目收费明细-->
-    <select id="selectItemPayDetailDeadlineBillPayId" resultType="com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO">
-        SELECT
-            od.order_record_id AS orderRecordId,
-            ${billPayId} AS billPayId,
-            od.id AS orderDetailId,
-            od.type AS itemType,
-            od.billing_item_id AS itemId,
-            od.executor_id AS executorId,
-            od.consulter_id AS consulterId,
-            odpr.actual_receivable AS actualReceivable,
-            IFNULL(bd.tariffActualAmount, 0) AS tariffActualAmount,
-            IFNULL(bd.oralActualAmount, 0) AS oralActualAmount,
-            IFNULL(bdp.free_amount, 0) AS itemFreeAmount,
-            IFNULL(bdp.received_amount, 0) AS itemRecAmount,
-            IF(bdp.swipe_workload>0, 0, odpr.swipe_workload) AS swipeWorkload
-        FROM order_detail od
-        LEFT JOIN order_detail_pay_record odpr ON odpr.order_detail_id = od.id
-        LEFT JOIN (
-            SELECT
-                od.order_record_id,
-                SUM(IF(od.type=0, odpr.actual_receivable, 0)) AS tariffActualAmount,
-                SUM(IF(od.type=1, odpr.actual_receivable, 0)) AS oralActualAmount
-            FROM order_detail od
-            LEFT JOIN order_detail_pay_record odpr ON odpr.order_detail_id = od.id
-            <where>
-                od.inservice = true
-                AND odpr.inservice = true
-                AND odpr.order_record_id = #{orderRecordId}
-            </where>
-            GROUP BY od.order_record_id
-        ) bd ON bd.order_record_id=od.order_record_id
-        LEFT JOIN (
-            SELECT
-                order_record_id,
-                item_type,
-                item_id,
-                sum(free_amount) AS free_amount,
-                sum(received_amount) AS received_amount,
-                sum(swipe_workload) AS swipe_workload
-            FROM bill_pay_share_detail
-            <where>
-                order_record_id = #{orderRecordId}
-                AND bill_pay_id &lt; #{billPayId}
-            </where>
-            group by order_record_id, item_type, item_id
-        ) bdp ON bdp.order_record_id=od.order_record_id and od.type=bdp.item_type and od.billing_item_id=bdp.item_id
-        <where>
-            od.inservice = true
-            AND od.receivable_amount > 0
-            AND odpr.inservice = true
-            AND odpr.order_record_id = #{orderRecordId}
-        </where>
-        ORDER BY od.type, od.billing_item_id
     </select>
 </mapper>

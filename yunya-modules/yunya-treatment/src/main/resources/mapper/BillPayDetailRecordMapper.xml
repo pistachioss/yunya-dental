@@ -203,6 +203,117 @@
             FROM bill_pay_detail_record bpdr
             <where>
                  AND bpdr.amount > 0
+                <if test="query.dateType==0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType==1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType==2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bpdr.crt_time, '%Y' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpdr.crt_time, '%Y' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.orderRecordId != null">
+                    AND bpdr.order_record_id = #{query.orderRecordId}
+                </if>
+                <if test="query.billPayId != null">
+                    AND bpdr.bill_pay_record_id = #{query.billPayId}
+                </if>
+            </where>
+            UNION ALL
+            SELECT
+                bpr.id AS billPayRecordId,
+                null AS billPayDetailRecordId,
+                bpr.order_record_id AS orderRecordId,
+                null AS accountItemId,
+                bpr.received_amount AS amount,
+                bpr.inservice,
+                bpr.crt_time AS crtTime
+            FROM bill_pay_record bpr
+            <where>
+                bpr.received_amount = 0
+                <if test="query.dateType==0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType==1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType==2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bpr.crt_time, '%Y' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.orderRecordId != null">
+                    AND bpr.order_record_id = #{query.orderRecordId}
+                </if>
+                <if test="query.billPayId != null">
+                    AND bpr.id = #{query.billPayId}
+                </if>
+            </where>
+            UNION ALL
+            SELECT
+                bpr.id AS billPayRecordId,
+                null AS billPayDetailRecordId,
+                bpr.order_record_id AS orderRecordId,
+                null AS accountItemId,
+                bpr.received_amount AS amount,
+                -1 AS inservice,
+                behr.crt_time AS crtTime
+            FROM bill_exception_handle_record behr
+            LEFT JOIN bill_pay_record bpr ON bpr.id = behr.handled_record_id
+            <where>
+                operate_type IN (0, 1)
+                AND behr.inservice = true
+                <if test="query.orderRecordId != null">
+                    AND bpr.order_record_id = #{query.orderRecordId}
+                </if>
+                <if test="query.billPayId != null">
+                    AND behr.handled_record_id = #{query.billPayId}
+                </if>
+            </where>
+        ) t
+        ORDER BY t.orderRecordId, t.crtTime, t.inservice, t.billPayRecordId
+    </select>
+    <select id="selectBillPayDetailList0" resultType="com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO">
+        SELECT * FROM (
+            SELECT
+                bpdr.bill_pay_record_id AS billPayRecordId,
+                bpdr.id AS billPayDetailRecordId,
+                bpdr.order_record_id AS orderRecordId,
+                bpdr.account_item_id AS accountItemId,
+                bpdr.amount AS amount,
+                bpdr.inservice,
+                bpdr.crt_time AS crtTime
+            FROM bill_pay_detail_record bpdr
+            <where>
+                 AND bpdr.amount > 0
                  AND bpdr.inservice = true
                 <if test="query.dateType==0">
                     <if test="query.startDate != null and query.startDate != ''">
@@ -279,7 +390,27 @@
                     AND bpr.id = #{query.billPayId}
                 </if>
             </where>
+            UNION ALL
+            SELECT
+                bpr.id AS billPayRecordId,
+                null AS billPayDetailRecordId,
+                bpr.order_record_id AS orderRecordId,
+                null AS accountItemId,
+                bpr.received_amount AS amount,
+                false inservice,
+                behr.crt_time AS crtTime
+            FROM bill_exception_handle_record behr
+            LEFT JOIN bill_pay_record bpr ON bpr.id = behr.handled_record_id
+            <where>
+                operate_type = 1
+                <if test="query.orderRecordId != null">
+                    AND bpr.order_record_id = #{query.orderRecordId}
+                </if>
+                <if test="query.billPayId != null">
+                    AND behr.handled_record_id = #{query.billPayId}
+                </if>
+            </where>
         ) t
-        ORDER BY t.orderRecordId, t.billPayRecordId
+        ORDER BY t.orderRecordId, t.billPayRecordId,
     </select>
 </mapper>

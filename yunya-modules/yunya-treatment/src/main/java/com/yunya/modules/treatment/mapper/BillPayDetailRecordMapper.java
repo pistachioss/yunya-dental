@@ -91,7 +91,7 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
       @Param("inservice") Boolean inservice);
 
   /**
-   * 根据订单id或收费id查询收费入账明细
+   * 根据订单id或收费id查询收费入账明细，包含挂账0，以及调整入账方式、撤销收费
    *
    * @param query
    * @return
