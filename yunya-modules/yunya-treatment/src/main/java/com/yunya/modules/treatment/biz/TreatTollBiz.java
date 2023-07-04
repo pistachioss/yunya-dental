@@ -382,7 +382,7 @@ public class TreatTollBiz {
     // 更新就诊状态
     updateTreatmentRecordStatus(orderRecord.getTreatmentRecordId());
 
-    chargeMinorProcess(billPayRecord, model, totalCharge);
+    chargeMinorProcess(billPayRecord, model, totalCharge, true);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
@@ -393,13 +393,16 @@ public class TreatTollBiz {
    * 收费后同步中间表
    *
    * @param billPayRecord
+   * @param isMqTreatment
    */
-  private void chargedMQMiddleTable(BillPayRecord billPayRecord) {
+  private void chargedMQMiddleTable(BillPayRecord billPayRecord, Boolean isMqTreatment) {
     rabbitMqServiceFeign.sendMessage(billPayRecord.getOrderRecordId(), 1, BaseBill);
     rabbitMqServiceFeign.sendMessage(billPayRecord.getId(), 0, BaseBillPay);
     // 变更治疗计划详情的状态
     rabbitMqServiceFeign.sendMessage(billPayRecord.getTreatmentRecordId(), 0, TreatPlanDetail);
-    mqSendTreatMessage(billPayRecord.getTreatmentRecordId());
+    if (isMqTreatment) {
+      mqSendTreatMessage(billPayRecord.getTreatmentRecordId());
+    }
   }
 
   /**
@@ -420,12 +423,13 @@ public class TreatTollBiz {
   /**
    * 收费的次要流程
    *
-   * @param billPayRecord
-   * @param model
-   * @param totalCharge
+   * @param billPayRecord 账单收费记录
+   * @param model 收费基础参数模型
+   * @param totalCharge 入账总额
+   * @param isMqTreatment 是否同步中间表base_treatment_process
    */
   @Async("treatmentThreadPool")
-  protected void chargeMinorProcess(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge) {
+  protected void chargeMinorProcess(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, Boolean isMqTreatment) {
     Integer orderRecordId = billPayRecord.getOrderRecordId();
     Set<PrepaymentAccountModel> prepaymentAccounts = model.getPrepaymentAccountModels();
     Set<MemberAccountModel> memberAccounts = model.getMemberAccountModels();
@@ -455,7 +459,7 @@ public class TreatTollBiz {
       }
     }
     // 发送MQ消息
-    chargedMQMiddleTable(billPayRecord);
+    chargedMQMiddleTable(billPayRecord, isMqTreatment);
     // 异步发送微信消费通知
     weChatServiceFeign.pushTemplate(chargePushMsg(billPayRecord));
   }
@@ -1511,11 +1515,10 @@ public class TreatTollBiz {
     // 保存收费记录及其入账方式明细
     BillPayRecord billPayRecord = generalBillPayRecordWithDetail(billRecord, totalCharge, actualReceivableAmount, model);
 
-    chargeMinorProcess(billPayRecord, model, totalCharge);
-    TollConfirmVO tollConfirmVO = new TollConfirmVO();
-    tollConfirmVO.setBillNumber(billRecord.getBillNumber());
-    tollConfirmVO.setBillPayRecordId(billPayRecord.getId());
-    return tollConfirmVO;
+    chargeMinorProcess(billPayRecord, model, totalCharge, false);
+    return TollConfirmVO.builder()
+            .billNumber(billRecord.getBillNumber())
+            .billPayRecordId(billPayRecord.getId()).build();
   }
 
   /**
