@@ -65,13 +65,12 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      *
      * @param totalCharge 付款总额
      * @param payments 其他入账方式
-     * @param orderRecordId 订单id
      * @param billPay 本次收费记录
      */
-    public void saveItemPaySharedAmount(BigDecimal totalCharge, Set<PaymentModel> payments, Integer orderRecordId, BillPayRecord billPay) {
+    public void saveItemPaySharedAmount(BigDecimal totalCharge, Set<PaymentModel> payments, BillPayRecord billPay) {
         BigDecimal freeAmount = extrationFreeAmount(payments);
         BigDecimal receivedAmount = totalCharge.subtract(freeAmount);
-        saveItemPaySharedAmount(freeAmount, receivedAmount, orderRecordId, billPay.getId(), billPay.getCrtTime());
+        saveItemPaySharedAmount(freeAmount, receivedAmount, billPay.getOrderRecordId(), billPay.getId(), billPay.getCrtTime());
     }
 
     /**

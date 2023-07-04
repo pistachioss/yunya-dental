@@ -844,6 +844,26 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   /**
    * 更新开单状态
    *
+   * @param orderRecordId 开单记录id
+   * @param userId 操作人id
+   * @param name 操作人姓名
+   * @param time 操作时间
+   * @param status 订单状态
+   * @return int
+   */
+  public int updateOrderStatus(Integer orderRecordId, Integer userId, String name, Date time, Byte status) {
+    OrderRecord orderRecord = new OrderRecord();
+    orderRecord.setId(orderRecordId);
+    orderRecord.setUpdId(userId);
+    orderRecord.setUpdName(name);
+    orderRecord.setUpdTime(time);
+    orderRecord.setStatus(status);
+    return updateOrderStatus(orderRecord);
+  }
+
+  /**
+   * 更新开单状态
+   *
    * @param orderRecord 开单记录
    * @return int
    */

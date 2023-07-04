@@ -104,6 +104,7 @@
             IFNULL(bdp.free_amount, 0) AS itemFreeAmount,
             IFNULL(bdp.received_amount, 0) AS itemRecAmount,
             IF(bdp.swipe_workload>0, 0, odpr.swipe_workload) AS swipeWorkload
+--             0 AS swipeWorkload
         FROM order_detail od
         LEFT JOIN (
             SELECT
