@@ -173,4 +173,12 @@ public class BillRecordBizTest {
       }
     }
   }
+
+  @Autowired
+  private TreatTollBiz treatTollBiz;
+
+  @Test
+  public void testAssembleItemName() {
+    System.out.println(treatTollBiz.assembleItemName(100));
+  }
 }

@@ -17,6 +17,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
 import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
@@ -41,7 +42,6 @@ import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -54,7 +54,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
@@ -383,6 +382,7 @@ public class TreatTollBiz {
     updateTreatmentRecordStatus(orderRecord.getTreatmentRecordId());
 
     chargeMinorProcess(billPayRecord, model, totalCharge, true);
+    ayncPushWxExpendMsg(billPayRecord);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
@@ -460,8 +460,31 @@ public class TreatTollBiz {
     }
     // 发送MQ消息
     chargedMQMiddleTable(billPayRecord, isMqTreatment);
-    // 异步发送微信消费通知
-    weChatServiceFeign.pushTemplate(chargePushMsg(billPayRecord));
+
+  }
+
+  /**
+   * 异步发送微信消费通知
+   *
+   * @param billPayRecord
+   */
+  @Async("treatmentThreadPool")
+  public void ayncPushWxExpendMsg(BillPayRecord billPayRecord) {
+      try {
+        PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(billPayRecord.getPatientId());
+        String itemName = assembleItemName(billPayRecord.getOrderRecordId());
+        WxTemplateMsgModel model = new WxTemplateMsgModel();
+        Map<String, Object> paramMap = Maps.newHashMap();
+        paramMap.put("keyword1", itemName);
+        paramMap.put("keyword2", billPayRecord.getReceivedAmount());
+        paramMap.put("keyword3", patient.getName());
+        model.setPatientId(billPayRecord.getPatientId());
+        model.setTemplateEnum(TemplateEnum.MEMBER_PAY);
+        model.setParamMap(paramMap);
+        this.weChatServiceFeign.pushTemplate(model);
+      } catch (Exception var6) {
+        log.error("TollBiz.aynsPushWxExpendMsg error: {}", var6);
+      }
   }
 
   /**
@@ -545,40 +568,17 @@ public class TreatTollBiz {
     treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
   }
 
-  private WxTemplateMsgModel chargePushMsg(BillPayRecord billPayRecord) {
-    PatientBaseInfo patient =
-        remotePatientCentralServiceFeign.findPatientInfoById(billPayRecord.getPatientId());
-    String itemName = assembleItemName(billPayRecord.getOrderRecordId());
-    WxTemplateMsgModel model = new WxTemplateMsgModel();
-    Map<String, Object> paramMap = Maps.newHashMap();
-    paramMap.put("keyword1", itemName);
-    paramMap.put("keyword2", billPayRecord.getReceivedAmount());
-    paramMap.put("keyword3", patient.getName());
-    model.setPatientId(billPayRecord.getPatientId());
-    model.setTemplateEnum(TemplateEnum.MEMBER_PAY);
-    model.setParamMap(paramMap);
-    return model;
-  }
-
-  private String assembleItemName(Integer orderRecordId) {
-    OrderDetail orderDetail = new OrderDetail();
-    orderDetail.setOrderRecordId(orderRecordId);
-    List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
-    String tariffNames =
-        baseTariffBiz.findBaseTariffNamesByIds(
-            orderDetails.stream()
-                .filter(obj -> obj.getType() == 0)
-                .map(obj -> String.valueOf(obj.getBillingItemId()))
-                .toArray(String[]::new));
-    String oralNames =
-        oralTariffBiz.findBaseOralNamesByIds(
-            orderDetails.stream()
-                .filter(obj -> obj.getType() == 1)
-                .map(obj -> String.valueOf(obj.getBillingItemId()))
-                .toArray(String[]::new));
-    return Stream.of(tariffNames, oralNames)
-        .filter(StringUtils::isNotBlank)
-        .map(obj -> obj.replace(",", "，"))
+  /**
+   * 查询并装配项目名称列表
+   *
+   * @param orderRecordId
+   * @return
+   */
+  public String assembleItemName(Integer orderRecordId) {
+    List<OrderDetailVO> orderDetails = orderDetailBiz.findOrderDetailList(orderRecordId, null);
+    return orderDetails.stream()
+        .filter(vo->StringHelper.isNotEmpty(vo.getBillingItemName()))
+        .map(vo->vo.getBillingItemName())
         .collect(Collectors.joining("，"));
   }
 
@@ -1516,6 +1516,7 @@ public class TreatTollBiz {
     BillPayRecord billPayRecord = generalBillPayRecordWithDetail(billRecord, totalCharge, actualReceivableAmount, model);
 
     chargeMinorProcess(billPayRecord, model, totalCharge, false);
+    ayncPushWxExpendMsg(billPayRecord);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
             .billPayRecordId(billPayRecord.getId()).build();
