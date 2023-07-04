@@ -48,7 +48,7 @@ public class SwipeItemModel implements Serializable {
     /** 划扣卡补入工作量 */
     @ApiModelProperty(value = "划扣卡补入工作量", required = true)
     @NotNull(message = "补入工作量不能为空")
-    private BigDecimal swipeCouponWorkload;
+    private BigDecimal supplyWorkload;
     
     /** 订单明细id */
     @ApiModelProperty(value = "订单明细id", hidden = true)

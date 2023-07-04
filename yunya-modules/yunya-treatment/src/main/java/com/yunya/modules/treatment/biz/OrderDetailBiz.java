@@ -53,17 +53,8 @@ import com.yunya.models.clinic_base.SpecialistProject;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseTariff;
-import com.yunya.models.tariff.ClinicOralTariff;
-import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
-import com.yunya.models.tariff.ClinicTariff;
-import com.yunya.models.tariff.ClinicTariffMemberPrice;
-import com.yunya.models.treatment.BillPayDetailRecord;
-import com.yunya.models.treatment.BillPayRecord;
-import com.yunya.models.treatment.BillRecord;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
+import com.yunya.models.tariff.*;
+import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.config.SysConfig;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.BillRecordMapper;
@@ -288,6 +279,65 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (BusinessConstants.ORDER_UN_LOCK_STATUS.equals(orderRecord.getStatus())) {
       throw new ClientServiceException("收费失败，当前账单已解锁，暂不能进行收费！", PARAMETERS_IS_ILLEGAL);
     }
+    // TODO: 2023/7/4 获取患者会员身份
+    MemberType query = new MemberType();
+//    memberType.setId();
+    // 处理门诊价目表价格
+    List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(query);
+    List<OrderDetailChargeVO> orderDetails = getChargeOrderDetailList(orderRecordId);
+    if (StringHelper.isNotEmpty(orderDetails)) {
+      if (StringHelper.isNotEmpty(memberTypes)) {
+        orderDetails.forEach(
+            tariffVO -> {
+              Map<Integer, Object> memberPrices = new HashMap<>(16);
+              if (tariffVO.getType() == 0) {
+                // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
+                setClinicTariffMemberPrice(
+                    memberPrices,
+                    memberTypes,
+                    Integer.valueOf(BaseContextHandler.getOrgId()),
+                    tariffVO);
+              } else {
+                setClinicOralTariffMemberPrice(
+                    memberPrices,
+                    memberTypes,
+                    Integer.valueOf(BaseContextHandler.getOrgId()),
+                    tariffVO);
+              }
+            });
+      }
+
+      List<Integer> orderDetailIds = orderDetails.stream()
+          .map(OrderDetailChargeVO::getOrderDetailId).collect(Collectors.toList());
+      Map<Integer, List<Integer>> planDetails =
+              remoteEmrServiceFeign.findOrderWithPlanDetailById(orderDetailIds);
+      orderDetails.forEach(
+              vo -> vo.setPlanDetailIds(planDetails.get(vo.getOrderDetailId())));
+    }
+    // 设置10分钟（该段时间内不允许其他用户重复收费，解锁）
+    redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
+    return orderDetails;
+  }
+
+  /**
+   * 根据订单ID查询收费订单明细列表（含优惠信息）
+   *
+   * @param orderRecordId 开单记录ID
+   * @return List<OrderDetailChargeVO>
+   */
+  @Deprecated
+  public List<OrderDetailChargeVO> findChargeOrderDetailList0(Integer orderRecordId) {
+    String redisKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
+    String redisValue = redisUtils.get(redisKey);
+    String userId = BaseContextHandler.getUserID();
+    if (StringHelper.isNotBlank(redisValue) && !redisValue.equals(orderRecordId + ":" + userId)) {
+      throw new ClientServiceException("收费失败，当前就诊正在收费中！", PARAMETERS_IS_ILLEGAL);
+    }
+
+    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
+    if (BusinessConstants.ORDER_UN_LOCK_STATUS.equals(orderRecord.getStatus())) {
+      throw new ClientServiceException("收费失败，当前账单已解锁，暂不能进行收费！", PARAMETERS_IS_ILLEGAL);
+    }
     List<OrderDetailChargeVO> chargeOrderDetailList;
     List<OrderDetailChargeVO> chargeVOS = this.buildMember(orderRecordId);
 
@@ -312,6 +362,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                     Integer.valueOf(BaseContextHandler.getOrgId()),
                     tariffVO);
               }
+//              tariffVO.setDiscountAppliesCoupons(memeberIcon());
             });
       }
     }
@@ -398,17 +449,13 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
       if (null != memberPriceResult) {
         memberTypeId = memberPriceResult.getMemberTypeId();
-        memberPrice = memberPriceResult.getDiscountPrice().setScale(2, BigDecimal.ROUND_HALF_UP);
+        memberPrice = memberPriceResult.getDiscountPrice();
       } else {
         memberTypeId = memberType.getId();
-        memberPrice =
-            (tariffVO
-                    .getPrice()
-                    .multiply(BigDecimal.valueOf(memberType.getRate()))
-                    .divide(BigDecimal.valueOf(100), 2))
-                .setScale(2, BigDecimal.ROUND_HALF_UP);
+        memberPrice = tariffVO.getPrice().multiply(BigDecimal.valueOf(memberType.getRate()))
+                    .divide(BigDecimal.valueOf(100), 2);
       }
-      memberPrices.put(memberTypeId, memberPrice);
+      memberPrices.put(memberTypeId, memberPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
     }
     // 设置价格精度小数点后两位四舍五入，没有在上个方法中设置精度是为了保证会员价计算精确
     //    tariffVO.setPrice(tariffVO.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
@@ -445,7 +492,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   }
 
   /**
-   * 获取患者的会员卡信息
+   * 获取患者的会员身份信息（规则）
    *
    * @param patientId patientId
    * @return Byte
