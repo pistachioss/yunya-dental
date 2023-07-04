@@ -77,10 +77,28 @@ public class OrderDetailPayRecord {
     private BigDecimal receivedAmount;
 
     /**
+     * 项目免单
+     */
+    @Column(name = "free_amount")
+    private BigDecimal freeAmount;
+
+    /**
      * 卡券单个项目补入工作量
      */
     @Column(name = "coupon_workload")
     private BigDecimal couponWorkload;
+
+    /**
+     * 划扣卡工作量
+     */
+    @Column(name = "swipe_workload")
+    private BigDecimal swipeWorkload;
+
+    /**
+     * 划扣卡补入工作量
+     */
+    @Column(name = "划扣卡补入工作量")
+    private BigDecimal swipeCouponWorkload;
 
     /**
      * 是否有效
@@ -322,6 +340,24 @@ public class OrderDetailPayRecord {
     }
 
     /**
+     * 获取免单金额
+     *
+     * @return 免单金额
+     */
+    public BigDecimal getFreeAmount() {
+        return freeAmount;
+    }
+
+    /**
+     * 设置免单金额
+     *
+     * @param freeAmount 免单金额
+     */
+    public void setFreeAmount(BigDecimal freeAmount) {
+        this.freeAmount = freeAmount;
+    }
+
+    /**
      * 获取卡券单个项目补入工作量
      *
      * @return couponWorkload-单个项目补入工作量
@@ -337,6 +373,42 @@ public class OrderDetailPayRecord {
      */
     public void setCouponWorkload(BigDecimal couponWorkload) {
         this.couponWorkload = couponWorkload;
+    }
+
+    /**
+     * 获取划扣卡工作量
+     *
+     * @return
+     */
+    public BigDecimal getSwipeWorkload() {
+        return swipeWorkload;
+    }
+
+    /**
+     * 设置划扣卡工作量
+     *
+     * @param swipeWorkload
+     */
+    public void setSwipeWorkload(BigDecimal swipeWorkload) {
+        this.swipeWorkload = swipeWorkload;
+    }
+
+    /**
+     * 获取划扣卡补入工作量
+     *
+     * @return
+     */
+    public BigDecimal getSwipeCouponWorkload() {
+        return swipeCouponWorkload;
+    }
+
+    /**
+     * 设置划扣卡补入工作量
+     *
+     * @param swipeCouponWorkload
+     */
+    public void setSwipeCouponWorkload(BigDecimal swipeCouponWorkload) {
+        this.swipeCouponWorkload = swipeCouponWorkload;
     }
 
     /**

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.mapper.BillPayShareDetailMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment.BillPayShareDetail" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
+    <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER" />
+    <result column="order_detail_id" property="orderDetailId" jdbcType="INTEGER" />
+    <result column="item_type" property="itemType" jdbcType="TINYINT" />
+    <result column="item_id" property="itemId" jdbcType="INTEGER" />
+    <result column="free_amount" property="freeAmount" jdbcType="DECIMAL" />
+    <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+    <result column="swipe_workload" property="swipeWorkload" jdbcType="DECIMAL" />
+    <result column="executor_id" property="executorId" jdbcType="INTEGER" />
+    <result column="consulter_id" property="consulterId" jdbcType="INTEGER" />
+    <result column="pay_date" property="payDate" jdbcType="TIMESTAMP" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+  </resultMap>
+
+  <insert id="batchSave">
+    INSERT INTO bill_pay_share_detail
+    (
+        order_record_id,
+        bill_pay_id,
+        order_detail_id,
+        item_type,
+        item_id,
+        free_amount,
+        received_amount,
+        swipe_workload,
+        executor_id,
+        consulter_id,
+        pay_date,
+        inservice
+    )
+    VALUES
+    <foreach collection ="list" item="it" index= "index" separator =",">
+      (#{it.orderRecordId}, #{it.billPayId}, #{it.orderDetailId}, #{it.itemType}, #{it.itemId},
+        #{it.freeAmount}, #{it.receivedAmount}, IFNULL(#{it.swipeWorkload}, 0), #{it.executorId},
+       #{it.consulterId}, #{it.payDate}, IFNULL(#{it.inservice}, 1))
+    </foreach>
+  </insert>
+
+  <update id="tombstoneByCombinationKey">
+    UPDATE bill_pay_share_detail
+    SET inservice = false
+    <where>
+        inservice = true
+        AND order_record_id = #{orderRecordId}
+        <if test="billPayId != null">
+            AND bill_pay_id = #{billPayId}
+        </if>
+        <if test="orderDetailId != null">
+            AND order_detail_id = #{orderDetailId}
+        </if>
+    </where>
+  </update>
+
+  <delete id="removeByBillDateRange">
+    DELETE FROM bill_pay_share_detail
+    <where>
+        <if test="query.dateType == 0">
+            <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                AND DATE_FORMAT(pay_date,'%Y-%m-%d') between #{query.startDate}
+                and #{query.endDate}
+            </if>
+        </if>
+        <if test="query.dateType == 1">
+            <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                AND DATE_FORMAT(pay_date,'%Y-%m') between #{query.startDate}
+                and #{query.endDate}
+            </if>
+        </if>
+        <if test="query.dateType == 2">
+            <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                AND DATE_FORMAT(pay_date,'%Y') between #{query.startDate}
+                and #{query.endDate}
+            </if>
+        </if>
+    </where>
+  </delete>
+
+
+  <!--根据订单id查询订单在billPayId截止之前的项目收费明细-->
+  <select id="selectItemPayDetailDeadlineBillPayId" resultType="com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO">
+        SELECT
+            od.order_record_id AS orderRecordId,
+            ${billPayId} AS billPayId,
+            od.id AS orderDetailId,
+            od.type AS itemType,
+            od.billing_item_id AS itemId,
+            od.executor_id AS executorId,
+            od.consulter_id AS consulterId,
+            odpr.privilege_date AS privilegeDate,
+            odpr.receivable_amount AS receivableAmount,
+            odpr.actual_receivable AS actualReceivable,
+            IFNULL(odpr.tariffActualAmount, 0) AS tariffActualAmount,
+            IFNULL(odpr.oralActualAmount, 0) AS oralActualAmount,
+            IFNULL(odpr.tariffReceivableAmount, 0) AS tariffReceivableAmount,
+            IFNULL(odpr.oralReceivableAmount, 0) AS oralReceivableAmount,
+            IFNULL(bdp.free_amount, 0) AS itemFreeAmount,
+            IFNULL(bdp.received_amount, 0) AS itemRecAmount,
+            IF(bdp.swipe_workload>0, 0, odpr.swipe_workload) AS swipeWorkload
+--             0 AS swipeWorkload
+        FROM order_detail od
+        LEFT JOIN (
+            SELECT
+                odpr.order_record_id,
+                odpr.order_detail_id,
+                br.privilege_date,
+                odpr.swipe_workload,
+                odpr.receivable_amount,
+                odpr.actual_receivable,
+                bd.tariffActualAmount,
+                bd.oralActualAmount,
+                bd.tariffReceivableAmount,
+                bd.oralReceivableAmount
+            FROM order_detail_pay_record odpr
+            LEFT JOIN bill_record br ON odpr.bill_record_id = br.id
+            LEFT JOIN (
+                  SELECT
+                  od.order_record_id,
+                  SUM(IF(od.type=0, odpr.actual_receivable, 0)) AS tariffActualAmount,
+                  SUM(IF(od.type=1, odpr.actual_receivable, 0)) AS oralActualAmount,
+                  SUM(IF(od.type=0, odpr.receivable_amount, 0)) AS tariffReceivableAmount,
+                  SUM(IF(od.type=1, odpr.receivable_amount, 0)) AS oralReceivableAmount
+                  FROM order_detail od
+                  LEFT JOIN order_detail_pay_record odpr ON odpr.order_detail_id = od.id
+                  <where>
+                      AND odpr.order_record_id = #{orderRecordId}
+                  </where>
+                  GROUP BY od.order_record_id
+            ) bd ON bd.order_record_id = bd.order_record_id
+            WHERE odpr.order_record_id = #{orderRecordId}
+        ) odpr ON odpr.order_detail_id = od.id
+        LEFT JOIN (
+            SELECT
+                order_record_id,
+                item_type,
+                item_id,
+                sum(free_amount) AS free_amount,
+                sum(received_amount) AS received_amount,
+                sum(swipe_workload) AS swipe_workload
+            FROM bill_pay_share_detail
+            <where>
+                inservice = true
+                AND order_record_id = #{orderRecordId}
+                AND bill_pay_id &lt; #{billPayId}
+            </where>
+            group by order_record_id, item_type, item_id
+        ) bdp ON bdp.order_record_id=odpr.order_record_id and od.type=bdp.item_type and od.billing_item_id=bdp.item_id
+        <where>
+            AND od.receivable_amount > 0
+            AND odpr.order_record_id = #{orderRecordId}
+        </where>
+        ORDER BY od.type, od.billing_item_id
+    </select>
+
+  <select id="selectItemPayDetailDeadlineBillPayId0" resultType="com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO">
+        SELECT
+        od.order_record_id AS orderRecordId,
+        ${billPayId} AS billPayId,
+        od.id AS orderDetailId,
+        od.type AS itemType,
+        od.billing_item_id AS itemId,
+        od.executor_id AS executorId,
+        od.consulter_id AS consulterId,
+        odpr.actual_receivable AS actualReceivable,
+        IFNULL(bd.tariffActualAmount, 0) AS tariffActualAmount,
+        IFNULL(bd.oralActualAmount, 0) AS oralActualAmount,
+        IFNULL(bdp.free_amount, 0) AS itemFreeAmount,
+        IFNULL(bdp.received_amount, 0) AS itemRecAmount,
+        IF(bdp.swipe_workload>0, 0, odpr.swipe_workload) AS swipeWorkload
+        FROM order_detail od
+        LEFT JOIN order_detail_pay_record odpr ON odpr.order_detail_id = od.id
+        LEFT JOIN (
+        SELECT
+        od.order_record_id,
+        SUM(IF(od.type=0, odpr.actual_receivable, 0)) AS tariffActualAmount,
+        SUM(IF(od.type=1, odpr.actual_receivable, 0)) AS oralActualAmount
+        FROM order_detail od
+        LEFT JOIN order_detail_pay_record odpr ON odpr.order_detail_id = od.id
+        <where>
+            od.inservice = true
+            AND odpr.inservice = true
+            AND odpr.order_record_id = #{orderRecordId}
+        </where>
+        GROUP BY od.order_record_id
+        ) bd ON bd.order_record_id=od.order_record_id
+        LEFT JOIN (
+        SELECT
+        order_record_id,
+        item_type,
+        item_id,
+        sum(free_amount) AS free_amount,
+        sum(received_amount) AS received_amount,
+        sum(swipe_workload) AS swipe_workload
+        FROM bill_pay_share_detail
+        <where>
+            AND order_record_id = #{orderRecordId}
+            AND bill_pay_id &lt; #{billPayId}
+        </where>
+        group by order_record_id, item_type, item_id
+        ) bdp ON bdp.order_record_id=od.order_record_id and od.type=bdp.item_type and od.billing_item_id=bdp.item_id
+        <where>
+            od.inservice = true
+            AND od.receivable_amount > 0
+            AND odpr.inservice = true
+            AND odpr.order_record_id = #{orderRecordId}
+        </where>
+        ORDER BY od.type, od.billing_item_id
+    </select>
+</mapper>

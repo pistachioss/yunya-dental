@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 简介: 账单入账明细VO
@@ -21,6 +22,9 @@ import java.math.BigDecimal;
 @ApiModel("账单入账明细VO")
 public class BillPayDetailRecordVO implements Serializable {
 
+  /** 订单记录id */
+  @ApiModelProperty("订单记录id")
+  private Integer orderRecordId;
   /** 账单支付记录ID */
   @ApiModelProperty("账单支付记录ID")
   private Integer billPayRecordId;
@@ -39,4 +43,10 @@ public class BillPayDetailRecordVO implements Serializable {
   /** 卡号 */
   @ApiModelProperty("预付款/会员卡账号")
   private String remark;
+  /** 创建时间 */
+  @ApiModelProperty("创建时间")
+  private Date crtTime;
+  /** 数据标识：0-无效，1-有效，2-作废标识 */
+  @ApiModelProperty("数据标识：0-无效，1-有效，2-作废标识")
+  private Integer inservice;
 }

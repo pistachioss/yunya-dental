@@ -74,6 +74,8 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
   @Autowired private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
   /** 订单明细收费 */
   @Autowired private OrderDetailPayRecordBiz orderDetailPayRecordBiz;
+  /** 收费项目分摊明细 */
+  @Autowired private BillPayShareDetailBiz billPayShareDetailBiz;
 
   /**
    * 根据账单收费记录ID撤销账单收费记录
@@ -140,6 +142,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
     // 发送消息同步中间表账单相关数据
     if (result > 0) {
+      billPayShareDetailBiz.removeByCombinationKey(billRecord.getOrderRecordId(), billPayRecordId, null);
       // 删除账单收费记录
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 2, BaseBillPay);
       // 更新治疗计划项目核销数量

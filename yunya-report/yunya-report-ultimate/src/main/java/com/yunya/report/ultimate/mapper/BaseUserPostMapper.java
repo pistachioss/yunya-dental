@@ -18,8 +18,8 @@ public interface BaseUserPostMapper extends Mapper<BaseUserPost> {
    * @param query 查询条件
    * @return List<AssistantMatchingStatisticsVO>
    */
-  List<AssistantMatchingStatisticsVO> selectAssistantMatchingStatisticsByAssistant(
-      @Param("query") EmployeeMatchingRecordQuery query);
+//  List<AssistantMatchingStatisticsVO> selectAssistantMatchingStatisticsByAssistant(
+//      @Param("query") EmployeeMatchingRecordQuery query);
 
   /**
    * 根据条件查询员工看诊情况列表

@@ -34,4 +34,11 @@ public interface OrderDetailPayRecordMapper extends Mapper<OrderDetailPayRecord>
    * @param orderDetailPayRecords 开单明细收费记录
    */
   void batchInsert(@Param("list") List<OrderDetailPayRecord> orderDetailPayRecords);
+
+  /**
+   * 根据订单id统计并更新项目总已收（含免单）、总免单
+   *
+   * @param orderRecordId
+   */
+  void statOrderDetailPayItemTotal(@Param("orderRecordId") Integer orderRecordId);
 }

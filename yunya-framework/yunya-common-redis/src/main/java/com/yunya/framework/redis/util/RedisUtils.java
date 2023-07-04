@@ -252,21 +252,22 @@ public class RedisUtils {
    * @return
    * @param <R> func方法的返回值
    */
-  public <R> R lockedFunc(String key, Function<Object, R> func) {
+  public <R> R lockedFunc(Object key, Function<Object, R> func) {
     return lockedFunc(key, DEFAULT_LOCK_EXPIRE, DEFAULT_LOCK_WAIT, func);
   }
 
   /**
    * 锁保护下的方法执行
    *
-   * @param key 锁key
+   * @param keyObject 锁key
    * @param expire 锁的最大保护时长，超过时长后释放锁，锁失效，单位为秒
    * @param wait 等待轮询时长，在未获取锁的轮询中，下次尝试获取锁的等待时长，单位为秒
    * @param func 待被锁保护的方法
    * @return
    * @param <R> func方法的返回值
    */
-  public <R> R lockedFunc(String key, Integer expire, Integer wait, Function<Object, R> func) {
+  public <R> R lockedFunc(Object keyObject, Integer expire, Integer wait, Function<Object, R> func) {
+    String key = keyObject + "";
     try {
       while (!setLock(key, expire.longValue())) {
         try {

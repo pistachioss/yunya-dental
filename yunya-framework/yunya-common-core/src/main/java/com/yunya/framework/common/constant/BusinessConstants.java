@@ -130,6 +130,11 @@ public class BusinessConstants {
   /** 优惠券有效期 */
   public static String COUPON_ALWAYS_EFFECT = "永久有效";
 
+  /** 本次免单支付 */
+  public static Integer PAYMENT_BY_CUSTOMER_FREE = 23;
+  /** 艾维员工免单 */
+  public static Integer PAYMENT_BY_EMPLOYEE_FREE = 26;
+
   /********************************report********************************/
   public static final Integer ADD = 0;
 

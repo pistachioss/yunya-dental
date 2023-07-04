@@ -79,11 +79,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BaseTariffInfoBiz baseTariffInfoBiz;
   /** 就诊信息 */
   @Autowired private BaseOrganizationBiz baseOrganizationBiz;
+  @Autowired private BaseBillPayShareMapper baseBillPayShareMapper;
 
   @Resource(name = "customizeThreadPool")
   private ThreadPoolExecutor threadPool;
 
-  /**
+    /**
    * 根据条件查询账单收入详情列表
    *
    * @param query 查询条件
@@ -663,6 +664,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   public WorkloadStatisticsVO findClinicWorkloadStatistic(DataStatisticsQuery query) {
     WorkloadStatisticsVO resultData = new WorkloadStatisticsVO();
     ClinicWorkloadGroupInfoVO workloadInfo = baseBillPayBiz.generateClinicWorkloadInfo(query);
+    BigDecimal totalBillSwipeWorkload = workloadInfo.getFirstSwipeWorkload();
     BigDecimal totalReceivedWorkload =
         workloadInfo
             .getFirstReceivedWorkload()
@@ -685,8 +687,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                         .getBeCollectedCouponWorkload()
                         .subtract(workloadInfo.getBeCollectedFreePayWorkload())));
     BigDecimal totalRefundWorkload = workloadInfo.getTotalRefundWorkload();
-    resultData.setTotalClinicActualWorkload(totalReceivedWorkload.subtract(totalRefundWorkload));
+    resultData.setTotalClinicActualWorkload(totalReceivedWorkload.subtract(totalRefundWorkload).add(totalBillSwipeWorkload));
     resultData.setTotalReceivedWorkload(totalReceivedWorkload);
+    resultData.setTotalBillSwipeWorkload(totalBillSwipeWorkload);
     resultData.setTotalBillRefundWorkload(totalRefundWorkload);
     resultData.setTotalClinicReceivedWorkload(workloadInfo.getFirstReceivedWorkload());
     resultData.setTotalFreePaymentWorkload(workloadInfo.getFirstFreePayWorkload());
@@ -751,6 +754,21 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return PageInfo<EmployeeFreepaymentWorkloadDetailVO>
    */
   public PageInfo<EmployeeFreepaymentWorkloadDetailVO> findEmployeeFreepaymentWorkloadDetailList(
+      EmployeePersonalWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeFreepaymentWorkloadDetailVO> resultList = mapper.selectEmployeeFreeWorkloadDetail(query);
+    return new PageInfo<>(resultList);
+  }
+  /**
+   * 根据条件查询员工个人免单支付工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeFreepaymentWorkloadDetailVO>
+   */
+  @Deprecated
+  public PageInfo<EmployeeFreepaymentWorkloadDetailVO> findEmployeeFreepaymentWorkloadDetailList0(
       EmployeePersonalWorkloadDetailQuery query) {
     EmployeeWorkloadQuery workloadQuery = new EmployeeWorkloadQuery();
     workloadQuery.setWhetherPage(false);
@@ -972,6 +990,22 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return PageInfo<EmployeeReceivedDetailWorkloadVO>
    */
   public PageInfo<EmployeeReceivedDetailWorkloadVO> findFreePaymentDetailList(
+      EmployeeFreePaymentWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeReceivedDetailWorkloadVO> resultList =
+        baseBillPayShareMapper.selectEmployeeFreePaymentDetailList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询员工免单支付工作量明细项目列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeReceivedDetailWorkloadVO>
+   */
+  public PageInfo<EmployeeReceivedDetailWorkloadVO> findFreePaymentDetailList0(
       EmployeeFreePaymentWorkloadDetailQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
@@ -1297,10 +1331,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       if (goal == null) {
         goal = BigDecimal.ZERO;
       }
-      BigDecimal[] workloads = workloadCompleted.get(orgId);
-      if (workloads == null) {
-        workloads = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
-      }
+      BigDecimal[] workloads = workloadCompleted.computeIfAbsent(orgId, k->new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
       BigDecimal monthWorkload = workloads[0].setScale(2, BigDecimal.ROUND_HALF_UP); // 实际值
       BigDecimal curWorkload = workloads[1]; // 今日完成
       BigDecimal completedPercentage = BigDecimal.ZERO; // 完成度
@@ -1470,9 +1501,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setStartDate(minDate);
     query.setEndDate(yearEDate);
     List<String> yearDateList = DateUtil.sliceUpDateRange(yearSDate, yearEDate);
-    List<BillWorkloadVO> receivedWorkload = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(query);
+    List<BillWorkloadVO> receivedWorkload = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(query, true);
     Map<String, Map<Integer, BigDecimal>> workloadMap =
         baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query, receivedWorkload);
+    receivedWorkload = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(query, false);
     Map<String, Map<Integer, BigDecimal>> nonWorkloadMap =
         baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(receivedWorkload);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
@@ -1591,21 +1623,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return year;
   }
 
-  private BigDecimal computeOrgWorkload(
-      Integer orgId,
-      List<String> chainMonthList,
+  private BigDecimal computeOrgWorkload(Integer orgId, List<String> chainMonthList,
       Map<String, Map<Integer, BigDecimal>> workloadMap) {
     BigDecimal result = BigDecimal.ZERO;
     for (String month : chainMonthList) {
       Map<Integer, BigDecimal> midMap = workloadMap.get(month);
-      if (midMap == null) {
-        midMap = new HashMap<>(16);
+      if (StringHelper.isNotNull(midMap)) {
+        BigDecimal workload = midMap.get(orgId);
+        if (StringHelper.isNotNull(workload)) {
+          result = result.add(workload);
+        }
       }
-      BigDecimal workload = midMap.get(orgId);
-      if (workload == null) {
-        workload = BigDecimal.ZERO;
-      }
-      result = result.add(workload);
     }
     return result;
   }
@@ -2292,6 +2320,21 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(NonMonthCategoryIncomeQuery query) {
+      if (query.getWhetherPage()) {
+          PageHelper.startPage(query.getPageNum(), query.getPageSize());
+      }
+      List<NonMonthCategoryVO> result = baseBillPayShareMapper.selectNonMonthCategoryFreeAmountList(query);
+      return new PageInfo<>(result);
+  }
+
+  /**
+   * 根据条件查询非本期免单金额列表
+   *
+   * @param query
+   * @return
+   */
+  @Deprecated
+  public PageInfo<NonMonthCategoryVO> nonMonthCategoryList0(NonMonthCategoryIncomeQuery query) {
     List<NonMonthCategoryVO> res = new ArrayList<>();
     List<Integer> ids = mapper.selectBillIdsByNonMonth(query);
     if (StringHelper.isNotEmpty(ids)) {
@@ -2514,7 +2557,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<PersonalBillItemReceivedWorkloadDetailVO> resultList =
-        mapper.selectPersonalBillItemReceivedWorkloadDetail(query);
+        baseBillPayShareMapper.selectPersonalBillItemReceivedWorkloadDetail(query);
     return new PageInfo<>(resultList);
   }
 
@@ -2550,7 +2593,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<PersonalBillItemFreeWorkloadDetailVO> resultList =
-        mapper.selectPersonalBillItemFreeWorkloadDetail(query);
+        baseBillPayShareMapper.selectPersonalBillItemFreeWorkloadDetail(query);
     return new PageInfo<>(resultList);
   }
 
@@ -2721,6 +2764,23 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   public PageInfo<BillItemReceivedStatisticsVO> billItemReceivedStatistics(
+      BillItemInfoQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    queryCategoryItem(query);
+    List<BillItemReceivedStatisticsVO> resultList = baseBillPayShareMapper.billItemReceivedStatistics(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询个人开单项目实收金额统计明细表
+   *
+   * @param query
+   * @return
+   */
+  @Deprecated
+  public PageInfo<BillItemReceivedStatisticsVO> billItemReceivedStatistics0(
       BillItemInfoQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());

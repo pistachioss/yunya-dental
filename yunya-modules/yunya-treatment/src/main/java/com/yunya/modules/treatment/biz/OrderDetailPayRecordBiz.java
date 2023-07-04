@@ -114,4 +114,13 @@ public class OrderDetailPayRecordBiz
     }
     excelUtil.exportExcel(response, resultList, "账单明细记录", fileName);
   }
+
+  /**
+   * 根据订单id统计并更新项目总已收（含免单）、总免单
+   *
+   * @param orderRecordId
+   */
+  public void statOrderDetailPayItemTotal(Integer orderRecordId) {
+    mapper.statOrderDetailPayItemTotal(orderRecordId);
+  }
 }

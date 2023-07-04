@@ -34,9 +34,9 @@ public class BaseUserPostMapperTest {
     query.setEndDate("2020-11-30");
     //query.setOrgIds(35);
     query.setAssistantIds(new Integer[] {573});
-    List<AssistantMatchingStatisticsVO> vos =
-        baseUserPostMapper.selectAssistantMatchingStatisticsByAssistant(query);
-    System.out.println(vos);
+//    List<AssistantMatchingStatisticsVO> vos =
+//        baseUserPostMapper.selectAssistantMatchingStatisticsByAssistant(query);
+//    System.out.println(vos);
   }
 
   @Test

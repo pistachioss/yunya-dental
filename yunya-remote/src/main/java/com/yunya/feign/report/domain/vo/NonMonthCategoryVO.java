@@ -27,6 +27,7 @@ public class NonMonthCategoryVO implements Serializable {
   private Integer categoryId;
   private Integer itemId;
   private Integer itemType;
+  private Integer billPayId;
   private Integer billId;
   /** 门诊 */
   @Excel(name = "门诊")

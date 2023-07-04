@@ -13,6 +13,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.EmployeeWorkloadCost;
 import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
+import com.yunya.report.ultimate.mapper.BaseBillPayShareMapper;
 import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,7 @@ public class EmployeeWorkloadBiz {
 
   @Autowired private BaseTariffInfoBiz baseTariffInfoBiz;
   @Autowired private BaseOrganizationMapper baseOrganizationMapper;
+  @Autowired private BaseBillPayShareMapper baseBillPayShareMapper;
 
     /**
    * 根据条件查询员工工作量列表
@@ -76,11 +78,11 @@ public class EmployeeWorkloadBiz {
     Future<List<ClinicEmployeBonusCoefficientVO>> employee =
         multiFindClinicEmployeeCartesianProduct(query);
 
-    // 门诊员工的应收工作量
+    // 门诊员工的应收工作量（含划扣卡核销工作量）
     Future<Map<String, BigDecimal>> receivableWorkload =
         findClinicEmployeeReceivableWorkload(query);
 
-    // 门诊员工的实收工作量
+    // 门诊员工的实收工作量（含免单）
     Future<Map<String, BigDecimal>> receivedWorkload =
         findClinicEmployeeReceivedWorkload(query, true);
 
@@ -235,7 +237,7 @@ public class EmployeeWorkloadBiz {
   }
 
   /**
-   * 员工工作量=实收工作量+补入工作量-退费工作量-免单支付工作量
+   * 员工工作量=实收工作量+划扣卡核销工作量+补入工作量-退费工作量-免单支付工作量
    *
    * @param vo
    * @return
@@ -245,6 +247,7 @@ public class EmployeeWorkloadBiz {
     BigDecimal supplementWorkload = vo.getSupplementWorkload();
     BigDecimal refundWorkload = vo.getRefundWorkload();
     BigDecimal freePaymentWorkload = vo.getFreePaymentWorkload();
+      // TODO: 2023/6/25 需补充划扣卡核销工作量
     return receivedWorkload
         .add(supplementWorkload)
         .subtract(refundWorkload)
@@ -332,7 +335,7 @@ public class EmployeeWorkloadBiz {
   }
 
   /**
-   * 多线程查询门诊员工的实收工作量
+   * 多线程查询门诊员工的实收工作量（含免单）
    *
    * @param query
    * @param groupByOrgId
@@ -349,7 +352,7 @@ public class EmployeeWorkloadBiz {
   }
 
   /**
-   * 多线程查询门诊员工的应收工作量
+   * 多线程查询门诊员工的应收工作量（含划扣卡核销工作量）
    *
    * @param query
    * @return
@@ -596,13 +599,13 @@ public class EmployeeWorkloadBiz {
   public PageInfo<BillItemTollAndWorkloadVO> findStatisticsTariffPaymentWorkloadList(
       BillItemTollWorkloadQuery query) throws Exception {
     resolveItemIds(query);
-    // 执行人的项目实收工作量
+    // 执行人的项目实收工作量（含免单工作量）
     Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload =
         findClinicExecutorTariffReceivedWorkload(query);
 
     // 执行人的项目免单支付金额
-    Future<Map<String, EmployeeTariffWorkloadVO>> freePaymentAmount =
-        findClinicExecutorTariffFreePaymentAmount(query);
+//    Future<Map<String, EmployeeTariffWorkloadVO>> freePaymentAmount =
+//        findClinicExecutorTariffFreePaymentAmount(query);
 
     // 执行人的项目补入工作量
     Future<Map<String, EmployeeTariffWorkloadVO>> supplementWorkload =
@@ -623,7 +626,7 @@ public class EmployeeWorkloadBiz {
     List<BillItemTollAndWorkloadVO> result =
         mergeExecutorTariffWorkload(
             receivedWorkload,
-            freePaymentAmount,
+//            freePaymentAmount,
             supplementWorkload,
             refundWorkload,
             employees,
@@ -640,8 +643,8 @@ public class EmployeeWorkloadBiz {
                 allExportfindClinicExecutorTariffReceivedWorkload(query);
 
         // 免单支付金额
-        Future<Map<String, EmployeeTariffWorkloadVO>> freePaymentAmount =
-                allExportfindClinicExecutorTariffFreePaymentAmount(query);
+//        Future<Map<String, EmployeeTariffWorkloadVO>> freePaymentAmount =
+//                allExportfindClinicExecutorTariffFreePaymentAmount(query);
 
         // 补入工作量
         Future<Map<String, EmployeeTariffWorkloadVO>> supplementWorkload =
@@ -662,7 +665,7 @@ public class EmployeeWorkloadBiz {
         List<BillItemTollAndWorkloadAllExportVO> result =
                 allExportmergeExecutorTariffWorkload(
                         receivedWorkload,
-                        freePaymentAmount,
+//                        freePaymentAmount,
                         supplementWorkload,
                         refundWorkload,
                         employees,
@@ -696,6 +699,70 @@ public class EmployeeWorkloadBiz {
   }
 
   private List<BillItemTollAndWorkloadVO> mergeExecutorTariffWorkload(
+      Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload,
+      Future<Map<String, EmployeeTariffWorkloadVO>> supplementWorkload,
+      Future<Map<String, EmployeeTariffWorkloadVO>> refundWorkload,
+      Future<List<ClinicEmployeBonusCoefficientVO>> employeeFutrue,
+      Future<Map<Integer, ItemCategoryVO>> tariffFuture)
+      throws Exception {
+    Map<String, EmployeeTariffWorkloadVO> receivedMap = receivedWorkload.get();
+    Map<String, EmployeeTariffWorkloadVO> supplementMap = supplementWorkload.get();
+    Map<String, EmployeeTariffWorkloadVO> refundMap = refundWorkload.get();
+    List<ClinicEmployeBonusCoefficientVO> employees = employeeFutrue.get();
+    Map<String, ClinicEmployeBonusCoefficientVO> employeeMap = new HashMap<>(16);
+    employees.forEach(vo -> employeeMap.put(vo.getEmployeeId() + "," + vo.getOrgId(), vo));
+    Map<Integer, ItemCategoryVO> tariffMap = tariffFuture.get();
+    Map<String, BillItemTollAndWorkloadVO> resultMap = new HashMap<>(16);
+    receivedMap.forEach(
+        (key, vo) -> {
+          Integer quantity = StringHelper.defaultInt(vo.getQuantity());
+          if (quantity > 0) {
+            BillItemTollAndWorkloadVO entity = resultMap.get(key);
+            if (ObjectUtils.isEmpty(entity)) {
+              entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
+            }
+            if (!ObjectUtils.isEmpty(entity)) {
+              entity.setQuantity(quantity);
+              entity.setReceivedWorkload(vo.getWorkload());
+              entity.setFreePayWorkload(vo.getFreeWorkload());
+              resultMap.put(key, entity);
+            }
+          }
+        });
+    supplementMap.forEach(
+        (key, vo) -> {
+          BigDecimal workload = vo.getWorkload();
+          if (workload.compareTo(BigDecimal.ZERO) > 0) {
+            BillItemTollAndWorkloadVO entity = resultMap.get(key);
+            if (ObjectUtils.isEmpty(entity)) {
+              entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
+            }
+            if (!ObjectUtils.isEmpty(entity)) {
+              entity.setSupplyWorkload(workload);
+              resultMap.put(key, entity);
+            }
+          }
+        });
+    refundMap.forEach(
+        (key, vo) -> {
+          BigDecimal workload = vo.getWorkload();
+          if (workload.compareTo(BigDecimal.ZERO) > 0) {
+            BillItemTollAndWorkloadVO entity = resultMap.get(key);
+            if (ObjectUtils.isEmpty(entity)) {
+              entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
+            }
+            if (!ObjectUtils.isEmpty(entity)) {
+              entity.setRefundWorkload(workload);
+              resultMap.put(key, entity);
+            }
+          }
+        });
+
+    // 排序
+    return SortUtil.sort(new ArrayList<>(resultMap.values()), itemWorkloadCmpList());
+  }
+
+  private List<BillItemTollAndWorkloadVO> mergeExecutorTariffWorkload0(
       Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload,
       Future<Map<String, EmployeeTariffWorkloadVO>> freePaymentAmount,
       Future<Map<String, EmployeeTariffWorkloadVO>> supplementWorkload,
@@ -774,7 +841,89 @@ public class EmployeeWorkloadBiz {
     // 排序
     return SortUtil.sort(new ArrayList<>(resultMap.values()), itemWorkloadCmpList());
   }
+
     private List<BillItemTollAndWorkloadAllExportVO> allExportmergeExecutorTariffWorkload(
+            Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload,
+            Future<Map<String, EmployeeTariffWorkloadVO>> supplementWorkload,
+            Future<Map<String, EmployeeTariffWorkloadVO>> refundWorkload,
+            Future<List<ClinicEmployeBonusCoefficientVO>> employeeFutrue,
+            Future<Map<Integer, ItemCategoryVO>> tariffFuture)
+            throws Exception {
+        Map<String, EmployeeTariffWorkloadVO> receivedMap = receivedWorkload.get();
+        Map<String, EmployeeTariffWorkloadVO> supplementMap = supplementWorkload.get();
+        Map<String, EmployeeTariffWorkloadVO> refundMap = refundWorkload.get();
+        List<ClinicEmployeBonusCoefficientVO> employees = employeeFutrue.get();
+        Map<String, ClinicEmployeBonusCoefficientVO> employeeMap = new HashMap<>(16);
+        employees.forEach(vo -> employeeMap.put(vo.getEmployeeId() + "," + vo.getOrgId(), vo));
+        Map<Integer, ItemCategoryVO> tariffMap = tariffFuture.get();
+        Map<String, BillItemTollAndWorkloadAllExportVO> resultMap = new HashMap<>(16);
+        receivedMap.forEach(
+                (key, vo) -> {
+                    Integer quantity = StringHelper.defaultInt(vo.getQuantity());
+                    if (quantity > 0) {
+                        BillItemTollAndWorkloadAllExportVO entity = resultMap.get(key);
+                        if (ObjectUtils.isEmpty(entity)) {
+                            entity = allExportcreateWorkloadBaseInfo(key, employeeMap, tariffMap);
+                        }
+                        if (!ObjectUtils.isEmpty(entity)) {
+                            entity.setQuantity(quantity);
+                            entity.setReceivedWorkload(vo.getWorkload());
+                            entity.setFreePayWorkload(vo.getFreeWorkload());
+                            entity.setOrderNum(vo.getOrderNum());
+                            entity.setName(vo.getName());
+                            entity.setMobile(vo.getMobile());
+                            entity.setRemark(vo.getRemark());
+                            entity.setBillDate(vo.getBillDate());
+                            entity.setEmployeeName(vo.getEmployeeName());
+                            resultMap.put(key, entity);
+                        }
+                    }
+                });
+        supplementMap.forEach(
+                (key, vo) -> {
+                    BigDecimal workload = vo.getWorkload();
+                    if (workload.compareTo(BigDecimal.ZERO) > 0) {
+                        BillItemTollAndWorkloadAllExportVO entity = resultMap.get(key);
+                        if (ObjectUtils.isEmpty(entity)) {
+                            entity = allExportcreateWorkloadBaseInfo(key, employeeMap, tariffMap);
+                        }
+                        if (!ObjectUtils.isEmpty(entity)) {
+                            entity.setSupplyWorkload(workload);
+                            entity.setOrderNum(vo.getOrderNum());
+                            entity.setName(vo.getName());
+                            entity.setMobile(vo.getMobile());
+                            entity.setRemark(vo.getRemark());
+                            entity.setBillDate(vo.getBillDate());
+                            entity.setEmployeeName(vo.getEmployeeName());
+                            resultMap.put(key, entity);
+                        }
+                    }
+                });
+        refundMap.forEach(
+                (key, vo) -> {
+                    BigDecimal workload = vo.getWorkload();
+                    if (workload.compareTo(BigDecimal.ZERO) > 0) {
+                        BillItemTollAndWorkloadAllExportVO entity = resultMap.get(key);
+                        if (ObjectUtils.isEmpty(entity)) {
+                            entity = allExportcreateWorkloadBaseInfo(key, employeeMap, tariffMap);
+                        }
+                        if (!ObjectUtils.isEmpty(entity)) {
+                            entity.setRefundWorkload(workload);
+                            entity.setOrderNum(vo.getOrderNum());
+                            entity.setName(vo.getName());
+                            entity.setMobile(vo.getMobile());
+                            entity.setRemark(vo.getRemark());
+                            entity.setBillDate(vo.getBillDate());
+                            entity.setEmployeeName(vo.getEmployeeName());
+                            resultMap.put(key, entity);
+                        }
+                    }
+                });
+
+        // 排序
+        return SortUtil.sort(new ArrayList<>(resultMap.values()), allExportitemWorkloadCmpList());
+    }
+    private List<BillItemTollAndWorkloadAllExportVO> allExportmergeExecutorTariffWorkload0(
             Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload,
             Future<Map<String, EmployeeTariffWorkloadVO>> freePaymentAmount,
             Future<Map<String, EmployeeTariffWorkloadVO>> supplementWorkload,
@@ -1057,7 +1206,7 @@ public class EmployeeWorkloadBiz {
     return threadPool.submit(
         () -> {
           List<EmployeeTariffWorkloadVO> workload =
-              baseBillDetailMapper.selectClinicExecutorTariffWorkload(query);
+              baseBillPayShareMapper.selectClinicExecutorTariffWorkload(query);
           return mapEmployeeWorkloadVO(workload);
         });
   }
@@ -1073,7 +1222,7 @@ public class EmployeeWorkloadBiz {
         return threadPool.submit(
                 () -> {
                     List<EmployeeTariffWorkloadVO> workload =
-                            baseBillDetailMapper.allExportfindClinicExecutorTariffReceivedWorkload(query);
+                            baseBillPayShareMapper.allExportfindClinicExecutorTariffReceivedWorkload(query);
                     return allExportmapEmployeeWorkloadVO(workload);
                 });
     }

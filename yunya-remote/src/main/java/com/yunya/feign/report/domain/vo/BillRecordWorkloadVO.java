@@ -27,7 +27,7 @@ public class BillRecordWorkloadVO implements Serializable {
   /** 订单工作量合计 */
   @ApiModelProperty("订单工作量合计")
   private BigDecimal billTotalWorkload;
-  /** 订单fei工作量合计 */
+  /** 订单非工作量合计 */
   @ApiModelProperty("订单非工作量合计")
   private BigDecimal billTotalNotWorkload;
   /** 订单补入工作量 */

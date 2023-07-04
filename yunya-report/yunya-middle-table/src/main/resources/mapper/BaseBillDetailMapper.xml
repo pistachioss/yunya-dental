@@ -175,6 +175,7 @@
             bbd.quantity AS quantity,
             IFNULL(bbp.received_amount,0) AS totalReceivedWorkload,
             bbd.received_amount AS receivedWorkload,
+            bbd.swipe_workload AS swipeWorkload,
             bbd.coupon_workload AS couponWorkload,
             bb.actual_amount AS actualWorkload
         FROM base_bill_detail bbd

@@ -1018,7 +1018,7 @@ public class DimensionReportBiz {
                 oralIds.addAll(StringHelper.split2IntList(oralIdStr, ","));
             }
         });
-        // 门诊的实收、免单
+        // 门诊的实收、划扣卡核销、免单
         Future<List<BillExecutorItemVO>> workloadFuture = multiFindClinicEmployeeWorkload(query, null);
         // 门诊的补入
         Future<List<BillExecutorItemVO>> couponFuture = multiFindClinicEmployeeCouponWorkload(query, null);
@@ -1148,6 +1148,7 @@ public class DimensionReportBiz {
 
     /**
      * 员工工作量统计转换为门诊工作量统计
+     *  工作量=实收（不含免单）+划扣卡核销工作量+补入-退费
      * @param pays
      * @param refunds
      * @param oralIds
@@ -1166,7 +1167,7 @@ public class DimensionReportBiz {
                 if (totalWorkload == null) {
                     totalWorkload = new BigDecimal("0.00");
                 }
-                BigDecimal workload = vo.getReceivedWorkload().subtract(vo.getFreePaymentWorkload());
+                BigDecimal workload = vo.getReceivedWorkload().add(vo.getSwipeWorkload());
                 orgWorkloadMap.put(orgId, totalWorkload.add(workload));
                 Integer itemId = vo.getItemId();
                 String key = orgId + ",";
@@ -1349,7 +1350,7 @@ public class DimensionReportBiz {
     }
 
     private Map<String, BigDecimal> clinicEmployeeWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds, Function<BillExecutorItemVO, String> keyFunc) throws ExecutionException, InterruptedException {
-        // 门诊的实收、免单
+        // 门诊的实收、划扣核销
         Future<List<BillExecutorItemVO>> payFuture = multiFindClinicEmployeeWorkload(query, employeeIds);
         // 门诊的补入
         Future<List<BillExecutorItemVO>> couponFuture = multiFindClinicEmployeeCouponWorkload(query, employeeIds);
@@ -1357,36 +1358,29 @@ public class DimensionReportBiz {
         // 门诊的退费
         List<BillExecutorItemVO> refunds = multiFindClinicEmployeeRefundWorkload(query, employeeIds).get();
         Map<String, BigDecimal> result = new HashMap<>();
-        // 工作量=实收-免单-退费+补入
+        // 工作量=实收（不含免单）+划扣核销+补入-退费
         if (StringHelper.isNotEmpty(pays)) {
             pays.forEach(vo->{
                 String key = keyFunc.apply(vo);
-                BigDecimal totalWorkload = result.get(key);
-                if (totalWorkload == null) {
-                    totalWorkload = new BigDecimal("0.00");
-                }
-                BigDecimal workload = vo.getReceivedWorkload().subtract(vo.getFreePaymentWorkload());
-                result.put(key, totalWorkload.add(workload));
+                BigDecimal totalWorkload = result.computeIfAbsent(key, k->new BigDecimal("0.00"));
+                result.put(key,
+                        totalWorkload.add(vo.getReceivedWorkload()
+                            .add(vo.getSwipeWorkload())));
+//                            .subtract(vo.getFreePaymentWorkload())));
             });
         }
         List<BillExecutorItemVO> coupons = couponFuture.get();
         if (StringHelper.isNotEmpty(coupons)) {
             coupons.forEach(vo -> {
                 String key = keyFunc.apply(vo);
-                BigDecimal totalWorkload = result.get(key);
-                if (totalWorkload == null) {
-                    totalWorkload = new BigDecimal("0.00");
-                }
+                BigDecimal totalWorkload = result.computeIfAbsent(key, k->new BigDecimal("0.00"));
                 result.put(key, totalWorkload.add(vo.getCouponWorkload()));
             });
         }
         if (StringHelper.isNotEmpty(refunds)) {
             refunds.forEach(vo -> {
                 String key = keyFunc.apply(vo);
-                BigDecimal totalWorkload = result.get(key);
-                if (totalWorkload == null) {
-                    totalWorkload = new BigDecimal("0.00");
-                }
+                BigDecimal totalWorkload = result.computeIfAbsent(key, k->new BigDecimal("0.00"));
                 result.put(key, totalWorkload.subtract(vo.getRefundWorkload()));
             });
         }
@@ -2505,7 +2499,7 @@ public class DimensionReportBiz {
         queryForm.setStartDate(DateUtil.yearStart(query.getStartDate() + "-01"));
         queryForm.setEndDate(DateUtil.yearEnd(query.getEndDate() + "-01"));
         queryForm.setOrgIds(query.getOrgIds().toArray(new Integer[0]));
-        List<BillWorkloadVO> workloads = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(queryForm);
+        List<BillWorkloadVO> workloads = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(queryForm, false);
         Map<String, Map<Integer, BigDecimal>> nonWorkloadDateMap
                 = baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(workloads);
         if (StringHelper.isNotEmpty(nonWorkloadDateMap)) {
@@ -2528,7 +2522,7 @@ public class DimensionReportBiz {
         DataStatisticsQuery queryForm = new DataStatisticsQuery();
         BeanUtils.copyProperties(query, queryForm);
         queryForm.setOrgIds(query.getOrgIds().toArray(new Integer[0]));
-        List<BillWorkloadVO> workloads = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(queryForm);
+        List<BillWorkloadVO> workloads = baseBillPayBiz.findReceivedWorkloadsGroupByMonth(queryForm, false);
         Map<String, Map<Integer, BigDecimal>> nonWorkloadDateMap
                 = baseBillPayBiz.computeNotWorkloadGroupOrgIdAndMonth(workloads);
        if (StringHelper.isNotEmpty(nonWorkloadDateMap)) {

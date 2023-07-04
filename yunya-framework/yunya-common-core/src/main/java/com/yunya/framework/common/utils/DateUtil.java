@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
 
@@ -33,6 +34,7 @@ public class DateUtil {
   public static final int MAX_SECOND = 59;
 
   private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+  private static final SimpleDateFormat SDF_TIME = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   private static final SimpleDateFormat NUMBER_DATESDF = new SimpleDateFormat("yyyyMMdd");
   private static final SimpleDateFormat NUMBER_YEARSDF = new SimpleDateFormat("yyyy");
@@ -813,7 +815,6 @@ public class DateUtil {
    * @return
    */
   public static String preDate(String date, int diff) {
-    String[] dates = date.split("-");
     if (date.matches(MONTH_REGEX)) { // 月
       return preDate(date, diff, "yyyy-MM", Calendar.MONTH);
     } else if (date.matches(YEAR_REGEX)) { // 年
@@ -1229,16 +1230,82 @@ public class DateUtil {
     return currentMonth == month;
   }
 
-  public static void main(String[] args) {
-    System.out.println(parse2Date("1941-09-04"));
-  }
-
   /**
    * 当前时间
    *
    * @return
    */
   public static Date now() {
-    return new Date(System.currentTimeMillis());
+    return new Date(curTimeMill());
+  }
+
+  public static long curTimeMill() {
+    return System.currentTimeMillis();
+  }
+
+  public static void main(String[] args) {
+//    dur("测试", o->{
+//      try {
+//        TimeUnit.SECONDS.sleep(1);
+//      } catch (InterruptedException e) {
+//        throw new RuntimeException(e);
+//      }
+//      return null;
+//    });
+    Date d1 = parse("2023-03-16 10:59:54");
+    Date d2 = parse("2023-03-16 10:59:54");
+    System.out.println(before4Second(d1, d2, 10));
+  }
+
+  public static <R> R dur(String name, Function<String, R> func) {
+    long t1 = curTimeMill();
+    R result = func.apply(name);
+    long t2 = curTimeMill();
+    long t = t2 - t1;
+    log.info("名称：{}-耗时：{}", name,  t);
+    return result;
+  }
+
+  public static String toDateTime(Date date) {
+    return format(date, SDF_TIME);
+  }
+
+  /**
+   * 判断date1是否先于或等于date2，同时两者差值小于等于给定秒值
+   *
+   * @param date1
+   * @param date2
+   * @return
+   */
+  public static Boolean before4Second(Date date1, Date date2, Integer target) {
+    long diff = diff4Time(date1, date2, "second");
+    return diff <= 0 && Math.abs(diff) <= target;
+  }
+
+  /**
+   * date1和date2在level级别下的差值
+   *
+   * @param date1
+   * @param date2
+   * @param level：day-年，hour-小时，minute-分钟，second-秒钟
+   * @return
+   */
+  public static long diff4Time(Date date1, Date date2, String level) {
+    assert StringHelper.isAnyNull(date1, date2);
+    long diff = date1.getTime() - date2.getTime();
+    if ("day".equals(level)) {
+      return diff / (24 * 60 * 60 * 1000);
+    } else if ("hour".equals(level)) {
+      long day = diff / (24 * 60 * 60 * 1000);
+      return diff / (60 * 60 * 1000) - day * 24;
+    } else if ("minute".equals(level)) {
+      long day = diff / (24 * 60 * 60 * 1000);
+      long hour = diff / (60 * 60 * 1000) - day * 24;
+      return (diff / (60 * 1000)) - day * 24 * 60 - hour * 60;
+    } else if ("second".equals(level)) {
+      return diff / 1000;
+    } else {
+      throw new UnsupportedOperationException("unsupported level");
+    }
   }
 }

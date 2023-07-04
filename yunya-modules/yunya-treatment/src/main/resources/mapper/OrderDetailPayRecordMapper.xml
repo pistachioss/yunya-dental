@@ -17,6 +17,8 @@
         <result column="actual_receivable" property="actualReceivable" jdbcType="DECIMAL"/>
         <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
         <result column="coupon_workload" property="couponWorkload" jdbcType="DECIMAL"/>
+        <result column="swipe_workload" property="swipeWorkload" jdbcType="DECIMAL"/>
+        <result column="swipe_coupon_workload" property="swipeCouponWorkload" jdbcType="DECIMAL"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
@@ -30,15 +32,35 @@
     <insert id="batchInsert">
         insert into order_detail_pay_record (
         org_id, patient_id, treatment_record_id, order_record_id,order_detail_id, bill_record_id, receivable_amount,
-        privilege_amount,actual_receivable, received_amount, coupon_workload, crt_id, crt_name, upd_id, upd_name
+        privilege_amount,actual_receivable, received_amount, coupon_workload, swipe_workload, swipe_coupon_workload,
+        crt_id, crt_name, upd_id, upd_name
         ) values
         <foreach collection="list" index="index" item="obj" separator=",">
             (#{obj.orgId},#{obj.patientId},#{obj.treatmentRecordId},#{obj.orderRecordId},#{obj.orderDetailId},
             #{obj.billRecordId},#{obj.receivableAmount},#{obj.privilegeAmount},#{obj.actualReceivable},
-            #{obj.receivedAmount},#{obj.couponWorkload},#{obj.crtId},#{obj.crtName},#{obj.updId},
-            #{obj.updName})
+            #{obj.receivedAmount},#{obj.couponWorkload},IFNULL(#{obj.swipeWorkload},0),IFNULL(#{obj.swipeCouponWorkload},0),
+            #{obj.crtId},#{obj.crtName},#{obj.updId},#{obj.updName})
         </foreach>
     </insert>
+
+    <!--根据订单id统计并更新项目总已收（含免单）、总免单-->
+    <update id="statOrderDetailPayItemTotal">
+        UPDATE order_detail_pay_record odpr
+        LEFT JOIN (
+            SELECT
+                order_detail_id,
+                SUM(free_amount + received_amount) AS received_amount,
+                SUM(free_amount) AS free_amount
+            FROM bill_pay_share_detail
+            WHERE inservice = true AND order_record_id = #{orderRecordId}
+            GROUP BY order_detail_id
+        ) bpsd ON odpr.order_detail_id = bpsd.order_detail_id
+        SET
+            odpr.received_amount = IFNULL(bpsd.received_amount, 0),
+            odpr.free_amount = IFNULL(bpsd.free_amount, 0)
+        WHERE odpr.inservice = true
+        AND odpr.order_record_id = #{orderRecordId}
+    </update>
 
     <!-- 查询账单优惠为0的明细总额 -->
     <select id="selectNoDiscountAmount" resultType="java.math.BigDecimal">

@@ -28,6 +28,9 @@ public class EmployeeTariffWorkloadVO extends ClinicEmployeTariffInfoVO implemen
     @ApiModelProperty("工作量")
     private BigDecimal workload;
 
+    @ApiModelProperty("免单工作量")
+    private BigDecimal freeWorkload;
+
     @ApiModelProperty("账单id")
     private Integer billId;
 

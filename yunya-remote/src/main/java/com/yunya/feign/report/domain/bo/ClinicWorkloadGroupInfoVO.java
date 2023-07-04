@@ -29,6 +29,7 @@ public class ClinicWorkloadGroupInfoVO implements Serializable {
 
   public void init() {
     firstReceivedWorkload = BigDecimal.ZERO;
+    firstSwipeWorkload = BigDecimal.ZERO;
     firstCouponWorkload = BigDecimal.ZERO;
     firstFreePayWorkload = BigDecimal.ZERO;
     arrearsReceivedWorkload = BigDecimal.ZERO;
@@ -37,6 +38,10 @@ public class ClinicWorkloadGroupInfoVO implements Serializable {
     beCollectedReceivedWorkload = BigDecimal.ZERO;
     beCollectedCouponWorkload = BigDecimal.ZERO;
     beCollectedFreePayWorkload = BigDecimal.ZERO;
+
+    firstReceivedNotWorkload = BigDecimal.ZERO;
+    arrearsNotWorkload = BigDecimal.ZERO;
+    beCollectedNotWorkload = BigDecimal.ZERO;
   }
 
   /** 首次收费总额 */
@@ -45,6 +50,10 @@ public class ClinicWorkloadGroupInfoVO implements Serializable {
   /** 首次收费工作量合计 */
   @ApiModelProperty("首次收费工作量合计")
   private BigDecimal firstReceivedWorkload;
+
+  @ApiModelProperty("首次划扣卡核销工作量合计")
+  private BigDecimal firstSwipeWorkload;
+
   /** 首次收费免单工作量合计 */
   @ApiModelProperty("首次收费免单工作量合计")
   private BigDecimal firstFreePayWorkload;

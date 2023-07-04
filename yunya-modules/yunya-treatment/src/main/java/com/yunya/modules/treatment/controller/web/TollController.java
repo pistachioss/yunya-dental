@@ -2,13 +2,16 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.model.TollDebtModel;
 import com.yunya.feign.treatment.domain.model.TollModel;
+import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.modules.treatment.biz.BillPayShareDetailBiz;
 import com.yunya.modules.treatment.biz.TollBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -39,6 +42,8 @@ public class TollController {
 
   /** 注入对象 */
   @Autowired private TollBiz tollBiz;
+
+  @Autowired private BillPayShareDetailBiz billPayShareDetailBiz;
 
   /**
    * 匹配订单列表优惠信息
@@ -163,5 +168,16 @@ public class TollController {
     Map<String, Object> result = new HashMap<>();
     result.put("enablePrepaymentAmount", this.tollBiz.currentOrderEnablePrepayment(orderRecordId));
     return ResponseUtil.success(result);
+  }
+
+  @ApiOperation("根据条件在treatment库生成项目收费分摊明细，不同步中间表")
+  @PostMapping("/generate/sharedDetail")
+  public ResponseResult generateItemPaySharedDetail(@RequestBody BillPayShareDetailQuery query) {
+    DateUtil.dur("bill_pay_share_detail分摊数据生成", o->{
+      billPayShareDetailBiz.deleteByBillDateRange(query);
+      billPayShareDetailBiz.shullfeItemPaySharedDetail(query);
+      return null;
+    });
+    return ResponseUtil.success();
   }
 }

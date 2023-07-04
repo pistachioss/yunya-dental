@@ -49,6 +49,19 @@ public class PatientOriginRelationsController {
      */
     @ApiOperation("员工推荐")
     @PostMapping(value = "/employeeReferral",name = "公司端-人力资源-员工推荐")
+    public ResponseResult<PageInfo<PatientOriginEmployeeVo>> findEmployeeReferrerWorkloadList(@RequestBody PatientOriginEmployeeQuery query){
+       PageInfo<PatientOriginEmployeeVo> pageInfo = patientOriginRelationsBiz.findEmployeeReferrerWorkloadList(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 员工推荐推荐分页列表查询
+     * @param query 查询条件
+     * @return 员工推荐推荐分页列表信息
+     */
+//    @ApiOperation("员工推荐")
+//    @PostMapping(value = "/employeeReferral",name = "公司端-人力资源-员工推荐")
+    @Deprecated
     public ResponseResult<PageInfo<PatientOriginEmployeeVo>> employeeReferral(@RequestBody PatientOriginEmployeeQuery query){
        List<PatientOriginEmployeeVo> patientOriginEmployeeVoList = patientOriginRelationsBiz.finleEmployeeReferral(query);
        PageInfo<PatientOriginEmployeeVo> pageInfo = new PageInfo<>();
@@ -87,8 +100,6 @@ public class PatientOriginRelationsController {
         return ResponseUtil.success(null);
     }
 
-
-
     /**
      * 已收工作量明细列表分页列表查询
      * @param query 查询条件
@@ -96,6 +107,19 @@ public class PatientOriginRelationsController {
      */
     @ApiOperation("员工推荐-各项明细列表")
     @PostMapping(value = "/workloadBreakdown",name = "公司端-人力资源-员工推荐-各项明细列表 type区分")
+    public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> findRefereePatientWorkloadBreakdown(@RequestBody ReceiverkLoadQuery query) throws ParseException {
+        PageInfo<ReceivedWorkloadDetailsVo> pageInfo = patientOriginRelationsBiz.findRefereePatientWorkloadBreakdown(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 已收工作量明细列表分页列表查询
+     * @param query 查询条件
+     * @return 已收工作量明细列表分页列表查询
+     */
+//    @ApiOperation("员工推荐-各项明细列表")
+//    @PostMapping(value = "/workloadBreakdown",name = "公司端-人力资源-员工推荐-各项明细列表 type区分")
+    @Deprecated
     public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(@RequestBody ReceiverkLoadQuery query) throws ParseException {
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = patientOriginRelationsBiz.findEreceiverkLoad(query);
         PageInfo<ReceivedWorkloadDetailsVo> pageInfo = new PageInfo<>();

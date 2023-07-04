@@ -29,6 +29,9 @@ public class WorkloadStatisticsVO implements Serializable {
   /** 账单退费合计 */
   @ApiModelProperty("门诊账单退费工作量合计")
   private BigDecimal totalBillRefundWorkload;
+  /** 划扣卡工作量合计 */
+  @ApiModelProperty("门诊划扣卡工作量合计")
+  private BigDecimal totalBillSwipeWorkload;
 
   /** 门诊已收工作量合计 */
   @ApiModelProperty("已收工作量合计（首次收费）")
