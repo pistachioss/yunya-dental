@@ -133,6 +133,7 @@
         tr.registered_id AS registeredId,
         ord.id AS orderRecordId,
         ord.total_amount AS originalPrice,
+        odpr.swipeAmount,
         br.id AS billRecordId,
         br.actual_receivable_amount AS actualReceivableAmount,
         br.debt_amount AS debtAmount,
@@ -145,8 +146,17 @@
             SELECT
                 ord.treatment_record_id,
                 ord.id,
-                ord.total_amount
+                ord.total_amount,
+                IFNULL(odpr.swipeAmount, 0) AS swipeAmount
             FROM order_record ord
+            LEFT JOIN (
+                SELECT
+                    order_record_id,
+                    SUM(swipe_workload) AS swipeAmount
+                FROM order_detail_pay_record
+                WHERE inservice = 1
+                GROUP BY order_record_id
+            ) odpr ON odpr.order_record_id = ord.id
             WHERE ord.inservice = 1
         ) ord ON tr.id = ord.treatment_record_id
         LEFT JOIN (

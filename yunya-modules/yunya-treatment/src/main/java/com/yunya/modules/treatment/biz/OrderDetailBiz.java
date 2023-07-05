@@ -340,33 +340,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     }
     List<OrderDetailChargeVO> chargeOrderDetailList;
     List<OrderDetailChargeVO> chargeVOS = this.buildMember(orderRecordId);
-
-    // 处理门诊价目表价格
-    if (StringHelper.isNotEmpty(chargeVOS)) {
-      List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
-      if (StringHelper.isNotEmpty(memberTypes)) {
-        chargeVOS.forEach(
-            tariffVO -> {
-              Map<Integer, Object> memberPrices = new HashMap<>(16);
-              if (tariffVO.getType() == 0) {
-                // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
-                setClinicTariffMemberPrice(
-                    memberPrices,
-                    memberTypes,
-                    Integer.valueOf(BaseContextHandler.getOrgId()),
-                    tariffVO);
-              } else {
-                setClinicOralTariffMemberPrice(
-                    memberPrices,
-                    memberTypes,
-                    Integer.valueOf(BaseContextHandler.getOrgId()),
-                    tariffVO);
-              }
-//              tariffVO.setDiscountAppliesCoupons(memeberIcon());
-            });
-      }
-    }
-
+    assemblyMemberDiscountPrice(chargeVOS);
     if (chargeVOS != null) {
       chargeOrderDetailList = chargeVOS;
     } else {
@@ -386,6 +360,39 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
     return chargeOrderDetailList;
   }
+
+  /**
+   * 装配会员折扣价
+   *
+   * @param chargeVOS
+   */
+  public void assemblyMemberDiscountPrice(List<? extends OrderDetailVO> chargeVOS) {
+    // 处理门诊价目表价格
+    if (StringHelper.isNotEmpty(chargeVOS)) {
+      List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+      if (StringHelper.isNotEmpty(memberTypes)) {
+        chargeVOS.forEach(
+                tariffVO -> {
+                  Map<Integer, Object> memberPrices = new HashMap<>(16);
+                  if (tariffVO.getType() == 0) {
+                    // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
+                    setClinicTariffMemberPrice(
+                            memberPrices,
+                            memberTypes,
+                            Integer.valueOf(BaseContextHandler.getOrgId()),
+                            tariffVO);
+                  } else {
+                    setClinicOralTariffMemberPrice(
+                            memberPrices,
+                            memberTypes,
+                            Integer.valueOf(BaseContextHandler.getOrgId()),
+                            tariffVO);
+                  }
+                });
+      }
+    }
+  }
+
   /**
    * 设置门诊商品项目会员价
    *
@@ -398,7 +405,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       Map<Integer, Object> memberPrices,
       List<MemberType> memberTypes,
       Integer orgId,
-      OrderDetailChargeVO tariffVO) {
+      OrderDetailVO tariffVO) {
     ClinicOralTariffMemberPrice clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
     clinicOralTariffMemberPrice.setClinicId(orgId);
     Integer oralTariffId = tariffVO.getBillingItemId();
@@ -437,7 +444,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       Map<Integer, Object> memberPrices,
       List<MemberType> memberTypes,
       Integer orgId,
-      OrderDetailChargeVO tariffVO) {
+      OrderDetailVO tariffVO) {
     ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
     clinicTariffMemberPrice.setClinicId(orgId);
     clinicTariffMemberPrice.setTariffId(tariffVO.getBillingItemId());

@@ -16,10 +16,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
-import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
-import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
-import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.enums.TemplateEnum;
@@ -317,7 +314,7 @@ public class TreatTollBiz {
   }
 
   /**
-   * 直接挂账
+   * 挂账
    *
    * @return
    */
@@ -381,8 +378,8 @@ public class TreatTollBiz {
     // 更新就诊状态
     updateTreatmentRecordStatus(orderRecord.getTreatmentRecordId());
 
-    chargeMinorProcess(billPayRecord, model, totalCharge, true);
-    ayncPushWxExpendMsg(billPayRecord);
+    asyncProcessCharge(billPayRecord, model, totalCharge, true);
+    asyncPushWxExpendMsg(billPayRecord);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
@@ -421,7 +418,7 @@ public class TreatTollBiz {
   }
 
   /**
-   * 收费的次要流程
+   * 异步处理收费的次要流程
    *
    * @param billPayRecord 账单收费记录
    * @param model 收费基础参数模型
@@ -429,7 +426,7 @@ public class TreatTollBiz {
    * @param isMqTreatment 是否同步中间表base_treatment_process
    */
   @Async("treatmentThreadPool")
-  protected void chargeMinorProcess(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, Boolean isMqTreatment) {
+  protected void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, Boolean isMqTreatment) {
     Integer orderRecordId = billPayRecord.getOrderRecordId();
     Set<PrepaymentAccountModel> prepaymentAccounts = model.getPrepaymentAccountModels();
     Set<MemberAccountModel> memberAccounts = model.getMemberAccountModels();
@@ -458,8 +455,33 @@ public class TreatTollBiz {
         throw new ClientServiceException(expend.getMsg(), expend.getStatus());
       }
     }
+    // 给患者的推荐人返点
+    consumptionRebate(billPayRecord);
+    // 给初诊患者返点
+    firstVisitRebate(billPayRecord);
+
     // 发送MQ消息
     chargedMQMiddleTable(billPayRecord, isMqTreatment);
+  }
+
+  /**
+   * 给初诊患者返点
+   *
+   * @param billPayRecord
+   */
+  private void firstVisitRebate(BillPayRecord billPayRecord) {
+    TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
+    if (treatment.getFirstVisit() == 0) {
+
+    }
+  }
+
+  /**
+   * 给患者的推荐人返点
+   *
+   * @param billPayRecord
+   */
+  private void consumptionRebate(BillPayRecord billPayRecord) {
 
   }
 
@@ -469,7 +491,7 @@ public class TreatTollBiz {
    * @param billPayRecord
    */
   @Async("treatmentThreadPool")
-  public void ayncPushWxExpendMsg(BillPayRecord billPayRecord) {
+  public void asyncPushWxExpendMsg(BillPayRecord billPayRecord) {
       try {
         PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(billPayRecord.getPatientId());
         String itemName = assembleItemName(billPayRecord.getOrderRecordId());
@@ -1059,7 +1081,7 @@ public class TreatTollBiz {
       Integer orderRecordId,
       Integer patientId,
       GeneralDiscountModel generalDiscountModel) {
-    BigDecimal privilegeAmount = BigDecimal.valueOf(0);
+    BigDecimal privilegeAmount = memberIdentityPrivilege(patientId, orderRecordId);
     switch (discountType) {
       case 1:
         privilegeAmount = calculateGeneralPrivilegeAmount(orderRecordId, patientId, generalDiscountModel);
@@ -1067,6 +1089,19 @@ public class TreatTollBiz {
       default:
         break;
     }
+    return privilegeAmount;
+  }
+
+  private BigDecimal memberIdentityPrivilege(Integer patientId, Integer orderRecordId) {
+    BigDecimal privilegeAmount = BigDecimal.ZERO;
+    // TODO: 2023/7/4 获取患者会员身份，计算身份折扣产生的优惠
+    Integer memberTypeId = null;
+    List<OrderDetailVO> details = orderDetailBiz.findOrderDetailList(orderRecordId, null);
+    orderDetailBiz.assemblyMemberDiscountPrice(details);
+    details.forEach(detail->{
+
+    });
+
     return privilegeAmount;
   }
 
@@ -1079,7 +1114,7 @@ public class TreatTollBiz {
    */
   private BigDecimal calculateGeneralPrivilegeAmount(
       Integer orderRecordId, Integer patientId, GeneralDiscountModel generalDiscountModel) {
-    BigDecimal privilegeAmount = BigDecimal.valueOf(0);
+    BigDecimal privilegeAmount = BigDecimal.ZERO;
     PatientOrderBenefitVo benefitVo = findGeneralPrivilege(orderRecordId, patientId, generalDiscountModel).getData();
     if (StringHelper.isNotNull(benefitVo)) {
       privilegeAmount = benefitVo.getBenefitTotalAmount();
@@ -1391,6 +1426,8 @@ public class TreatTollBiz {
       memberExpendRecordModel.setOrderRecordId(billPayRecord.getOrderRecordId());
       memberExpendRecordModel.setBillRecordId(billPayRecord.getBillRecordId());
       memberExpendRecordModel.setBillPayRecordId(billPayRecord.getId());
+      memberExpendRecordModel.setPrincipalAmount(memberAccountModel.getPrincipalAmount());
+      memberExpendRecordModel.setBonusAmount(memberAccountModel.getBonusAmount());
       ResponseResult expend = remotePatientCentralServiceFeign.expend(memberExpendRecordModel);
       // 服务调用成功返回0，否则返回大于0的状态码
       if (expend.getStatus() > 0) {
@@ -1420,6 +1457,8 @@ public class TreatTollBiz {
           prepaidExpendRecordModel.setOrderRecordId(billPayRecord.getOrderRecordId());
           prepaidExpendRecordModel.setBillRecordId(billPayRecord.getBillRecordId());
           prepaidExpendRecordModel.setBillPayRecordId(billPayRecord.getId());
+          prepaidExpendRecordModel.setPrincipalAmount(prepaidExpendRecordModel.getPrincipalAmount());
+          prepaidExpendRecordModel.setBonusAmount(prepaymentAccountModel.getBonusAmount());
           ResponseResult result = remotePatientCentralServiceFeign.expend(prepaidExpendRecordModel);
           if (!result.getStatus().equals(0)) {
             throw new ClientServiceException(result.getMsg(), result.hashCode());
@@ -1515,8 +1554,8 @@ public class TreatTollBiz {
     // 保存收费记录及其入账方式明细
     BillPayRecord billPayRecord = generalBillPayRecordWithDetail(billRecord, totalCharge, actualReceivableAmount, model);
 
-    chargeMinorProcess(billPayRecord, model, totalCharge, false);
-    ayncPushWxExpendMsg(billPayRecord);
+    asyncProcessCharge(billPayRecord, model, totalCharge, false);
+    asyncPushWxExpendMsg(billPayRecord);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
             .billPayRecordId(billPayRecord.getId()).build();
