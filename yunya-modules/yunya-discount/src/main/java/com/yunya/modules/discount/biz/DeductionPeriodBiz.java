@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -48,5 +49,9 @@ public class DeductionPeriodBiz extends BaseBiz<DeductionItemPeriodMapper, Deduc
         Card card = cardBiz.selectById(cardId);
         //todo
         return null;
+    }
+
+    public List<DeductionItemPeriod> listByCoupon(Collection<Integer> couponIds, Date date) {
+        return mapper.selectItem(couponIds, date);
     }
 }

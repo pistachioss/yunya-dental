@@ -30,7 +30,7 @@ public class CouponCommonInfoQueryForm {
     /**
      * 卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）
      */
-    @ApiModelProperty("卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券；4-划扣券）")
+    @ApiModelProperty("卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券；5-划扣券）")
     @NotNull(message = "卡券类型不能为空")
     private Integer type;
 

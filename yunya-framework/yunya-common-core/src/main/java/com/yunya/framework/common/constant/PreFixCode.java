@@ -15,6 +15,7 @@ public enum PreFixCode {
     MIDDLE_TABLE(21),
     WCHAR(22),
     IVY_MINI(23),
+    COUPON_ORDER(24),
     ;
 
 

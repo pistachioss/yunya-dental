@@ -115,7 +115,10 @@
         from
             coupon_allocate
         where
-            coupon_id = #{couponId}
+            coupon_id in
+            <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
             and isnull(allocate_date) = 0
     </select>
 

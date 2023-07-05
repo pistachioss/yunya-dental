@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.discount.mapper.CouponOrderDetailMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.discount.CouponOrderDetail" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="card_id" property="cardId" jdbcType="INTEGER" />
+    <result column="coupon_id" property="couponId" jdbcType="INTEGER" />
+    <result column="coupon_name" property="couponName" jdbcType="VARCHAR" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+    <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL" />
+    <result column="consulter_id" property="consulterId" jdbcType="INTEGER" />
+    <result column="executor_id" property="executorId" jdbcType="INTEGER" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+    <insert id="insertList" parameterType="List">
+        insert into
+        `card`
+        (`org_id`, `order_record_id`, `type`, `card_id`, `coupon_id`, `coupon_name`, `price`, `quantity`,`receivable_amount`,`consulter_id`,
+        `executor_id`,`remarks`,`crt_id`,`crt_time`,)
+        values
+        <foreach collection="List" item="item" separator=",">
+            (#{item.orgId}, #{item.orderRecordId}, #{item.type}, #{item.cardId}, #{item.couponId}, #{item.couponName},
+            #{item.price},#{item.quantity},#{item.receivableAmount},#{item.consulterId},#{item.executorId}
+            ,#{item.remarks},#{item.crtId},#{item.crtTime})
+        </foreach>
+    </insert>
+</mapper>

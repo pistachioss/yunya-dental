@@ -1,0 +1,33 @@
+package com.yunya.modules.discount.enums;
+
+import com.yunya.framework.common.constant.PreFixCode;
+import com.yunya.framework.common.model.RestError;
+
+/**
+ * @author xiangyang
+ */
+
+public enum CouponOrderError implements RestError {
+    COUPON_STOCK_LACK(1, "%s库存不足，请分配卡券"),
+    SALE_CHANNEL_NULL(2, "销售渠道不存在"),
+    ;
+    private Integer code;
+    private String value;
+
+    CouponOrderError(Integer code, String value) {
+        this.code = code;
+        this.value = value;
+    }
+    @Override
+    public Integer getCode() {
+        if (code.equals(0)) {
+            return code;
+        }
+        return PreFixCode.COUPON_ORDER.getCode() * 1000 + code;
+    }
+
+    @Override
+    public String getMessage() {
+        return value;
+    }
+}

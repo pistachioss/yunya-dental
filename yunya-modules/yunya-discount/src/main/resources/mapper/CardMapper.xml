@@ -975,4 +975,20 @@ WHERE
         AND bc.patient_id = #{patientId}
         ORDER BY bc.active_date ASC
     </select>
+
+    <select id="listRemaining" resultType="com.yunya.feign.discount.domain.bo.CouponRemainingBo">
+        select
+            id as cardId,
+            org_id,
+            coupon_id
+        from card
+        where org_id = #{orgId}
+            and `status` = 0
+            and coupon_id in
+            <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        order by id asc
+    </select>
+
 </mapper>

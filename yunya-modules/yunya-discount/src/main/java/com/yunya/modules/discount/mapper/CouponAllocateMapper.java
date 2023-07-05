@@ -37,5 +37,5 @@ public interface CouponAllocateMapper extends Mapper<CouponAllocate> {
      */
     int findAllocate(CouponAllocate couponAllocate);
 
-    int countCouponAllocate(@Param("couponId") Integer couponId);
+    int countCouponAllocate(@Param("couponIds") List<Integer> couponIds);
 }

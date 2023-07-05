@@ -1,13 +1,15 @@
 package com.yunya.modules.discount.mapper;
 
-import com.yunya.feign.discount.domain.bo.*;
+import com.yunya.feign.discount.domain.bo.GenerateAllocatePageBo;
 import com.yunya.feign.discount.domain.query.CouponCommonInfoQuery;
 import com.yunya.feign.discount.domain.vo.CouponCommonInfoVO;
-import com.yunya.models.discount.*;
-import org.apache.ibatis.annotations.*;
+import com.yunya.feign.discount.domain.vo.CouponGoodsVO;
+import com.yunya.models.discount.CouponCommonInfo;
+import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
 public interface CouponCommonInfoMapper extends Mapper<CouponCommonInfo> {
 
@@ -26,4 +28,6 @@ public interface CouponCommonInfoMapper extends Mapper<CouponCommonInfo> {
      * @return
      */
     List<CouponCommonInfoVO> selectCouponCommonList(@Param("query") CouponCommonInfoQuery query);
+
+    List<CouponGoodsVO> listCouponGoods(@Param("couponIds") Collection<Integer> couponIds);
 }
