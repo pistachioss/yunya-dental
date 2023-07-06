@@ -1,0 +1,61 @@
+package com.yunya.modules.discount.biz;
+
+import com.google.common.collect.Lists;
+import com.yunya.feign.discount.domain.bo.CouponRemainingBo;
+import com.yunya.feign.discount.domain.vo.CouponGoodsVO;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.modules.discount.mapper.CardMapper;
+import com.yunya.modules.discount.mapper.CouponAllocateMapper;
+import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
+/**
+ * @auther: xy
+ * @date: 2023/6/27
+ */
+@Service
+@Slf4j
+public class CouponGoodsBiz {
+    @Resource
+    private CardBiz cardBiz;
+    @Resource
+    private CouponCommonInfoBiz couponBiz;
+    @Resource
+    private CouponAllocateMapper allocateMapper;
+    @Resource
+    private CardMapper cardMapper;
+    @Resource
+    private CouponCommonInfoMapper couponMapper;
+
+    public List<CouponGoodsVO> hkList() {
+        int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        List<CouponGoodsVO> coupons = couponMapper.listCouponGoods(null);
+        if (CollectionUtils.isEmpty(coupons)) {
+            return Lists.newArrayList();
+        }
+        Map<Integer, CouponGoodsVO> collect = coupons.stream()
+                .collect(toMap(CouponGoodsVO::getId, Function.identity()));
+        Set<Integer> couponIds = collect.keySet();
+        List<CouponRemainingBo> cards = cardMapper.listRemaining(couponIds, orgId);
+        if (CollectionUtils.isEmpty(cards)) {
+            log.info("该门诊没有剩余卡券:{}", orgId);
+            return Lists.newArrayList();
+        }
+        List<Integer> collect1 = cards.stream().map(CouponRemainingBo::getCouponId)
+                .collect(toList());
+        coupons.removeIf(t -> !collect1.contains(t.getId()));
+        return coupons;
+    }
+
+}

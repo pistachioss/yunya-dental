@@ -7,6 +7,7 @@ import com.yunya.framework.common.exception.BaseException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
 
@@ -52,5 +53,12 @@ public class SalesChannelBiz extends BaseBiz<SalesChannelMapper, SalesChannel> {
         }
 
         updateSelectiveById(salesChannel);
+    }
+
+    public SalesChannel getByName(String name) {
+        Example example = new Example(SalesChannel.class);
+        example.createCriteria()
+                .andEqualTo("name", name);
+        return mapper.selectOneByExample(example);
     }
 }

@@ -1,11 +1,6 @@
 package com.yunya.modules.discount.mapper;
 
-import com.yunya.feign.discount.domain.bo.CouponItemUseBo;
-import com.yunya.feign.discount.domain.bo.CouponSaleBo;
-import com.yunya.feign.discount.domain.bo.PatientBenefitBo;
-import com.yunya.feign.discount.domain.bo.PatientCardBo;
-import com.yunya.feign.discount.domain.bo.UseClinicBo;
-import com.yunya.feign.discount.domain.bo.ViewAllocateBo;
+import com.yunya.feign.discount.domain.bo.*;
 import com.yunya.feign.discount.domain.query.CardIyOr365ActivedQuery;
 import com.yunya.feign.discount.domain.vo.CardActiveDetailVo;
 import com.yunya.feign.discount.domain.vo.CardIyOr365VO;
@@ -20,6 +15,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -118,4 +114,6 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
      * @return
      */
     List<PatientEventVO> selectPatientCardTrajectory(@Param("patientId") Integer patientId);
+
+    List<CouponRemainingBo> listRemaining(@Param("couponIds") Collection<Integer> couponIds, @Param("orgId") Integer orgId);
 }

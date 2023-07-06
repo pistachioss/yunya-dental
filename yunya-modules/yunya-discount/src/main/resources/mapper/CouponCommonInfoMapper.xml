@@ -76,4 +76,27 @@
         </where>
         ORDER BY cci.type, cci.product_type_id, cci.id
     </select>
+
+    <select id="listCouponGoods" resultType="com.yunya.feign.discount.domain.vo.CouponGoodsVO">
+        select
+            cci.id,
+            cci.name,
+            sum(si.price) as price,
+            cci.sold_amount as packageUnitPrice
+        from deduction_item_period si
+        left join deduction_item_period s2 on si.coupon_id = s2.coupon_id and si.crt_time &lt; s2.crt_time
+        left join coupon_common_info cci on si.coupon_id = cci.id
+        where isnull(s2.id) = 1
+            and cci.type = 5
+            and is_inservice = 1
+            <if test="couponIds != null and couponIds.size > 0">
+                and cci.id in
+                <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and (isnull(cci.available_sale_start_date) = 1
+                or (cci.available_sale_start_date &lt;= now() and cci.available_sale_end_date &gt;= now()))
+        group by cci.id, cci.name, cci.sold_amount
+    </select>
 </mapper>

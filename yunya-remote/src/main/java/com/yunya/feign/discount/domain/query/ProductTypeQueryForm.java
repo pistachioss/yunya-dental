@@ -40,7 +40,7 @@ public class ProductTypeQueryForm implements Serializable {
   @ApiModelProperty("是否启用")
   private Boolean inservice;
 
-  @ApiModelProperty("产品类型")
+  @ApiModelProperty("产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券; 5-划扣券）")
   private Integer type;
 
   @ApiModelProperty("是否线上售卖(0:否 1:是)")

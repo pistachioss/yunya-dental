@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.discount.mapper.DeductionItemPeriodMapper">
+
+    <!-- 查询门诊最大订单编号 -->
+    <select id="selectItem" resultType="com.yunya.models.discount.DeductionItemPeriod">
+        select
+            *
+        from deduction_item_period
+        where coupon_id in
+            <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            and crt_time &lt;= #{date}
+        order by crt_time desc
+            limit 1
+    </select>
+</mapper>

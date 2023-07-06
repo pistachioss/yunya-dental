@@ -132,7 +132,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
                 vo.setDetailHtml(fileInfo);
                 vo.setProductPics(fileInfo1);
             }
-            Long unSoldCount = unsold(Lists.newArrayList(couponId)).get(couponId);
+            Long unSoldCount = unsold(Lists.newArrayList(couponId), COMPANY_ORGID).get(couponId);
             vo.setStock(Objects.isNull(unSoldCount) ? 0 : unSoldCount.intValue());
         }
         return vo;
@@ -151,7 +151,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         ProductTypeQueryForm queryForm = new ProductTypeQueryForm();
         queryForm.setWhetherPage(false);
         PageInfo<ProductTypeVO> data = productTypeBiz.findList(queryForm);
-        Map<Integer, Long> unsold = unsold(Lists.newArrayList(ids));
+        Map<Integer, Long> unsold = unsold(Lists.newArrayList(ids), COMPANY_ORGID);
         return assembleProductBO(couponCommonInfos, couponFileInfos, data.getList(), unsold);
     }
 
@@ -201,10 +201,10 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         }
     }
 
-    private Map<Integer, Long> unsold(List<Integer> couponIds) {
+    public Map<Integer, Long> unsold(List<Integer> couponIds, Integer orgId) {
         Example example = new Example(Card.class);
         example.createCriteria().andIn("couponId", couponIds)
-                .andEqualTo("orgId", COMPANY_ORGID)
+                .andEqualTo("orgId", orgId)
                 .andEqualTo("status", 0);
         List<Card> cards = cardBiz.selectByExample(example);
         return CollectionUtils.isEmpty(cards) ? Maps.newHashMap() : cards.stream().collect(Collectors.groupingBy(Card::getCouponId, counting()));
