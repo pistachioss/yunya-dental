@@ -52,9 +52,9 @@ import java.util.stream.Collectors;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseRefund;
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介: 账单记录业务层
@@ -349,6 +349,122 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     }
   }
 
+
+  /**
+   * 账单退费
+   *
+   * @param model 退费参数
+   */
+  public void billRefund(TreatBillRefundModel model) {
+    // 检查就诊是否收费
+    BillRecord billRecord = checkBillRecord(model);
+    List<RefundOrderDetailModel> refundOrderDetailModels = model.getRefundOrderDetailModels();
+    List<TreatPaymentModel> refundPaymentModels = model.getRefundPaymentModels();
+    Integer orderRecordId = billRecord.getOrderRecordId();
+    // 计算退费开单总额
+    BigDecimal refundOrderDetailAmount = calculateRefundOrderDetailAmount(refundOrderDetailModels);
+    // 计算退费总额
+    BigDecimal refundTotalAmount = calculateRefundAmount(orderRecordId, refundPaymentModels);
+    if (StringHelper.gt(refundTotalAmount, refundOrderDetailAmount)) {
+      throw new ClientServiceException("账单退费失败，退费总额不能大于退费项目金额合计！", PARAMETERS_IS_ILLEGAL);
+    }
+
+    // 保存退费记录
+    BillRefundRecord billRefundRecord = saveBillRefundRecord(billRecord, model, refundTotalAmount);
+
+    // 保存退费开单明细
+    saveBillRefundOrderDetail(billRefundRecord, refundOrderDetailModels);
+
+    // 保存账单退费付款明细记录
+    saveBillRefundPayDetailRecord(
+            orderRecordId,
+            billRefundRecord.getId(),
+            refundPaymentModels);
+    // 保存账单退费异常处理记录及其明细
+    saveBillExceptionHandleWithDetail(billRefundRecord, billRecord.getId());
+    rabbitMqServiceFeign.sendMessage(billRefundRecord.getId(), 0, BaseRefund);
+  }
+
+  /**
+   * 保存账单异常处理记录及其明细
+   * @param billRefundRecord
+   * @param billRecordId
+   */
+  private void saveBillExceptionHandleWithDetail(BillRefundRecord billRefundRecord, Integer billRecordId) {
+    String name = BaseContextHandler.getName();
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    BillExceptionHandleRecord exceptionHandleRecord = new BillExceptionHandleRecord();
+    exceptionHandleRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+    exceptionHandleRecord.setPatientId(billRefundRecord.getPatientId());
+    exceptionHandleRecord.setTreatmentRecordId(billRefundRecord.getTreatmentRecordId());
+    exceptionHandleRecord.setHandledRecordId(billRecordId);
+    exceptionHandleRecord.setOperateType((byte) 3);
+    exceptionHandleRecord.setCrtId(userId);
+    exceptionHandleRecord.setCrtName(name);
+    exceptionHandleRecord.setCrtTime(billRefundRecord.getCrtTime());
+    billExceptionHandleRecordMapper.insertSelective(exceptionHandleRecord);
+
+    // 保存账单退费异常处理明细
+    Integer exceptionHandleRecordId = exceptionHandleRecord.getId();
+    BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
+    handleDetailRecord.setBillHandleRecordId(exceptionHandleRecordId);
+    handleDetailRecord.setAssociateRecordId(billRefundRecord.getId());
+    handleDetailRecord.setCrtId(userId);
+    handleDetailRecord.setCrtName(name);
+    handleDetailRecord.setCrtTime(billRefundRecord.getCrtTime());
+    billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
+  }
+
+  /**
+   * 保存账单项目退费明细
+   *
+   * @param billRefundRecord
+   * @param refundOrderDetailModels
+   */
+  private void saveBillRefundOrderDetail(BillRefundRecord billRefundRecord, List<RefundOrderDetailModel> refundOrderDetailModels) {
+    Integer billRefundRecordId = billRefundRecord.getId();
+    BillRefundOrderDetail refundOrderDetail = new BillRefundOrderDetail();
+    refundOrderDetail.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+    refundOrderDetail.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    refundOrderDetail.setCrtName(BaseContextHandler.getName());
+    refundOrderDetail.setCrtTime(billRefundRecord.getCrtTime());
+    refundOrderDetailModels.forEach(
+            detailModel -> {
+              refundOrderDetail.setOrderDetailId(detailModel.getOrderDetailId());
+              refundOrderDetail.setRefundAmount(detailModel.getRefundAmount());
+              refundOrderDetail.setBillRefundRecordId(billRefundRecordId);
+              billRefundOrderDetailMapper.insertSelective(refundOrderDetail);
+            });
+  }
+
+  /**
+   * 保存账单退费记录
+   *
+   * @param billRecord
+   * @param model
+   * @param refundTotalAmount
+   * @return
+   */
+  private BillRefundRecord saveBillRefundRecord(BillRecord billRecord, TreatBillRefundModel model, BigDecimal refundTotalAmount) {
+    Date now = DateUtil.now();
+    BillRefundRecord billRefundRecord = new BillRefundRecord();
+    billRefundRecord.setPatientId(billRecord.getPatientId());
+    billRefundRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+    billRefundRecord.setTreatmentRecordId(billRecord.getTreatmentRecordId());
+    billRefundRecord.setOrderRecordId(billRecord.getOrderRecordId());
+    billRefundRecord.setReason(model.getRefundReason());
+    billRefundRecord.setTotalRefundAmount(refundTotalAmount);
+    List<String> refundAnnex = model.getRefundAnnex();
+    if (StringHelper.isNotEmpty(refundAnnex)) {
+      billRefundRecord.setRefundCertificate(Joiner.on(",").join(refundAnnex));
+    }
+    billRefundRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    billRefundRecord.setCrtName(BaseContextHandler.getName());
+    billRefundRecord.setCrtTime(now);
+    billRefundRecordMapper.insertSelective(billRefundRecord);
+    return billRefundRecord;
+  }
+
   /**
    * 检查预付款退费方式
    *
@@ -374,6 +490,64 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       data.add(spPrepaymentRefundModel);
     }
     return data;
+  }
+
+
+
+  /**
+   * 保存账单退费付款明细记录
+   *
+   * @param orderRecordId 订单记录ID
+   * @param billRefundRecordId 退费记录ID
+   * @param refundPaymentModels 其他方式退费
+   */
+  private void saveBillRefundPayDetailRecord(
+          Integer orderRecordId,
+          Integer billRefundRecordId,
+          List<TreatPaymentModel> refundPaymentModels) {
+    BillRefundPayDetailRecord refundPayDetailRecord = new BillRefundPayDetailRecord();
+    refundPayDetailRecord.setBillRefundRecordId(billRefundRecordId);
+    refundPayDetailRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    refundPayDetailRecord.setCrtName(BaseContextHandler.getName());
+    // 入账方式退款
+    refundPaymentModels.forEach(payment -> {
+      Integer accountItemId = payment.getAccountItemId();
+      String cardNumber = payment.getCardNumber();
+      BigDecimal amount = payment.getAmount();
+      BigDecimal principal = payment.getPrincipal();
+      BigDecimal bonus = amount.subtract(principal);
+      PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+      if (StringHelper.isNotNull(typeEnum)) {
+        Integer type = typeEnum.getType();
+        if (type == 0) {
+          // 会员卡退费金额返还
+          MemberBillRechargeModel memberModel = new MemberBillRechargeModel();
+          memberModel.setOrderRecordId(orderRecordId);
+          memberModel.setMemberId(cardNumber);
+          memberModel.setRechargePrincipal(principal);
+          memberModel.setRechargeBonus(bonus);
+          memberModel.setBillPayRecordId(billRefundRecordId);
+          memberModel.setRemarks(billRefundRecordId.toString());
+          patientCentralServiceFeign.billRefund(memberModel);
+        } else {
+          // 预付款退费金额返还
+          PrepaidBillRechargeModel prepaidModel = new PrepaidBillRechargeModel();
+          prepaidModel.setOrderRecordId(orderRecordId);
+          prepaidModel.setPrepaidId(cardNumber);
+          prepaidModel.setRechargePrincipal(principal);
+          prepaidModel.setRechargeBonus(bonus);
+          prepaidModel.setBillPayRecordId(billRefundRecordId);
+          prepaidModel.setRemarks(billRefundRecordId.toString());
+          patientCentralServiceFeign.billRefund(prepaidModel);
+        }
+      }
+      refundPayDetailRecord.setAccountItemId(accountItemId);
+      refundPayDetailRecord.setRemark(StringHelper.defaultString(cardNumber, accountItemId.toString()));
+      refundPayDetailRecord.setRefundPayAmount(amount);
+      refundPayDetailRecord.setPrincipalAmount(principal);
+      refundPayDetailRecord.setGiftAmount(bonus);
+      billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
+    });
   }
 
   /**
@@ -469,6 +643,27 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   /**
    * 校验账单能否退费
    *
+   * @param model 就诊记录ID
+   * @return
+   */
+  private BillRecord checkBillRecord(TreatBillRefundModel model) {
+    BillRecord entity = new BillRecord();
+    entity.setTreatmentRecordId(model.getTreatmentRecordId());
+    entity.setInservice(true);
+    BillRecord billRecord = mapper.selectOne(entity);
+    if (null == billRecord) {
+      throw new ClientServiceException("账单退费失败，当前就诊账单已修改或未收费！", DATA_NOT_EXIST);
+    }
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    if (!billRecord.getOrgId().equals(orgId)) {
+      throw new ClientServiceException("账单退费失败，只能对本门诊账单退费！", DATA_NOT_EXIST);
+    }
+    return entity;
+  }
+
+  /**
+   * 校验账单能否退费
+   *
    * @param treatmentRecordId 就诊记录ID
    * @param orgId 组织ID
    * @return
@@ -493,9 +688,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @param refundOrderDetailModels 退费订单明细列表
    * @return refundOrderDetailAmount 退费订单明细总额
    */
-  private BigDecimal calculateRefundOrderDetailAmount(
-      List<RefundOrderDetailModel> refundOrderDetailModels) {
-    BigDecimal refundOrderDetailAmount = BigDecimal.valueOf(0);
+  private BigDecimal calculateRefundOrderDetailAmount(List<RefundOrderDetailModel> refundOrderDetailModels) {
+    BigDecimal refundOrderDetailAmount = BigDecimal.ZERO;
     if (StringHelper.isNotEmpty(refundOrderDetailModels)) {
       OrderDetailPayRecord orderDetailPayrecord = new OrderDetailPayRecord();
       for (RefundOrderDetailModel model : refundOrderDetailModels) {
@@ -519,7 +713,48 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
         refundOrderDetailAmount = refundOrderDetailAmount.add(refundAmount);
       }
     }
+    if (StringHelper.eqZero(refundOrderDetailAmount)) {
+      throw new ClientServiceException("账单退费失败，退费金额合计为0，不能退费", PARAMETERS_IS_ILLEGAL);
+    }
     return refundOrderDetailAmount;
+  }
+
+  /**
+   * 计算退费总额
+   *
+   * @param orderRecordId
+   * @param refundPaymentModels 入账方式退费
+   * @return totalAmount 退费总额
+   */
+  private BigDecimal calculateRefundAmount(Integer orderRecordId, List<TreatPaymentModel> refundPaymentModels) {
+    BigDecimal totalAmount = BigDecimal.ZERO;
+    if (StringHelper.isNotEmpty(refundPaymentModels)) {
+      List<BillPayAccountVO> refundable = billPayDetailRecordBiz.findBillRefundableAccountItemList(orderRecordId);
+      if (StringHelper.isEmpty(refundable)) {
+        throw new ClientServiceException("账单退费失败，账单暂无可退费用", OPERATION_NOT_ALLOW);
+      }
+      Map<String, BillPayAccountVO> refundableMap = refundable.stream().collect(toMap(
+              vo->StringHelper.joinWith(",", vo.getAccountItemId(),StringHelper.defaultString(vo.getCardNumber())), Function.identity()));
+      for (TreatPaymentModel payment : refundPaymentModels) {
+        Integer accountItemId = payment.getAccountItemId();
+        String key = StringHelper.joinWith(",", accountItemId, StringHelper.defaultString(payment.getCardNumber()));
+        BillPayAccountVO account = refundableMap.get(key);
+        if (StringHelper.isNull(account)) {
+          throw new ClientServiceException("账单退费失败，存在无效的入账方式", OPERATION_NOT_ALLOW);
+        }
+        BigDecimal principalAmount = payment.getPrincipal();
+        BigDecimal giftAmount = payment.getAmount().subtract(payment.getPrincipal());
+        if (StringHelper.gt(principalAmount, account.getPrincipal()) || StringHelper.gt(giftAmount, account.getBonus())) {
+          throw new ClientServiceException("账单退费失败，入账方式："+account.getAccountItemName()+"的退费金额超出上限", PARAMETERS_IS_ILLEGAL);
+        }
+        totalAmount = totalAmount.add(StringHelper.defaultBigDecimal(principalAmount))
+                .add(StringHelper.defaultBigDecimal(giftAmount));
+      }
+      if (StringHelper.leZero(totalAmount)) {
+        throw new ClientServiceException("账单退费失败，退费总额不能为了小于等于0！", PARAMETERS_IS_ILLEGAL);
+      }
+    }
+    return totalAmount;
   }
 
   /**
@@ -750,7 +985,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
               result.stream().map(BillRestReceivableAmountVO::getPatientId).collect(Collectors.toList());
       List<PatientBaseInfoVo> patients = patientCentralServiceFeign.findPatientInfoByIds(patientIds);
       Map<Integer, PatientBaseInfoVo> patientMap =
-              patients.stream().collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
+              patients.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity()));
       result.forEach(
               vo -> {
                 Integer patientId = vo.getPatientId();
@@ -767,7 +1002,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       List<SysUserInfoDetail> users = systemServiceFeign.findSysUserEmployeeInfoByUserIds(userIds);
       Map<Integer, String> userMap =
               users.stream()
-                      .collect(Collectors.toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getName));
+                      .collect(toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getName));
       result.forEach(
               vo -> {
                 Integer regDentistId = vo.getRegDentistId();

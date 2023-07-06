@@ -6,6 +6,7 @@ import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO;
 import com.yunya.feign.treatment.domain.model.BillRefundModel;
+import com.yunya.feign.treatment.domain.model.TreatBillRefundModel;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
@@ -19,12 +20,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -92,6 +88,22 @@ public class BillRecordController {
   @CurrentUser
   @ApiOperation("账单退费")
   @PostMapping(value = "/refund", name = "账单退费")
+  public ResponseResult billRefund(@RequestBody @Validated TreatBillRefundModel model) {
+    billRecordBiz.billRefund(model);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 账单退费
+   *
+   * @param model 账单退费参数模型
+   * @return
+   */
+  @RepeatSubmit
+  @CurrentUser
+  @ApiOperation("账单退费")
+  @PostMapping(value = "/refund", name = "账单退费")
+  @Deprecated
   public ResponseResult billRefund(@RequestBody @Validated BillRefundModel model) {
     billRecordBiz.refund(model);
     return ResponseUtil.success(null);

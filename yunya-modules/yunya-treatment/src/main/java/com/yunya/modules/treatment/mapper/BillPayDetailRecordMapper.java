@@ -23,7 +23,8 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    * @return
    */
   List<BillPayDetailRecordVO> selectBillPayDetailRecord(
-      @Param("billPayRecordId") Integer billPayRecordId, @Param("inservice") Boolean inservice);
+      @Param("billPayRecordId") Integer billPayRecordId,
+      @Param("inservice") Boolean inservice);
 
   /**
    * 账单异常处理数据详情记录ID查询异常处理记录
@@ -97,4 +98,13 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    * @return
    */
   List<BillPayDetailRecordVO> selectBillPayDetailList(@Param("query") BillPayShareDetailQuery query);
+
+  /**
+   * 根据订单记录id查询可退入账方式列表
+   *
+   * @param orderRecordId
+   * @return
+   */
+  List<BillPayDetailRecordVO> selectBillRefundableAccountItemList(
+          @Param("orderRecordId") Integer orderRecordId);
 }

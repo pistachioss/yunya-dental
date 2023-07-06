@@ -435,4 +435,10 @@ public class PatientServiceRest {
   public ClinicChargeItemVO findDepositAccountList(@RequestBody @Validated PatientDepositAccountQueryForm query) {
     return patientMemberInfoBiz.findDepositAccountList(query);
   }
+
+  @ApiOperation("根据订单记录id查询会员卡or预付款账户消费列表")
+  @GetMapping("/member/billExpend/{orderRecordId}")
+  public List<PatientDepositAccountVO> findDepositAccountBillExpendList(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    return patientMemberInfoBiz.findDepositAccountBillExpendList(orderRecordId);
+  }
 }

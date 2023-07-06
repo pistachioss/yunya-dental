@@ -5,10 +5,7 @@ import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo;
-import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientCardOwnerInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -98,4 +95,11 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      */
     BigDecimal sumMemberAndPrepaidRefundCash(@Param("query") CashReceiptOrRefundQuery query);
 
+    /**
+     * 根据订单记录id查询会员卡or预付款账户的账单消费列表
+     *
+     * @param orderRecordId
+     * @return
+     */
+    List<PatientDepositAccountVO> selectDepositAccountBillExpendList(@Param("orderRecordId") Integer orderRecordId);
 }

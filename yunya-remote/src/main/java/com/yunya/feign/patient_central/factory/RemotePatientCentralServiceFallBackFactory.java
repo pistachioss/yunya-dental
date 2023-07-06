@@ -281,4 +281,9 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public ClinicChargeItemVO findDepositAccountList(PatientDepositAccountQueryForm query) {
         return null;
     }
+
+    @Override
+    public List<PatientDepositAccountVO> findDepositAccountBillPayExpendList(Integer orderRecordId) {
+        return null;
+    }
 }

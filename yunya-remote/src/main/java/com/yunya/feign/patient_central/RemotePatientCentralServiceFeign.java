@@ -379,4 +379,8 @@ import java.util.List;
   @ApiOperation("查询患者储蓄账号（会员卡or预付款）信息列表")
   @PostMapping("/api/member/depositAccount")
   ClinicChargeItemVO findDepositAccountList(@RequestBody @Validated PatientDepositAccountQueryForm query);
+
+  @ApiOperation("根据订单记录id查询会员卡or预付款账户账单收费消费列表")
+  @GetMapping("/api/member/billExpend/{orderRecordId}")
+  List<PatientDepositAccountVO> findDepositAccountBillPayExpendList(@PathVariable(value = "orderRecordId") Integer orderRecordId);
 }

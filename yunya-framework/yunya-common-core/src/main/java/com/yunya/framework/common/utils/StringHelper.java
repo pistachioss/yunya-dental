@@ -698,4 +698,11 @@ public class StringHelper extends StringUtils {
     }
     return false;
   }
+
+  public static String defaultObj(Object obj, String name) {
+    if (isNull(obj)) {
+      return null;
+    }
+    return name;
+  }
 }

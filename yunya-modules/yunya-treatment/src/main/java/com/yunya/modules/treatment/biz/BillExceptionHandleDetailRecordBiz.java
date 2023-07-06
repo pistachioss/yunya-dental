@@ -86,7 +86,7 @@ public class BillExceptionHandleDetailRecordBiz
       // 第一次调整，取当前异常记录对应的异常明细记录作为调整前的收费方式；
       // 当前记录对应的收费明细，且有效的为调整后收费方式
       List<BillPayDetailRecordVO> billPayDetailRecords =
-          billPayDetailRecordMapper.selectBillPayDetailRecord(handledRecordId, true);
+          billPayDetailRecordMapper.selectBillPayDetailRecord(handledRecordId,true);
       if (StringHelper.isNotEmpty(billPayDetailRecords)) {
         billPayDetailRecords.forEach(
             record -> {

@@ -413,4 +413,43 @@
         ) t
         ORDER BY t.orderRecordId, t.billPayRecordId,
     </select>
+
+    <select id="selectBillRefundableAccountItemList"
+            resultType="com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO">
+        select
+            bpdr.order_record_id as billPayRecordId,
+            bpdr.account_item_id as accountItemId,
+            IFNUL(bpdr.amount, 0) - IFNULL(brd.refundAmount,0) as amount,
+            IFNULL(brd.principal_amount, 0) AS refundPrincipal,
+            IFNULL(brd.gift_amount, 0) AS refundBonus,
+            bpdr.remark
+        from (
+            SELECT
+                order_record_id,
+                account_item_id,
+                remark,
+                SUM(amount) AS amount
+            FROM bill_pay_detail_record
+            WHERE inservice = true
+            GROUP BY order_record_id, account_item_id, remark
+        ) bpdr
+        LEFT JOIN (
+            SELECT
+                brd.order_record_id,
+                brpdr.account_item_id,
+                brpdr.remark,
+                SUM(refund_pay_amount) AS refundAmount,
+                SUM(principal_amount) AS principal_amount,
+                SUM(gift_amount) AS gift_amount
+            FROM bill_refund_record brd
+            LEFT JOIN bill_refund_pay_detail_record brpdr ON brd.id = brpdr.bill_refund_record_id
+            WHERE brd.inservice = true
+            GROUP BY brd.order_record_id, brpdr.account_item_id, brpdr.remark
+        ) brd ON bpdr.order_record_id=brd.order_record_id AND bpdr.account_item_id = brd.account_item_id AND bpdr.remark=brd.remark
+        <where>
+            <if test="id != null">
+                and bpdr.order_record_id = #{orderRecordId}
+            </if>
+        </where>
+    </select>
 </mapper>

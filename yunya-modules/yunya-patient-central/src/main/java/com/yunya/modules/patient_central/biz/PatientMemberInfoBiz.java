@@ -1364,4 +1364,14 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
     return result;
   }
+
+  /**
+   * 根据订单记录id查询会员卡or预付款账户的账单消费列表
+   *
+   * @param orderRecordId
+   * @return
+   */
+  public List<PatientDepositAccountVO> findDepositAccountBillExpendList(Integer orderRecordId) {
+    return mapper.selectDepositAccountBillExpendList(orderRecordId);
+  }
 }

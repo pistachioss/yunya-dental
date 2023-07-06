@@ -4,6 +4,7 @@ import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientDepositAccountVO;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -11,10 +12,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.form.BillPayDetailForm;
 import com.yunya.feign.treatment.domain.model.PaymentModel;
 import com.yunya.feign.treatment.domain.query.PaymentRecordQuery;
-import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
-import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
-import com.yunya.feign.treatment.domain.vo.PaymentRecordVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
@@ -39,13 +37,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
+import java.util.function.Function;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillPay;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_BILL_PAY_RECORD;
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.MEMBER;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介: 账单支付明细业务层
@@ -144,7 +146,7 @@ public class BillPayDetailRecordBiz
    */
   private List<BillPayDetailRecordVO> getBillPayDetailRecordList(Integer billPayRecordId) {
     List<BillPayDetailRecordVO> detailRecords =
-        mapper.selectBillPayDetailRecord(billPayRecordId, true);
+        mapper.selectBillPayDetailRecord(billPayRecordId,true);
     detailRecords = getBillPayDetailRecordVOS(detailRecords, systemServiceFeign);
     return detailRecords;
   }
@@ -433,5 +435,66 @@ public class BillPayDetailRecordBiz
   public List<OrderDetailInfoVO> findBillPayDetailByFreePayment(
           CategoryIncomeQuery query, List<Integer> payIds, Boolean inservice) {
     return mapper.selectBillPayDetailByFreePayment(query, payIds, inservice);
+  }
+
+  /**
+   * 根据订单id获取账单的所有可退入账方式列表
+   *
+   * @param orderRecordId
+   * @return
+   */
+  public List<BillPayAccountVO> findBillRefundableAccountItemList(Integer orderRecordId) {
+    List<BillPayAccountVO> result = new ArrayList<>();
+    List<BillPayDetailRecordVO> details = mapper.selectBillRefundableAccountItemList(orderRecordId);
+    List<PatientDepositAccountVO> patientDepositAccounts = remotePatientCentralServiceFeign.findDepositAccountBillPayExpendList(orderRecordId);
+    Map<String, PatientDepositAccountVO> accountMap = patientDepositAccounts.stream().collect(toMap(PatientDepositAccountVO::getCardNumber, Function.identity()));
+
+    int memberIndex = -1;
+    BigDecimal totalPrincipal = BigDecimal.ZERO;
+    BigDecimal totalBonus = BigDecimal.ZERO;
+    for (int i=0; i<details.size(); i++) {
+      BillPayDetailRecordVO detail = details.get(i);
+      String belonger = null;
+      String cardNumber = null;
+      BigDecimal balance = null;
+      BigDecimal principal = detail.getAmount();
+      BigDecimal bonus = BigDecimal.ZERO;
+      BigDecimal principalRatio = null;
+      PatientDepositAccountVO depositAccount = accountMap.get(detail.getRemark());
+      if (StringHelper.isNotNull(depositAccount)) {
+        cardNumber = depositAccount.getCardNumber();
+        belonger = depositAccount.getPatientName();
+        balance = depositAccount.getBalance();
+        principal = depositAccount.getPrincipal().subtract(detail.getRefundPrincipal());
+        bonus = depositAccount.getBonus().subtract(detail.getRefundBonus());
+        principalRatio = principal.divide(principal.add(bonus), 4, RoundingMode.DOWN);
+      }
+      totalPrincipal = totalPrincipal.add(principal);
+      totalBonus = totalBonus.add(bonus);
+
+      Integer accountItemId = detail.getAccountItemId();
+      AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
+      result.add(BillPayAccountVO.builder()
+              .accountItemName(StringHelper.defaultObj(accountItem, accountItem.getName()))
+              .accountItemId(accountItemId)
+              .cardNumber(cardNumber)
+              .belonger(belonger)
+              .balance(balance)
+              .principal(principal)
+              .bonus(bonus)
+              .principalRatio(principalRatio)
+              .build());
+      if (MEMBER.equals(detail.getType())) {
+        memberIndex = i;
+      }
+    }
+    if (memberIndex > -1) {
+      // 存在会员卡入账时，将其他入账方式合到会员卡入账中
+      BillPayAccountVO accountVO = result.get(memberIndex);
+      accountVO.setPrincipal(accountVO.getPrincipal().add(totalPrincipal));
+      accountVO.setBonus(accountVO.getBonus().add(totalBonus));
+      return Arrays.asList(accountVO);
+    }
+    return result;
   }
 }

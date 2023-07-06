@@ -247,5 +247,51 @@
         ) as total
     </select>
 
+    <select id="selectDepositAccountBillExpendList"
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientDepositAccountVO">
+        SELECT t.*, pbi.name
+        FROM (
+               SELECT
+                     pmi.card_number                              AS cardNumber,
+                     pmi.patient_id,
+                     0                                            AS type,
+                     pmi.principal_amount + pmi.bonus_amount AS balance,
+                     IFNULL(mer.principal, 0) AS principal,
+                     IFNULL(mer.bonus, 0) AS bonus
+              FROM (
+                SELECT
+                    member_id,
+                    order_record_id,
+                    SUM(expend_principal) AS principal,
+                    SUM(expend_gift) AS bonus
+                FROM member_expend_record
+                WHERE inservice = true
+                GROUP BY member_id, order_record_id
+              ) mer
+              LEFT JOIN patient_member_info pmi ON pmi.card_number = mer.member_id
+              WHERE mer.order_record_id = #{orderRecordId}
+              UNION ALL
+              SELECT pmi.prepayment_number                                AS cardNumber,
+                     pmi.patient_id,
+                     1                                                    AS type,
+                     pmi.prepayment_principal + pmi.prepayment_bonus AS balance,
+                     IFNULL(mer.principal, 0) AS principal,
+                     IFNULL(mer.bonus, 0) AS bonus
+              FROM (
+                SELECT
+                    prepaid_id,
+                    order_record_id,
+                    SUM(expend_principal) AS principal,
+                    SUM(expend_gift) AS bonus
+                FROM prepaid_expend_record
+                WHERE inservice = true
+                GROUP BY prepaid_id, order_record_id
+              ) mer
+              LEFT JOIN patient_prepayments_info pmi ON pmi.prepayment_number = mer.prepaid_id
+              WHERE mer.order_record_id = #{orderRecordId}
+        ) t
+        LEFT JOIN patient_base_info pbi ON pbi.id = t.patient_id
+    </select>
+
 
 </mapper>

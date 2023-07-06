@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.form.BillPayDetailForm;
 import com.yunya.feign.treatment.domain.query.PaymentRecordQuery;
+import com.yunya.feign.treatment.domain.vo.BillPayAccountVO;
 import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
 import com.yunya.feign.treatment.domain.vo.PaymentRecordVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -47,6 +48,19 @@ public class BillPayDetailRecordController {
       @PathVariable(value = "billPayRecordId") Integer billPayRecordId) {
     BillPayRecordVO resultData = billPayDetailRecordBiz.findBillPayDetailList(billPayRecordId);
     return ResponseUtil.success(resultData);
+  }
+
+  /**
+   * 根据订单id获取本次收费的入账方式列表
+   *
+   * @param orderRecordId
+   * @return
+   */
+  @ApiOperation("根据订单id获取本次收费的入账方式列表")
+  @GetMapping("/refundable/{orderRecordId}")
+  public ResponseResult<List<BillPayAccountVO>> findBillRefundableAccountItemList(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    List<BillPayAccountVO> result = billPayDetailRecordBiz.findBillRefundableAccountItemList(orderRecordId);
+    return ResponseUtil.success(result);
   }
 
   /**
