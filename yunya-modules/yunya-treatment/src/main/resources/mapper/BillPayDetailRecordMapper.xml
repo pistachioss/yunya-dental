@@ -201,30 +201,38 @@
                 bpdr.inservice,
                 bpdr.crt_time AS crtTime
             FROM bill_pay_detail_record bpdr
+            LEFT JOIN bill_pay_record bpr ON bpdr.bill_pay_record_id = bpr.id
             <where>
-                 AND bpdr.amount > 0
+                AND bpdr.amount > 0
+                AND NOT EXISTS(
+                    SELECT behdr.id
+                    FROM bill_exception_handle_detail_record behdr
+                    LEFT JOIN bill_exception_handle_record behr ON behdr.bill_handle_record_id=behr.id
+                    WHERE behdr.inservice = true AND behr.inservice = true
+                    AND behr.operate_type = 0 AND behdr.associate_record_id = bpdr.id
+                )
                 <if test="query.dateType==0">
                     <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                        AND DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
                     </if>
                     <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bpdr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                        and DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
                     </if>
                 </if>
                 <if test="query.dateType==1">
                     <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                        AND DATE_FORMAT(bpr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
                     </if>
                     <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bpdr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
+                        and DATE_FORMAT(bpr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
                     </if>
                 </if>
                 <if test="query.dateType==2">
                     <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT(bpdr.crt_time, '%Y' ) &gt;= #{query.startDate}
+                        and DATE_FORMAT(bpr.crt_time, '%Y' ) &gt;= #{query.startDate}
                     </if>
                     <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bpdr.crt_time, '%Y' ) &lt;= #{query.endDate}
+                        and DATE_FORMAT(bpr.crt_time, '%Y' ) &lt;= #{query.endDate}
                     </if>
                 </if>
                 <if test="query.orderRecordId != null">
@@ -289,7 +297,7 @@
             FROM bill_exception_handle_record behr
             LEFT JOIN bill_pay_record bpr ON bpr.id = behr.handled_record_id
             <where>
-                operate_type IN (0, 1)
+                operate_type = 1
                 AND behr.inservice = true
                 <if test="query.orderRecordId != null">
                     AND bpr.order_record_id = #{query.orderRecordId}

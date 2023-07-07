@@ -33,7 +33,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.AccountItem;
-import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
@@ -48,7 +47,6 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -212,94 +210,6 @@ public class TreatTollBiz {
         });
   }
 
-  /**
-   * 匹配授权折扣订单详情信息
-   *
-   * @param detailList 订单详情列表
-   * @param accreditDiscountModel 授权折扣信息
-   */
-  private void matchAccreditDiscountOrderDetailValue(
-      List<OrderDetailChargeVO> detailList, AccreditDiscountModel accreditDiscountModel) {
-    List<AccreditDiscountDetailModel> models =
-        accreditDiscountModel.getAccreditDiscountDetailModels();
-    detailList.stream()
-        .<Consumer<? super AccreditDiscountDetailModel>>map(
-            vo ->
-                model -> {
-                  List<PrivilegeCouponInfoVO> discountAppliesCoupon =
-                      vo.getDiscountAppliesCoupons();
-                  if (vo.getBillingItemId().equals(model.getBillingItemId())
-                      && vo.getType().equals(model.getType())) {
-                    BigDecimal receivableAmount = vo.getReceivableAmount();
-                    BigDecimal actualAmount = model.getActualAmount();
-                    // 订单明细ID相同，参数数量大于明细数量表示前端合并了相同项目，实收金额需重新计算
-                    Integer quantity = vo.getQuantity();
-                    Integer modelQuantity = model.getQuantity();
-                    // 优惠单价
-                    BigDecimal discountPrice =
-                        actualAmount.divide(
-                            BigDecimal.valueOf(modelQuantity), 4, RoundingMode.HALF_UP);
-                    actualAmount = discountPrice.multiply(BigDecimal.valueOf(quantity));
-                    vo.setActualAmount(actualAmount);
-                    // 设置折扣率；折扣率 = 实收 / 原价 * 100
-                    if (receivableAmount.compareTo(BigDecimal.valueOf(0)) != 0) {
-                      BigDecimal discountRate =
-                          actualAmount
-                              .divide(receivableAmount, 4, RoundingMode.HALF_UP)
-                              .multiply(BigDecimal.valueOf(100));
-                      vo.setDiscountRate(discountRate);
-                      if (discountRate.compareTo(new BigDecimal(100)) != 0) {
-                        vo.setHasDiscount(true);
-                      }
-                    }
-                    // 设置优惠匹配信息
-                    if (receivableAmount.compareTo(actualAmount) != 0) {
-                      PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();
-                      Integer warrantId = accreditDiscountModel.getWarrantId();
-                      couponInfoVO.setBenefitId(warrantId);
-                      couponInfoVO.setCouponType(5);
-                      SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
-                      if (null != employee) {
-                        couponInfoVO.setBenefitName(employee.getName());
-                      }
-                      couponInfoVO.setBenefitAmount(receivableAmount.subtract(actualAmount));
-                      discountAppliesCoupon.add(couponInfoVO);
-                    }
-                  }
-                  vo.setDiscountAppliesCoupons(discountAppliesCoupon);
-                })
-        .forEach(models::forEach);
-  }
-
-  /**
-   * 一键结账
-   *
-   * @param treatmentRecordId 就诊记录ID
-   */
-  public void autoCheckOut(Integer treatmentRecordId) {
-    TreatmentRecord treatmentRecord = treatmentRecordMapper.selectByPrimaryKey(treatmentRecordId);
-    if (Objects.isNull(treatmentRecord)) {
-      throw new ClientServiceException("请选择有效的就诊进行一键免单", PARAMETERS_IS_ILLEGAL);
-    }
-    if (BusinessConstants.TREATMENT_PROCESSING_STATUS < treatmentRecord.getStatus()) {
-      throw new ClientServiceException("该就诊已开单，不能进行一键免单", PARAMETERS_IS_ILLEGAL);
-    }
-    // 自动开单
-    orderRecordBiz.autoOpenOrder(treatmentRecordId, treatmentRecord.getPatientId());
-    treatmentRecord.setStatus(BusinessConstants.TREATMENT_PROCESSED_STATUS);
-    treatmentRecord.setTreatEndTime(new Date(System.currentTimeMillis()));
-    updateTreatmentStatus(treatmentRecord);
-    // 因需求改成自动开单，自动结束治疗，故取消收费相关代码
-    /*TollModel tollModel = new TollModel();
-    tollModel.setOrderRecordId(orderRecord.getId());
-    tollModel.setDiscountType((byte) 0);
-    tollModel.setOutstandingAmount(new BigDecimal("0"));
-    InvoiceModel invoiceModel = new InvoiceModel();
-    invoiceModel.setInvoice(false);
-    tollModel.setInvoiceModel(invoiceModel);
-    confirmCharge(tollModel);*/
-  }
-
   private void updateTreatmentStatus(TreatmentRecord treatmentRecord) {
     int i = treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
     if (i > 0) {
@@ -455,10 +365,8 @@ public class TreatTollBiz {
         throw new ClientServiceException(expend.getMsg(), expend.getStatus());
       }
     }
-    // 给患者的推荐人返点
+    // 消费返点
     consumptionRebate(billPayRecord);
-    // 给初诊患者返点
-    firstVisitRebate(billPayRecord);
 
     // 发送MQ消息
     chargedMQMiddleTable(billPayRecord, isMqTreatment);
@@ -483,6 +391,8 @@ public class TreatTollBiz {
    */
   private void consumptionRebate(BillPayRecord billPayRecord) {
 
+    // 给初诊患者返点
+    firstVisitRebate(billPayRecord);
   }
 
   /**
@@ -505,7 +415,7 @@ public class TreatTollBiz {
         model.setParamMap(paramMap);
         this.weChatServiceFeign.pushTemplate(model);
       } catch (Exception var6) {
-        log.error("TollBiz.aynsPushWxExpendMsg error: {}", var6);
+        log.error("TreatTollBiz aynsPushWxExpendMsg error: {}", var6);
       }
   }
 
@@ -1081,7 +991,7 @@ public class TreatTollBiz {
       Integer orderRecordId,
       Integer patientId,
       GeneralDiscountModel generalDiscountModel) {
-    BigDecimal privilegeAmount = memberIdentityPrivilege(patientId, orderRecordId);
+    BigDecimal privilegeAmount = BigDecimal.ZERO;
     switch (discountType) {
       case 1:
         privilegeAmount = calculateGeneralPrivilegeAmount(orderRecordId, patientId, generalDiscountModel);
@@ -1089,19 +999,6 @@ public class TreatTollBiz {
       default:
         break;
     }
-    return privilegeAmount;
-  }
-
-  private BigDecimal memberIdentityPrivilege(Integer patientId, Integer orderRecordId) {
-    BigDecimal privilegeAmount = BigDecimal.ZERO;
-    // TODO: 2023/7/4 获取患者会员身份，计算身份折扣产生的优惠
-    Integer memberTypeId = null;
-    List<OrderDetailVO> details = orderDetailBiz.findOrderDetailList(orderRecordId, null);
-    orderDetailBiz.assemblyMemberDiscountPrice(details);
-    details.forEach(detail->{
-
-    });
-
     return privilegeAmount;
   }
 
@@ -1149,30 +1046,6 @@ public class TreatTollBiz {
     form.setPackageIds(packageIds);
     form.setVoucherIds(voucherIds);
     return  discountFeign.choiceBenefit(form);
-  }
-
-  /**
-   * 计算授权折扣优惠总额
-   *
-   * @param orderRecordId 订单记录ID
-   * @param accreditDiscountDetailModels 授权折扣明细
-   * @return privilegeAmount 优惠总额
-   */
-  private BigDecimal calculateAccreditPrivilegeAmount(
-      Integer orderRecordId, List<AccreditDiscountDetailModel> accreditDiscountDetailModels) {
-    BigDecimal privilegeAmount = BigDecimal.valueOf(0);
-    BigDecimal totalActualAmount = BigDecimal.valueOf(0);
-    for (AccreditDiscountDetailModel detailModel : accreditDiscountDetailModels) {
-      totalActualAmount = totalActualAmount.add(detailModel.getActualAmount());
-      if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
-        throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
-      }
-    }
-    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
-    if (null != orderRecord) {
-      privilegeAmount = orderRecord.getTotalAmount().subtract(totalActualAmount);
-    }
-    return privilegeAmount;
   }
 
   /**
@@ -1243,32 +1116,6 @@ public class TreatTollBiz {
         break;
       default:
         break;
-    }
-  }
-
-  /**
-   * 检查授权折扣参数
-   *
-   * @param accreditDiscountModel
-   */
-  private void checkAccreditDiscount(AccreditDiscountModel accreditDiscountModel) {
-    if (accreditDiscountModel != null) {
-      Integer warrantId = accreditDiscountModel.getWarrantId();
-      SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
-      if (null != employee) {
-        if (!employee.getDiscount()) {
-          throw new ClientServiceException("您当前选择的授权人不具备授权折扣权限！", PARAMETERS_IS_ILLEGAL);
-        }
-        List<AccreditDiscountDetailModel> discountDetailModels =
-                accreditDiscountModel.getAccreditDiscountDetailModels();
-        if (StringHelper.isEmpty(discountDetailModels)) {
-          throw new ClientServiceException("授权折扣订单列表不能为空！", PARAMETERS_IS_ILLEGAL);
-        }
-      } else {
-        throw new ClientServiceException("授权人不存在！", PARAMETERS_IS_ILLEGAL);
-      }
-    } else {
-      throw new ClientServiceException("授权折扣异常", PARAMETERS_IS_ILLEGAL);
     }
   }
 

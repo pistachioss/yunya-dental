@@ -267,6 +267,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param orderRecordId 开单记录ID
    * @return List<OrderDetailChargeVO>
    */
+  @Deprecated
   public List<OrderDetailChargeVO> findChargeOrderDetailList(Integer orderRecordId) {
     String redisKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
     String redisValue = redisUtils.get(redisKey);
@@ -279,67 +280,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (BusinessConstants.ORDER_UN_LOCK_STATUS.equals(orderRecord.getStatus())) {
       throw new ClientServiceException("收费失败，当前账单已解锁，暂不能进行收费！", PARAMETERS_IS_ILLEGAL);
     }
-    // TODO: 2023/7/4 获取患者会员身份
-    MemberType query = new MemberType();
-//    memberType.setId();
-    // 处理门诊价目表价格
-    List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(query);
-    List<OrderDetailChargeVO> orderDetails = getChargeOrderDetailList(orderRecordId);
-    if (StringHelper.isNotEmpty(orderDetails)) {
-      if (StringHelper.isNotEmpty(memberTypes)) {
-        orderDetails.forEach(
-            tariffVO -> {
-              Map<Integer, Object> memberPrices = new HashMap<>(16);
-              if (tariffVO.getType() == 0) {
-                // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
-                setClinicTariffMemberPrice(
-                    memberPrices,
-                    memberTypes,
-                    Integer.valueOf(BaseContextHandler.getOrgId()),
-                    tariffVO);
-              } else {
-                setClinicOralTariffMemberPrice(
-                    memberPrices,
-                    memberTypes,
-                    Integer.valueOf(BaseContextHandler.getOrgId()),
-                    tariffVO);
-              }
-            });
-      }
-
-      List<Integer> orderDetailIds = orderDetails.stream()
-          .map(OrderDetailChargeVO::getOrderDetailId).collect(Collectors.toList());
-      Map<Integer, List<Integer>> planDetails =
-              remoteEmrServiceFeign.findOrderWithPlanDetailById(orderDetailIds);
-      orderDetails.forEach(
-              vo -> vo.setPlanDetailIds(planDetails.get(vo.getOrderDetailId())));
-    }
-    // 设置10分钟（该段时间内不允许其他用户重复收费，解锁）
-    redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
-    return orderDetails;
-  }
-
-  /**
-   * 根据订单ID查询收费订单明细列表（含优惠信息）
-   *
-   * @param orderRecordId 开单记录ID
-   * @return List<OrderDetailChargeVO>
-   */
-  @Deprecated
-  public List<OrderDetailChargeVO> findChargeOrderDetailList0(Integer orderRecordId) {
-    String redisKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
-    String redisValue = redisUtils.get(redisKey);
-    String userId = BaseContextHandler.getUserID();
-    if (StringHelper.isNotBlank(redisValue) && !redisValue.equals(orderRecordId + ":" + userId)) {
-      throw new ClientServiceException("收费失败，当前就诊正在收费中！", PARAMETERS_IS_ILLEGAL);
-    }
-
-    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
-    if (BusinessConstants.ORDER_UN_LOCK_STATUS.equals(orderRecord.getStatus())) {
-      throw new ClientServiceException("收费失败，当前账单已解锁，暂不能进行收费！", PARAMETERS_IS_ILLEGAL);
-    }
     List<OrderDetailChargeVO> chargeOrderDetailList;
-    List<OrderDetailChargeVO> chargeVOS = this.buildMember(orderRecordId);
+    List<OrderDetailChargeVO> chargeVOS = this.buildMember(orderRecordId, orderRecord.getPatientId());
     assemblyMemberDiscountPrice(chargeVOS);
     if (chargeVOS != null) {
       chargeOrderDetailList = chargeVOS;
@@ -469,9 +411,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     tariffVO.setMemberPrices(memberPrices);
   }
 
-  private List<OrderDetailChargeVO> buildMember(Integer orderRecordId) {
-    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
-    Map<Integer, String> maxType = getPatientMemberCards(orderRecord.getPatientId());
+  private List<OrderDetailChargeVO> buildMember(Integer orderRecordId, Integer patientId) {
+    Map<Integer, String> maxType = getPatientMemberCards(patientId);
     if (maxType != null && maxType.size() > 0) {
       OrderPrivilegeQuery query = new OrderPrivilegeQuery();
       GeneralDiscountModel generalDiscountModel = new GeneralDiscountModel();
