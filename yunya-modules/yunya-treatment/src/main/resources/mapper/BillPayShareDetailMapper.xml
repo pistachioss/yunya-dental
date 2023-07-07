@@ -213,4 +213,34 @@
         </where>
         ORDER BY od.type, od.billing_item_id
     </select>
+
+
+    <select id="selectBillItemFreeAmountInRevoked"
+            resultType="com.yunya.feign.report.domain.vo.BillItemAmountSharedVO">
+        SELECT
+            bpsd.item_type AS itemType,
+            bpsd.item_id AS itemId,
+            br.org_id AS orgId,
+            SUM(bpsd.free_amount) AS freeAmount
+        FROM bill_pay_share_detail bpsd
+        LEFT JOIN bill_pay_record bpr ON bpr.id = bpsd.bill_pay_id
+        LEFT JOIN bill_record br ON br.id = bpr.bill_record_id
+        <where>
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT(bpr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+                and DATE_FORMAT(br.crt_time, '%Y-%m') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT(bpr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+                and DATE_FORMAT(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
+            </if>
+            <if test="query.orgIds != null and query.orgIds.size() > 0">
+                AND br.org_id IN
+                <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY br.org_id, bpsd.item_type, bpsd.item_id
+    </select>
 </mapper>

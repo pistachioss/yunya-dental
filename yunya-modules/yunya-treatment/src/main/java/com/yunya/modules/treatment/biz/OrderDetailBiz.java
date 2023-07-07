@@ -56,10 +56,7 @@ import com.yunya.models.system.SysEmployee;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.config.SysConfig;
-import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
-import com.yunya.modules.treatment.mapper.BillRecordMapper;
-import com.yunya.modules.treatment.mapper.OrderDetailMapper;
-import com.yunya.modules.treatment.mapper.OrderRecordMapper;
+import com.yunya.modules.treatment.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -144,6 +141,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   private ExecutorService executorService;
 
   @Autowired private SysConfig sysConfig;
+  @Autowired private BillPayShareDetailMapper billPayShareDetailMapper;
 
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
@@ -1268,6 +1266,27 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    */
   private Future<Map<String, BigDecimal>> multiFindTariffCategoryFreePaymentAmount(
+      CategoryIncomeQuery query) {
+    return executorService.submit(()->{
+      List<BillItemAmountSharedVO> list = billPayShareDetailMapper.selectBillItemFreeAmountInRevoked(query);
+      Map<String, BigDecimal> result = new HashMap<>(16);
+      list.forEach(vo->{
+        String itemKey = StringHelper.joinWith(",", vo.getItemType(), vo.getItemId());
+        String key = StringHelper.joinWith(".", itemKey, vo.getOrgId());
+        result.put(key, vo.getFreeAmount());
+      });
+      return result;
+    });
+  }
+
+  /**
+   * 多线程查询项目分类的当月免单
+   *
+   * @param query
+   * @return
+   */
+  @Deprecated
+  public Future<Map<String, BigDecimal>> multiFindTariffCategoryFreePaymentAmount0(
       CategoryIncomeQuery query) {
     return executorService.submit(
         () -> {

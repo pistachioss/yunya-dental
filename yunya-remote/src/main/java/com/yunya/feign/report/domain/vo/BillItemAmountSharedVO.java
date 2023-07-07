@@ -37,6 +37,9 @@ public class BillItemAmountSharedVO implements Serializable {
     /** 项目id*/
     private Integer itemId;
 
+    @ApiModelProperty("项目免单")
+    private BigDecimal freeAmount;
+
     /** 项目已收占比*/
     private BigDecimal itemReceivedRatio;
     /** 价目or商品项目免单已收占比*/

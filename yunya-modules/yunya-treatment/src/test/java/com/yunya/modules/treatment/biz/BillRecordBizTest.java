@@ -8,6 +8,7 @@ import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
@@ -180,5 +181,12 @@ public class BillRecordBizTest {
   @Test
   public void testAssembleItemName() {
     System.out.println(treatTollBiz.assembleItemName(100));
+  }
+
+  @Test
+  public void multiFindTariffCategoryFreePaymentAmount() {
+    String param = "{\"orgIds\":[63],\"startDate\":\"2023-03\",\"endDate\":\"2023-03\",\"whetherPage\":false}";
+    CategoryIncomeQuery query = JSONObject.parseObject(param, CategoryIncomeQuery.class);
+    orderDetailBiz.findFreePaymentAmount(query);
   }
 }

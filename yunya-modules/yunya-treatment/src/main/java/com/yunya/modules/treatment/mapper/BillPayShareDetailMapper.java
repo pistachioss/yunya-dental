@@ -1,5 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
+import com.yunya.feign.report.domain.vo.BillItemAmountSharedVO;
 import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.models.treatment.BillPayShareDetail;
@@ -41,4 +43,11 @@ public interface BillPayShareDetailMapper extends Mapper<BillPayShareDetail> {
     List<BillPayShareDetailVO> selectItemPayDetailDeadlineBillPayId(
             @Param("orderRecordId") Integer orderRecordId,
             @Param("billPayId") Integer billPayId);
+
+    /**
+     * 查询账单项目免单总额，包含撤销收费的和调整入账方式的账单
+     * @param query
+     * @return
+     */
+    List<BillItemAmountSharedVO> selectBillItemFreeAmountInRevoked(@Param("query") CategoryIncomeQuery query);
 }
