@@ -242,10 +242,10 @@
         </where>
     </select>
 
-    <!-- 查询完成工作量 -->
+    <!-- 查询完成工作量（含划扣工作量） -->
     <select id="selectCompletedWorkloadAmount" resultType="java.math.BigDecimal">
         SELECT
-        IFNULL(SUM( odpr.actual_receivable ) + SUM( odpr.coupon_workload ), 0) AS workloadAmountCompleted
+        IFNULL(SUM( odpr.actual_receivable ) + SUM( odpr.coupon_workload ) + SUM(odpr.swipe_workload), 0) AS workloadAmountCompleted
         FROM
         order_detail_pay_record odpr
         <where>
