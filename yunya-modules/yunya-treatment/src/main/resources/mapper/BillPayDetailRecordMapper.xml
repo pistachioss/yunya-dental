@@ -199,9 +199,10 @@
                 bpdr.account_item_id AS accountItemId,
                 bpdr.amount AS amount,
                 bpdr.inservice,
-                bpdr.crt_time AS crtTime
+                bpr.crt_time AS crtTime
             FROM bill_pay_detail_record bpdr
             LEFT JOIN bill_pay_record bpr ON bpdr.bill_pay_record_id = bpr.id
+            LEFT JOIN order_record od ON od.id = bpr.order_record_id
             <where>
                 AND bpdr.amount > 0
                 AND NOT EXISTS(
@@ -211,28 +212,30 @@
                     WHERE behdr.inservice = true AND behr.inservice = true
                     AND behr.operate_type = 0 AND behdr.associate_record_id = bpdr.id
                 )
-                <if test="query.dateType==0">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                <if test="query.orderRecordId == null">
+                    <if test="query.dateType==0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            AND DATE_FORMAT(od.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT(od.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                        </if>
                     </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    <if test="query.dateType==1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            AND DATE_FORMAT(od.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT(od.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
+                        </if>
                     </if>
-                </if>
-                <if test="query.dateType==1">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT(bpr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bpr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
-                    </if>
-                </if>
-                <if test="query.dateType==2">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT(bpr.crt_time, '%Y' ) &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bpr.crt_time, '%Y' ) &lt;= #{query.endDate}
+                    <if test="query.dateType==2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT(od.crt_time, '%Y' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT(od.crt_time, '%Y' ) &lt;= #{query.endDate}
+                        </if>
                     </if>
                 </if>
                 <if test="query.orderRecordId != null">
@@ -252,30 +255,33 @@
                 bpr.inservice,
                 bpr.crt_time AS crtTime
             FROM bill_pay_record bpr
+            LEFT JOIN order_record od ON od.id = bpr.order_record_id
             <where>
                 bpr.received_amount = 0
-                <if test="query.dateType==0">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                <if test="query.orderRecordId == null">
+                    <if test="query.dateType==0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT(od.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT(od.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                        </if>
                     </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bpr.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    <if test="query.dateType==1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT(od.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT(od.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
+                        </if>
                     </if>
-                </if>
-                <if test="query.dateType==1">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT(bpr.crt_time, '%Y-%m' ) &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bpr.crt_time, '%Y-%m' ) &lt;= #{query.endDate}
-                    </if>
-                </if>
-                <if test="query.dateType==2">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT(bpr.crt_time, '%Y' ) &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT(bpr.crt_time, '%Y' ) &lt;= #{query.endDate}
+                    <if test="query.dateType==2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT(od.crt_time, '%Y' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT(od.crt_time, '%Y' ) &lt;= #{query.endDate}
+                        </if>
                     </if>
                 </if>
                 <if test="query.orderRecordId != null">

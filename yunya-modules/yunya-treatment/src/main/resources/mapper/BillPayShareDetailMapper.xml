@@ -60,24 +60,33 @@
   </update>
 
   <delete id="removeByBillDateRange">
-    DELETE FROM bill_pay_share_detail
+    DELETE bbps FROM bill_pay_share_detail bbps
+    LEFT JOIN order_record od ON od.id = bbps.order_record_id
     <where>
-        <if test="query.dateType == 0">
-            <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
-                AND DATE_FORMAT(pay_date,'%Y-%m-%d') between #{query.startDate}
-                and #{query.endDate}
-            </if>
+        <if test="query.orderRecordId != null">
+            AND od.id = #{query.orderRecordId}
         </if>
-        <if test="query.dateType == 1">
-            <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
-                AND DATE_FORMAT(pay_date,'%Y-%m') between #{query.startDate}
-                and #{query.endDate}
-            </if>
+        <if test="query.billPayId != null">
+            AND bbps.bill_pay_id = #{query.billPayId}
         </if>
-        <if test="query.dateType == 2">
-            <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
-                AND DATE_FORMAT(pay_date,'%Y') between #{query.startDate}
-                and #{query.endDate}
+        <if test="query.orderRecordId == null">
+            <if test="query.dateType == 0">
+                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                    AND DATE_FORMAT(od.crt_time,'%Y-%m-%d') between #{query.startDate}
+                    and #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                    AND DATE_FORMAT(od.crt_time,'%Y-%m') between #{query.startDate}
+                    and #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                    AND DATE_FORMAT(od.crt_time,'%Y') between #{query.startDate}
+                    and #{query.endDate}
+                </if>
             </if>
         </if>
     </where>
@@ -112,7 +121,7 @@
                 odpr.order_detail_id,
                 br.privilege_date,
                 odpr.swipe_workload,
-                odpr.receivable_amount,
+                IF(odpr.actual_receivable>odpr.receivable_amount,odpr.actual_receivable,odpr.receivable_amount) AS receivable_amount,
                 odpr.actual_receivable,
                 bd.tariffActualAmount,
                 bd.oralActualAmount,
@@ -153,7 +162,7 @@
             group by order_record_id, item_type, item_id
         ) bdp ON bdp.order_record_id=odpr.order_record_id and od.type=bdp.item_type and od.billing_item_id=bdp.item_id
         <where>
-            AND od.receivable_amount > 0
+            odpr.receivable_amount > 0
             AND odpr.order_record_id = #{orderRecordId}
         </where>
         ORDER BY od.type, od.billing_item_id
@@ -215,32 +224,32 @@
     </select>
 
 
-    <select id="selectBillItemFreeAmountInRevoked"
+  <select id="selectBillItemFreeAmountInRevoked"
             resultType="com.yunya.feign.report.domain.vo.BillItemAmountSharedVO">
-        SELECT
-            bpsd.item_type AS itemType,
-            bpsd.item_id AS itemId,
-            br.org_id AS orgId,
-            SUM(bpsd.free_amount) AS freeAmount
-        FROM bill_pay_share_detail bpsd
-        LEFT JOIN bill_pay_record bpr ON bpr.id = bpsd.bill_pay_id
-        LEFT JOIN bill_record br ON br.id = bpr.bill_record_id
-        <where>
-            <if test="query.startDate != null and query.startDate != ''">
-                and DATE_FORMAT(bpr.crt_time, '%Y-%m') &gt;= #{query.startDate}
-                and DATE_FORMAT(br.crt_time, '%Y-%m') &gt;= #{query.startDate}
-            </if>
-            <if test="query.endDate != null and query.endDate != ''">
-                and DATE_FORMAT(bpr.crt_time, '%Y-%m') &lt;= #{query.endDate}
-                and DATE_FORMAT(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
-            </if>
-            <if test="query.orgIds != null and query.orgIds.size() > 0">
-                AND br.org_id IN
-                <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-        GROUP BY br.org_id, bpsd.item_type, bpsd.item_id
-    </select>
+    SELECT
+        bpsd.item_type AS itemType,
+        bpsd.item_id AS itemId,
+        br.org_id AS orgId,
+        SUM(bpsd.free_amount) AS freeAmount
+    FROM bill_pay_share_detail bpsd
+    LEFT JOIN bill_pay_record bpr ON bpr.id = bpsd.bill_pay_id
+    LEFT JOIN bill_record br ON br.id = bpr.bill_record_id
+    <where>
+        <if test="query.startDate != null and query.startDate != ''">
+            and DATE_FORMAT(bpr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+            and DATE_FORMAT(br.crt_time, '%Y-%m') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+            and DATE_FORMAT(bpr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+            and DATE_FORMAT(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
+        </if>
+        <if test="query.orgIds != null and query.orgIds.size() > 0">
+            AND br.org_id IN
+            <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </where>
+    GROUP BY br.org_id, bpsd.item_type, bpsd.item_id
+  </select>
 </mapper>

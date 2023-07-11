@@ -6,6 +6,7 @@ import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment.BillPayRecord;
@@ -111,8 +112,8 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
     private void rectifyActualAmount(List<BillPayShareDetailVO> itemPayDetails, Date payDate) {
         itemPayDetails.forEach(vo -> {
             Date privilegeDate = vo.getPrivilegeDate();
-            // 本次收费时的应收=原价
-            if (StringHelper.isNotNull(privilegeDate) && payDate.before(privilegeDate)) {
+            // 还原：本次收费时间优先账单优惠时间超出2秒，判断项目的应收=原价
+            if (StringHelper.isNotNull(privilegeDate) && DateUtil.before4Second(payDate, privilegeDate, 2)) {
                 vo.setActualReceivable(vo.getReceivableAmount());
                 vo.setTariffActualAmount(vo.getTariffReceivableAmount());
                 vo.setOralActualAmount(vo.getOralReceivableAmount());
@@ -160,16 +161,13 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
             BigDecimal amount = vo.getAmount();
             Date crtTime = vo.getCrtTime();
             Integer inservice = vo.getInservice();
-            String key = vo.getBillPayRecordId() + "," + inservice + "," + DateUtil.toDateTime(crtTime);
+            String key = StringHelper.joinWith(",", vo.getBillPayRecordId(), inservice, DateUtil.toDateTime(crtTime));
             JSONObject billPay = map.computeIfAbsent(key, k->{
                 JSONObject obj = new JSONObject();
                 obj.put("freeAmount", BigDecimal.ZERO);
                 obj.put("receivedAmount", BigDecimal.ZERO);
                 obj.put("payDate", crtTime);
                 obj.put("orderRecordId", vo.getOrderRecordId());
-                if (inservice == -1) {
-                    obj.put("inservice", inservice);
-                }
                 return obj;
             });
             if (FREE_PAYMENT_ID.contains(vo.getAccountItemId())) {
@@ -178,6 +176,21 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
             } else {
                 BigDecimal receivedAmount = StringHelper.defaultBigDecimal(billPay.getBigDecimal("receivedAmount"));
                 billPay.put("receivedAmount", receivedAmount.add(amount));
+            }
+            // inservice为0,1时，需要生成分摊记录，为0,-1时也需要生成删除事件（注意先后顺序）
+            if (inservice == 0) {
+                // 防止收费记录已作废，却没有异常处理记录的情况，既需要生成分摊明细，也需要生成删除事件
+                JSONObject obj = new JSONObject();
+                obj.put("freeAmount", BigDecimal.ZERO);
+                obj.put("receivedAmount", BigDecimal.ZERO);
+                obj.put("payDate", crtTime);
+                obj.put("orderRecordId", vo.getOrderRecordId());
+                obj.put("inservice", -1);
+                map.put(StringHelper.joinWith(",", vo.getBillPayRecordId(), "-1", DateUtil.toDateTime(crtTime)), obj);
+            }
+            if (inservice == -1) {
+                // 异常处理的收费记录（撤销收费），生成删除事件
+                billPay.put("inservice", inservice);
             }
         });
         map.forEach((key, billPay)->{
@@ -199,6 +212,12 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
     }
 
     public void deleteByBillDateRange(BillPayShareDetailQuery query) {
+        if (StringHelper.isNull(query.getDateType())
+                &&StringHelper.isEmpty(query.getStartDate())
+                &&StringHelper.isEmpty(query.getEndDate())
+                &&StringHelper.isNull(query.getOrderRecordId())) {
+            throw new ClientServiceException("参数不能为空", 500);
+        }
         mapper.removeByBillDateRange(query);
     }
 }

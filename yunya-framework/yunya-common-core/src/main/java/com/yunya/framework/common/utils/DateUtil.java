@@ -1252,9 +1252,9 @@ public class DateUtil {
 //      }
 //      return null;
 //    });
-    Date d1 = parse("2023-03-16 10:59:54");
-    Date d2 = parse("2023-03-16 10:59:54");
-    System.out.println(before4Second(d1, d2, 10));
+    Date d1 = parse("2021-03-18 15:44:11");
+    Date d2 = parse("2021-03-18 15:44:14");
+    System.out.println(before4Second(d1, d2, 2));
   }
 
   public static <R> R dur(String name, Function<String, R> func) {
@@ -1271,7 +1271,7 @@ public class DateUtil {
   }
 
   /**
-   * 判断date1是否先于或等于date2，同时两者差值小于等于给定秒值
+   * 判断date1是否先于或等于date2，同时两者差值大于等于给定秒值
    *
    * @param date1
    * @param date2
@@ -1279,7 +1279,7 @@ public class DateUtil {
    */
   public static Boolean before4Second(Date date1, Date date2, Integer target) {
     long diff = diff4Time(date1, date2, "second");
-    return diff <= 0 && Math.abs(diff) <= target;
+    return diff <= 0 && Math.abs(diff) >= target;
   }
 
   /**
