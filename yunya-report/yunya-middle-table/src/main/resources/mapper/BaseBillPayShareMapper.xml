@@ -26,7 +26,7 @@
   VALUES
   <foreach collection ="list" item="it" index= "index" separator =",">
     (#{it.billId}, #{it.billPayId}, #{it.billDetailId}, #{it.itemType}, #{it.itemId}, #{it.freeAmount},
-    #{it.receivedAmount}, #{it.swipeWorkload} #{it.executorId}, #{it.consulterId}, #{it.payDate})
+    #{it.receivedAmount}, #{it.swipeWorkload}, #{it.executorId}, #{it.consulterId}, #{it.payDate})
   </foreach>
   </insert>
 
@@ -37,9 +37,9 @@
       bbd.item_type AS itemType,
       bbd.item_id AS itemId,
       DATE_FORMAT(bbps.pay_date, '%Y%m%d') AS payDate,
-      SUM(bbps.free_amount) AS freePaymentWorkload,
-      SUM(bbps.received_amount) AS receivedWorkload,
-      SUM(bbds.swipe_workload, 0) AS swipeWorkload
+      IFNULL(SUM(bbps.free_amount), 0) AS freePaymentWorkload,
+      IFNULL(SUM(bbps.received_amount), 0) AS receivedWorkload,
+      IFNULL(SUM(bbps.swipe_workload), 0) AS swipeWorkload
     FROM base_bill_detail bbd
     LEFT JOIN base_bill_pay_share bbps ON bbps.bill_detail_id=bbd.bill_detail_id
     <where>

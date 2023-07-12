@@ -2,6 +2,8 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.model.TollDebtModel;
 import com.yunya.feign.treatment.domain.model.TollModel;
+import com.yunya.feign.treatment.domain.model.TreatTollDebtModel;
+import com.yunya.feign.treatment.domain.model.TreatTollModel;
 import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
@@ -13,6 +15,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BillPayShareDetailBiz;
 import com.yunya.modules.treatment.biz.TollBiz;
+import com.yunya.modules.treatment.biz.TreatTollBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -44,6 +47,7 @@ public class TollController {
   @Autowired private TollBiz tollBiz;
 
   @Autowired private BillPayShareDetailBiz billPayShareDetailBiz;
+  @Autowired private TreatTollBiz treatTollBiz;
 
   /**
    * 匹配订单列表优惠信息
@@ -179,5 +183,52 @@ public class TollController {
       return null;
     });
     return ResponseUtil.success();
+  }
+
+  /**
+   * 确认收费
+   *
+   * @param model 收费参数
+   * @return
+   */
+  @RepeatSubmit
+  @CurrentUser
+  @ApiOperation("确认收费")
+  @PostMapping("/treatConfirm")
+  public ResponseResult<TollConfirmVO> confirmCharge(@RequestBody @Validated TreatTollModel model) {
+    treatTollBiz.clear(model.getOrderRecordId());
+    TollConfirmVO tollConfirmVO = treatTollBiz.confirmCharge(model);
+    return ResponseUtil.success(tollConfirmVO);
+  }
+
+  /**
+   * 挂账
+   *
+   * @param model 收费参数
+   * @return
+   */
+  @RepeatSubmit
+  @CurrentUser
+  @ApiOperation("挂账")
+  @PostMapping("/credit")
+  public ResponseResult<TollConfirmVO> chargeOnCredit(@RequestBody @Validated TreatTollModel model) {
+    treatTollBiz.clear(model.getOrderRecordId());
+    TollConfirmVO tollConfirmVO = treatTollBiz.chargeOnCredit(model);
+    return ResponseUtil.success(tollConfirmVO);
+  }
+
+  /**
+   * 收欠费
+   *
+   * @param model 收费参数
+   * @return
+   */
+  @RepeatSubmit
+  @CurrentUser
+  @ApiOperation("收欠费")
+  @PostMapping("/collectDebt")
+  public ResponseResult<TollConfirmVO> collectDebt(@RequestBody @Validated TreatTollDebtModel model) {
+    TollConfirmVO tollConfirmVO = treatTollBiz.collectDebt(model);
+    return ResponseUtil.success(tollConfirmVO);
   }
 }

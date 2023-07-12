@@ -52,10 +52,12 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      */
     private BigDecimal extrationFreeAmount(Set<PaymentModel> payments) {
         BigDecimal freePayment = BigDecimal.ZERO;
-        for (PaymentModel payment : payments) {
-            Integer accountItemId = payment.getAccountItemId();
-            if (FREE_PAYMENT_ID.contains(accountItemId)) {
-                freePayment = freePayment.add(payment.getAmount());
+        if (StringHelper.isNotEmpty(payments)) {
+            for (PaymentModel payment : payments) {
+                Integer accountItemId = payment.getAccountItemId();
+                if (FREE_PAYMENT_ID.contains(accountItemId)) {
+                    freePayment = freePayment.add(payment.getAmount());
+                }
             }
         }
         return freePayment;

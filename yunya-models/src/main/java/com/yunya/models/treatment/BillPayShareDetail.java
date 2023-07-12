@@ -59,7 +59,7 @@ public class BillPayShareDetail {
     /**
      * 项目划扣卡核销工作量
      */
-    @Column(name = "swipe_wokload")
+    @Column(name = "swipe_workload")
     private BigDecimal swipeWorkload;
 
     /**

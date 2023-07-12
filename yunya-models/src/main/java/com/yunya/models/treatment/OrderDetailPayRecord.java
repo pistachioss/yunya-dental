@@ -97,7 +97,7 @@ public class OrderDetailPayRecord {
     /**
      * 划扣卡补入工作量
      */
-    @Column(name = "划扣卡补入工作量")
+    @Column(name = "swipe_coupon_workload")
     private BigDecimal swipeCouponWorkload;
 
     /**

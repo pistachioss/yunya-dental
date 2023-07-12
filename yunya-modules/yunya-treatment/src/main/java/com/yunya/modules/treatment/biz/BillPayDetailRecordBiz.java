@@ -255,10 +255,7 @@ public class BillPayDetailRecordBiz
         });
     billPayShareDetailBiz.shullfeItemPaySharedDetail(orderRecordId);
     // 发送消息更新中间表收费记录以及收费明细
-    Map<String, Object> param = new HashMap<>();
-    param.put("id", billPayRecordId);
-    param.put("orderRecordId", orderRecordId);
-    rabbitMqServiceFeign.sendMessage(param, 1, BaseBillPay);
+    rabbitMqServiceFeign.sendMessage(billPayRecordId, 1, BaseBillPay);
     redisUtils.delete(redisKey);
   }
 

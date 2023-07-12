@@ -86,7 +86,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    */
   public void operateBillPay(MessageModel msg) {
     Integer dataId = (Integer) msg.getParamMap().get("id");
-    Integer orderRecordId = (Integer) msg.getParamMap().get("orderRecordId");
     BaseBillPay baseBillPay = generateBaseBillPay(dataId);
     Integer operateType = msg.getOperateType();
     switch (operateType) {
@@ -119,7 +118,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         if (StringHelper.isNull(baseBillPay)) {
           baseBillPay = record2BaseReport(billPayRecordMapper.selectByPrimaryKey(dataId));
         }
-        saveBillPayShareDetailRecord(baseBillPay, orderRecordId);
+        saveBillPayShareDetailRecord(baseBillPay);
         statisticsInPayDate(baseBillPay);
         break;
     }
@@ -129,22 +128,15 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * 账单收费项目分摊明细保存
    *
    * @param baseBillPay
-   * @param orderRecordId 如果非空表示查账单所有收费
    */
-  private void saveBillPayShareDetailRecord(BaseBillPay baseBillPay, Integer orderRecordId) {
-    Integer billPayId = baseBillPay.getBillPayId();
+  private void saveBillPayShareDetailRecord(BaseBillPay baseBillPay) {
+    Integer billId = baseBillPay.getBillId();
     BaseBillPayShare detail = new BaseBillPayShare();
-    detail.setBillId(orderRecordId);
-    if (StringHelper.isNull(orderRecordId)) {
-      detail.setBillPayId(billPayId);
-    }
+    detail.setBillId(billId);
     baseBillPayShareMapper.delete(detail);
     BillPayShareDetail query = new BillPayShareDetail();
-    query.setOrderRecordId(orderRecordId);
+    query.setOrderRecordId(billId);
     query.setInservice(true);
-    if (StringHelper.isNull(orderRecordId)) {
-      query.setBillPayId(billPayId);
-    }
     List<BillPayShareDetail> shares = billPayShareDetailMapper.select(query);
     List<BaseBillPayShare> datas = new ArrayList<>();
     shares.forEach(vo->{
@@ -157,7 +149,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     if (StringHelper.isNotEmpty(datas)) {
       baseBillPayShareMapper.batchSave(datas);
     }
-    updateBaseBillDetailIncome(baseBillPay.getBillId());
+    updateBaseBillDetailIncome(billId);
   }
 
   /**
@@ -341,7 +333,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                           // 保存收费记录明细
                           saveBillPayDetailRecord(billPayBillPayId);
                           // 保存收费分摊明细
-                          saveBillPayShareDetailRecord(baseBillPay, null);
+                          saveBillPayShareDetailRecord(baseBillPay);
                         }
                       }
                     }
