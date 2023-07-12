@@ -8,59 +8,67 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 @Data
-@Table(name = "coupon_order")
-public class CouponOrder {
+@Table(name = "coupon_bill_pay_detail")
+public class CouponBillPayDetail {
     /**
-     * 主键ID
+     * 主键
      */
     @Id
     private Integer id;
 
     /**
-     * 组织（门诊）ID
+     * 组织（诊所）id
      */
     @Column(name = "org_id")
     private Integer orgId;
 
     /**
-     * 患者ID
+     * 患者id
      */
     @Column(name = "patient_id")
     private Integer patientId;
 
     /**
-     * 订单编号
+     * 开单记录id
      */
-    @Column(name = "order_record_num")
-    private String orderRecordNum;
+    @Column(name = "order_id")
+    private Integer orderId;
 
     /**
-     * 状态 （0-已下单；1-已收费；2-已退款）
+     * 账单ID
      */
-    private Integer status;
+    @Column(name = "bill_id")
+    private Integer billId;
 
     /**
-     * 订单总额
+     * 账单收费记录ID
      */
-    @Column(name = "total_amount")
-    private BigDecimal totalAmount;
+    @Column(name = "bill_pay_id")
+    private Integer billPayId;
 
     /**
-     * 应收金额（实际支付金额）
+     * 入账方式类型（0-预付款；1-会员卡；2-其他支付方式）
      */
-    @Column(name = "receivable_amount")
-    private BigDecimal receivableAmount;
+    private Byte type;
 
     /**
-     * 已收金额（本单收费总额）
+     * 入账方式明细ID
      */
-    @Column(name = "received_amount")
-    private BigDecimal receivedAmount;
+    @Column(name = "account_item_id")
+    private Integer accountItemId;
+
+    /**
+     * 入账金额
+     */
+    private BigDecimal amount;
 
     /**
      * 备注
      */
-    private String remarks;
+    private String remark;
+
+    @Column(name = "patient_num")
+    private String patientNum;
 
     /**
      * 是否有效
@@ -76,15 +84,12 @@ public class CouponOrder {
     /**
      * 创建人姓名
      */
-    @Column(name = "crt_name")
-    private String crtName;
-
-    /**
-     * 创建时间
-     */
     @Column(name = "crt_time")
     private Date crtTime;
 
+    /**
+     * 更新人ID
+     */
     @Column(name = "upd_id")
     private Integer updId;
 

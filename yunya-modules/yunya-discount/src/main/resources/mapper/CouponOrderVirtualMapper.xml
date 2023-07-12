@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.discount.mapper.CouponOrderVirtualMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.discount.CouponOrderVirtual">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="order_id" property="orderId" jdbcType="INTEGER"/>
+        <result column="order_sn" property="orderSn" jdbcType="VARCHAR"/>
+        <result column="card_id" property="cardId" jdbcType="INTEGER"/>
+        <result column="coupon_id" property="couponId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="patient_name" property="patientName" jdbcType="VARCHAR"/>
+        <result column="card_number" property="cardNumber" jdbcType="VARCHAR"/>
+        <result column="sold_date" property="soldDate" jdbcType="TIMESTAMP"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertList" parameterType="List">
+        insert into
+        `coupon_order_virtual`
+        (`order_id`, `order_sn`, `card_id`, `coupon_id`, `patient_id`, `patient_name`, `card_number`, `sold_date`,
+        `crt_id`, `crt_time`, `upd_id`)
+        values
+        <foreach collection="List" item="item" separator=",">
+            (#{item.orderId}, #{item.orderSn}, #{item.cardId}, #{item.couponId},#{item.patientId},
+            #{item.patientName},#{item.cardNumber},#{item.soldDate},#{item.crtId},#{item.crtTime},#{item.updId})
+        </foreach>
+    </insert>
+</mapper>

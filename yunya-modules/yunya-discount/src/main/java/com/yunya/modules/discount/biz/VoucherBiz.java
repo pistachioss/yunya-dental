@@ -232,11 +232,16 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         List<CouponFileInfo> fileList = couponFileInfoMapper.select(couponFileInfo);
         Map<String, CouponFileInfo> BaseMap = new HashMap();
         fileList.forEach(z -> BaseMap.put(z.getCouponId() + "", z));
-
+        CouponAllocate couponAllocate = new CouponAllocate();
         for (CouponCommonInfoVO couponCommonInfoVO : list) {
             CouponFileInfo copy = BaseMap.get(couponCommonInfoVO.getId().toString());
             if (null != copy) {
                 couponCommonInfoVO.setPath(copy.getPath());
+            }
+            couponAllocate.setCouponId(couponCommonInfoVO.getId());
+            if (couponAllocateMapper.findAllocate(couponAllocate) > 0) {
+                // 未完成分配
+                couponCommonInfoVO.setIsDistribution(true);
             }
         }
         return list;

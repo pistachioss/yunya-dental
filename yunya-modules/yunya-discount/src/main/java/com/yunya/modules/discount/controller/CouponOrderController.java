@@ -18,7 +18,7 @@ import java.util.List;
  * @auther: xy
  * @date: 2023/6/28
  */
-@Api(tags = {"划扣卡-购买"})
+@Api(tags = {"划扣卡-列表、购买"})
 @RestController
 public class CouponOrderController {
     @Resource
@@ -42,7 +42,7 @@ public class CouponOrderController {
 
     @ApiOperation(value = "划扣卡订单详情")
     @GetMapping("/coupon/order/{orderId}")
-    public CouponOrderVO detail(@PathVariable(value = "id") Integer orderId) {
+    public CouponOrderVO detail(@PathVariable(value = "orderId") Integer orderId) {
         return couponOrderBiz.detail(orderId);
     }
 }

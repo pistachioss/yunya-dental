@@ -8,59 +8,46 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 @Data
-@Table(name = "coupon_order")
-public class CouponOrder {
-    /**
-     * 主键ID
-     */
+@Table(name = "coupon_bill_pay")
+public class CouponBillPay {
     @Id
     private Integer id;
 
     /**
-     * 组织（门诊）ID
+     * 组织id
      */
     @Column(name = "org_id")
     private Integer orgId;
 
     /**
-     * 患者ID
+     * 患者id
      */
     @Column(name = "patient_id")
     private Integer patientId;
 
     /**
-     * 订单编号
+     * 开单记录id
      */
-    @Column(name = "order_record_num")
-    private String orderRecordNum;
+    @Column(name = "order_id")
+    private Integer orderId;
 
     /**
-     * 状态 （0-已下单；1-已收费；2-已退款）
+     * 账单记录ID
      */
-    private Integer status;
+    @Column(name = "bill_id")
+    private Integer billId;
 
     /**
-     * 订单总额
-     */
-    @Column(name = "total_amount")
-    private BigDecimal totalAmount;
-
-    /**
-     * 应收金额（实际支付金额）
-     */
-    @Column(name = "receivable_amount")
-    private BigDecimal receivableAmount;
-
-    /**
-     * 已收金额（本单收费总额）
+     * 本次收费金额
      */
     @Column(name = "received_amount")
     private BigDecimal receivedAmount;
 
     /**
-     * 备注
+     * 欠费金额
      */
-    private String remarks;
+    @Column(name = "owe_amount")
+    private BigDecimal oweAmount;
 
     /**
      * 是否有效
@@ -68,23 +55,20 @@ public class CouponOrder {
     private Boolean inservice;
 
     /**
-     * 创建人ID
+     * 收款人id
      */
     @Column(name = "crt_id")
     private Integer crtId;
 
     /**
-     * 创建人姓名
-     */
-    @Column(name = "crt_name")
-    private String crtName;
-
-    /**
-     * 创建时间
+     * 收款时间
      */
     @Column(name = "crt_time")
     private Date crtTime;
 
+    /**
+     * 更新人
+     */
     @Column(name = "upd_id")
     private Integer updId;
 
@@ -93,5 +77,4 @@ public class CouponOrder {
      */
     @Column(name = "upd_time")
     private Date updTime;
-
 }

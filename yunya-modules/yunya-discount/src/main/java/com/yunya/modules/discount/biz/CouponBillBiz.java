@@ -1,0 +1,319 @@
+package com.yunya.modules.discount.biz;
+
+import cn.hutool.core.date.DateTime;
+import com.yunya.feign.discount.domain.model.CardMemberModel;
+import com.yunya.feign.discount.domain.model.CardPaymentModel;
+import com.yunya.feign.discount.domain.model.CardPrepaymentModel;
+import com.yunya.feign.discount.domain.model.CouponBillModel;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.discount.CouponBill;
+import com.yunya.models.discount.CouponBillPay;
+import com.yunya.models.discount.CouponBillPayDetail;
+import com.yunya.models.discount.CouponOrder;
+import com.yunya.modules.discount.mapper.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
+import static com.yunya.modules.discount.enums.CouponOrderError.COUPON_ORDER_ERROR;
+
+/**
+ * @auther: xy
+ * @date: 2023/6/26
+ */
+@Service
+@Slf4j
+@Transactional(rollbackFor = Exception.class)
+public class CouponBillBiz {
+
+    @Resource
+    private CardMapper cardMapper;
+    @Resource
+    private CouponCommonInfoMapper couponMapper;
+    @Resource
+    private CouponOrderMapper couponOrderMapper;
+    @Resource
+    private CouponOrderDetailMapper orderDetailMapper;
+    @Resource
+    private CouponBillMapper billMapper;
+    @Resource
+    private CouponBillPayMapper billPayMapper;
+    @Resource
+    private CouponBillPayDetailMapper billPayDetailMapper;
+    @Resource
+    private RedisUtils redisUtils;
+    @Resource
+    private CardBiz cardBiz;
+    @Resource
+    private CouponCommonInfoBiz couponBiz;
+    @Resource
+    private DeductionPeriodBiz periodBiz;
+    @Resource
+    private CouponOrderBiz orderBiz;
+    @Resource
+    private RemoteSystemServiceFeign systemServiceFeign;
+    @Resource
+    private RemotePatientCentralServiceFeign patientCentralServiceFeign;
+
+
+    public void charge(CouponBillModel model) {
+        int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        Integer orderId = model.getOrderId();
+        boolean locked = false;
+        String lockVal = String.valueOf(loginUserId);
+        String lockKey = String.valueOf(orderId);
+        Date date = new Date();
+        try {
+            // 1. 锁定产品
+            locked = redisUtils.setLock(String.valueOf(orderId), lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+            Set<CardPaymentModel> paymentModels = model.getPaymentModels();
+            Set<CardPrepaymentModel> prepaymentAccountModels = model.getPrepaymentAccountModels();
+            Set<CardMemberModel> memberAccountModels = model.getMemberAccountModels();
+            BigDecimal totalCharge = calculateTotalCharge(prepaymentAccountModels
+                    , memberAccountModels, paymentModels);
+            CouponOrder order = couponOrderMapper.selectByPrimaryKey(orderId);
+            if (Objects.isNull(order) || order.getStatus() != 0) {
+                throw ClientServiceException.wrap(COUPON_ORDER_ERROR);
+            }
+            CouponBill couponBill = generateBillRecord(order, date);
+            CouponBillPay billPay = new CouponBillPay();
+            // 如果当前组织是公司，收费门诊则是开单门诊
+            billPay.setOrgId(order.getOrgId());
+            billPay.setPatientId(order.getPatientId());
+            billPay.setOrderId(order.getId());
+            billPay.setBillId(couponBill.getId());
+            if (totalCharge.compareTo(order.getReceivableAmount()) >= 0) {
+                billPay.setReceivedAmount(totalCharge);
+                billPay.setOweAmount(BigDecimal.valueOf(0));
+            } else {
+                billPay.setReceivedAmount(totalCharge);
+                billPay.setOweAmount(order.getReceivableAmount().subtract(totalCharge));
+            }
+            billPay.setCrtId(loginUserId);
+            // 首次收费时间与账单时间保持一致
+            billPay.setCrtTime(date);
+            billPayMapper.insertSelective(billPay);
+            // 扣除预付款、会员卡余额
+            if (CollectionUtils.isNotEmpty(prepaymentAccountModels)) {
+                usePrepaymentAccount(
+                        prepaymentAccountModels, billPay);
+            }
+            if (CollectionUtils.isNotEmpty(memberAccountModels)) {
+                ResponseResult expend =
+                        useMemberAccount(memberAccountModels, billPay);
+                if (expend.getStatus() > 0) {
+                    throw new ClientServiceException(expend.getMsg(), expend.getStatus());
+                }
+            }
+            // 保存收费明细
+            saveBillPayDetailRecord(billPay, prepaymentAccountModels, memberAccountModels, paymentModels, date);
+            orderBiz.occur(billPay, 1, date);
+        } finally {
+            if (locked) {
+                log.info("【解锁成功】");
+                redisUtils.unlock(lockKey, lockVal);
+            }
+        }
+    }
+
+    private ResponseResult useMemberAccount(Set<CardMemberModel> memberAccountModels, CouponBillPay billPay) {
+        MemberExpendRecordModel memberExpendRecordModel = new MemberExpendRecordModel();
+        Iterator<CardMemberModel> iterator = memberAccountModels.iterator();
+        ResponseResult responseResult = null;
+        while (iterator.hasNext()) {
+            CardMemberModel memberAccountModel = iterator.next();
+            memberExpendRecordModel.setPatientId(billPay.getPatientId());
+            memberExpendRecordModel.setMemberId(memberAccountModel.getMemberNum());
+            memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
+//            memberExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
+            memberExpendRecordModel.setOrderRecordId(billPay.getOrderId());
+            memberExpendRecordModel.setBillRecordId(billPay.getBillId());
+            memberExpendRecordModel.setBillPayRecordId(billPay.getId());
+            ResponseResult expend = patientCentralServiceFeign.expend(memberExpendRecordModel);
+            // 服务调用成功返回0，否则返回大于0的状态码
+            if (expend.getStatus() > 0) {
+                responseResult = expend;
+                break;
+            }
+        }
+        return responseResult != null ? responseResult : ResponseUtil.success();
+    }
+
+    private void usePrepaymentAccount(Set<CardPrepaymentModel> prepaymentAccountModels, CouponBillPay billPay) {
+        PrepaidExpendRecordModel prepaidExpendRecordModel = new PrepaidExpendRecordModel();
+        prepaymentAccountModels.forEach(
+                prepaymentAccountModel -> {
+                    prepaidExpendRecordModel.setPatientId(billPay.getPatientId());
+                    prepaidExpendRecordModel.setPrepaidId(prepaymentAccountModel.getPrepaymentNum());
+                    prepaidExpendRecordModel.setExpendTotal(prepaymentAccountModel.getAmount());
+//                    prepaidExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
+                    prepaidExpendRecordModel.setOrderRecordId(billPay.getOrderId());
+                    prepaidExpendRecordModel.setBillRecordId(billPay.getBillId());
+                    prepaidExpendRecordModel.setBillPayRecordId(billPay.getId());
+                    ResponseResult result = patientCentralServiceFeign.expend(prepaidExpendRecordModel);
+                    if (!result.getStatus().equals(0)) {
+                        throw new ClientServiceException(result.getMsg(), result.hashCode());
+                    }
+                });
+    }
+
+    private void saveBillPayDetailRecord(
+            CouponBillPay billPay,
+            Set<CardPrepaymentModel> prepaymentAccountModels,
+            Set<CardMemberModel> memberAccountModels,
+            Set<CardPaymentModel> paymentModels, Date date) {
+        if (!CollectionUtils.isEmpty(prepaymentAccountModels)) {
+            // 预付款
+            prepaymentAccountModels.forEach(
+                    prepaymentAccountModel -> {
+                        if (prepaymentAccountModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+                            CouponBillPayDetail billPayDetail =
+                                    setBillPayRecordDetailValue(
+                                            billPay,
+                                            prepaymentAccountModel.getAccountItemId(),
+                                            prepaymentAccountModel.getAmount(),
+                                            (byte) 0,
+                                            null, date);
+                            billPayDetail.setPatientNum(prepaymentAccountModel.getPrepaymentNum());
+                            billPayDetailMapper.insertSelective(billPayDetail);
+                        }
+                    });
+        }
+        if (!CollectionUtils.isEmpty(memberAccountModels)) {
+            // 会员卡
+            memberAccountModels.forEach(
+                    memberAccountModel -> {
+                        if (memberAccountModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+                            CouponBillPayDetail billPayDetail =
+                                    setBillPayRecordDetailValue(
+                                            billPay,
+                                            memberAccountModel.getAccountItemId(),
+                                            memberAccountModel.getAmount(),
+                                            (byte) 1,
+                                            null, date);
+                            billPayDetail.setPatientNum(memberAccountModel.getMemberNum());
+                            billPayDetailMapper.insertSelective(billPayDetail);
+                        }
+                    });
+        }
+        if (!CollectionUtils.isEmpty(paymentModels)) {
+            // 其他支付方式
+            paymentModels.forEach(
+                    paymentModel -> {
+                        if (paymentModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+                            CouponBillPayDetail billPayDetail =
+                                    setBillPayRecordDetailValue(
+                                            billPay,
+                                            paymentModel.getAccountItemId(),
+                                            paymentModel.getAmount(),
+                                            (byte) 2,
+                                            paymentModel.getRemarks(), date);
+                            billPayDetailMapper.insertSelective(billPayDetail);
+                        }
+                    });
+        }
+    }
+
+    private BigDecimal calculateTotalCharge(
+            Set<CardPrepaymentModel> prepaymentAccountModels,
+            Set<CardMemberModel> memberAccountModels,
+            Set<CardPaymentModel> paymentModels) {
+        BigDecimal totalAmount = BigDecimal.valueOf(0);
+        // 预付款入账总额
+        if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
+            for (CardPrepaymentModel prepaymentAccountModel : prepaymentAccountModels) {
+                BigDecimal amount = prepaymentAccountModel.getAmount();
+                if (null == amount) {
+                    amount = BigDecimal.valueOf(0);
+                }
+                totalAmount = totalAmount.add(amount);
+            }
+        }
+        // 会员卡入账总额
+        if (StringHelper.isNotEmpty(memberAccountModels)) {
+            for (CardMemberModel memberAccountModel : memberAccountModels) {
+                BigDecimal amount = memberAccountModel.getAmount();
+                if (null == amount) {
+                    amount = BigDecimal.valueOf(0);
+                }
+                totalAmount = totalAmount.add(amount);
+            }
+        }
+        // 其他方式入账总额
+        if (StringHelper.isNotEmpty(paymentModels)) {
+            for (CardPaymentModel paymentModel : paymentModels) {
+                BigDecimal amount = paymentModel.getAmount();
+                if (null == amount) {
+                    amount = BigDecimal.valueOf(0);
+                }
+                totalAmount = totalAmount.add(amount);
+            }
+        }
+        return totalAmount;
+    }
+
+    public CouponBill generateBillRecord(CouponOrder order, Date date) {
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        CouponBill couponBill = BeanCopierUtils.generalCopyBean(order, CouponBill.class);
+        couponBill.setOrderRecordId(order.getId());
+        couponBill.setBillNumber(generateBillNumber(order.getOrgId()));
+        couponBill.setPrice(order.getTotalAmount());
+        couponBill.setCrtId(loginUserId);
+        couponBill.setCrtTime(date);
+        couponBill.setUpdId(loginUserId);
+        couponBill.setUpdTime(date);
+        billMapper.insertSelective(couponBill);
+        return couponBill;
+    }
+
+    public synchronized String generateBillNumber(Integer orgId) {
+        String number = billMapper.selectBillNumberByOrgId(orgId, new Date(System.currentTimeMillis()));
+        String suffix = String.format("%04d", Integer.parseInt(number) + 1);
+        return String.format(
+                "ZD%s%s%s", String.format("%04d", orgId), new DateTime().toString("yyMMdd"), suffix);
+    }
+
+    private CouponBillPayDetail setBillPayRecordDetailValue(
+            CouponBillPay billPay,
+            Integer accountItemId,
+            BigDecimal amount,
+            Byte type,
+            String remarks, Date date) {
+        CouponBillPayDetail couponBillPayDetail = new CouponBillPayDetail();
+        couponBillPayDetail.setOrgId(billPay.getOrgId());
+        couponBillPayDetail.setPatientId(billPay.getPatientId());
+        couponBillPayDetail.setOrderId(billPay.getOrderId());
+        couponBillPayDetail.setBillPayId(billPay.getBillId());
+        couponBillPayDetail.setBillPayId(billPay.getId());
+        couponBillPayDetail.setAccountItemId(accountItemId);
+        couponBillPayDetail.setAmount(amount);
+        couponBillPayDetail.setType(type);
+        couponBillPayDetail.setRemark(remarks);
+        couponBillPayDetail.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        couponBillPayDetail.setCrtTime(date);
+        couponBillPayDetail.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+        return couponBillPayDetail;
+    }
+
+}

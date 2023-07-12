@@ -25,19 +25,14 @@ public class CouponOrderDetail {
     /**
      * 开单记录ID
      */
-    @Column(name = "order_record_id")
-    private Integer orderRecordId;
+    @Column(name = "order_id")
+    private Integer orderId;
 
     /**
      * 卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券; 5-划扣券）
      */
     private Integer type;
 
-    /**
-     * 卡券id
-     */
-    @Column(name = "card_id")
-    private Integer cardId;
 
     /**
      * 开单项目ID
@@ -50,6 +45,12 @@ public class CouponOrderDetail {
      */
     @Column(name = "coupon_name")
     private String couponName;
+
+    /**
+     * 开单项目名称
+     */
+    @Column(name = "coupon_number")
+    private String couponNumber;
 
     /**
      * 售出原价
@@ -103,4 +104,13 @@ public class CouponOrderDetail {
      */
     @Column(name = "crt_time")
     private Date crtTime;
+
+    @Column(name = "upd_id")
+    private Integer updId;
+
+    /**
+     * 更新时间
+     */
+    @Column(name = "upd_time")
+    private Date updTime;
 }

@@ -40,4 +40,6 @@ public class CouponCommonInfoVO {
     private Boolean isOnlineSale;
     @ApiModelProperty("售出金额")
     private BigDecimal saleAmount;
+    @ApiModelProperty("是否分配")
+    private Boolean isDistribution = false;
 }

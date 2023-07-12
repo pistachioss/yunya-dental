@@ -976,11 +976,9 @@ WHERE
         ORDER BY bc.active_date ASC
     </select>
 
-    <select id="listRemaining" resultType="com.yunya.feign.discount.domain.bo.CouponRemainingBo">
+    <select id="listRemaining" resultType="com.yunya.models.discount.Card">
         select
-            id as cardId,
-            org_id,
-            coupon_id
+            *
         from card
         where org_id = #{orgId}
             and `status` = 0
@@ -991,4 +989,112 @@ WHERE
         order by id asc
     </select>
 
+    <update id="soldList" parameterType="java.util.List">
+        update `card`
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="patient_id = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.patientId != null">
+                        when `id` = #{item.id} then #{item.patientId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="status = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.status != null">
+                        when `id` = #{item.id} then #{item.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sold_date = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldDate != null">
+                        when `id` = #{item.id} then #{item.soldDate}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="pay_date = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.payDate != null">
+                        when `id` = #{item.id} then #{item.payDate}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sold_type = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldType != null">
+                        when `id` = #{item.id} then #{item.soldType}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sold_way = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldWay != null">
+                        when `id` = #{item.id} then #{item.soldWay}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="pay_id = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.payId != null">
+                        when `id` = #{item.id} then #{item.payId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="is_send_text = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.sendText != null">
+                        when `id` = #{item.id} then #{item.sendText}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="is_sold_and_pay = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldAndPay != null">
+                        when `id` = #{item.id} then #{item.soldAndPay}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="is_pay = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.pay != null">
+                        when `id` = #{item.id} then #{item.pay}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="seller_user_id = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.sellerUserId != null">
+                        when `id` = #{item.id} then #{item.sellerUserId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_id = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.updId != null">
+                        when `id` = #{item.id} then #{item.updId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_time = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.updTime != null">
+                        when `id` = #{item.id} then #{item.upd_time}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sale_channel_id = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.saleChannelId != null">
+                        when `id` = #{item.id} then #{item.saleChannelId}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where `id` in
+            `status` = 0
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </update>
 </mapper>

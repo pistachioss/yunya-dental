@@ -16,4 +16,6 @@ public class CouponOrderVO {
     private BigDecimal receivableAmount;
     @ApiModelProperty("订单明细")
     private List<CouponOrderDetailVO> detail;
+    @ApiModelProperty("支付明细")
+    private CouponPayDetailVO payDetail;
 }

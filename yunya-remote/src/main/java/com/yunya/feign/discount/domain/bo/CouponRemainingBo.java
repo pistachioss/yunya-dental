@@ -8,4 +8,5 @@ public class CouponRemainingBo {
 	private Integer couponId;
 	private Integer orgId;
 	private Integer remaining;
+    private String cardNumber;
 }

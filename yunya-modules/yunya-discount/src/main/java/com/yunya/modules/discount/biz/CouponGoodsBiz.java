@@ -1,9 +1,9 @@
 package com.yunya.modules.discount.biz;
 
 import com.google.common.collect.Lists;
-import com.yunya.feign.discount.domain.bo.CouponRemainingBo;
 import com.yunya.feign.discount.domain.vo.CouponGoodsVO;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.models.discount.Card;
 import com.yunya.modules.discount.mapper.CardMapper;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
@@ -47,12 +47,12 @@ public class CouponGoodsBiz {
         Map<Integer, CouponGoodsVO> collect = coupons.stream()
                 .collect(toMap(CouponGoodsVO::getId, Function.identity()));
         Set<Integer> couponIds = collect.keySet();
-        List<CouponRemainingBo> cards = cardMapper.listRemaining(couponIds, orgId);
+        List<Card> cards = cardMapper.listRemaining(couponIds, orgId);
         if (CollectionUtils.isEmpty(cards)) {
             log.info("该门诊没有剩余卡券:{}", orgId);
             return Lists.newArrayList();
         }
-        List<Integer> collect1 = cards.stream().map(CouponRemainingBo::getCouponId)
+        List<Integer> collect1 = cards.stream().map(Card::getCouponId)
                 .collect(toList());
         coupons.removeIf(t -> !collect1.contains(t.getId()));
         return coupons;

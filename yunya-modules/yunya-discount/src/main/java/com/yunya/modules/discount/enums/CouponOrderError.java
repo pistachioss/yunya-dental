@@ -10,6 +10,7 @@ import com.yunya.framework.common.model.RestError;
 public enum CouponOrderError implements RestError {
     COUPON_STOCK_LACK(1, "%s库存不足，请分配卡券"),
     SALE_CHANNEL_NULL(2, "销售渠道不存在"),
+    COUPON_ORDER_ERROR(3, "订单异常"),
     ;
     private Integer code;
     private String value;

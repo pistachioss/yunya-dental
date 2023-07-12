@@ -115,5 +115,7 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
      */
     List<PatientEventVO> selectPatientCardTrajectory(@Param("patientId") Integer patientId);
 
-    List<CouponRemainingBo> listRemaining(@Param("couponIds") Collection<Integer> couponIds, @Param("orgId") Integer orgId);
+    List<Card> listRemaining(@Param("couponIds") Collection<Integer> couponIds, @Param("orgId") Integer orgId);
+
+    void soldList(@Param("list") List<Card> list);
 }

@@ -1,22 +1,21 @@
 package com.yunya.modules.discount.biz;
 
 import com.google.common.collect.Lists;
-import com.yunya.feign.discount.domain.bo.CouponRemainingBo;
 import com.yunya.feign.discount.domain.model.CouponOrderDetailModel;
 import com.yunya.feign.discount.domain.model.CouponOrderModel;
 import com.yunya.feign.discount.domain.vo.CouponOrderDetailVO;
 import com.yunya.feign.discount.domain.vo.CouponOrderVO;
+import com.yunya.feign.discount.domain.vo.CouponPayDetailVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.discount.*;
-import com.yunya.modules.discount.mapper.CardMapper;
-import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
-import com.yunya.modules.discount.mapper.CouponOrderDetailMapper;
-import com.yunya.modules.discount.mapper.CouponOrderMapper;
+import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +23,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
@@ -37,9 +37,21 @@ import static java.util.stream.Collectors.*;
  */
 @Service
 @Slf4j
-@Transactional(rollbackFor = Exception.class)
 public class CouponOrderBiz {
-
+    @Resource
+    private CardMapper cardMapper;
+    @Resource
+    private CouponCommonInfoMapper couponMapper;
+    @Resource
+    private CouponOrderMapper couponOrderMapper;
+    @Resource
+    private CouponOrderDetailMapper orderDetailMapper;
+    @Resource
+    private CouponChangeRecordMapper changeRecordMapper;
+    @Resource
+    private CouponOrderVirtualMapper virtualMapper;
+    @Resource
+    private CouponBillPayMapper billPayMapper;
     @Resource
     private CardBiz cardBiz;
     @Resource
@@ -50,47 +62,64 @@ public class CouponOrderBiz {
     private SalesChannelBiz salesChannelBiz;
     @Resource
     private RemoteSystemServiceFeign systemServiceFeign;
-    @Resource
-    private CardMapper cardMapper;
-    @Resource
-    private CouponCommonInfoMapper couponMapper;
-    @Resource
-    private CouponOrderMapper couponOrderMapper;
-    @Resource
-    private CouponOrderDetailMapper orderDetailMapper;
 
+    @Transactional(rollbackFor = Exception.class)
     public CouponOrderVO soldCard(CouponOrderModel model) {
         log.info("划扣下单参数：{}", model);
         int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         List<CouponOrderDetailModel> detail = model.getDetail();
         List<Integer> couponIds = detail.stream().map(CouponOrderDetailModel::getCouponId).collect(toList());
-        List<CouponRemainingBo> cards = cardMapper.listRemaining(couponIds, orgId);
-        Map<Integer, Long> unsold = cards.stream().collect(groupingBy(CouponRemainingBo::getCouponId, counting()));
         Map<Integer, CouponCommonInfo> collect = listCoupon(couponIds);
-        for (CouponOrderDetailModel detailModel : detail) {
-            Integer couponId = detailModel.getCouponId();
-            Integer quantity = detailModel.getQuantity();
-            CouponCommonInfo coupon = collect.get(couponId);
-            Long remaining = unsold.getOrDefault(couponId, 0L);
-            if (quantity - remaining > 0 ) {
-                throw ClientServiceException.wrap(COUPON_STOCK_LACK, coupon.getName());
+        List<Card> list = null;
+        CouponOrderVO vo = null;
+        try {
+            List<Card> cards = cardMapper.listRemaining(couponIds, orgId);
+            checkRemaining(cards, detail, collect);
+            LocalDateTime now = LocalDateTime.now();
+            list = selectCard(model.getPatientId(), cards, detail, now);
+            CouponOrder couponOrder = new CouponOrder();
+            List<CouponOrderDetail> build = build(model, couponIds, collect, couponOrder, now);
+            couponOrderMapper.insert(couponOrder);
+            build.forEach(o -> o.setOrderId(couponOrder.getId()));
+            orderDetailMapper.insertList(build);
+            List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now);
+            virtualMapper.insertList(virtuals);
+            vo = detail(couponOrder.getId());
+        } catch (Exception e) {
+            if (CollectionUtils.isNotEmpty(list)) {
+                revoke(list);
             }
         }
-        CouponOrder couponOrder = new CouponOrder();
-        List<CouponOrderDetail> build = build(model, couponIds, collect, couponOrder);
-        couponOrderMapper.insert(couponOrder);
-        build.forEach(o -> o.setOrderRecordId(couponOrder.getId()));
-        orderDetailMapper.insertList(build);
-        return detail(couponOrder.getId());
+        return vo;
+    }
+
+    public void occur(CouponBillPay billPay, Integer occurType, Date date) {
+        int id = Integer.parseInt(BaseContextHandler.getUserID());
+        if (Objects.nonNull(billPay)) {
+            List<CouponOrderDetail> couponOrderDetails = listOrderDetail(billPay.getOrderId());
+            List<CouponChangeRecord> list = couponOrderDetails.stream().map(t -> {
+                CouponChangeRecord couponChangeRecord = new CouponChangeRecord();
+                couponChangeRecord.setOrgId(billPay.getOrgId());
+                couponChangeRecord.setPatientId(billPay.getPatientId());
+                couponChangeRecord.setCouponBillId(billPay.getBillId());
+                couponChangeRecord.setCouponId(t.getCouponId());
+                couponChangeRecord.setOccurType(occurType);
+                couponChangeRecord.setOccurAmount(t.getReceivableAmount());
+                couponChangeRecord.setOperatorUserId(id);
+                couponChangeRecord.setOccurDate(date);
+                return couponChangeRecord;
+            }).collect(toList());
+            list.forEach(t -> changeRecordMapper.insertSelective(t));
+        }
     }
 
     private List<CouponOrderDetail> build(CouponOrderModel model, List<Integer> couponIds, Map<Integer, CouponCommonInfo> collect1
-            , CouponOrder couponOrder) {
-        Date now = new Date();
+            , CouponOrder couponOrder, LocalDateTime now) {
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         Integer patientId = model.getPatientId();
         List<CouponOrderDetailModel> detail = model.getDetail();
-        List<DeductionItemPeriod> periods = periodBiz.listByCoupon(couponIds, now);
+        List<DeductionItemPeriod> periods = periodBiz.listByCoupon(couponIds, DateUtil.localDateTimeToDate(now));
         SalesChannel name = salesChannelBiz.getByName("艾维门诊");
         if (Objects.isNull(name)) {
             throw ClientServiceException.wrap(SALE_CHANNEL_NULL);
@@ -115,8 +144,8 @@ public class CouponOrderBiz {
             orderDetail = new CouponOrderDetail();
             orderDetail.setOrgId(orgId);
             orderDetail.setType(5);
-//            orderDetail.setCardId();
             orderDetail.setCouponId(couponId);
+            orderDetail.setCouponNumber(coupon.getCouponCode());
             orderDetail.setCouponName(detailModel.getCouponName());
             orderDetail.setPrice(price);
             orderDetail.setQuantity(quantity);
@@ -126,13 +155,14 @@ public class CouponOrderBiz {
             orderDetail.setExecutorId(detailModel.getExecutorId());
             orderDetail.setSaleChannelId(name.getId());
             orderDetail.setRemarks(detailModel.getRemark());
-            orderDetail.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            orderDetail.setCrtId(userId);
             list.add(orderDetail);
         }
         couponOrder.setTotalAmount(totalPrice);
         couponOrder.setReceivableAmount(totalReceivable);
         return list;
     }
+
     private synchronized String generateOrderRecordNumber(Integer orgId) {
         String number = couponOrderMapper.selectOrderNumberByOrgId(orgId, new Date(System.currentTimeMillis()));
         String suffix = String.format("%04d", Integer.parseInt(number) + 1);
@@ -156,7 +186,7 @@ public class CouponOrderBiz {
         couponOrderVO.setOrderId(orderId);
         List<CouponOrderDetail> details = listOrderDetail(orderId);
         List<Integer> couponIds = details.stream().map(CouponOrderDetail::getCouponId).collect(toList());
-        Map<Integer, CouponCommonInfo> collect  = listCoupon(couponIds);
+        Map<Integer, CouponCommonInfo> collect = listCoupon(couponIds);
         List<CouponOrderDetailVO> detailVOS = Lists.newArrayList();
         CouponOrderDetailVO detailVO;
         for (CouponOrderDetail detail : details) {
@@ -180,6 +210,13 @@ public class CouponOrderBiz {
             detailVO.setChannelName(salesChannelBiz.selectById(detail.getSaleChannelId()).getName());
             detailVOS.add(detailVO);
         }
+        CouponBillPay billPay = listPay(orderId);
+        CouponPayDetailVO payDetailVO = new CouponPayDetailVO();
+        payDetailVO.setOrgId(billPay.getOrgId());
+        payDetailVO.setOrgName(systemServiceFeign.findOrgInfoByOrgId(billPay.getOrgId()).getAbbreviation());
+        payDetailVO.setReceivedAmount(billPay.getReceivedAmount());
+        payDetailVO.setPayDate(DateUtil.format(billPay.getCrtTime()));
+        couponOrderVO.setPayDetail(payDetailVO);
         couponOrderVO.setDetail(detailVOS);
         couponOrderVO.setReceivableAmount(detailVOS.stream().map(CouponOrderDetailVO::getReceivableAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
         return couponOrderVO;
@@ -197,5 +234,98 @@ public class CouponOrderBiz {
         example.createCriteria().andEqualTo("orderRecordId", orderId)
                 .andEqualTo("inservice", true);
         return orderDetailMapper.selectByExample(example);
+    }
+
+    private CouponBillPay listPay(Integer orderId) {
+        Example example = new Example(CouponBillPay.class);
+        example.createCriteria().andEqualTo("orderId", orderId)
+                .andEqualTo("inservice", true);
+        return billPayMapper.selectOneByExample(example);
+    }
+
+    private List<Card> selectCard(Integer patientId, List<Card> cards, List<CouponOrderDetailModel> detail, LocalDateTime date) {
+        Map<Integer, Integer> collect2 = detail.stream().collect(toMap(CouponOrderDetailModel::getCouponId, CouponOrderDetailModel::getQuantity));
+        Map<Integer, List<Card>> collect = cards.stream()
+                .collect(groupingBy(Card::getCouponId
+                        , collectingAndThen(toList(), list -> list.stream()
+                                .sorted(Comparator.comparingInt(Card::getId))
+                                .limit(collect2.get(list.get(0).getCouponId())).collect(toList()))));
+        SalesChannel name = salesChannelBiz.getByName("艾维门诊");
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        List<Card> list1 = Lists.newArrayList();
+        for (Map.Entry<Integer, List<Card>> entry : collect.entrySet()) {
+            List<Card> list = collect.get(entry.getKey());
+            list.forEach(card -> {
+                card.setStatus(1);
+                card.setSoldTarget(patientId.toString());
+                card.setSoldPhoneNumber(patientId.toString());
+                card.setPatientId(patientId);
+                card.setSoldType(0);
+                card.setSendText(0);
+                card.setSoldAndPay(1);
+                card.setSaleChannelId(name.getId());
+                card.setSoldWay(1);
+                card.setPay(1);
+                card.setSoldDate(date);
+                card.setPayDate(date);
+                card.setSellerUserId(userId);
+                card.setUpdId(userId);
+                card.setUpdTime(date);
+            });
+            list1.addAll(list);
+        }
+        cardMapper.soldList(list1);
+        return list1;
+    }
+
+    private void checkRemaining(List<Card> cards, List<CouponOrderDetailModel> detail, Map<Integer, CouponCommonInfo> collect) {
+        Map<Integer, Long> unsold = cards.stream().collect(groupingBy(Card::getCouponId, counting()));
+        for (CouponOrderDetailModel detailModel : detail) {
+            Integer couponId = detailModel.getCouponId();
+            Integer quantity = detailModel.getQuantity();
+            CouponCommonInfo coupon = collect.get(couponId);
+            Long remaining = unsold.getOrDefault(couponId, 0L);
+            if (quantity - remaining > 0) {
+                throw ClientServiceException.wrap(COUPON_STOCK_LACK, coupon.getName());
+            }
+        }
+    }
+
+    private List<CouponOrderVirtual> orderVirtual(CouponOrder couponOrder, List<Card> list
+            , LocalDateTime now) {
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        CouponOrderVirtual orderVirtual;
+        List<CouponOrderVirtual> list1 = Lists.newArrayList();
+        for (Card card : list) {
+            orderVirtual = new CouponOrderVirtual();
+            orderVirtual.setOrderId(couponOrder.getId());
+            orderVirtual.setOrderSn(couponOrder.getOrderRecordNum());
+            orderVirtual.setCardId(card.getId());
+            orderVirtual.setCouponId(card.getCouponId());
+            orderVirtual.setPatientId(couponOrder.getPatientId());
+            orderVirtual.setCardNumber(card.getCardNumber());
+            orderVirtual.setSoldDate(DateUtil.localDateTimeToDate(now));
+            orderVirtual.setCrtId(userId);
+            orderVirtual.setUpdId(userId);
+            list1.add(orderVirtual);
+        }
+        return list1;
+    }
+
+    private void revoke(List<Card> list) {
+        for (Card card : list) {
+            card.setStatus(0);
+            card.setPatientId(null);
+            card.setSoldType(null);
+            card.setSendText(null);
+            card.setSoldAndPay(null);
+            card.setSaleChannelId(null);
+            card.setSoldWay(null);
+            card.setPay(null);
+            card.setSoldDate(null);
+            card.setPayDate(null);
+            card.setSellerUserId(null);
+            cardMapper.updateByPrimaryKey(card);
+        }
     }
 }

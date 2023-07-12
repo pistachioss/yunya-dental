@@ -8,59 +8,71 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 @Data
-@Table(name = "coupon_order")
-public class CouponOrder {
+@Table(name = "coupon_bill")
+public class CouponBill {
     /**
-     * 主键ID
+     * 账单ID
      */
     @Id
     private Integer id;
 
     /**
-     * 组织（门诊）ID
+     * 组织（门诊）id
      */
     @Column(name = "org_id")
     private Integer orgId;
 
     /**
-     * 患者ID
+     * 患者id
      */
     @Column(name = "patient_id")
     private Integer patientId;
 
     /**
-     * 订单编号
+     * 开单记录id
      */
-    @Column(name = "order_record_num")
-    private String orderRecordNum;
+    @Column(name = "order_record_id")
+    private Integer orderRecordId;
 
     /**
-     * 状态 （0-已下单；1-已收费；2-已退款）
+     * 账单编号（ZD+门诊ID+时间戳）
      */
-    private Integer status;
+    @Column(name = "bill_number")
+    private String billNumber;
 
     /**
-     * 订单总额
+     * 原价
      */
-    @Column(name = "total_amount")
-    private BigDecimal totalAmount;
+    private BigDecimal price;
 
     /**
-     * 应收金额（实际支付金额）
+     * 应收金额
      */
     @Column(name = "receivable_amount")
     private BigDecimal receivableAmount;
 
     /**
-     * 已收金额（本单收费总额）
+     * 已收金额
      */
     @Column(name = "received_amount")
     private BigDecimal receivedAmount;
 
     /**
-     * 备注
+     * 欠费金额（本单欠费）
      */
-    private String remarks;
+    @Column(name = "debt_amount")
+    private BigDecimal debtAmount;
+
+    /**
+     * 是否开发票
+     */
+    private Boolean invoice;
+
+    /**
+     * 发票编号
+     */
+    @Column(name = "invoice_number")
+    private String invoiceNumber;
 
     /**
      * 是否有效
@@ -68,16 +80,10 @@ public class CouponOrder {
     private Boolean inservice;
 
     /**
-     * 创建人ID
+     * 创建人id
      */
     @Column(name = "crt_id")
     private Integer crtId;
-
-    /**
-     * 创建人姓名
-     */
-    @Column(name = "crt_name")
-    private String crtName;
 
     /**
      * 创建时间
@@ -85,6 +91,9 @@ public class CouponOrder {
     @Column(name = "crt_time")
     private Date crtTime;
 
+    /**
+     * 更新人
+     */
     @Column(name = "upd_id")
     private Integer updId;
 
