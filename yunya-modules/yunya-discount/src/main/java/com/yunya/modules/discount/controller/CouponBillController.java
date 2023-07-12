@@ -25,13 +25,13 @@ public class CouponBillController {
     @Resource
     private CouponGoodsBiz couponGoodsBiz;
     @Resource
-    private CouponBillBiz couponOrderBiz;
+    private CouponBillBiz couponBillBiz;
 
-    @ApiOperation(value = "划扣卡下单")
-    @PostMapping("/coupon/order")
+    @ApiOperation(value = "划扣卡收费")
+    @PostMapping("/coupon/bill")
     @CurrentUser
-    public ResponseResult<Boolean> soldCard(@Valid @RequestBody CouponBillModel model) {
-        couponOrderBiz.charge(model);
+    public ResponseResult<Boolean> charge(@Valid @RequestBody CouponBillModel model) {
+        couponBillBiz.charge(model);
         return ResponseUtil.success();
     }
 
