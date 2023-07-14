@@ -200,6 +200,13 @@ public class PatientMemberInfoController {
     return patientMemberInfoBiz.recharge(memberRechargeModel);
   }
 
+  @CurrentUser
+  @ApiOperation("赠金转账")
+  @PostMapping("/recharge2")
+  public ResponseResult recharge2(@RequestBody MemberRechargeModel memberRechargeModel) {
+    return patientMemberInfoBiz.recharge2(memberRechargeModel);
+  }
+
   /**
    * 账单退费
    *
@@ -226,6 +233,20 @@ public class PatientMemberInfoController {
   public ResponseResult<PageInfo<RechargeRecordVo>> rechargeRecord(
       @RequestBody RechargeRecordQueryForm query) {
     return ResponseUtil.success(patientMemberInfoBiz.rechargeRecord(query));
+  }
+
+  /**
+   * 充值记录
+   *
+   * @param query 充值记录QueryForm
+   * @return ResponseResult<PageInfo<RechargeRecordVo>>
+   */
+  @CurrentUser
+  @ApiOperation("赠金转出记录")
+  @PostMapping("/rechargeRecord2")
+  public ResponseResult<PageInfo<RechargeRecordVo>> rechargeRecord2(
+          @RequestBody RechargeRecordQueryForm query) {
+    return ResponseUtil.success(patientMemberInfoBiz.rechargeRecord2(query));
   }
 
   /**

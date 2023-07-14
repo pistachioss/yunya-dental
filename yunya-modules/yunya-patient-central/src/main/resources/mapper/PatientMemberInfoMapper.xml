@@ -136,6 +136,14 @@
         from patient_member_info pmio where pmio.card_number = #{memberCard}
     </select>
 
+    <!-- 通过会员卡号查询患者姓名 -->
+    <select id="selectPatientNameByCardNumber2" resultType="String">
+        select pbi.name
+        from patient_member_info pmio
+        left join patient_base_info pbi on pmio.patient_id = pbi.id
+        where pmio.card_number = #{memberCard}
+    </select>
+
     <!-- 通过患者id查询会员卡全部信息 -->
     <select id="selectOneByPatientId" resultType="com.yunya.models.patient_central.PatientMemberInfo">
         select

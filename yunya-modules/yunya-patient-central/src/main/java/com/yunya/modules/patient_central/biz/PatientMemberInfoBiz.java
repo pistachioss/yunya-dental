@@ -878,6 +878,152 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     return ResponseUtil.success();
   }
 
+
+  /**
+   * 充值(赠金转账)
+   *
+   * @param model 会员卡充值Model
+   */
+  public ResponseResult recharge2(MemberRechargeModel model) {
+    if (model.getRechargePrincipal().compareTo(model.getAccountedWayModel().getCreditAmount())
+            == 0) {
+      // 赠金转入
+      PatientMemberInfo patientMemberInfo =
+              patientMemberInfoMapper.selectCardNumber(model.getMemberId());//memberId转入的会员卡
+      // 赠金转出
+      PatientMemberInfo patientMemberInfo2 =
+              patientMemberInfoMapper.selectOneByPatientId(model.getPatientId());//patientId转出的患者
+      // 赠金转入 查询会员余额 余额增加
+      if (patientMemberInfo != null) {
+        BigDecimal rechargeBonus = model.getRechargeBonus();
+        if (null != rechargeBonus) {
+          patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(rechargeBonus));
+        }
+        patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
+        // 添加会员卡充值记
+        MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
+        BeanUtils.copyProperties(model, memberRechargeRecord);
+        memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
+        memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
+        memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberRechargeRecord.setCrtName(BaseContextHandler.getName());
+        memberRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberRechargeRecord.setUpdName(BaseContextHandler.getName());
+        memberRechargeRecord.setRemarks(patientMemberInfo2.getCardNumber());
+        memberRechargeRecord.setType(5);
+        memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+        // 发送会员充值消息
+        sendMemberLogMessages(memberRechargeRecord.getId(), 0, 1);
+        // 添加会员卡充值收费记录
+        AccountedWayModel accountedWayModel = model.getAccountedWayModel();
+        if (StringHelper.isNotNull(accountedWayModel)) {
+          MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
+          BeanUtils.copyProperties(accountedWayModel, memberRechargeTollRecord);
+          memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+          memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
+          memberRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+          memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
+          memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
+        }
+        // 会员卡充值发送短信 type:0充值 1消费
+        memberSendMessages(memberRechargeRecord, 0);
+        // 会员卡充值成功发送推送
+        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+        wxTemplateMsgModel.setPatientId(patientMemberInfo.getPatientId());
+        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.RECHARGE_SUCCESS);
+        PatientBaseInfoVo patientBaseInfoVo =
+                patientBaseInfoMapper.selectOneById(patientMemberInfo.getPatientId());
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put(TemplateDataEnum.PATIENT_NAME.getArgName(), patientBaseInfoVo.getName());
+        paramMap.put("keyword1", model.getRechargePrincipal());
+        paramMap.put("keyword2", patientMemberInfo.getPrincipalAmount());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+        paramMap.put("keyword3", sdf.format(new Date()));
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setId(Integer.valueOf(BaseContextHandler.getOrgId()));
+
+        List<OrganizationInfoDetail> orgList =
+                remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        log.info("门诊信息：" + orgList.get(0).toString());
+        if (orgList != null && orgList.size() > 0) {
+          paramMap.put("keyword4", orgList.get(0).getName());
+        } else {
+          throw new ClientServiceException("门诊信息为空", RETURN_VALUE_ISNULL);
+        }
+        paramMap.put("linkMobile", orgList.get(0).getTel());
+        wxTemplateMsgModel.setParamMap(paramMap);
+        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
+      }
+      // 赠金转出
+      if (patientMemberInfo2 != null) {
+        BigDecimal rechargeBonus = model.getRechargeBonus();
+        if (null != rechargeBonus) {
+          patientMemberInfo2.setBonusAmount(patientMemberInfo2.getBonusAmount().subtract(rechargeBonus));
+        }
+        patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo2);
+        // 添加会员卡充值记
+        MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
+        BeanUtils.copyProperties(model, memberRechargeRecord);
+        memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo2.getPrincipalAmount());
+        memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo2.getBonusAmount());
+        memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberRechargeRecord.setCrtName(BaseContextHandler.getName());
+        memberRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberRechargeRecord.setUpdName(BaseContextHandler.getName());
+        memberRechargeRecord.setRemarks(model.getMemberId());
+        memberRechargeRecord.setType(4);
+        memberRechargeRecord.setMemberId(patientMemberInfo2.getCardNumber());
+        memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+        // 发送会员充值消息
+        sendMemberLogMessages(memberRechargeRecord.getId(), 0, 1);
+        // 添加会员卡充值收费记录
+        AccountedWayModel accountedWayModel = model.getAccountedWayModel();
+        if (StringHelper.isNotNull(accountedWayModel)) {
+          MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
+          BeanUtils.copyProperties(accountedWayModel, memberRechargeTollRecord);
+          memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+          memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
+          memberRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+          memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
+          memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
+        }
+        // 会员卡充值发送短信 type:0充值 1消费
+        memberSendMessages(memberRechargeRecord, 0);
+        // 会员卡充值成功发送推送
+        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+        wxTemplateMsgModel.setPatientId(model.getPatientId());
+        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.RECHARGE_SUCCESS);
+        PatientBaseInfoVo patientBaseInfoVo =
+                patientBaseInfoMapper.selectOneById(model.getPatientId());
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put(TemplateDataEnum.PATIENT_NAME.getArgName(), patientBaseInfoVo.getName());
+        paramMap.put("keyword1", model.getRechargePrincipal());
+        paramMap.put("keyword2", patientMemberInfo2.getPrincipalAmount());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+        paramMap.put("keyword3", sdf.format(new Date()));
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setId(Integer.valueOf(BaseContextHandler.getOrgId()));
+
+        List<OrganizationInfoDetail> orgList =
+                remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        log.info("门诊信息：" + orgList.get(0).toString());
+        if (orgList != null && orgList.size() > 0) {
+          paramMap.put("keyword4", orgList.get(0).getName());
+        } else {
+          throw new ClientServiceException("门诊信息为空", RETURN_VALUE_ISNULL);
+        }
+        paramMap.put("linkMobile", orgList.get(0).getTel());
+        wxTemplateMsgModel.setParamMap(paramMap);
+        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
+      }
+    } else {
+      return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!", null);
+    }
+    return ResponseUtil.success();
+  }
+
   /**
    * 会员卡充值/消费 短信发送
    *
@@ -999,7 +1145,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    List<RechargeRecordVo> resultList = memberRechargeRecordMapper.RechargeRecord(form);
+    List<RechargeRecordVo> resultList = memberRechargeRecordMapper.RechargeRecord(form, 0);
     if (!StringHelper.isEmpty(resultList)) {
       for (RechargeRecordVo rechargeRecordVo : resultList) {
         // 获取门诊简称
@@ -1025,6 +1171,36 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
           }
         }
         rechargeRecordVo.setPayment(labels.toString());
+      }
+    }
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 充值记录
+   *
+   * @param form 赠金转出记录QueryForm
+   * @return PageInfo<RechargeRecordVo>
+   */
+  public PageInfo<RechargeRecordVo> rechargeRecord2(RechargeRecordQueryForm form) {
+    if (form.getWhetherPage()) {
+      PageHelper.startPage(form.getPageNum(), form.getPageSize());
+    }
+    List<RechargeRecordVo> resultList = memberRechargeRecordMapper.RechargeRecord(form, 4);
+    if (!StringHelper.isEmpty(resultList)) {
+      for (RechargeRecordVo rechargeRecordVo : resultList) {
+        // 获取门诊简称
+        OrganizationInfo organizationInfo =
+                remoteSystemServiceFeign.findOrgInfoByOrgId(rechargeRecordVo.getOrgId());
+        if (organizationInfo != null) {
+          rechargeRecordVo.setOrgName(organizationInfo.getAbbreviation());
+        }
+        String patientName2 =
+                patientMemberInfoMapper.selectPatientNameByCardNumber2(rechargeRecordVo.getRemarks());//memberId转入的会员卡
+        rechargeRecordVo.setPatientName2(patientName2);
+        String patientName1 =
+                patientMemberInfoMapper.selectPatientNameByCardNumber2(form.getCardNumber());
+        rechargeRecordVo.setPatientName1(patientName1);
       }
     }
     return new PageInfo<>(resultList);
