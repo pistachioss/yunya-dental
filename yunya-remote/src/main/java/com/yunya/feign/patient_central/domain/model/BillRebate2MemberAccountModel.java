@@ -1,0 +1,54 @@
+package com.yunya.feign.patient_central.domain.model;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import lombok.ToString;
+
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+/**
+ * @author: chenlin
+ * @date: 2023/7/13 10:16
+ * @description: 账单返点添加模型
+ * @since: 1.0.0
+ */
+@Data
+@ToString
+@ApiModel("账单返点添加模型")
+public class BillRebate2MemberAccountModel implements Serializable {
+
+    /** 订单记录id */
+    @ApiModelProperty(value = "订单记录id", required = true)
+    @NotNull(message = "订单记录id不能为空")
+    private Integer orderRecordId;
+
+    /** 账单记录id */
+    @ApiModelProperty(value = "账单记录id", required = true)
+    @NotNull(message = "账单记录id不能为空")
+    private Integer billRecordId;
+
+    /** 收费记录id */
+    @ApiModelProperty(value = "收费记录id", required = true)
+    @NotNull(message = "收费记录id不能为空")
+    private Integer billPayRecordId;
+
+    /** 门诊id */
+    @ApiModelProperty(value = "门诊id", required = true)
+    @NotNull(message = "门诊id不能为空")
+    private Integer orgId;
+
+    /** 接收者-患者id */
+    @ApiModelProperty(value = "接收者-患者id", required = true)
+    @NotNull(message = "接收者-患者id不能为空")
+    private Integer acceptorId;
+
+    /** 本金金额 */
+    @ApiModelProperty(value = "本金金额", required = true)
+    private BigDecimal principal = BigDecimal.ZERO;
+
+    @ApiModelProperty(value = "赠金金额", required = true)
+    private BigDecimal bonus = BigDecimal.ZERO;
+}

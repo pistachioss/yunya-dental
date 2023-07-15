@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 用户信息
@@ -16,6 +17,8 @@ import java.io.Serializable;
 public class UserInfo implements Serializable {
   /** 用户ID */
   private String id;
+  /** 当前时间 */
+  private Date curTime;
   /** 当前登陆组织ID */
   private Integer currentOrgId;
   /** 用户名 */

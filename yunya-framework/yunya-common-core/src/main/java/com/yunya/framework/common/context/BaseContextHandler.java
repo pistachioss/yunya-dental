@@ -1,8 +1,12 @@
 package com.yunya.framework.common.context;
 
 import com.yunya.framework.common.constant.CommonConstants;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +29,28 @@ public class BaseContextHandler {
   public static String getOrgId() {
     Object value = get(CommonConstants.CONTEXT_KEY_ORG_ID);
     return returnObjectValue(value);
+  }
+
+  /**
+   * 获取当前时间 （接口中所有方法或feign调用接口都用同一时间作为操作时间）
+   *
+   * @return
+   */
+  public static Date getCurTime() {
+    Date value = get(CommonConstants.CONTEXT_KEY_TIME);
+    if (StringHelper.isNull(value)) {
+      // 从请求头中获取
+      ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+      String curTime = requestAttributes.getRequest().getHeader(CommonConstants.CONTEXT_KEY_TIME);
+      if (StringHelper.isNull(curTime)) {
+        // 获取当前时间
+        value = DateUtil.now();
+      } else {
+        value = DateUtil.parse(curTime);
+      }
+      setCurTime(value);
+    }
+    return value;
   }
 
   /**
@@ -77,6 +103,14 @@ public class BaseContextHandler {
     return StringHelper.getObjectValue(value);
   }
 
+  /**
+   * 设置当前时间
+   *
+   * @param curTime
+   */
+  public static void setCurTime(Date curTime) {
+    set(CommonConstants.CONTEXT_KEY_TIME, curTime);
+  }
   /**
    * 设置组织ID
    *
@@ -171,13 +205,28 @@ public class BaseContextHandler {
    * @param key
    * @return
    */
-  public static Object get(String key) {
+//  public static Object get(String key) {
+//    Map<String, Object> map = threadLocal.get();
+//    if (map == null) {
+//      map = new HashMap<String, Object>();
+//      threadLocal.set(map);
+//    }
+//    return map.get(key);
+//  }
+
+  /**
+   * 从局部线程变量中获取
+   *
+   * @param key
+   * @return
+   */
+  public static <T> T get(String key) {
     Map<String, Object> map = threadLocal.get();
     if (map == null) {
       map = new HashMap<String, Object>();
       threadLocal.set(map);
     }
-    return map.get(key);
+    return (T) map.get(key);
   }
 
   /** 从线程局部变量中移除 */

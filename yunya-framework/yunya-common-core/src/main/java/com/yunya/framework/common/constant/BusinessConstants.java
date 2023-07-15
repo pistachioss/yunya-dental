@@ -1,5 +1,6 @@
 package com.yunya.framework.common.constant;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -81,6 +82,8 @@ public class BusinessConstants {
   /** ---------------------------患者信息相关常量------------------------------ */
   /** 患者来源类型：未知来源 */
   public static final Integer UNKNOWN_ORIGIN_TYPE = 12;
+  /** 初诊返点金额 */
+  public static final BigDecimal FIRST_VISIT_REBATE_AMOUNT = BigDecimal.valueOf(100);
 
   /** ------------------------ 其他 ----------------------------------------- */
   public static final String CLINIC_BUSINESS_PATTER = "HH:mm";

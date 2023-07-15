@@ -1,9 +1,19 @@
 package com.yunya.modules.treatment.config;
 
+import com.yunya.framework.common.constant.CommonConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.utils.StringHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,6 +42,10 @@ public class ThreadPoolManager {
      * 非核心线程闲置时超时1s
      */
     private static final int KEEP_ALIVE = 1;
+    /**
+     * 队列容量
+     */
+    private static final int QUEUE_CAPACITY_SIZE = CPU_COUNT * 2 * 10;
     /**
      * 线程池的对象
      */
@@ -119,4 +133,87 @@ public class ThreadPoolManager {
         };
     }
 
+    @Bean("asyncExecutor")
+    public Executor getAsyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(CORE_POOL_SIZE);
+        executor.setMaxPoolSize(MAXIMUM_POOL_SIZE);
+        executor.setQueueCapacity(QUEUE_CAPACITY_SIZE);
+        executor.setThreadNamePrefix("async-exec-");
+        // 拒绝策略：不在新线程中执行任务，而是由调用者所在的线程来执行
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        // 线程空闲后的最大存活时间
+        executor.setKeepAliveSeconds(KEEP_ALIVE);
+        // 当调度器shutdown被调用时等待当前被调度的任务完成
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setTaskDecorator(runnable -> {
+            try {
+                // 将主线程中的token和线程局部变量，传递到异步线程中
+                ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                HttpServletRequest request = attributes.getRequest();
+                String token = request.getHeader(CommonConstants.TOKEN_HEADER);
+                Map<String, Object> threadLocal = BaseContextHandler.threadLocal.get();
+                return () -> {
+                    try {
+                        attributes.setAttribute(CommonConstants.TOKEN_HEADER, token, RequestAttributes.SCOPE_SESSION);
+                        RequestContextHolder.setRequestAttributes(attributes);
+                        BaseContextHandler.threadLocal.set(threadLocal);
+                        runnable.run();
+                    } finally {
+                        RequestContextHolder.resetRequestAttributes();
+                    }
+                };
+            } catch (IllegalStateException e) {
+                return runnable;
+            }
+        });
+        executor.initialize();
+        return executor;
+    }
+
+    /**
+     * 自定义异步任务执行器，在@Async标注方法执行时，将主线程中的请求上下文和登录信息，传递到到@Async执行线程
+     */
+    class ContextAwarePoolExecutor extends ThreadPoolTaskExecutor {
+
+        class ContextAwareCallable<T> implements Callable<T> {
+            /** 任务 */
+            private Callable<T> task;
+            /** 请求属性 */
+            private RequestAttributes context;
+            /** 主线程的局部变量 */
+            private Map<String, Object> masterThreadLocal;
+
+            public ContextAwareCallable(Callable<T> task, RequestAttributes context, Map<String, Object> masterThreadLocal) {
+                this.task = task;
+                this.context = context;
+                this.masterThreadLocal = masterThreadLocal;
+            }
+
+            @Override
+            public T call() throws Exception {
+                if (StringHelper.isNotNull(context)) {
+                    RequestContextHolder.setRequestAttributes(context);
+                }
+                if (StringHelper.isNotNull(masterThreadLocal)) {
+                    BaseContextHandler.threadLocal.set(masterThreadLocal);
+                }
+                try {
+                    return task.call();
+                } finally {
+                    RequestContextHolder.resetRequestAttributes();
+                }
+            }
+        }
+
+        @Override
+        public <T> Future<T> submit(Callable<T> task) {
+            return super.submit(new ContextAwareCallable(task, RequestContextHolder.currentRequestAttributes(), BaseContextHandler.threadLocal.get()));
+        }
+
+        @Override
+        public <T> ListenableFuture<T> submitListenable(Callable<T> task) {
+            return super.submitListenable(new ContextAwareCallable(task, RequestContextHolder.currentRequestAttributes(), BaseContextHandler.threadLocal.get()));
+        }
+    }
 }

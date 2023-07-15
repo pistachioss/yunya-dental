@@ -2,9 +2,11 @@ package com.yunya.models.report;
 
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Data
 @Table(name = "base_patient_member_occur_log")
@@ -35,7 +37,7 @@ public class BasePatientMemberOccurLog {
     private Byte type;
 
     /**
-     * 发生类型(1充值2消费3退款4撤销收费)
+     * 发生类型(1充值2消费3退款4撤销收费5账单退费6账单返点7转账转入8转账转出)
      */
     @Id
     @Column(name = "occur_type")

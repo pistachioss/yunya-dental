@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientTransferRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientTransferRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="main_number" property="mainNumber" jdbcType="VARCHAR" />
+    <result column="minor_number" property="minorNumber" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="principal" property="principal" jdbcType="DECIMAL" />
+    <result column="bonus" property="bonus" jdbcType="DECIMAL" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+  </resultMap>
+</mapper>

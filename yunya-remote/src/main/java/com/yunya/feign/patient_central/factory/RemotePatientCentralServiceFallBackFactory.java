@@ -286,4 +286,9 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public List<PatientDepositAccountVO> findDepositAccountBillPayExpendList(Integer orderRecordId) {
         return null;
     }
+
+    @Override
+    public ResponseResult billRebate2MemberAccount(BillRebate2MemberAccountModel model) {
+        return null;
+    }
 }

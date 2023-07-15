@@ -43,6 +43,7 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
@@ -250,6 +251,9 @@ public class TreatTollBiz {
    */
   @Transactional
   public TollConfirmVO confirmCharge(TreatTollModel model) {
+    String orgId = BaseContextHandler.getOrgId();
+    Date curTime = BaseContextHandler.getCurTime();
+    System.out.println("进入controller的时间：" + DateUtil.formatTime(curTime) + ", 门诊id: " + orgId);
     OrderRecord orderRecord = checkChargeParam(model);
     Integer orderRecordId = orderRecord.getId();
     Integer patientId = orderRecord.getPatientId();
@@ -258,7 +262,8 @@ public class TreatTollBiz {
 
     BigDecimal privilegeAmount = calculatePrivilegeAmount(discountType, orderRecordId, patientId, generalDiscount);
     // 计算入账总额、应收总额
-    BigDecimal totalCharge = calculateTotalCharge(model);
+    BigDecimal[] totalAmount = calculateTotalCharge(model);
+    BigDecimal totalCharge = totalAmount[0];
     BigDecimal actualReceivableAmount = orderRecord.getTotalAmount().subtract(privilegeAmount);
     // 比较实际应收与总入账金额
     BigDecimal outstandingAmount = model.getOutstandingAmount();
@@ -276,30 +281,32 @@ public class TreatTollBiz {
     // 生成收费记录及其入账方式明细
     BillPayRecord billPayRecord = generalBillPayRecordWithDetail(billRecord, totalCharge, actualReceivableAmount, model);
     // 更新订单状态
-    orderRecordBiz.updateOrderStatus(orderRecord.getId(),
-            Integer.valueOf(BaseContextHandler.getUserID()),
-            BaseContextHandler.getName(),
-            billRecord.getCrtTime(),
-            BusinessConstants.ORDER_FINISH_STATUS);
+    orderRecordBiz.updateOrderStatus(orderRecord.getId(), BusinessConstants.ORDER_FINISH_STATUS);
     // 更新就诊状态
     updateTreatmentRecordStatus(orderRecord.getTreatmentRecordId());
+
+    try {
+      TimeUnit.SECONDS.sleep(5);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
     // 异步处理收费次要流程
-    asyncProcessCharge(billPayRecord, model, totalCharge, true);
+    asyncProcessCharge(billPayRecord, model, totalCharge, totalAmount[1], true);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
             .billPayRecordId(billPayRecord.getId()).build();
   }
 
-  private void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, boolean isMqTreatment) {
+  private void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, boolean isMqTreatment) {
     TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
       /**
        * 事务提交后回调该方法
        */
       @Override
       public void afterCommit() {
-        minorChargeProcessBiz.asyncProcessCharge(billPayRecord, model, totalCharge, isMqTreatment);
-        minorChargeProcessBiz.asyncPushWxExpendMsg(billPayRecord);
+        minorChargeProcessBiz.asyncProcessCharge(billPayRecord, model, totalCharge, totalPrincipal, isMqTreatment);
+//        minorChargeProcessBiz.asyncPushWxExpendMsg(billPayRecord);
       }
     });
   }
@@ -905,7 +912,7 @@ public class TreatTollBiz {
     }
     Byte status = orderRecord.getStatus();
     // 检查收费订单状态
-    checkOrderRecordStatus(status);
+//    checkOrderRecordStatus(status);
     String resultRecordId = redisUtils.get(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
     if (StringHelper.isNotBlank(resultRecordId)) {
       throw new ClientServiceException("收费失败，当前账单已解锁！请联系开单人员提交账单！", PARAMETERS_IS_ILLEGAL);
@@ -973,27 +980,31 @@ public class TreatTollBiz {
    *
    * @param tollModel 收费基础添加模型
    */
-  private BigDecimal calculateTotalCharge(TreatTollDebtModel tollModel) {
+  private BigDecimal[] calculateTotalCharge(TreatTollDebtModel tollModel) {
     Set<PrepaymentAccountModel> prepaymentAccounts = tollModel.getPrepaymentAccountModels();
     Set<MemberAccountModel> memberAccounts = tollModel.getMemberAccountModels();
     Set<PaymentModel> payments = tollModel.getPaymentModels();
-    BigDecimal totalAmount = BigDecimal.ZERO;
+    // 入账总额，本金总额
+    BigDecimal[] totalAmount = {BigDecimal.ZERO, BigDecimal.ZERO};
     // 预付款入账总额
     if (StringHelper.isNotEmpty(prepaymentAccounts)) {
       for (PrepaymentAccountModel model : prepaymentAccounts) {
-        totalAmount = totalAmount.add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[0] = totalAmount[0].add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[1] = totalAmount[1].add(StringHelper.defaultBigDecimal(model.getPrincipalAmount()));
       }
     }
     // 会员卡入账总额
     if (StringHelper.isNotEmpty(memberAccounts)) {
       for (MemberAccountModel model : memberAccounts) {
-        totalAmount = totalAmount.add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[0] = totalAmount[0].add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[1] = totalAmount[1].add(StringHelper.defaultBigDecimal(model.getPrincipalAmount()));
       }
     }
     // 其他方式入账总额
     if (StringHelper.isNotEmpty(payments)) {
       for (PaymentModel model : payments) {
-        totalAmount = totalAmount.add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[0] = totalAmount[0].add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[1] = totalAmount[1].add(StringHelper.defaultBigDecimal(model.getAmount()));
       }
     }
     return totalAmount;
@@ -1110,7 +1121,8 @@ public class TreatTollBiz {
         checkCollectDebtParams(model);
     BigDecimal actualReceivableAmount = billRecord.getActualReceivableAmount();
     // 计算收欠费入账总额
-    BigDecimal totalCharge = calculateTotalCharge(model);
+    BigDecimal[] totalAmount = calculateTotalCharge(model);
+    BigDecimal totalCharge = totalAmount[0];
     checkTotalChargeAndDebtAmount(totalCharge, actualReceivableAmount, model.getOutstandingAmount());
     billRecord.setReceivedAmount(billRecord.getReceivedAmount().add(totalCharge));
     billRecord.setDebtAmount(actualReceivableAmount.subtract(totalCharge));
@@ -1126,7 +1138,7 @@ public class TreatTollBiz {
     // 保存收费记录及其入账方式明细
     BillPayRecord billPayRecord = generalBillPayRecordWithDetail(billRecord, totalCharge, actualReceivableAmount, model);
 
-    asyncProcessCharge(billPayRecord, model, totalCharge, false);
+    asyncProcessCharge(billPayRecord, model, totalCharge, totalAmount[1], false);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
             .billPayRecordId(billPayRecord.getId()).build();
