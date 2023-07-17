@@ -111,6 +111,13 @@ public class PatientMemberInfoController {
     return ResponseUtil.success();
   }
 
+  @ApiOperation("保留该卡，删除其他会员卡关联关系")
+  @DeleteMapping("/delete2")
+  public ResponseResult delete2ById(@RequestBody CardRelationForm cardRelationForm) {
+    patientMemberInfoBiz.deleteRelationById(cardRelationForm);
+    return ResponseUtil.success();
+  }
+
   /**
    * 开卡
    *
@@ -123,6 +130,34 @@ public class PatientMemberInfoController {
   @RepeatSubmit
   public ResponseResult addMemberCard(@RequestBody OpenCardModel openCardModel) {
     return patientMemberInfoBiz.addMemberCard(openCardModel);
+  }
+
+  /**
+   * 充值开卡
+   *
+   * @param openCardModel 开卡Model
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("充值开卡（存在会员卡则会直接充值）")
+  @PostMapping("/openCard2")
+  @RepeatSubmit
+  public ResponseResult addMemberCard2(@RequestBody OpenCardModel2 openCardModel) {
+    return patientMemberInfoBiz.addMemberCard2(openCardModel);
+  }
+
+  /**
+   * 原藤卡激活
+   *
+   * @param openCardModel 开卡Model
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("原藤卡激活（存在连带转换亲密付）")
+  @PostMapping("/openCard3")
+  @RepeatSubmit
+  public ResponseResult addMemberCard3(@RequestBody OpenCardModel3 openCardModel) {
+    return patientMemberInfoBiz.addMemberCard3(openCardModel);
   }
 
   /**
@@ -165,6 +200,13 @@ public class PatientMemberInfoController {
     return patientMemberInfoBiz.recharge(memberRechargeModel);
   }
 
+  @CurrentUser
+  @ApiOperation("赠金转账")
+  @PostMapping("/recharge2")
+  public ResponseResult recharge2(@RequestBody MemberRechargeModel memberRechargeModel) {
+    return patientMemberInfoBiz.recharge2(memberRechargeModel);
+  }
+
   /**
    * 账单退费
    *
@@ -191,6 +233,20 @@ public class PatientMemberInfoController {
   public ResponseResult<PageInfo<RechargeRecordVo>> rechargeRecord(
       @RequestBody RechargeRecordQueryForm query) {
     return ResponseUtil.success(patientMemberInfoBiz.rechargeRecord(query));
+  }
+
+  /**
+   * 充值记录
+   *
+   * @param query 充值记录QueryForm
+   * @return ResponseResult<PageInfo<RechargeRecordVo>>
+   */
+  @CurrentUser
+  @ApiOperation("赠金转出记录")
+  @PostMapping("/rechargeRecord2")
+  public ResponseResult<PageInfo<RechargeRecordVo>> rechargeRecord2(
+          @RequestBody RechargeRecordQueryForm query) {
+    return ResponseUtil.success(patientMemberInfoBiz.rechargeRecord2(query));
   }
 
   /**

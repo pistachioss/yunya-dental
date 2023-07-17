@@ -7,7 +7,13 @@
         -->
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="old_name" property="oldName" jdbcType="VARCHAR"/>
+        <result column="next_level_id" property="nextLevelId" jdbcType="INTEGER"/>
         <result column="renewal_amount" property="renewalAmount" jdbcType="DECIMAL"/>
+        <result column="recharge_max_amount" property="rechargeMaxAmount" jdbcType="DECIMAL"/>
+        <result column="total_amount" property="totalAmount" jdbcType="DECIMAL"/>
+        <result column="recharge_sub_amount" property="rechargeSubAmount" jdbcType="DECIMAL"/>
+        <result column="recharge_min_amount" property="rechargeMinAmount" jdbcType="DECIMAL"/>
         <result column="age_limit" property="ageLimit" jdbcType="INTEGER"/>
         <result column="rate" property="rate" jdbcType="REAL"/>
         <result column="type" property="type" jdbcType="TINYINT"/>
@@ -27,12 +33,18 @@
       select
         mt.id,
         mt.name,
+        mt.old_name as oldName,
+        mt.next_level_id as nextLevelId,
         mt.renewal_amount as renewalAmount,
+        mt.recharge_max_amount as rechargeMaxAmount,
+        mt.total_amount as totalAmount,
+        mt.recharge_sub_amount as rechargeSubAmount,
+        mt.recharge_min_amount as rechargeMinAmount,
         mt.age_limit as ageLimit,
         mt.rate,
-        mt.type,
         mt.icon,
         mt.picture_code as pictureCode,
+        mt.type,
         mt.description,
         mt.inservice
       from
@@ -45,7 +57,13 @@
         select
         mt.id,
         mt.name,
+        mt.old_name as oldName,
+        mt.next_level_id as nextLevelId,
         mt.renewal_amount as renewalAmount,
+        mt.recharge_max_amount as rechargeMaxAmount,
+        mt.total_amount as totalAmount,
+        mt.recharge_sub_amount as rechargeSubAmount,
+        mt.recharge_min_amount as rechargeMinAmount,
         mt.age_limit as ageLimit,
         mt.rate,
         mt.icon,

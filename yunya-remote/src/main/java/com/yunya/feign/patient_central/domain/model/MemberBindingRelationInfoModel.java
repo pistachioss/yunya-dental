@@ -57,7 +57,7 @@ public class MemberBindingRelationInfoModel implements Serializable {
      * 关联类型
      */
     @NotNull(message = "关联类型不能为空")
-    @ApiModelProperty(value = "关联类型",required = true)
+    @ApiModelProperty(value = "关联类型(会员卡亲密付：1)",required = true)
     private Byte bindType;
 
 }

@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -57,6 +58,12 @@ public class PatientOriginForm implements Serializable {
      */
     @ApiModelProperty(value = "二维码地址")
     private String qrCodePath;
+
+    /**
+     * 赠金返点比例
+     */
+    @ApiModelProperty(value = "赠金返点比例")
+    private BigDecimal giftRebateRate;
 
     /**
      * 是否允许操作（编辑、删除）

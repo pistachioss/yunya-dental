@@ -18,7 +18,8 @@ public interface MemberRechargeRecordMapper extends Mapper<MemberRechargeRecord>
     /**
      * 充值记录
      * @param form 充值记录QueryForm
+     * @param type 类型
      * @return RechargeRecordVo
      */
-    List<RechargeRecordVo> RechargeRecord(@Param("form") RechargeRecordQueryForm form);
+    List<RechargeRecordVo> RechargeRecord(@Param("form") RechargeRecordQueryForm form, @Param("type") Integer type);
 }

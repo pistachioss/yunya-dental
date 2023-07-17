@@ -224,6 +224,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       remoteRabbitMqServiceFeign.sendMessage(
               patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
     }
+    // 创建会员卡
+    OpenCardModel openCardModel = new OpenCardModel();
+    openCardModel.setPatientId(patientBaseInfo.getId());
+    openCardModel.setMemberTypeId(4);
+    patientMemberInfoBiz.addMemberCard(openCardModel);
     // 创建预付款 并发送消息
     patientMemberInfoBiz.addPatientPrepaymentsInfo(patientBaseInfo);
     sendMessages(patientBaseInfo.getId(), 0);

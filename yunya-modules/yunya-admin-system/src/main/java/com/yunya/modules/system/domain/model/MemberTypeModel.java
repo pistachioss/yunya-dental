@@ -25,6 +25,13 @@ public class MemberTypeModel implements Serializable {
   @NotBlank(message = "会员卡名称不能为空！")
   @Size(max = 25, message = "会员卡名称长度不能超过25")
   private String name;
+  /** 对应藤卡会员 */
+  @ApiModelProperty(value = "对应藤卡会员", required = true)
+  @Size(max = 25, message = "对应藤卡会员长度不能超过25")
+  private String oldName;
+  /** 次一等级会员ID */
+  @ApiModelProperty("次一等级会员ID")
+  private Integer nextLevelId;
   /** 类型,0:普通,1:VIP */
   @ApiModelProperty(value = "会员类型", required = true)
   @NotNull(message = "会员类型不能为空！")
@@ -34,6 +41,26 @@ public class MemberTypeModel implements Serializable {
   @NotNull(message = "会员卡名续费金额不能为空！")
   @Min(value = 0, message = "会员卡名续费金额不能小于0")
   private BigDecimal renewalAmount;
+  /** 充值达标获卡金额 */
+  @ApiModelProperty(value = "充值达标获卡金额", required = true)
+  @NotNull(message = "充值达标获卡金额不能为空！")
+  @Min(value = 0, message = "充值达标获卡金额不能小于0")
+  private BigDecimal rechargeMaxAmount;
+  /** 累计消费达标获卡金额 */
+  @ApiModelProperty(value = "累计消费达标获卡金额", required = true)
+  @NotNull(message = "累计消费达标获卡金额不能为空！")
+  @Min(value = 0, message = "累计消费达标获卡金额不能小于0")
+  private BigDecimal totalAmount;
+  /** 差额补齐获卡金额 */
+  @ApiModelProperty(value = "差额补齐获卡金额", required = true)
+  @NotNull(message = "差额补齐获卡金额不能为空！")
+  @Min(value = 0, message = "差额补齐获卡金额不能小于0")
+  private BigDecimal rechargeSubAmount;
+  /** 会员等级对应充值起充额 */
+  @ApiModelProperty(value = "会员等级对应充值起充额", required = true)
+  @NotNull(message = "会员等级对应充值起充额不能为空！")
+  @Min(value = 0, message = "会员等级对应充值起充额不能小于0")
+  private BigDecimal rechargeMinAmount;
   /** 年限 */
   @ApiModelProperty(value = "会员卡名续费有效年限", required = true)
   @NotNull(message = "会员卡名续费有效年限不能为空!")

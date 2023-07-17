@@ -50,6 +50,10 @@ public class MemberBaseInfoVo implements Serializable {
   @ApiModelProperty("会员卡类型名称")
   private String memberCardName;
 
+  /** 会员卡类型名称 */
+  @ApiModelProperty("会员卡类型旧名称（激活前）")
+  private String memberCardOldName;
+
   /** 会员本卡总余额（本金+赠金） */
   @ApiModelProperty("会员本卡总余额（本金+赠金）")
   private BigDecimal memberCardMoneySum;
@@ -79,4 +83,10 @@ public class MemberBaseInfoVo implements Serializable {
    */
   @ApiModelProperty("备注（账户余额）")
   private String remark;
+
+  /**
+   * 是否有效，是否激活
+   */
+  @ApiModelProperty("是否有效，是否激活")
+  private Boolean inservice;
 }

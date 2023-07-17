@@ -61,6 +61,11 @@ public class PatientOriginTreeVo extends TreeNode {
     private String codeUrl;
 
     /**
+     * 赠金返点比例
+     */
+    private String giftRebateRate;
+
+    /**
      * 是否允许操作（编辑、删除）
      */
     private Boolean allowOperate;

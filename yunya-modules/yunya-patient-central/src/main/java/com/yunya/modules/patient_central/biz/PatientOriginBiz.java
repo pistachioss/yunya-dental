@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -226,12 +227,32 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       } else {
         patientOrigin.setLimitEndDate(patientOrigin.getLimitEndDate());
       }
+      patientOrigin.setGiftRebateRate(patientOriginForm.getGiftRebateRate());
       patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientOrigin.setUpdName(BaseContextHandler.getName());
       patientOrigin.setUpdTime(new Date());
       mapper.updateByPrimaryKey(patientOrigin);
       remoteRabbitMqServiceFeign.sendMessage(
               patientOrigin.getId(), 1, MsgCategoryEnum.BasePatientOrigin);
+    } else {
+      return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST, "未找到患者来源", patientOrigin);
+    }
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 患者来源修改
+   *
+   * @return ResponseResult
+   */
+  public ResponseResult updateRate(PatientOriginForm patientOriginForm) {
+    PatientOrigin patientOrigin = mapper.selectByPrimaryKey(patientOriginForm.getId());
+    if (patientOrigin != null) {
+      patientOrigin.setGiftRebateRate(patientOriginForm.getGiftRebateRate());
+      patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientOrigin.setUpdName(BaseContextHandler.getName());
+      patientOrigin.setUpdTime(new Date());
+      mapper.updateByPrimaryKey(patientOrigin);
     } else {
       return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST, "未找到患者来源", patientOrigin);
     }

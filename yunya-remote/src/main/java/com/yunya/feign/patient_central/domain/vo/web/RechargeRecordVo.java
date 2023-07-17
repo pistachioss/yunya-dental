@@ -97,5 +97,17 @@ public class RechargeRecordVo implements Serializable {
     @ApiModelProperty("备注")
     private String remarks;
 
+    /**
+     * 转出患者
+     */
+    @ApiModelProperty("转出患者")
+    private String patientName1;
+
+    /**
+     * 卡主
+     */
+    @ApiModelProperty("卡主")
+    private String patientName2;
+
 
 }

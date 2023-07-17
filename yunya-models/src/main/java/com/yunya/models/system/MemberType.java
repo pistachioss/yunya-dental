@@ -20,10 +20,46 @@ public class MemberType {
     private String name;
 
     /**
+     * 未激活时的会员卡名称
+     */
+    @Column(name = "old_name")
+    private String oldName;
+
+    /**
+     * 主键ID
+     */
+    @Column(name = "next_level_id")
+    private Integer nextLevelId;
+
+    /**
      * 续费金额
      */
     @Column(name = "renewal_amount")
     private BigDecimal renewalAmount;
+
+    /**
+     * 充值达标获卡金额
+     */
+    @Column(name = "recharge_max_amount")
+    private BigDecimal rechargeMaxAmount;
+
+    /**
+     * 累计消费达标获卡金额
+     */
+    @Column(name = "total_amount")
+    private BigDecimal totalAmount;
+
+    /**
+     * 差额补齐获卡金额
+     */
+    @Column(name = "recharge_sub_amount")
+    private BigDecimal rechargeSubAmount;
+
+    /**
+     * 会员等级对应充值起充额
+     */
+    @Column(name = "recharge_min_amount")
+    private BigDecimal rechargeMinAmount;
 
     /**
      * 年限
@@ -91,6 +127,54 @@ public class MemberType {
      */
     @Column(name = "upd_time")
     private Date updTime;
+
+    public String getOldName() {
+        return oldName;
+    }
+
+    public void setOldName(String oldName) {
+        this.oldName = oldName;
+    }
+
+    public Integer getNextLevelId() {
+        return nextLevelId;
+    }
+
+    public void setNextLevelId(Integer nextLevelId) {
+        this.nextLevelId = nextLevelId;
+    }
+
+    public BigDecimal getRechargeMaxAmount() {
+        return rechargeMaxAmount;
+    }
+
+    public void setRechargeMaxAmount(BigDecimal rechargeMaxAmount) {
+        this.rechargeMaxAmount = rechargeMaxAmount;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public BigDecimal getRechargeSubAmount() {
+        return rechargeSubAmount;
+    }
+
+    public void setRechargeSubAmount(BigDecimal rechargeSubAmount) {
+        this.rechargeSubAmount = rechargeSubAmount;
+    }
+
+    public BigDecimal getRechargeMinAmount() {
+        return rechargeMinAmount;
+    }
+
+    public void setRechargeMinAmount(BigDecimal rechargeMinAmount) {
+        this.rechargeMinAmount = rechargeMinAmount;
+    }
 
     /**
      * 获取主键ID

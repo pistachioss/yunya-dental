@@ -31,7 +31,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@Api(tags = "门诊端-患者资料-预约信息")
+@Api(tags = "门诊端-患者资料-会员卡预付款")
 @RestController
 @RequestMapping("balance")
 public class MemberBalanceBalanceController {
