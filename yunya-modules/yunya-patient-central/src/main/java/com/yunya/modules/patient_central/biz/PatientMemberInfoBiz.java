@@ -1805,52 +1805,55 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
     Integer acceptorId = model.getAcceptorId();
     PatientMemberInfo member = mapper.selectOneByPatientId(acceptorId);
-    if (StringHelper.isNotNull(member)) {
-      int userId = Integer.parseInt(BaseContextHandler.getUserID());
-      String name = BaseContextHandler.getName();
-      Date now = BaseContextHandler.getCurTime();
-      System.out.println("账单返点时间：" + DateUtil.formatTime(now));
-      BigDecimal principalAmount = member.getPrincipalAmount();
-      BigDecimal bonusAmount = member.getBonusAmount();
-      if (StringHelper.gtZero(principal)) {
-        member.setPrincipalAmount(principalAmount.add(principal));
-      }
-      if (StringHelper.gtZero(bonus)) {
-        member.setBonusAmount(bonusAmount.add(bonus));
-      }
-      member.setUptId(userId);
-      member.setUpdName(name);
-      member.setUpdTime(now);
-
-      // 更新会员卡账户信息
-      Example condition = new Example(PatientMemberInfo.class);
-      condition.createCriteria().andEqualTo("id", member.getId())
-              .andEqualTo("principalAmount", principalAmount)
-              .andEqualTo("bonusAmount", bonusAmount);
-      int i = patientMemberInfoMapper.updateByExampleSelective(member, condition);
-      if (i != 1) {
-        throw new ClientServiceException("账单返点失败，请稍后再试", DATA_ERROR);
-      }
-
-      // 生成充值记录
-      MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
-      BeanUtils.copyProperties(model, memberRechargeRecord);
-      memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      memberRechargeRecord.setType(3);
-      memberRechargeRecord.setCrtId(userId);
-      memberRechargeRecord.setCrtName(name);
-      memberRechargeRecord.setCrtTime(now);
-      memberRechargeRecord.setUptId(userId);
-      memberRechargeRecord.setUpdName(name);
-      memberRechargeRecord.setUpdTime(now);
-      memberRechargeRecord.setMemberId(member.getCardNumber());
-      memberRechargeRecord.setRechargePrincipal(principal);
-      memberRechargeRecord.setRechargeBonus(bonus);
-      memberRechargeRecord.setCurrentRechargePrincipal(member.getPrincipalAmount());
-      memberRechargeRecord.setCurrentRechargeBonus(member.getBonusAmount());
-      memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
-      // 发送消息 账单退费
-      sendMemberLogMessages(memberRechargeRecord.getId(), 0, 6);
+    if (StringHelper.isNull(member)) {
+      OpenCardModel openCardModel = new OpenCardModel();
+      openCardModel.setPatientId(acceptorId);
+      addMemberCard(openCardModel);
     }
+    int userId = Integer.parseInt(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    Date now = BaseContextHandler.getCurTime();
+    System.out.println("账单返点时间：" + DateUtil.formatTime(now));
+    BigDecimal principalAmount = member.getPrincipalAmount();
+    BigDecimal bonusAmount = member.getBonusAmount();
+    if (StringHelper.gtZero(principal)) {
+      member.setPrincipalAmount(principalAmount.add(principal));
+    }
+    if (StringHelper.gtZero(bonus)) {
+      member.setBonusAmount(bonusAmount.add(bonus));
+    }
+    member.setUptId(userId);
+    member.setUpdName(name);
+    member.setUpdTime(now);
+
+    // 更新会员卡账户信息
+    Example condition = new Example(PatientMemberInfo.class);
+    condition.createCriteria().andEqualTo("id", member.getId())
+            .andEqualTo("principalAmount", principalAmount)
+            .andEqualTo("bonusAmount", bonusAmount);
+    int i = patientMemberInfoMapper.updateByExampleSelective(member, condition);
+    if (i != 1) {
+      throw new ClientServiceException("账单返点失败，请稍后再试", DATA_ERROR);
+    }
+
+    // 生成充值记录
+    MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
+    BeanUtils.copyProperties(model, memberRechargeRecord);
+    memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    memberRechargeRecord.setType(3);
+    memberRechargeRecord.setCrtId(userId);
+    memberRechargeRecord.setCrtName(name);
+    memberRechargeRecord.setCrtTime(now);
+    memberRechargeRecord.setUptId(userId);
+    memberRechargeRecord.setUpdName(name);
+    memberRechargeRecord.setUpdTime(now);
+    memberRechargeRecord.setMemberId(member.getCardNumber());
+    memberRechargeRecord.setRechargePrincipal(principal);
+    memberRechargeRecord.setRechargeBonus(bonus);
+    memberRechargeRecord.setCurrentRechargePrincipal(member.getPrincipalAmount());
+    memberRechargeRecord.setCurrentRechargeBonus(member.getBonusAmount());
+    memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+    // 发送消息 账单退费
+    sendMemberLogMessages(memberRechargeRecord.getId(), 0, 6);
   }
 }

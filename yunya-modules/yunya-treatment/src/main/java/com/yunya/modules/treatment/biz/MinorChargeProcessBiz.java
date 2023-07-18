@@ -22,19 +22,25 @@ import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.BillPayRecordLog;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.mapper.BillPayRecordLogMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.math.RoundingMode;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
@@ -96,7 +102,7 @@ public class MinorChargeProcessBiz {
             completedChargeLog(billPayRecord.getId());
         } catch (Exception e) {
             log.error("MinorChargeProcessBize asyncProcessCharge error: {}", e);
-            errorChargeLog(billPayRecord.getId(), e.getMessage());
+            errorChargeLog(billPayRecord.getId(), ExceptionUtils.getFullStackTrace(e));
         }
     }
 
@@ -152,13 +158,19 @@ public class MinorChargeProcessBiz {
         if (originType == 2) {
             Integer originId = patient.getOriginId();
             // 患者消费时给其推荐人返点
+            PatientOrigin patientOrigin = patientFeign.findPatientOriginById(originType);
             BillRebate2MemberAccountModel model = new BillRebate2MemberAccountModel();
-            if (StringHelper.gtZero(totalPrincipal)) {
-                BeanUtil.copyProperties(billPayRecord, model);
-                model.setBillPayRecordId(billPayRecord.getId());
-                model.setAcceptorId(originId);
-                model.setBonus(totalPrincipal);
-                patientFeign.billRebate2MemberAccount(model);
+            if (StringHelper.gtZero(totalPrincipal) && StringHelper.isNotNull(patientOrigin)) {
+                BigDecimal giftRebateRate = patientOrigin.getGiftRebateRate();
+                if (StringHelper.isNotNull(giftRebateRate)) {
+                    BeanUtil.copyProperties(billPayRecord, model);
+                    model.setBillPayRecordId(billPayRecord.getId());
+                    model.setAcceptorId(originId);
+                    model.setBonus(totalPrincipal.multiply(giftRebateRate.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP)));
+                    patientFeign.billRebate2MemberAccount(model);
+                } else {
+                    log.error("患者转介绍的赠金返点比例为空，无法返点！");
+                }
             }
 
             // 给初诊患者的推荐人返点

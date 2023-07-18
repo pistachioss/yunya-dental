@@ -62,6 +62,7 @@ public class PatientServiceRest {
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
   @Autowired private WxFansBiz wxFansBiz;
+  @Autowired private PatientOriginBiz patientOriginBiz;
 
   @ApiOperation("同步老数据UnionId")
   @RequestMapping(value = "/syncUnionId", method = RequestMethod.POST)
@@ -426,6 +427,12 @@ public class PatientServiceRest {
       return null;
     }
     return patientBaseInfo.getBirthdayCheck();
+  }
+
+  @ApiOperation("根据id获取患者类型")
+  @GetMapping("/patient/origin/{id}")
+  public PatientOrigin findPatientOriginById(@PathVariable(value = "id") Integer id) {
+    return patientOriginBiz.findPatientOriginById(id);
   }
 
   @CurrentUser

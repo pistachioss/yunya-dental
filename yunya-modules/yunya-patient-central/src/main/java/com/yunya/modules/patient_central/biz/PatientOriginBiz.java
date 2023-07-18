@@ -22,6 +22,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.TreeUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.patient_central.PatientOriginLog;
@@ -38,16 +39,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+
+import static com.yunya.framework.common.constant.RedisConstants.PATIENT_ORIGIN_INFO;
 
 /**
  * 简单介绍:</br> 患者来源业务层
@@ -84,6 +82,8 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
 
   @Resource
   private PatientOriginLogMapper patientOriginLogMapper;
+  @Resource
+  private RedisUtils redisUtils;
 
 
   /**
@@ -211,6 +211,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       if (patientOriginForm.getSourceAttribute() != null){
         patientOrigin.setSourceAttribute(patientOriginForm.getSourceAttribute());
       }
+      redisUtils.delete(PATIENT_ORIGIN_INFO + patientOrigin.getId());
       if (patientOriginForm.getTimeLimit() == null){
         patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setUpdName(BaseContextHandler.getName());
@@ -248,6 +249,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
   public ResponseResult updateRate(PatientOriginForm patientOriginForm) {
     PatientOrigin patientOrigin = mapper.selectByPrimaryKey(patientOriginForm.getId());
     if (patientOrigin != null) {
+      redisUtils.delete(PATIENT_ORIGIN_INFO + patientOrigin.getId());
       patientOrigin.setGiftRebateRate(patientOriginForm.getGiftRebateRate());
       patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientOrigin.setUpdName(BaseContextHandler.getName());
@@ -273,6 +275,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       return ResponseUtil.fail(
           OperationCodeConstants.DELETE_NOT_ALLOW, "该患者来源已被患者关联，不允许删除！", patientOriginv);
     }
+    redisUtils.delete(PATIENT_ORIGIN_INFO + id);
     mapper.deleteByPrimaryKey(id);
     remoteRabbitMqServiceFeign.sendMessage(
             id, 2, MsgCategoryEnum.BasePatientOrigin);
@@ -420,5 +423,21 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       });
     }
     return result;
+  }
+
+  /**
+   * 根据id查询患者；来源
+   *
+   * @param id
+   * @return
+   */
+  public PatientOrigin findPatientOriginById(Integer id) {
+    String key = PATIENT_ORIGIN_INFO + id;
+    PatientOrigin patientOrigin = redisUtils.get(key, PatientOrigin.class);
+    if (StringHelper.isNull(patientOrigin)) {
+      patientOrigin = mapper.selectByPrimaryKey(id);
+      redisUtils.set(key, patientOrigin);
+    }
+    return patientOrigin;
   }
 }

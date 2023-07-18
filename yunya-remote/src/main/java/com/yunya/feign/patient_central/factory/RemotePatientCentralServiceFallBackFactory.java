@@ -291,4 +291,9 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public ResponseResult billRebate2MemberAccount(BillRebate2MemberAccountModel model) {
         return null;
     }
+
+    @Override
+    public PatientOrigin findPatientOriginById(Integer id) {
+        return null;
+    }
 }

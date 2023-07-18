@@ -387,4 +387,8 @@ import java.util.List;
   @ApiOperation("账单返点至会员卡账户")
   @PostMapping("/api/member/rebate")
   ResponseResult billRebate2MemberAccount(@RequestBody @Validated BillRebate2MemberAccountModel model);
+
+  @ApiOperation("根据id获取患者类型")
+  @GetMapping("/api/patient/origin/{id}")
+  PatientOrigin findPatientOriginById(@PathVariable(value = "id") Integer id);
 }

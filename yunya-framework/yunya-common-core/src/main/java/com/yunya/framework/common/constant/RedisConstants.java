@@ -129,6 +129,9 @@ public class RedisConstants implements Serializable {
   /** 患者信息 patient_base_info_{患者ID} */
   public static final String PATIENT_BASE_INFO = "patient_base_info_{}";
 
+  /** 患者来源 */
+  public static final String PATIENT_ORIGIN_INFO = "patient_origin:";
+
   /** 会员卡卡号生成锁 */
   public static final String MEMBER_GENERAT_LOCK = "lock:member:generate:";
   /** 预付款卡号生成锁 */
