@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
@@ -7,7 +8,6 @@ import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.model.*;
@@ -15,7 +15,6 @@ import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
 import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
-import com.yunya.feign.wechat.RemoteWechatServiceFeign;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -28,10 +27,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.treatment.*;
-import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
-import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
-import com.yunya.modules.treatment.mapper.BillPayShareDetailMapper;
-import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
+import com.yunya.modules.treatment.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,12 +69,8 @@ public class TreatTollBiz {
   @Autowired private RedisUtils redisUtils;
   /** 系统关联服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
-  /** 患者服务调用 */
-  @Autowired private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
   /** 优惠服务调用 */
   @Autowired private RemoteDiscountFeign discountFeign;
-  /** 微信服务调用 */
-  @Autowired private RemoteWechatServiceFeign weChatServiceFeign;
   /** 开单记录 */
   @Autowired private OrderRecordBiz orderRecordBiz;
   /** 开单明细 */
@@ -87,10 +79,6 @@ public class TreatTollBiz {
   @Autowired private OrderDetailPayRecordBiz orderDetailPayRecordBiz;
   /** 账单记录 */
   @Autowired private BillRecordBiz billRecordBiz;
-  /** 账单记录 */
-  @Autowired private BaseOralTariffBiz oralTariffBiz;
-  /** 账单记录 */
-  @Autowired private BaseTariffBiz baseTariffBiz;
   /** 账单支付记录 */
   @Autowired private BillPayRecordMapper billPayRecordMapper;
   /** 账单支付明细记录 */
@@ -100,6 +88,8 @@ public class TreatTollBiz {
 
   @Autowired private MinorChargeProcessBiz minorChargeProcessBiz;
   @Autowired private BillPayShareDetailMapper billPayShareDetailMapper;
+
+  @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
 
   /**
    * 根据优惠信息匹配订单优惠
@@ -241,7 +231,7 @@ public class TreatTollBiz {
     model.setPrepaymentAccountModels(null);
     model.setMemberAccountModels(null);
     model.setOutstandingAmount(actualReceivableAmount);
-    return confirmCharge(model);
+    return confirmCharge(model, (byte) 1);
   }
 
   /**
@@ -250,10 +240,7 @@ public class TreatTollBiz {
    * @param model 收费参数
    */
   @Transactional
-  public TollConfirmVO confirmCharge(TreatTollModel model) {
-    String orgId = BaseContextHandler.getOrgId();
-    Date curTime = BaseContextHandler.getCurTime();
-    System.out.println("进入controller的时间：" + DateUtil.formatTime(curTime) + ", 门诊id: " + orgId);
+  public TollConfirmVO confirmCharge(TreatTollModel model, byte type) {
     OrderRecord orderRecord = checkChargeParam(model);
     Integer orderRecordId = orderRecord.getId();
     Integer patientId = orderRecord.getPatientId();
@@ -292,10 +279,36 @@ public class TreatTollBiz {
     }
     // 异步处理收费次要流程
     asyncProcessCharge(billPayRecord, model, totalCharge, totalAmount[1], true);
+    recordChargeLog(billPayRecord, model, totalCharge, totalAmount[1], type);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
             .billPayRecordId(billPayRecord.getId()).build();
+  }
+
+  /**
+   * 记录收费日志-用于异步任务（次要收费流程）失败时对其进行数据修复补充
+   *
+   * @param billPayRecord
+   * @param model
+   * @param totalCharge
+   * @param totalPrincipal
+   * @param type
+   */
+  private void recordChargeLog(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, byte type) {
+    BillPayRecordLog logEntity = new BillPayRecordLog();
+    logEntity.setBillPayRecordId(billPayRecord.getId());
+    logEntity.setOrderRecordId(billPayRecord.getOrderRecordId());
+    logEntity.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    logEntity.setTotalCharge(totalCharge);
+    logEntity.setTotalPrincipal(totalPrincipal);
+    logEntity.setType(type);
+    logEntity.setParam(JSONObject.toJSONString(model));
+    logEntity.setStatus((byte) 1);
+    logEntity.setCrtTime(BaseContextHandler.getCurTime());
+    logEntity.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    logEntity.setCrtName(BaseContextHandler.getName());
+    billPayRecordLogMapper.insertSelective(logEntity);
   }
 
   private void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, boolean isMqTreatment) {
@@ -1139,6 +1152,7 @@ public class TreatTollBiz {
     BillPayRecord billPayRecord = generalBillPayRecordWithDetail(billRecord, totalCharge, actualReceivableAmount, model);
 
     asyncProcessCharge(billPayRecord, model, totalCharge, totalAmount[1], false);
+    recordChargeLog(billPayRecord, model, totalCharge, totalAmount[1], (byte) 3);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
             .billPayRecordId(billPayRecord.getId()).build();

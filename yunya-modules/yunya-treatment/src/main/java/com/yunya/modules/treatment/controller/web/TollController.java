@@ -197,7 +197,7 @@ public class TollController {
   @PostMapping("/treatConfirm")
   public ResponseResult<TollConfirmVO> confirmCharge(@RequestBody @Validated TreatTollModel model) {
     treatTollBiz.clear(model.getOrderRecordId());
-    TollConfirmVO tollConfirmVO = treatTollBiz.confirmCharge(model);
+    TollConfirmVO tollConfirmVO = treatTollBiz.confirmCharge(model, (byte) 2);
     return ResponseUtil.success(tollConfirmVO);
   }
 

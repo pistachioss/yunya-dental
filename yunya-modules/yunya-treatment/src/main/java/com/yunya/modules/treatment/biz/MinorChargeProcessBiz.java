@@ -19,17 +19,19 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanUtil;
-import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.treatment.BillPayRecord;
+import com.yunya.models.treatment.BillPayRecordLog;
 import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.modules.treatment.mapper.BillPayRecordLogMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -56,6 +58,7 @@ public class MinorChargeProcessBiz {
     @Autowired private TreatmentRecordMapper treatmentRecordMapper;
     @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
     @Autowired private OrderDetailBiz orderDetailBiz;
+    @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
 
     @Async("asyncExecutor")
     protected void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, Boolean isMqTreatment) {
@@ -64,37 +67,69 @@ public class MinorChargeProcessBiz {
         Set<MemberAccountModel> memberAccounts = model.getMemberAccountModels();
         Set<PaymentModel> payments = model.getPaymentModels();
         Byte discountType = model.getDiscountType();
-
-        // 保存订单项目收费分摊明细
-        billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, payments, billPayRecord);
-
-        // 调用保存优惠明细接口
-        savePrivilegeDetail(discountType, billPayRecord.getPatientId(), orderRecordId, model);
-
-        // 调用会员卡消费接口
-        if (StringHelper.isNotEmpty(prepaymentAccounts)) {
-            usePrepaymentAccount(
-                    prepaymentAccounts,
-                    billPayRecord);
-        }
-        // 调用预付款消费接口
-        if (StringHelper.isNotEmpty(memberAccounts)) {
-            ResponseResult expend =
-                    useMemberAccount(
-                            memberAccounts,
-                            billPayRecord);
-            if (expend.getStatus() > 0) {
-                throw new ClientServiceException(expend.getMsg(), expend.getStatus());
+        try {
+            // 保存订单项目收费分摊明细
+            billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, payments, billPayRecord);
+            // 调用保存优惠明细接口
+            savePrivilegeDetail(discountType, billPayRecord.getPatientId(), orderRecordId, model);
+            // 调用会员卡消费接口
+            if (StringHelper.isNotEmpty(prepaymentAccounts)) {
+                usePrepaymentAccount(
+                        prepaymentAccounts,
+                        billPayRecord);
             }
+            // 调用预付款消费接口
+            if (StringHelper.isNotEmpty(memberAccounts)) {
+                ResponseResult expend =
+                        useMemberAccount(
+                                memberAccounts,
+                                billPayRecord);
+                if (expend.getStatus() > 0) {
+                    throw new ClientServiceException(expend.getMsg(), expend.getStatus());
+                }
+            }
+            // 消费返点
+            expendRebateReferees(billPayRecord, totalPrincipal);
+            // 发送MQ消息
+            chargedMQMiddleTable(billPayRecord, isMqTreatment);
+            giftFirstVisitPackage(billPayRecord);
+            completedChargeLog(billPayRecord.getId());
+        } catch (Exception e) {
+            log.error("MinorChargeProcessBize asyncProcessCharge error: {}", e);
+            errorChargeLog(billPayRecord.getId(), e.getMessage());
         }
-        String orgId = BaseContextHandler.getOrgId();
-        Date curTime = BaseContextHandler.getCurTime();
-        System.out.println("异步执行流程中的当前时间：" + DateUtil.formatTime(curTime) + ", 门诊id: " + orgId);
-        // 消费返点
-        expendRebateReferees(billPayRecord, totalPrincipal);
-        // 发送MQ消息
-        chargedMQMiddleTable(billPayRecord, isMqTreatment);
-        grantFirstVisitPackage(billPayRecord);
+    }
+
+    /**
+     * 错误异常信息记录
+     *
+     * @param billPayRecordId
+     * @param message
+     */
+    private void errorChargeLog(Integer billPayRecordId, String message) {
+        Example example = new Example(BillPayRecordLog.class);
+        Example.Criteria c = example.createCriteria();
+        c.andEqualTo("billPayRecordId", billPayRecordId);
+        BillPayRecordLog entity = new BillPayRecordLog();
+        entity.setErrMsg(message);
+        billPayRecordLogMapper.updateByExampleSelective(entity, example);
+    }
+
+
+    /**
+     * 收费完成记录，更新状态
+     *
+     * @param billPayRecordId
+     */
+    private void completedChargeLog(Integer billPayRecordId) {
+        Example example = new Example(BillPayRecordLog.class);
+        Example.Criteria c = example.createCriteria();
+        c.andEqualTo("billPayRecordId", billPayRecordId);
+        c.andEqualTo("status", 1);
+        BillPayRecordLog entity = new BillPayRecordLog();
+        entity.setStatus((byte) 2);
+        entity.setUptTime(BaseContextHandler.getCurTime());
+        billPayRecordLogMapper.updateByExampleSelective(entity, example);
     }
 
     /**
@@ -102,7 +137,7 @@ public class MinorChargeProcessBiz {
      *
      * @param billPayRecord
      */
-    private void grantFirstVisitPackage(BillPayRecord billPayRecord) {
+    private void giftFirstVisitPackage(BillPayRecord billPayRecord) {
     }
 
     /**
@@ -148,6 +183,7 @@ public class MinorChargeProcessBiz {
     private void chargedMQMiddleTable(BillPayRecord billPayRecord, Boolean isMqTreatment) {
         rabbitMqServiceFeign.sendMessage(billPayRecord.getOrderRecordId(), 1, BaseBill);
         rabbitMqServiceFeign.sendMessage(billPayRecord.getId(), 0, BaseBillPay);
+        rabbitMqServiceFeign.sendMessage(billPayRecord.getOrderRecordId(), 1, BaseBill);
         // 变更治疗计划详情的状态
         rabbitMqServiceFeign.sendMessage(billPayRecord.getTreatmentRecordId(), 0, TreatPlanDetail);
         if (isMqTreatment) {
