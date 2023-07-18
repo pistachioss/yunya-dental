@@ -211,4 +211,12 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     entity.setInservice(false);
     mapper.updateByPrimaryKeySelective(entity);
   }
+
+  public boolean hasRelation(PatientKinRelation patientKinRelation) {
+    PatientKinRelation p = patientKinRelationMapper.selectOne(patientKinRelation);
+    if (p != null) {
+      return true;
+    }
+    return false;
+  }
 }

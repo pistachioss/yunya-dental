@@ -13,6 +13,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientKinRelationVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.patient_central.PatientKinRelation;
 import com.yunya.modules.patient_central.biz.PatientKinRelationBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -92,5 +93,18 @@ public class PatientKinRelationController {
   public ResponseResult deleteById(@PathVariable("id") Integer id) {
     patientKinRelationBiz.tombstone(id);
     return ResponseUtil.success();
+  }
+
+  /**
+   * 查询患者是否有关联关系
+   *
+   * @param patientKinRelation 患者亲属关系模板
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("查询患者是否有关联关系")
+  @PostMapping("/hasRelation")
+  public ResponseResult hasRelation( @RequestBody PatientKinRelation patientKinRelation) {
+    return ResponseUtil.success(this.patientKinRelationBiz.hasRelation(patientKinRelation));
   }
 }
