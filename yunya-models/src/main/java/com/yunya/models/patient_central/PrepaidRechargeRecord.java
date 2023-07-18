@@ -2,9 +2,12 @@ package com.yunya.models.patient_central;
 
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Data
 @Table(name = "prepaid_recharge_record")
@@ -102,7 +105,7 @@ public class PrepaidRechargeRecord {
     private Date updTime;
 
     /**
-     * 操作类型
+     * 操作类型: 0 充值，1 撤销收费 2 订单退费 3 账单返点
      */
     @Column(name = "type")
     private Integer type;

@@ -100,6 +100,7 @@ public class PatientServiceRest {
     return patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm);
   }
 
+  @CurrentUser
   @ApiOperation("根据患者id查询患者信息")
   @RequestMapping(value = "/findPatientInfoById/{id}", method = RequestMethod.GET)
   public PatientBaseInfo findPatientInfoById(@PathVariable Integer id) {
@@ -427,8 +428,13 @@ public class PatientServiceRest {
     return patientBaseInfo.getBirthdayCheck();
   }
 
-
-
+  @CurrentUser
+  @ApiOperation("账单返点至会员卡账户")
+  @PostMapping("/member/rebate")
+  ResponseResult billRebate2MemberAccount(@RequestBody @Validated BillRebate2MemberAccountModel model) {
+    patientMemberInfoBiz.billRebate2MemberAccount(model);
+    return ResponseUtil.success();
+  }
 
   @ApiOperation("查询患者储蓄账号（会员卡or预付款）信息列表")
   @PostMapping("/member/depositAccount")

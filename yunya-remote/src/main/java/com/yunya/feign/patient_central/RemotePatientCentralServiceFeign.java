@@ -383,4 +383,8 @@ import java.util.List;
   @ApiOperation("根据订单记录id查询会员卡or预付款账户账单收费消费列表")
   @GetMapping("/api/member/billExpend/{orderRecordId}")
   List<PatientDepositAccountVO> findDepositAccountBillPayExpendList(@PathVariable(value = "orderRecordId") Integer orderRecordId);
+
+  @ApiOperation("账单返点至会员卡账户")
+  @PostMapping("/api/member/rebate")
+  ResponseResult billRebate2MemberAccount(@RequestBody @Validated BillRebate2MemberAccountModel model);
 }

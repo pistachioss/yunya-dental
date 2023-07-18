@@ -35,6 +35,8 @@ public class CommonConstants {
 
   /** 当前组织ID */
   public static final String CONTEXT_KEY_ORG_ID = "currentOrgId";
+  /** 当前时间 */
+  public static final String CONTEXT_KEY_TIME = "currentTime";
   /** 当前用户ID */
   public static final String CONTEXT_KEY_USER_ID = "currentUserId";
   /** 当前用户名 */

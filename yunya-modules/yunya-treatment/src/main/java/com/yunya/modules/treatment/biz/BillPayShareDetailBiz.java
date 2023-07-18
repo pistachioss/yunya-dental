@@ -163,7 +163,7 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
             BigDecimal amount = vo.getAmount();
             Date crtTime = vo.getCrtTime();
             Integer inservice = vo.getInservice();
-            String key = StringHelper.joinWith(",", vo.getBillPayRecordId(), inservice, DateUtil.toDateTime(crtTime));
+            String key = StringHelper.joinWith(",", vo.getBillPayRecordId(), inservice, DateUtil.formatTime(crtTime));
             JSONObject billPay = map.computeIfAbsent(key, k->{
                 JSONObject obj = new JSONObject();
                 obj.put("freeAmount", BigDecimal.ZERO);
@@ -188,7 +188,7 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
                 obj.put("payDate", crtTime);
                 obj.put("orderRecordId", vo.getOrderRecordId());
                 obj.put("inservice", -1);
-                map.put(StringHelper.joinWith(",", vo.getBillPayRecordId(), "-1", DateUtil.toDateTime(crtTime)), obj);
+                map.put(StringHelper.joinWith(",", vo.getBillPayRecordId(), "-1", DateUtil.formatTime(crtTime)), obj);
             }
             if (inservice == -1) {
                 // 异常处理的收费记录（撤销收费），生成删除事件

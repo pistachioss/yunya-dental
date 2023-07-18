@@ -69,9 +69,9 @@ public class BasePatientMemberOccurLogBiz
   @Resource private PrepaidRechargeTollRecordMapper prepaidRechargeTollRecordMapper;
 
   @Resource private BasePatientMemberBiz basePatientMemberBiz;
+  @Resource private BasePatientMemberMapper basePatientMemberMapper;
 
-  @Resource
-  private BasePatientMemberMapper basePatientMemberMapper;
+  @Resource private PatientTransferRecordMapper patientTransferRecordMapper;
 
   /**
    * 中间表-会员-预付款 信息操作源头
@@ -306,7 +306,7 @@ public class BasePatientMemberOccurLogBiz
   }
 
   /**
-   * 会员卡-查询单条-充值log
+   * 会员卡-查询转账记录-充值log
    *
    * @param id 充值id
    * @param type 会员类型
@@ -359,6 +359,64 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setRemarks(memberRechargeRecord.getRemarks());
       basePatientMemberOccurLog.setOccurDate(memberRechargeRecord.getCrtTime());
       basePatientMemberOccurLog.setOrgId(memberRechargeRecord.getOrgId());
+      return basePatientMemberOccurLog;
+    }
+    return null;
+  }
+
+  /**
+   * 会员卡-查询单条转账记录-充值log
+   *
+   * @param id 充值id
+   * @param type 会员类型
+   * @param occurType 操作类型
+   * @return BasePatientMemberOccurLog
+   */
+  public BasePatientMemberOccurLog getMemberTransferRecordInfoLog(
+      Integer id, Integer type, Integer occurType) {
+    PatientTransferRecord entity = patientTransferRecordMapper.selectByPrimaryKey(id);
+    if (StringHelper.isNotNull(entity)) {
+      BasePatientMemberOccurLog basePatientMemberOccurLog = new BasePatientMemberOccurLog();
+      basePatientMemberOccurLog.setOccurLogId(entity.getId());
+      // 通过会员卡号 获取会员id
+      PatientMemberInfo memberInfo = new PatientMemberInfo();
+      memberInfo.setCardNumber(entity.getMainNumber());
+      PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOne(memberInfo);
+      if (StringHelper.isNotNull(patientMemberInfo)) {
+        basePatientMemberOccurLog.setCardId(patientMemberInfo.getId());
+        basePatientMemberOccurLog.setPatientId(patientMemberInfo.getPatientId());
+      }
+      basePatientMemberOccurLog.setType((byte) type.intValue());
+      basePatientMemberOccurLog.setOccurType((byte) occurType.intValue());
+      basePatientMemberOccurLog.setPrincipalAmount(entity.getPrincipal());
+      basePatientMemberOccurLog.setBonusAmount(entity.getBonus());
+      basePatientMemberOccurLog.setCurrentRechargePrincipal(
+              patientMemberInfo.getPrincipalAmount());
+      basePatientMemberOccurLog.setCurrentRechargeBonus(
+              patientMemberInfo.getBonusAmount());
+      basePatientMemberOccurLog.setRechargeMethod((byte)0);
+      if (occurType == 1){
+        MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
+        memberRechargeTollRecord.setRechargeRecordId(entity.getId());
+        MemberRechargeTollRecord memberRechargeToll =
+                memberRechargeTollRecordMapper.selectOne(memberRechargeTollRecord);
+        if (StringHelper.isNotNull(memberRechargeToll)) {
+          basePatientMemberOccurLog.setPaymentId(memberRechargeToll.getPaymentId());
+          AccountItem accountItem =
+                  accountItemMapper.selectByPrimaryKey(memberRechargeToll.getPaymentId());
+          if (StringHelper.isNotNull(accountItem)) {
+            basePatientMemberOccurLog.setPaymentManner(accountItem.getName());
+          }
+        }
+        if (memberRechargeToll.getCreditAmount() != null){
+          basePatientMemberOccurLog.setCreditAmount(memberRechargeToll.getCreditAmount());
+        }
+      }
+      basePatientMemberOccurLog.setOperatorUserId(entity.getCrtId());
+      basePatientMemberOccurLog.setRemarks(entity.getRemark());
+      basePatientMemberOccurLog.setOccurDate(entity.getCrtTime());
+      basePatientMemberOccurLog.setOrgId(entity.getOrgId());
+      basePatientMemberOccurLog.setRechargeCardNumber(entity.getMinorNumber());
       return basePatientMemberOccurLog;
     }
     return null;
@@ -453,10 +511,11 @@ public class BasePatientMemberOccurLogBiz
    */
   private Integer addMemberOccurLog(Integer id, Integer type, Integer operationType) {
     switch (operationType) {
-        // 充值 //撤销收费
+        // 充值、撤销收费、账单退费、账单返点
       case 1:
       case 4:
       case 5:
+      case 6:
         BasePatientMemberOccurLog memberRechargeLog =
             getMemberRechargeRecordInfoLog(id, type, operationType);
         if (StringHelper.isNotNull(memberRechargeLog)) {
@@ -485,7 +544,17 @@ public class BasePatientMemberOccurLogBiz
           return memberReturnInfoLog.getCardId();
         }
         break;
-        // 撤销
+        // 转账-转入、转账转出
+      case 7:
+      case 8:
+        BasePatientMemberOccurLog memberTransferLog =
+                getMemberTransferRecordInfoLog(id, type, operationType);
+        if (StringHelper.isNotNull(memberTransferLog)) {
+          mapper.deleteByPrimaryKey(memberTransferLog);
+          mapper.insertSelective(memberTransferLog);
+          return memberTransferLog.getCardId();
+        }
+        break;
       default:
         break;
     }
@@ -598,6 +667,65 @@ public class BasePatientMemberOccurLogBiz
         return prepaidReturnRecordList;
       }
       return null;
+    }
+    return null;
+  }
+
+  /**
+   * 预付款-查询转账记录-充值log
+   *
+   * @param id 充值记录id
+   * @param type 会员类型
+   * @param operationType 操作类型
+   */
+  public BasePatientMemberOccurLog getPrepaidTransferRecord(
+      Integer id, Integer type, Integer operationType) {
+    PatientTransferRecord transferRecord =
+        patientTransferRecordMapper.selectByPrimaryKey(id);
+    if (StringHelper.isNotNull(transferRecord)) {
+      BasePatientMemberOccurLog basePatientMemberOccurLog = new BasePatientMemberOccurLog();
+      basePatientMemberOccurLog.setOccurLogId(transferRecord.getId());
+      // 通过会员卡号 获取会员id
+      PatientPrepaymentsInfo prepaymentsInfo = new PatientPrepaymentsInfo();
+      prepaymentsInfo.setPrepaymentNumber(transferRecord.getMainNumber());
+      PatientPrepaymentsInfo patientPrepaymentsInfo =
+          patientPrepaymentsInfoMapper.selectOne(prepaymentsInfo);
+      if (StringHelper.isNotNull(patientPrepaymentsInfo)) {
+        basePatientMemberOccurLog.setCardId(patientPrepaymentsInfo.getId());
+      }
+      basePatientMemberOccurLog.setPatientId(patientPrepaymentsInfo.getPatientId());
+      basePatientMemberOccurLog.setType((byte) type.intValue());
+      basePatientMemberOccurLog.setOccurType((byte) operationType.intValue());
+      basePatientMemberOccurLog.setPrincipalAmount(transferRecord.getPrincipal());
+      basePatientMemberOccurLog.setBonusAmount(transferRecord.getBonus());
+      basePatientMemberOccurLog.setCurrentRechargePrincipal(
+              patientPrepaymentsInfo.getPrepaymentPrincipal());
+      basePatientMemberOccurLog.setCurrentRechargeBonus(
+              patientPrepaymentsInfo.getPrepaymentBonus());
+      if (operationType == 1){
+        PrepaidRechargeTollRecord memberRechargeTollRecord = new PrepaidRechargeTollRecord();
+        memberRechargeTollRecord.setRechargeRecordId(transferRecord.getId());
+        PrepaidRechargeTollRecord prepaidRechargeTollRecord =
+                prepaidRechargeTollRecordMapper.selectOne(memberRechargeTollRecord);
+        if (StringHelper.isNotNull(prepaidRechargeTollRecord)) {
+          basePatientMemberOccurLog.setPaymentId(prepaidRechargeTollRecord.getPaymentId());
+          AccountItem accountItem =
+                  accountItemMapper.selectByPrimaryKey(prepaidRechargeTollRecord.getPaymentId());
+          if (StringHelper.isNotNull(accountItem)) {
+            basePatientMemberOccurLog.setPaymentManner(accountItem.getName());
+          }
+        }
+        if (prepaidRechargeTollRecord.getCreditAmount() != null){
+          basePatientMemberOccurLog.setCreditAmount(prepaidRechargeTollRecord.getCreditAmount());
+        }
+      }
+      basePatientMemberOccurLog.setOperatorUserId(transferRecord.getCrtId());
+      basePatientMemberOccurLog.setRemarks(transferRecord.getRemark());
+      basePatientMemberOccurLog.setOccurDate(transferRecord.getCrtTime());
+      basePatientMemberOccurLog.setRechargeMethod((byte) 1);
+      basePatientMemberOccurLog.setRechargeCardNumber(transferRecord.getMinorNumber());
+      basePatientMemberOccurLog.setOrgId(transferRecord.getOrgId());
+      return basePatientMemberOccurLog;
     }
     return null;
   }
@@ -756,10 +884,11 @@ public class BasePatientMemberOccurLogBiz
    */
   private Integer addPrepaymentOccurLog(Integer id, Integer type, Integer operationType) {
     switch (operationType) {
-        // 充值 //撤销
+        // 充值、撤销、账单退费、账单返点
       case 1:
       case 4:
       case 5:
+      case 6:
         BasePatientMemberOccurLog prepaidRechargeRecord =
             getPrepaidRechargeRecord(id, type, operationType);
         if (StringHelper.isNotNull(prepaidRechargeRecord)) {
@@ -789,6 +918,19 @@ public class BasePatientMemberOccurLogBiz
           mapper.delete(prepaidReturnInfo);
           mapper.insertSelective(prepaidReturnInfo);
           return prepaidReturnInfo.getCardId();
+        }
+        break;
+      case 7:
+      case 8:
+        BasePatientMemberOccurLog prepaidTransferRecord =
+                getPrepaidTransferRecord(id, type, operationType);
+        if (StringHelper.isNotNull(prepaidTransferRecord)) {
+          mapper.deleteByPrimaryKeyAndtype(
+                  prepaidTransferRecord.getOccurLogId(),
+                  prepaidTransferRecord.getType().intValue(),
+                  prepaidTransferRecord.getOccurType().intValue());
+          mapper.insertSelective(prepaidTransferRecord);
+          return prepaidTransferRecord.getCardId();
         }
         break;
       default:

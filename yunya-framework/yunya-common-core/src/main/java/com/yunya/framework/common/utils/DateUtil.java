@@ -721,7 +721,7 @@ public class DateUtil {
    */
   public static Date parse(String date) {
     try {
-      return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date);
+      return SDF_TIME.parse(date);
     } catch (ParseException e) {
       log.error("parse date error: ", e);
     }
@@ -1266,7 +1266,7 @@ public class DateUtil {
     return result;
   }
 
-  public static String toDateTime(Date date) {
+  public static String formatTime(Date date) {
     return format(date, SDF_TIME);
   }
 

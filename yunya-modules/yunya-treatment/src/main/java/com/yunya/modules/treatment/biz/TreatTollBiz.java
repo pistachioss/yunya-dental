@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
@@ -7,7 +8,6 @@ import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.model.*;
@@ -15,7 +15,6 @@ import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
 import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
-import com.yunya.feign.wechat.RemoteWechatServiceFeign;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -28,10 +27,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.treatment.*;
-import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
-import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
-import com.yunya.modules.treatment.mapper.BillPayShareDetailMapper;
-import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
+import com.yunya.modules.treatment.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +39,7 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
@@ -72,12 +69,8 @@ public class TreatTollBiz {
   @Autowired private RedisUtils redisUtils;
   /** 系统关联服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
-  /** 患者服务调用 */
-  @Autowired private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
   /** 优惠服务调用 */
   @Autowired private RemoteDiscountFeign discountFeign;
-  /** 微信服务调用 */
-  @Autowired private RemoteWechatServiceFeign weChatServiceFeign;
   /** 开单记录 */
   @Autowired private OrderRecordBiz orderRecordBiz;
   /** 开单明细 */
@@ -86,10 +79,6 @@ public class TreatTollBiz {
   @Autowired private OrderDetailPayRecordBiz orderDetailPayRecordBiz;
   /** 账单记录 */
   @Autowired private BillRecordBiz billRecordBiz;
-  /** 账单记录 */
-  @Autowired private BaseOralTariffBiz oralTariffBiz;
-  /** 账单记录 */
-  @Autowired private BaseTariffBiz baseTariffBiz;
   /** 账单支付记录 */
   @Autowired private BillPayRecordMapper billPayRecordMapper;
   /** 账单支付明细记录 */
@@ -99,6 +88,8 @@ public class TreatTollBiz {
 
   @Autowired private MinorChargeProcessBiz minorChargeProcessBiz;
   @Autowired private BillPayShareDetailMapper billPayShareDetailMapper;
+
+  @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
 
   /**
    * 根据优惠信息匹配订单优惠
@@ -240,7 +231,7 @@ public class TreatTollBiz {
     model.setPrepaymentAccountModels(null);
     model.setMemberAccountModels(null);
     model.setOutstandingAmount(actualReceivableAmount);
-    return confirmCharge(model);
+    return confirmCharge(model, (byte) 1);
   }
 
   /**
@@ -249,7 +240,7 @@ public class TreatTollBiz {
    * @param model 收费参数
    */
   @Transactional
-  public TollConfirmVO confirmCharge(TreatTollModel model) {
+  public TollConfirmVO confirmCharge(TreatTollModel model, byte type) {
     OrderRecord orderRecord = checkChargeParam(model);
     Integer orderRecordId = orderRecord.getId();
     Integer patientId = orderRecord.getPatientId();
@@ -258,7 +249,8 @@ public class TreatTollBiz {
 
     BigDecimal privilegeAmount = calculatePrivilegeAmount(discountType, orderRecordId, patientId, generalDiscount);
     // 计算入账总额、应收总额
-    BigDecimal totalCharge = calculateTotalCharge(model);
+    BigDecimal[] totalAmount = calculateTotalCharge(model);
+    BigDecimal totalCharge = totalAmount[0];
     BigDecimal actualReceivableAmount = orderRecord.getTotalAmount().subtract(privilegeAmount);
     // 比较实际应收与总入账金额
     BigDecimal outstandingAmount = model.getOutstandingAmount();
@@ -276,30 +268,58 @@ public class TreatTollBiz {
     // 生成收费记录及其入账方式明细
     BillPayRecord billPayRecord = generalBillPayRecordWithDetail(billRecord, totalCharge, actualReceivableAmount, model);
     // 更新订单状态
-    orderRecordBiz.updateOrderStatus(orderRecord.getId(),
-            Integer.valueOf(BaseContextHandler.getUserID()),
-            BaseContextHandler.getName(),
-            billRecord.getCrtTime(),
-            BusinessConstants.ORDER_FINISH_STATUS);
+    orderRecordBiz.updateOrderStatus(orderRecord.getId(), BusinessConstants.ORDER_FINISH_STATUS);
     // 更新就诊状态
     updateTreatmentRecordStatus(orderRecord.getTreatmentRecordId());
+
+    try {
+      TimeUnit.SECONDS.sleep(5);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
     // 异步处理收费次要流程
-    asyncProcessCharge(billPayRecord, model, totalCharge, true);
+    asyncProcessCharge(billPayRecord, model, totalCharge, totalAmount[1], true);
+    recordChargeLog(billPayRecord, model, totalCharge, totalAmount[1], type);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
             .billPayRecordId(billPayRecord.getId()).build();
   }
 
-  private void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, boolean isMqTreatment) {
+  /**
+   * 记录收费日志-用于异步任务（次要收费流程）失败时对其进行数据修复补充
+   *
+   * @param billPayRecord
+   * @param model
+   * @param totalCharge
+   * @param totalPrincipal
+   * @param type
+   */
+  private void recordChargeLog(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, byte type) {
+    BillPayRecordLog logEntity = new BillPayRecordLog();
+    logEntity.setBillPayRecordId(billPayRecord.getId());
+    logEntity.setOrderRecordId(billPayRecord.getOrderRecordId());
+    logEntity.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    logEntity.setTotalCharge(totalCharge);
+    logEntity.setTotalPrincipal(totalPrincipal);
+    logEntity.setType(type);
+    logEntity.setParam(JSONObject.toJSONString(model));
+    logEntity.setStatus((byte) 1);
+    logEntity.setCrtTime(BaseContextHandler.getCurTime());
+    logEntity.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    logEntity.setCrtName(BaseContextHandler.getName());
+    billPayRecordLogMapper.insertSelective(logEntity);
+  }
+
+  private void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, boolean isMqTreatment) {
     TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
       /**
        * 事务提交后回调该方法
        */
       @Override
       public void afterCommit() {
-        minorChargeProcessBiz.asyncProcessCharge(billPayRecord, model, totalCharge, isMqTreatment);
-        minorChargeProcessBiz.asyncPushWxExpendMsg(billPayRecord);
+        minorChargeProcessBiz.asyncProcessCharge(billPayRecord, model, totalCharge, totalPrincipal, isMqTreatment);
+//        minorChargeProcessBiz.asyncPushWxExpendMsg(billPayRecord);
       }
     });
   }
@@ -905,7 +925,7 @@ public class TreatTollBiz {
     }
     Byte status = orderRecord.getStatus();
     // 检查收费订单状态
-    checkOrderRecordStatus(status);
+//    checkOrderRecordStatus(status);
     String resultRecordId = redisUtils.get(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
     if (StringHelper.isNotBlank(resultRecordId)) {
       throw new ClientServiceException("收费失败，当前账单已解锁！请联系开单人员提交账单！", PARAMETERS_IS_ILLEGAL);
@@ -973,27 +993,31 @@ public class TreatTollBiz {
    *
    * @param tollModel 收费基础添加模型
    */
-  private BigDecimal calculateTotalCharge(TreatTollDebtModel tollModel) {
+  private BigDecimal[] calculateTotalCharge(TreatTollDebtModel tollModel) {
     Set<PrepaymentAccountModel> prepaymentAccounts = tollModel.getPrepaymentAccountModels();
     Set<MemberAccountModel> memberAccounts = tollModel.getMemberAccountModels();
     Set<PaymentModel> payments = tollModel.getPaymentModels();
-    BigDecimal totalAmount = BigDecimal.ZERO;
+    // 入账总额，本金总额
+    BigDecimal[] totalAmount = {BigDecimal.ZERO, BigDecimal.ZERO};
     // 预付款入账总额
     if (StringHelper.isNotEmpty(prepaymentAccounts)) {
       for (PrepaymentAccountModel model : prepaymentAccounts) {
-        totalAmount = totalAmount.add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[0] = totalAmount[0].add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[1] = totalAmount[1].add(StringHelper.defaultBigDecimal(model.getPrincipalAmount()));
       }
     }
     // 会员卡入账总额
     if (StringHelper.isNotEmpty(memberAccounts)) {
       for (MemberAccountModel model : memberAccounts) {
-        totalAmount = totalAmount.add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[0] = totalAmount[0].add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[1] = totalAmount[1].add(StringHelper.defaultBigDecimal(model.getPrincipalAmount()));
       }
     }
     // 其他方式入账总额
     if (StringHelper.isNotEmpty(payments)) {
       for (PaymentModel model : payments) {
-        totalAmount = totalAmount.add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[0] = totalAmount[0].add(StringHelper.defaultBigDecimal(model.getAmount()));
+        totalAmount[1] = totalAmount[1].add(StringHelper.defaultBigDecimal(model.getAmount()));
       }
     }
     return totalAmount;
@@ -1110,7 +1134,8 @@ public class TreatTollBiz {
         checkCollectDebtParams(model);
     BigDecimal actualReceivableAmount = billRecord.getActualReceivableAmount();
     // 计算收欠费入账总额
-    BigDecimal totalCharge = calculateTotalCharge(model);
+    BigDecimal[] totalAmount = calculateTotalCharge(model);
+    BigDecimal totalCharge = totalAmount[0];
     checkTotalChargeAndDebtAmount(totalCharge, actualReceivableAmount, model.getOutstandingAmount());
     billRecord.setReceivedAmount(billRecord.getReceivedAmount().add(totalCharge));
     billRecord.setDebtAmount(actualReceivableAmount.subtract(totalCharge));
@@ -1126,7 +1151,8 @@ public class TreatTollBiz {
     // 保存收费记录及其入账方式明细
     BillPayRecord billPayRecord = generalBillPayRecordWithDetail(billRecord, totalCharge, actualReceivableAmount, model);
 
-    asyncProcessCharge(billPayRecord, model, totalCharge, false);
+    asyncProcessCharge(billPayRecord, model, totalCharge, totalAmount[1], false);
+    recordChargeLog(billPayRecord, model, totalCharge, totalAmount[1], (byte) 3);
     return TollConfirmVO.builder()
             .billNumber(billRecord.getBillNumber())
             .billPayRecordId(billPayRecord.getId()).build();

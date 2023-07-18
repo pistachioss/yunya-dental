@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.mapper.BillPayRecordLogMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment.BillPayRecordLog" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="bill_pay_record_id" property="billPayRecordId" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
+    <result column="total_charge" property="totalCharge" jdbcType="DECIMAL" />
+    <result column="total_principal" property="totalPrincipal" jdbcType="DECIMAL" />
+    <result column="param" property="param" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="errMsg" property="errMsg" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>

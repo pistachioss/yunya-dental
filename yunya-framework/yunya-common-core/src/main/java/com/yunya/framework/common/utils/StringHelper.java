@@ -452,19 +452,22 @@ public class StringHelper extends StringUtils {
    * @param regex 分割符号
    * @return
    */
-  public static List split2IntList(String s, String regex) {
+  public static List<Integer> split2IntList(String s, String regex) {
     return split2List(s, regex, Integer.class);
   }
+  public static List<Long> split2LongList(String s, String regex) {
+    return split2List(s, regex, Long.class);
+  }
 
-  public static List split2DecList(String s, String regex) {
+  public static List<BigDecimal> split2DecList(String s, String regex) {
     return split2List(s, regex, BigDecimal.class);
   }
 
-  public static List split2List(String s, String regex) {
+  public static List<String> split2List(String s, String regex) {
     return split2List(s, regex, String.class);
   }
 
-  public static List split2List(String s, String regex, Class<?> clzz) {
+  public static <T> List<T> split2List(String s, String regex, Class<T> clzz) {
     List list = new ArrayList<>();
     if (isEmpty(s)) {
       return list;
@@ -473,6 +476,10 @@ public class StringHelper extends StringUtils {
     if (clzz == Integer.class) {
       for (String str : array) {
         list.add(Integer.parseInt(str));
+      }
+    } else if (clzz == Long.class) {
+      for (String str : array) {
+        list.add(Long.parseLong(str));
       }
     } else if (clzz == BigDecimal.class) {
       for (String str : array) {

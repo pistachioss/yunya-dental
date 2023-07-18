@@ -49,6 +49,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -58,8 +59,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.yunya.feign.wechat.enums.TemplateEnum.MEMBER_OPEN_CARD;
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.RETURN_VALUE_ISNULL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.MEMBER_GENERAT_LOCK;
 import static com.yunya.framework.common.constant.RedisConstants.PREPAYMENT_GENERAT_LOCK;
 import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.MEMBER;
@@ -282,7 +282,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    *
    * @param id 操作LogId
    * @param operateType 操作类型
-   * @param operationType Log类型
+   * @param operationType Log类型: 1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.账单返点 7.转账转入 8.转账转出
    */
   public void sendMemberLogMessages(Integer id, Integer operateType, Integer operationType) {
     Map<String, Object> paramMap = new HashMap<String, Object>();
@@ -1790,5 +1790,67 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public List<PatientDepositAccountVO> findDepositAccountBillExpendList(Integer orderRecordId) {
     return mapper.selectDepositAccountBillExpendList(orderRecordId);
+  }
+
+  /**
+   * 账单返点至会员卡
+   *
+   * @param model
+   */
+  public void billRebate2MemberAccount(BillRebate2MemberAccountModel model) {
+    BigDecimal principal = model.getPrincipal();
+    BigDecimal bonus = model.getBonus();
+    if (StringHelper.leZero(principal) && StringHelper.leZero(bonus)) {
+      throw new ClientServiceException("账单返点失败，返点金额不能为空", DATA_ERROR);
+    }
+    Integer acceptorId = model.getAcceptorId();
+    PatientMemberInfo member = mapper.selectOneByPatientId(acceptorId);
+    if (StringHelper.isNotNull(member)) {
+      int userId = Integer.parseInt(BaseContextHandler.getUserID());
+      String name = BaseContextHandler.getName();
+      Date now = BaseContextHandler.getCurTime();
+      System.out.println("账单返点时间：" + DateUtil.formatTime(now));
+      BigDecimal principalAmount = member.getPrincipalAmount();
+      BigDecimal bonusAmount = member.getBonusAmount();
+      if (StringHelper.gtZero(principal)) {
+        member.setPrincipalAmount(principalAmount.add(principal));
+      }
+      if (StringHelper.gtZero(bonus)) {
+        member.setBonusAmount(bonusAmount.add(bonus));
+      }
+      member.setUptId(userId);
+      member.setUpdName(name);
+      member.setUpdTime(now);
+
+      // 更新会员卡账户信息
+      Example condition = new Example(PatientMemberInfo.class);
+      condition.createCriteria().andEqualTo("id", member.getId())
+              .andEqualTo("principalAmount", principalAmount)
+              .andEqualTo("bonusAmount", bonusAmount);
+      int i = patientMemberInfoMapper.updateByExampleSelective(member, condition);
+      if (i != 1) {
+        throw new ClientServiceException("账单返点失败，请稍后再试", DATA_ERROR);
+      }
+
+      // 生成充值记录
+      MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
+      BeanUtils.copyProperties(model, memberRechargeRecord);
+      memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      memberRechargeRecord.setType(3);
+      memberRechargeRecord.setCrtId(userId);
+      memberRechargeRecord.setCrtName(name);
+      memberRechargeRecord.setCrtTime(now);
+      memberRechargeRecord.setUptId(userId);
+      memberRechargeRecord.setUpdName(name);
+      memberRechargeRecord.setUpdTime(now);
+      memberRechargeRecord.setMemberId(member.getCardNumber());
+      memberRechargeRecord.setRechargePrincipal(principal);
+      memberRechargeRecord.setRechargeBonus(bonus);
+      memberRechargeRecord.setCurrentRechargePrincipal(member.getPrincipalAmount());
+      memberRechargeRecord.setCurrentRechargeBonus(member.getBonusAmount());
+      memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+      // 发送消息 账单退费
+      sendMemberLogMessages(memberRechargeRecord.getId(), 0, 6);
+    }
   }
 }
