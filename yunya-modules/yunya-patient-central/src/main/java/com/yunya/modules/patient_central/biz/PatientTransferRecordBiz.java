@@ -1,12 +1,17 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.model.PatientTransferRecordModel;
+import com.yunya.feign.patient_central.domain.query.PatientTransferRecordQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientTransferRecordVO;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.models.patient_central.PatientPrepaymentsInfo;
@@ -20,8 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -42,6 +47,7 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
     @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
 
     @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+    @Autowired private RemoteSystemServiceFeign systemServiceFeign;
 
     @Transactional
     public void transferPrepaymentAccount(PatientTransferRecordModel model) {
@@ -59,21 +65,22 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
             throw new ClientServiceException("转账失败，转出账户不能是自己", PARAMETERS_IS_ILLEGAL);
         }
         // 转出
-        transferPrepaymentAccount(transferorNumber, principal.negate(), bonus.negate());
+        Integer transferorId = transferPrepaymentAccount(transferorNumber, principal.negate(), bonus.negate());
 
+        Integer acceptorId = null;
         // 转入
         if (model.getOperateType() == 1) {
-            transferPrepaymentAccount(model.getAcceptorNumber(), principal, bonus);
+            acceptorId = transferPrepaymentAccount(model.getAcceptorNumber(), principal, bonus);
         } else {
-            transferMemberAccount(acceptorNumber, principal, bonus);
+            acceptorId = transferMemberAccount(acceptorNumber, principal, bonus);
         }
         if (StringHelper.isEmpty(acceptorNumber)) {
             throw new ClientServiceException("转账方式暂不支持", PARAMETERS_IS_ILLEGAL);
         }
         // 生成转出记录
-        generateTransferRecord(transferorNumber, acceptorNumber, model, (byte)2);
+        generateTransferRecord(transferorNumber, transferorId, acceptorNumber, acceptorId, model, (byte)2);
         // 生成转入记录
-        generateTransferRecord(acceptorNumber, transferorNumber, model, (byte)1);
+        generateTransferRecord(acceptorNumber, acceptorId, transferorNumber, transferorId, model, (byte)1);
     }
 
     /**
@@ -84,15 +91,19 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
      * @param model
      * @param type
      */
-    private void generateTransferRecord(String transferorNumber, String acceptorNumber, PatientTransferRecordModel model, Byte type) {
+    private void generateTransferRecord(String transferorNumber, Integer transferorPatientId, String acceptorNumber, Integer acceptorPatientId, PatientTransferRecordModel model, Byte type) {
         PatientTransferRecord entity = new PatientTransferRecord();
         entity.setMainNumber(transferorNumber);
+        entity.setMainPatientId(transferorPatientId);
         entity.setMinorNumber(acceptorNumber);
+        entity.setMinorPatientId(acceptorPatientId);
         entity.setPrincipal(model.getPrincipal());
         entity.setBonus(model.getBonus());
+        entity.setOperateType(model.getOperateType());
         entity.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         entity.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         entity.setCrtTime(BaseContextHandler.getCurTime());
+        entity.setCrtName(BaseContextHandler.getName());
         entity.setRemark(model.getRemark());
         entity.setType(type);
         int i = mapper.insertSelective(entity);
@@ -110,9 +121,7 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
      * @param bonus 金额小于0位转出
      * @return
      */
-    private void transferPrepaymentAccount(String cardNumber, BigDecimal principal, BigDecimal bonus) {
-        Date curTime = BaseContextHandler.getCurTime();
-        System.out.println("跨服远程调用接口的时间: " + DateUtil.format(curTime));
+    private Integer transferPrepaymentAccount(String cardNumber, BigDecimal principal, BigDecimal bonus) {
         PatientPrepaymentsInfo entity = new PatientPrepaymentsInfo();
         entity.setType(NORMAL_PREPAYMENT.getType());
         entity.setInservice(true);
@@ -135,7 +144,7 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
         account.setPrepaymentBonus(newBonus);
         account.setUpdName(BaseContextHandler.getName());
         account.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-        account.setUpdTime(curTime);
+        account.setUpdTime(BaseContextHandler.getCurTime());
 
         Example condition = new Example(PatientPrepaymentsInfo.class);
         condition.createCriteria().andEqualTo("id", account.getId())
@@ -145,6 +154,7 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
         if (count != 1) {
             throw new ClientServiceException("转账失败，请稍后再试", DATA_ERROR);
         }
+        return account.getPatientId();
     }
 
     /**
@@ -155,9 +165,7 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
      * @param bonus 金额小于0位转出
      * @return
      */
-    private String transferMemberAccount(String cardNumber, BigDecimal principal, BigDecimal bonus) {
-        Date curTime = BaseContextHandler.getCurTime();
-        System.out.println("跨服远程调用接口的时间: " + DateUtil.format(curTime));
+    private Integer transferMemberAccount(String cardNumber, BigDecimal principal, BigDecimal bonus) {
         PatientMemberInfo entity = new PatientMemberInfo();
         entity.setInservice(true);
         entity.setCardNumber(cardNumber);
@@ -171,7 +179,7 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
         account.setBonusAmount(memberBonus.add(bonus));
         account.setUpdName(BaseContextHandler.getName());
         account.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-        account.setUpdTime(curTime);
+        account.setUpdTime(BaseContextHandler.getCurTime());
 
         Example condition = new Example(PatientMemberInfo.class);
         condition.createCriteria().andEqualTo("id", account.getId())
@@ -181,7 +189,7 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
         if (count != 1) {
             throw new ClientServiceException("转账失败，请稍后再试", DATA_ERROR);
         }
-        return account.getCardNumber();
+        return account.getPatientId();
     }
 
     /**
@@ -193,7 +201,7 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
      * @param occurType Log类型: 1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.账单返点 7.转账转入 8.转账转出
      */
     public void sendMemberLogMessages(
-            Integer id, Integer type, Integer operateType, Integer occurType) {
+            Integer id, Byte type, Integer operateType, Integer occurType) {
         Map<String, Object> paramMap = new HashMap(3);
         paramMap.put("id", id);
         paramMap.put("type", type);
@@ -202,4 +210,37 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
                 paramMap, operateType, MsgCategoryEnum.BasePatientMemberOccurLog);
     }
 
+    /**
+     * 根据条件查询转账记录
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<PatientTransferRecordVO> findList(PatientTransferRecordQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<PatientTransferRecordVO> result = mapper.selectPatientTransferRecords(query);
+        result.forEach(vo->{
+            Integer orgId = vo.getOrgId();
+            if (StringHelper.isNotNull(orgId)) {
+                OrganizationInfo organization = systemServiceFeign.findOrgInfoByOrgId(orgId);
+                if (StringHelper.isNotNull(organization)) {
+                    vo.setAbbreviation(organization.getAbbreviation());
+                }
+            }
+            if (vo.getType() == 1) {
+                String acceptor = vo.getTransferor();
+                String acceptorNumber = vo.getTransferorNumber();
+                String transferor = vo.getAcceptor();
+                String transferorNumber = vo.getAcceptorNumber();
+                vo.setAcceptor(acceptor);
+                vo.setAcceptorNumber(acceptorNumber);
+                vo.setTransferor(transferor);
+                vo.setTransferorNumber(transferorNumber);
+            }
+
+        });
+        return new PageInfo<>(result);
+    }
 }

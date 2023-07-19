@@ -8,13 +8,45 @@
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
     <result column="main_number" property="mainNumber" jdbcType="VARCHAR" />
+    <result column="main_patient_id" property="mainPatientId" jdbcType="INTEGER" />
     <result column="minor_number" property="minorNumber" jdbcType="VARCHAR" />
+    <result column="minor_patient_id" property="minorPatientId" jdbcType="INTEGER" />
     <result column="type" property="type" jdbcType="TINYINT" />
     <result column="principal" property="principal" jdbcType="DECIMAL" />
     <result column="bonus" property="bonus" jdbcType="DECIMAL" />
+    <result column="operate_type" property="operateType" jdbcType="TINYINT" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
   </resultMap>
+
+  <select id="selectPatientTransferRecords"
+          resultType="com.yunya.feign.patient_central.domain.vo.web.PatientTransferRecordVO">
+    SELECT
+        ptr.org_id AS orgId,
+        ptr.main_number AS transferorNumber,
+        ptr.minor_number AS acceptorNumber,
+        ptr.principal,
+        ptr.bonus,
+        ptr.type,
+        ptr.crt_time AS operateTime,
+        ptr.crt_name AS operator,
+        pbi1.name AS transferor,
+        pbi2.name AS acceptor
+    FROM patient_transfer_record ptr
+    LEFT JOIN patient_base_info pbi1 ON pbi1.id = ptr.main_patient_id
+    LEFT JOIN patient_base_info pbi2 ON pbi2.id = ptr.minor_patient_id
+    <where>
+      ptr.inservice = true
+      <if test="query.queryType != null">
+        AND ptr.operate_type = #{query.queryType}
+      </if>
+      <if test="query.cardNumber!=null and query.cardNumber!=''">
+      AND ptr.main_number = #{query.cardNumber}
+      </if>
+    </where>
+    ORDER BY ptr.crt_time DESC
+  </select>
 </mapper>

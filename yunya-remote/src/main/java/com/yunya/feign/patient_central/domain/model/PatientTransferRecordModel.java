@@ -29,7 +29,7 @@ public class PatientTransferRecordModel implements Serializable {
     /** 转账方式：0-预付款充值会员卡，1-预付款账户转账 */
     @ApiModelProperty(value = "转账方式：0-预付款充值会员卡，1-预付款账户转账", required = true)
     @NotNull(message = "转账方式不能为空")
-    private Integer operateType;
+    private Byte operateType;
 
     /** 接收者卡号 */
     @ApiModelProperty(value = "接收者卡号", required = true)

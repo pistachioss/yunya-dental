@@ -1,6 +1,9 @@
 package com.yunya.modules.patient_central.controller.web;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.model.PatientTransferRecordModel;
+import com.yunya.feign.patient_central.domain.query.PatientTransferRecordQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientTransferRecordVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -26,6 +29,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class PatientTransferRecordController {
 
     @Autowired private PatientTransferRecordBiz patientTransferRecordBiz;
+
+    /**
+     * 根据条件查询转账记录
+     *
+     * @param query
+     * @return
+     */
+    @ApiOperation("根据条件查询转账记录")
+    @PostMapping("/list")
+    public ResponseResult<PageInfo<PatientTransferRecordVO>> findList(@RequestBody @Validated PatientTransferRecordQuery query) {
+        PageInfo<PatientTransferRecordVO> page = patientTransferRecordBiz.findList(query);
+        return ResponseUtil.success(page);
+    }
 
     /**
      * 患者间预付款转账

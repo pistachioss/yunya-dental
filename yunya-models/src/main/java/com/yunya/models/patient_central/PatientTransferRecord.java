@@ -26,10 +26,22 @@ public class PatientTransferRecord {
     private String mainNumber;
 
     /**
+     * 主体患者id
+     */
+    @Column(name = "main_patient_id")
+    private Integer mainPatientId;
+
+    /**
      * 次要卡号
      */
     @Column(name = "minor_number")
     private String minorNumber;
+
+    /**
+     * 次要患者id
+     */
+    @Column(name = "minor_patient_id")
+    private Integer minorPatientId;
 
     /**
      * 类型：1-转入，2-转出
@@ -47,6 +59,12 @@ public class PatientTransferRecord {
     private BigDecimal bonus;
 
     /**
+     * 转账方式：0-预付款充值会员卡，1-预付款账户转账
+     */
+    @Column(name = "operate_type")
+    private Byte operateType;
+
+    /**
      * 是否启用
      */
     private Boolean inservice;
@@ -62,11 +80,18 @@ public class PatientTransferRecord {
     @Column(name = "crt_time")
     private Date crtTime;
 
+
     /**
      * 创建人id
      */
     @Column(name = "crt_id")
     private Integer crtId;
+
+    /**
+     * 创建人姓名
+     */
+    @Column(name = "crt_name")
+    private String crtName;
 
     /**
      * 获取转账记录id
@@ -123,6 +148,24 @@ public class PatientTransferRecord {
     }
 
     /**
+     *  获取主体患者id
+     *
+     * @return
+     */
+    public Integer getMainPatientId() {
+        return mainPatientId;
+    }
+
+    /**
+     * 设置主体患者id
+     *
+     * @param mainPatientId
+     */
+    public void setMainPatientId(Integer mainPatientId) {
+        this.mainPatientId = mainPatientId;
+    }
+
+    /**
      * 获取次要卡号
      *
      * @return acceptor_number - 次要卡号
@@ -138,6 +181,24 @@ public class PatientTransferRecord {
      */
     public void setMinorNumber(String minorNumber) {
         this.minorNumber = minorNumber;
+    }
+
+    /**
+     * 获取次要患者id
+     *
+     * @return
+     */
+    public Integer getMinorPatientId() {
+        return minorPatientId;
+    }
+
+    /**
+     * 设置次要患者id
+     *
+     * @param minorPatientId
+     */
+    public void setMinorPatientId(Integer minorPatientId) {
+        this.minorPatientId = minorPatientId;
     }
 
     /**
@@ -192,6 +253,24 @@ public class PatientTransferRecord {
      */
     public void setBonus(BigDecimal bonus) {
         this.bonus = bonus;
+    }
+
+    /**
+     * 获取 转账方式：0-预付款充值会员卡，1-预付款账户转账
+     *
+     * @return
+     */
+    public Byte getOperateType() {
+        return operateType;
+    }
+
+    /**
+     * 设置 转账方式：0-预付款充值会员卡，1-预付款账户转账
+     *
+     * @param operateType
+     */
+    public void setOperateType(Byte operateType) {
+        this.operateType = operateType;
     }
 
     /**
@@ -264,5 +343,23 @@ public class PatientTransferRecord {
      */
     public void setCrtId(Integer crtId) {
         this.crtId = crtId;
+    }
+
+    /**
+     * 获取创建人姓名
+     *
+     * @return
+     */
+    public String getCrtName() {
+        return crtName;
+    }
+
+    /**
+     * 设置创建人姓名
+     *
+     * @param crtName
+     */
+    public void setCrtName(String crtName) {
+        this.crtName = crtName;
     }
 }
