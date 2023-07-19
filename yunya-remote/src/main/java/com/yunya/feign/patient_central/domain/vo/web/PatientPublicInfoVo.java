@@ -136,4 +136,7 @@ public class PatientPublicInfoVo implements Serializable {
     @ApiModelProperty(value = "开卡时间")
     private Date crtTime;
 
+    @ApiModelProperty(value = "会员卡是否激活、是否退卡")
+    private Boolean inservice;
+
 }

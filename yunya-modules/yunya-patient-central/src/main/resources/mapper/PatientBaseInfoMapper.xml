@@ -66,6 +66,7 @@
 			   cast(IFNULL(pmi.principal_amount + pmi.bonus_amount,0) as decimal(15,2)) memberCardMoneySum,
 			   cast(IFNULL(ppi.prepayment_principal + ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentsMoneySum,
 			   pmi.crt_time as crtTime
+        	   pmi.inservice
         from patient_base_info pbi
         left join (
             select * from patient_prepayments_info where type=1
