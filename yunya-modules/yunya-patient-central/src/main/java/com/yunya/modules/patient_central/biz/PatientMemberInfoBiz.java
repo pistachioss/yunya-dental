@@ -445,10 +445,22 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    *
    * @param openCardModel 原藤卡激活（存在连带转换亲密付）Model
    */
+  public ResponseResult disableMemberCard(OpenCardModel openCardModel) {
+    // 反激活卡主身份
+    PatientMemberInfo patientMemberInfo =
+        patientMemberInfoMapper.selectOneByPatientId(openCardModel.getPatientId());
+    if (patientMemberInfo == null) {
+      throw new ClientServiceException("未找到会员卡信息", DATA_NOT_EXIST);
+    }
+    patientMemberInfo.setInservice(false);
+    patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
+    return ResponseUtil.success();
+  }
+
   public ResponseResult addMemberCard3(OpenCardModel3 openCardModel) {
     // 激活卡主身份
     PatientMemberInfo patientMemberInfo =
-        patientMemberInfoMapper.selectOneByPatientId(openCardModel.getPatientId());
+            patientMemberInfoMapper.selectOneByPatientId(openCardModel.getPatientId());
     if (patientMemberInfo == null) {
       throw new ClientServiceException("未找到会员卡信息", DATA_NOT_EXIST);
     }
@@ -465,64 +477,64 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
 
     // TODO：不转化亲密付的用户，无藤卡转次一级新卡
     List<Integer> patientMemberRelations =
-        patientMemberRelationMapper.FindMemberBindingRelation2(
-            openCardModel.getPatientId(), openCardModel.getTransformPatientIds());
+            patientMemberRelationMapper.FindMemberBindingRelation2(
+                    openCardModel.getPatientId(), openCardModel.getTransformPatientIds());
     Integer finalNextLevelId = nextLevelId;
     patientMemberRelations.forEach(
-        r -> {
-          PatientMemberInfo patientMemberInfo1 =
-              patientMemberInfoMapper.selectOneByPatientId(r);
-          // 执行无卡规则：开次一级卡，或升级到次一级卡
-          if (patientMemberInfo1 == null) {
-            // 开卡
-            PatientMemberInfo patientMemberInfo2 = new PatientMemberInfo();
-            patientMemberInfo2.setPatientId(r);
-            patientMemberInfo2.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-            patientMemberInfo2.setMemberTypeId(finalNextLevelId);
-            patientMemberInfo2.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientMemberInfo2.setCrtName(BaseContextHandler.getName());
-            generateCardNumber(patientMemberInfo2);
-            this.cardLog(patientMemberInfo2, "开卡", "");
-            remoteRabbitMqServiceFeign.sendMessage(
-                    patientMemberInfo2.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
-            remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo2));
-          } else if (patientMemberInfo1.getMemberTypeId() == 4 && finalNextLevelId != 4) {
-            // 升级到次一级卡，普通会员转VIP
-            PatientMemberInfo patientMember =
-                    this.patientMemberInfoMapper.selectOneByCardNumber(patientMemberInfo1.getCardNumber());
-            patientMember.setMemberTypeId(finalNextLevelId);
-            patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientMember.setUpdName(BaseContextHandler.getName());
-            patientMember.setUpdTime(new Date());
-            patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-            this.mapper.updateByPrimaryKeySelective(patientMember);
-            this.cardLog(patientMember, "变更", "更新");
-            remoteRabbitMqServiceFeign.sendMessage(
-                    patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
-          }
-        });
+            r -> {
+              PatientMemberInfo patientMemberInfo1 =
+                      patientMemberInfoMapper.selectOneByPatientId(r);
+              // 执行无卡规则：开次一级卡，或升级到次一级卡
+              if (patientMemberInfo1 == null) {
+                // 开卡
+                PatientMemberInfo patientMemberInfo2 = new PatientMemberInfo();
+                patientMemberInfo2.setPatientId(r);
+                patientMemberInfo2.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+                patientMemberInfo2.setMemberTypeId(finalNextLevelId);
+                patientMemberInfo2.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+                patientMemberInfo2.setCrtName(BaseContextHandler.getName());
+                generateCardNumber(patientMemberInfo2);
+                this.cardLog(patientMemberInfo2, "开卡", "");
+                remoteRabbitMqServiceFeign.sendMessage(
+                        patientMemberInfo2.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
+                remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo2));
+              } else if (patientMemberInfo1.getMemberTypeId() == 4 && finalNextLevelId != 4) {
+                // 升级到次一级卡，普通会员转VIP
+                PatientMemberInfo patientMember =
+                        this.patientMemberInfoMapper.selectOneByCardNumber(patientMemberInfo1.getCardNumber());
+                patientMember.setMemberTypeId(finalNextLevelId);
+                patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+                patientMember.setUpdName(BaseContextHandler.getName());
+                patientMember.setUpdTime(new Date());
+                patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+                this.mapper.updateByPrimaryKeySelective(patientMember);
+                this.cardLog(patientMember, "变更", "更新");
+                remoteRabbitMqServiceFeign.sendMessage(
+                        patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
+              }
+            });
 
     // 删除不转化亲密付的用户，已改为删除所有关系
     patientMemberRelationMapper.deleteOtherMemberRelation(
-        openCardModel.getPatientId(), openCardModel.getTransformPatientIds());
+            openCardModel.getPatientId(), openCardModel.getTransformPatientIds());
 
     // 转化亲密付用户列表
     openCardModel
-        .getTransformPatientIds()
-        .forEach(
-            p -> {
-              try {
-                MemberBindingRelationInfoModel form = new MemberBindingRelationInfoModel();
-                form.setMasterCardId(openCardModel.getPatientId());
-                form.setPatientId(openCardModel.getPatientId());
-                form.setSecondaryCardId(p);
-                form.setBindType((byte) 1); // 原 共享会员卡余额，现 会员卡亲密付
-                this.addMemberBindingRelation(form);
-              } catch (Exception e) {
-                // 已绑过的直接抛出异常
-                log.info(e.toString());
-              }
-            });
+            .getTransformPatientIds()
+            .forEach(
+                    p -> {
+                      try {
+                        MemberBindingRelationInfoModel form = new MemberBindingRelationInfoModel();
+                        form.setMasterCardId(openCardModel.getPatientId());
+                        form.setPatientId(openCardModel.getPatientId());
+                        form.setSecondaryCardId(p);
+                        form.setBindType((byte) 1); // 原 共享会员卡余额，现 会员卡亲密付
+                        this.addMemberBindingRelation(form);
+                      } catch (Exception e) {
+                        // 已绑过的直接抛出异常
+                        log.info(e.toString());
+                      }
+                    });
     return ResponseUtil.success();
   }
 

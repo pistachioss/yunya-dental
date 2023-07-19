@@ -160,6 +160,14 @@ public class PatientMemberInfoController {
     return patientMemberInfoBiz.addMemberCard3(openCardModel);
   }
 
+  @CurrentUser
+  @ApiOperation("原藤卡激活（存在连带转换亲密付）")
+  @PostMapping("/disableMemberCard")
+  @RepeatSubmit
+  public ResponseResult disableMemberCard(@RequestBody OpenCardModel openCardModel) {
+    return patientMemberInfoBiz.disableMemberCard(openCardModel);
+  }
+
   /**
    * 会员卡变更
    *
