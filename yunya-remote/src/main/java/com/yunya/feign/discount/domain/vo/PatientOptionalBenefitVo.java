@@ -23,4 +23,6 @@ public class PatientOptionalBenefitVo implements Serializable {
     private List<PatientPackageVo> packageVoList;
     @ApiModelProperty(value = "代金券模型")
     private List<PatientVoucherVo> voucherVoList;
+    @ApiModelProperty(value = "划扣券模型")
+    private List<PatientPackageVo> deductionVoList;
 }

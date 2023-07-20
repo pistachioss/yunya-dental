@@ -147,6 +147,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     @Resource
     private SpecialPackageCouponMapper specialPackageMapper;
     @Resource
+    private DeductionPackageCouponMapper deductionPackageCouponMapper;
+    @Resource
     private SalesChannelMapper salesChannelMapper;
     @Resource
     private ProductTypeMapper productTypeMapper;
@@ -185,6 +187,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private RemoteOssServiceFeign remoteOssServiceFeign;
     @Value("${domainUrl}")
     private String domainUrl;
+    @Resource
+    private DeductionPeriodBiz deductionPeriodBiz;
 
     /**
      * 加密加密生成卡券密码
@@ -1288,7 +1292,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         log.info("患者可使用的优惠券：[{}]", benefitVo);
         if (CollectionUtils.isEmpty(benefitVo.getDiscountVoList()) && CollectionUtils.isEmpty(benefitVo.getMemberCardVoList()) &&
                 CollectionUtils.isEmpty(benefitVo.getExchangeVoList()) && CollectionUtils.isEmpty(benefitVo.getPackageVoList()) &&
-                CollectionUtils.isEmpty(benefitVo.getVoucherVoList())) {
+                CollectionUtils.isEmpty(benefitVo.getVoucherVoList())&& CollectionUtils.isEmpty(benefitVo.getDeductionVoList())) {
             log.info("【选择优惠】，患者没有可使用优惠券信息");
             return ResponseUtil.error(DiscountError.CANT_USE_BENEFIT);
         }
@@ -1330,11 +1334,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         log.info("订单选择的优惠信息：[{}]", form);
         form.setOrgId(treatmentServiceFeign.findOrderRecordById(form.getOrderId()).getOrgId());
         ResponseResult<List<OrderItemUseBo>> responseResult = choiceBenefitBo(form);
-        log.info("操作人员选择的优惠信息：[{}]", responseResult);
+        log.info("操作人员选择的优惠信息：[{}]", responseResult.getData());
         if (!FALSE.equals(responseResult.getStatus())) {
             return ResponseUtil.error(responseResult.getStatus(), responseResult.getMsg());
         }
         PatientOrderBenefitVo result = transformBenefitInfo(responseResult.getData());
+        log.info("优惠信息：[{}]", result);
         return ResponseUtil.success(result);
     }
 
@@ -1382,32 +1387,38 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param orgId        组织
      */
     private void singleItemUseBenefit(BenefitUseBo benefitUseBo, OrderItemUseBo orderItem, Integer orgId) {
-        //兑换券项目优惠
-        List<PatientUseBenefitBo> exchangeBenefitBos = benefitUseBo.getExchangeBenefitBos();
-        setUpSingleBenefitInfoForOrder(orderItem, orgId, exchangeBenefitBos);
-
-        //套餐券项目优惠
-        //订单明细对应的项目是否被优惠过，对于个体项目，除代金券如果项目已被优惠则不能叠加使用其他优惠券
+        //划扣
+        List<PatientUseBenefitBo> deductionBenefitBos = benefitUseBo.getDeductionBenefitBos();
+        //按售出套餐单价正序排序
+        setUpSingleBenefitInfoForOrder(orderItem, orgId, deductionBenefitBos);
         if (orderItem.getBenefitAmount() == null) {
-            List<PatientUseBenefitBo> packageBenefitBos = benefitUseBo.getPackageBenefitBos();
-            //按售出套餐单价正序排序
-            sortPackageBySoldUnit(packageBenefitBos, orderItem);
-            setUpSingleBenefitInfoForOrder(orderItem, orgId, packageBenefitBos);
+            //兑换券项目优惠
+            List<PatientUseBenefitBo> exchangeBenefitBos = benefitUseBo.getExchangeBenefitBos();
+            setUpSingleBenefitInfoForOrder(orderItem, orgId, exchangeBenefitBos);
+
+            //套餐券项目优惠
+            //订单明细对应的项目是否被优惠过，对于个体项目，除代金券如果项目已被优惠则不能叠加使用其他优惠券
+            if (orderItem.getBenefitAmount() == null) {
+                List<PatientUseBenefitBo> packageBenefitBos = benefitUseBo.getPackageBenefitBos();
+                //按售出套餐单价正序排序
+                sortPackageBySoldUnit(packageBenefitBos, orderItem);
+                setUpSingleBenefitInfoForOrder(orderItem, orgId, packageBenefitBos);
+            }
+            //会员卡项目
+            PatientUseBenefitBo memberBenefitBo = benefitUseBo.getMemberBenefitBo();
+            PatientUseBenefitBo discountBenefitBos = benefitUseBo.getDiscountBenefitBos();
+            //折扣券券项目优惠
+            if (orderItem.getBenefitAmount() == null && discountBenefitBos != null) {
+                setUpSingleBenefitInfoForOrder(orderItem, orgId, Collections.singletonList(discountBenefitBos));
+            }
+            //会员卡优惠
+            if (orderItem.getBenefitAmount() == null && memberBenefitBo != null) {
+                setUpSingleBenefitInfoForOrder(orderItem, orgId, Collections.singletonList(memberBenefitBo));
+            }
+            //代金券项目优惠
+            List<PatientUseBenefitBo> voucherBenefitBos = benefitUseBo.getVoucherBenefitBos();
+            setUpSingleBenefitInfoForOrder(orderItem, orgId, voucherBenefitBos);
         }
-        //会员卡项目
-        PatientUseBenefitBo memberBenefitBo = benefitUseBo.getMemberBenefitBo();
-        PatientUseBenefitBo discountBenefitBos = benefitUseBo.getDiscountBenefitBos();
-        //折扣券券项目优惠
-        if (orderItem.getBenefitAmount() == null && memberBenefitBo == null && discountBenefitBos != null) {
-            setUpSingleBenefitInfoForOrder(orderItem, orgId, Collections.singletonList(discountBenefitBos));
-        }
-        //会员卡优惠
-        if (orderItem.getBenefitAmount() == null && memberBenefitBo != null) {
-            setUpSingleBenefitInfoForOrder(orderItem, orgId, Collections.singletonList(memberBenefitBo));
-        }
-        //代金券项目优惠
-        List<PatientUseBenefitBo> voucherBenefitBos = benefitUseBo.getVoucherBenefitBos();
-        setUpSingleBenefitInfoForOrder(orderItem, orgId, voucherBenefitBos);
     }
 
     /**
@@ -1420,35 +1431,42 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      */
     private void multiItemUseBenefit(BenefitUseBo benefitUseBo, OrderItemUseBo orderItem, Integer orgId, Integer i) {
         int mark = 0;
-        //兑换券项目优惠
-        List<PatientUseBenefitBo> exchangeBenefitBos = benefitUseBo.getExchangeBenefitBos();
-        //兑换券项目优惠
-        if (FALSE.equals(mark) && CollectionUtils.isNotEmpty(exchangeBenefitBos)) {
-            exchangeBenefitBos = getBenefitBosByItem(exchangeBenefitBos, orderItem);
-            mark = setUpMultiItemForOrder(exchangeBenefitBos, orderItem, orgId, i);
-        }
-        //套餐券项目优惠
-        List<PatientUseBenefitBo> packageBenefitBos = benefitUseBo.getPackageBenefitBos();
-        if (FALSE.equals(mark) && CollectionUtils.isNotEmpty(packageBenefitBos)) {
-            //按售出套餐单价正序排序
-            sortPackageBySoldUnit(packageBenefitBos, orderItem);
-            mark = setUpMultiItemForOrder(packageBenefitBos, orderItem, orgId, i);
-        }
-        //折扣券项目优惠
-        PatientUseBenefitBo discountBenefitBo = benefitUseBo.getDiscountBenefitBos();
-        //会员卡项目
-        PatientUseBenefitBo memberBenefitBo = benefitUseBo.getMemberBenefitBo();
-        if (FALSE.equals(mark) && memberBenefitBo == null && discountBenefitBo != null) {
-            setUpMultiItemForOrder(Collections.singletonList(discountBenefitBo), orderItem, orgId, i);
-        }
-        //会员卡项目优惠
-        if (FALSE.equals(mark) && memberBenefitBo != null) {
-            setUpMultiItemForOrder(Collections.singletonList(memberBenefitBo), orderItem, orgId, i);
-        }
-        //代金券优惠
-        List<PatientUseBenefitBo> voucherBenefitBos = benefitUseBo.getVoucherBenefitBos();
-        if (CollectionUtils.isNotEmpty(voucherBenefitBos)) {
-            setUpMultiItemForOrder(voucherBenefitBos, orderItem, orgId, i);
+        //划扣
+        List<PatientUseBenefitBo> deductionBenefitBos = benefitUseBo.getDeductionBenefitBos();
+        //按售出套餐单价正序排序
+        mark = setUpMultiItemForOrder(deductionBenefitBos, orderItem, orgId, i);
+        Optional<ItemUseBenefitBo> first = orderItem.getItemUseBenefitBos().stream().filter(t -> Objects.equals(i, t.getItemIndex())).findFirst();
+        if (!first.isPresent()) {
+            //兑换券项目优惠
+            List<PatientUseBenefitBo> exchangeBenefitBos = benefitUseBo.getExchangeBenefitBos();
+            //兑换券项目优惠
+            if (FALSE.equals(mark) && CollectionUtils.isNotEmpty(exchangeBenefitBos)) {
+                exchangeBenefitBos = getBenefitBosByItem(exchangeBenefitBos, orderItem);
+                mark = setUpMultiItemForOrder(exchangeBenefitBos, orderItem, orgId, i);
+            }
+            //套餐券项目优惠
+            List<PatientUseBenefitBo> packageBenefitBos = benefitUseBo.getPackageBenefitBos();
+            if (FALSE.equals(mark) && CollectionUtils.isNotEmpty(packageBenefitBos)) {
+                //按售出套餐单价正序排序
+                sortPackageBySoldUnit(packageBenefitBos, orderItem);
+                mark = setUpMultiItemForOrder(packageBenefitBos, orderItem, orgId, i);
+            }
+            //折扣券项目优惠
+            PatientUseBenefitBo discountBenefitBo = benefitUseBo.getDiscountBenefitBos();
+            //会员卡项目
+            PatientUseBenefitBo memberBenefitBo = benefitUseBo.getMemberBenefitBo();
+            if (FALSE.equals(mark)  && discountBenefitBo != null) {
+                setUpMultiItemForOrder(Collections.singletonList(discountBenefitBo), orderItem, orgId, i);
+            }
+            //会员卡项目优惠
+            if (FALSE.equals(mark) && memberBenefitBo != null) {
+                setUpMultiItemForOrder(Collections.singletonList(memberBenefitBo), orderItem, orgId, i);
+            }
+            //代金券优惠
+            List<PatientUseBenefitBo> voucherBenefitBos = benefitUseBo.getVoucherBenefitBos();
+            if (CollectionUtils.isNotEmpty(voucherBenefitBos)) {
+                setUpMultiItemForOrder(voucherBenefitBos, orderItem, orgId, i);
+            }
         }
     }
 
@@ -1462,24 +1480,45 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         PatientOrderBenefitVo result = null;
         if (CollectionUtils.isNotEmpty(orderItemBos)) {
             result = new PatientOrderBenefitVo();
-            BigDecimal totalBenefitAmount = orderItemBos.stream().filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount)
+            BigDecimal totalBenefitAmount = orderItemBos.stream().map(OrderItemUseBo::getBenefitAmount).filter(benefitAmount -> benefitAmount != null)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             result.setBenefitTotalAmount(totalBenefitAmount);
-            List<PatientItemBenefitVo> itemList = orderItemBos.stream().filter(obj -> CollectionUtils.isNotEmpty(obj.getItemUseBenefitBos()))
-                    .map(obj -> {
-                        BigDecimal benefitAmount = obj.getBenefitAmount() == null ? BigDecimal.ZERO : obj.getBenefitAmount();
-                        PatientItemBenefitVo vo = new PatientItemBenefitVo();
-                        vo.setOrderDetailId(obj.getOrderDetailId());
-                        vo.setType(obj.getType());
-                        vo.setItemId(obj.getItemId());
-                        vo.setBenefitDiscountRate(obj.getBenefitDiscountRate());
-                        vo.setItemBenefitAmount(benefitAmount);
-                        List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(obj.getItemUseBenefitBos(), ItemUseBenefitVo.class);
+            List<PatientItemBenefitVo> itemList = Lists.newArrayList();
+            List<PatientItemBenefitVo> deductionList = Lists.newArrayList();
+            for (OrderItemUseBo orderItemBo : orderItemBos) {
+                List<ItemUseBenefitBo> itemUseBenefitBos = orderItemBo.getItemUseBenefitBos();
+                if (CollectionUtils.isEmpty(itemUseBenefitBos)) {
+                    continue;
+                }
+                if (itemUseBenefitBos.stream()
+                        .anyMatch(t -> DEDUCTION.equals(t.getCouponType()))) {
+                    BigDecimal benefitAmount = orderItemBo.getBenefitAmount() == null ? BigDecimal.ZERO : orderItemBo.getBenefitAmount();
+                    PatientItemBenefitVo vo = new PatientItemBenefitVo();
+                    vo.setOrderDetailId(orderItemBo.getOrderDetailId());
+                    vo.setType(orderItemBo.getType());
+                    vo.setItemId(orderItemBo.getItemId());
+                    vo.setBenefitDiscountRate(orderItemBo.getBenefitDiscountRate());
+                    vo.setItemBenefitAmount(benefitAmount);
+                    List<ItemUseBenefitBo> collect = orderItemBo.getItemUseBenefitBos().stream().filter(t -> !DEDUCTION.equals(t.getCouponType())).collect(toList());
+                    List<ItemUseBenefitBo> collect1 = orderItemBo.getItemUseBenefitBos().stream().filter(t -> DEDUCTION.equals(t.getCouponType())).collect(toList());
+                    if (CollectionUtils.isNotEmpty(collect)) {
+                        List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(collect, ItemUseBenefitVo.class);
                         vo.setItemBenefitList(itemUseBenefitVos);
-                        vo.setSupplyWorkload(this.calculateTotalWordLoad(obj));
-                        return vo;
-                    }).collect(toList());
-            result.setItemList(itemList);
+                        vo.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
+                        itemList.add(vo);
+                    }
+                    if (CollectionUtils.isNotEmpty(collect1)) {
+                        PatientItemBenefitVo vo1 = BeanCopierUtils.generalCopyBean(vo, PatientItemBenefitVo.class);
+                        List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(collect1, ItemUseBenefitVo.class);
+                        vo1.setItemBenefitList(itemUseBenefitVos);
+                        vo1.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
+                        deductionList.add(vo1);
+                    }
+
+                }
+            }
+            result.setDeductionList(deductionList);
+
         }
         return result;
     }
@@ -1565,7 +1604,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                     BigDecimal receivableAmount = originalPrice.subtract(oldBenefitAmount);
                     BigDecimal benefitAmount;
                     if (receivableAmount.compareTo(BigDecimal.valueOf(0)) > 0) {
-                        if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType)) {
+                        if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType) || DEDUCTION.equals(couponType)) {
                             BigDecimal packageUnitPrice = benefitUseDetailBo.getPackageUnitPrice();
                             benefitAmount = receivableAmount.compareTo(packageUnitPrice) > 0 ? receivableAmount.subtract(packageUnitPrice) : BigDecimal.valueOf(0);
                             //个体项目设置优惠相关信息
@@ -1658,7 +1697,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         itemUseBenefitBo.setBenefitAmount(benefitAmount);
         itemUseBenefitBos.add(itemUseBenefitBo);
         order.setItemUseBenefitBos(itemUseBenefitBos);
-        if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType)) {
+        if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType) || DEDUCTION.equals(couponType)) {
             benefitUseDetailBo.setCount(benefitUseDetailBo.getCount() - 1);
         }
     }
@@ -1671,8 +1710,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
                 Integer couponType = benefitBo.getCouponType();
                 if (benefitUseDetailBo != null || MEMBER_CARD.equals(couponType)) {
-                    log.info("【多个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}]", orderItem.getOrderDetailId()
-                            , benefitBo.getCardId(), benefitBo.getCouponId());
+                    log.info("【多个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}], 坐标：[{}]", orderItem.getOrderDetailId()
+                            , benefitBo.getCardId(), benefitBo.getCouponId(), itemIndex);
                     //订单项目原价
                     BigDecimal originalPrice = orderItem.getReceivableAmount().divide(BigDecimal.valueOf(orderItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP);
                     //订单项目index已优惠金额
@@ -1803,13 +1842,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                     continue;
                 }
             }
-            if (SPECIAL_PACKAGE.equals(benefitBo.getCouponType())) {
+            if (SPECIAL_PACKAGE.equals(benefitBo.getCouponType()) || DEDUCTION.equals(benefitBo.getCouponType())) {
                 //校验套餐券价目是否可用优惠并赋值
-                if (checkPackageAndSetUsable(FALSE.getCode(), itemMap, benefitBo, SPECIAL_PACKAGE.getCode())) {
+                if (checkPackageAndSetUsable(FALSE.getCode(), itemMap, benefitBo, benefitBo.getCouponType())) {
                     continue;
                 }
                 //校验套餐券商品是否可用优惠并赋值
-                checkPackageAndSetUsable(TRUE.getCode(), itemMap, benefitBo, SPECIAL_PACKAGE.getCode());
+                checkPackageAndSetUsable(TRUE.getCode(), itemMap, benefitBo, benefitBo.getCouponType());
             }
         }
         //排序（截止时间 asc）
@@ -1825,7 +1864,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         //订单项目明细
         Set<Integer> orderItemIds = itemMap.get(itemType);
         //查询套餐券优惠项目ids
-        List<SpecialPackageCouponItem> items = getPackageItemInfo(benefitBo.getCouponId(), itemType);
+        List<SpecialPackageCouponItem> items = getPackageItemInfo(benefitBo, itemType);
         if (CollectionUtils.isNotEmpty(items) && CollectionUtils.isNotEmpty(orderItemIds)) {
             Set<Integer> itemIds = items.stream().map(SpecialPackageCouponItem::getItemId).collect(toSet());
             //查询卡券使用数量信息
@@ -1977,12 +2016,24 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 }).collect(toList());
                 vo.setVoucherVoList(voucherVoList);
             }
+            if (DEDUCTION.equals(k)) {
+                List<PatientPackageVo> packageVoList = v.stream().map(bo -> {
+                    PatientBaseInfoVo owner = finalPatientMap.get(bo.getOwnerId());
+                    PatientPackageVo packageVo = BeanCopierUtils.generalCopyBean(bo, PatientPackageVo.class);
+                    if (!patientId.equals(bo.getOwnerId())) {
+                        packageVo.setOwner(owner == null ? null : owner.getName());
+                    }
+                    return packageVo;
+                }).collect(toList());
+                vo.setDeductionVoList(packageVoList);
+            }
         });
         //设置患者会员卡集合
-        List<PatientMemberCardVo> memberCards = getPatientMemberCards(patientId);
-        if (CollectionUtils.isNotEmpty(memberCards)) {
-            vo.setMemberCardVoList(memberCards);
-        }
+        //会员迭代 去除会员卡券选项
+//        List<PatientMemberCardVo> memberCards = getPatientMemberCards(patientId);
+//        if (CollectionUtils.isNotEmpty(memberCards)) {
+//            vo.setMemberCardVoList(memberCards);
+//        }
         return vo;
     }
 
@@ -2780,18 +2831,29 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     /**
      * 查询套餐券优惠项目ids
      *
-     * @param couponId 优惠券id
      * @param itemType 项目类型（0：价目  1：商品）
      * @return map
      */
-    private List<SpecialPackageCouponItem> getPackageItemInfo(Integer couponId, Integer itemType) {
-        Example example = new Example(SpecialPackageCouponItem.class);
-        example.createCriteria().andEqualTo("couponId", couponId);
-        List<SpecialPackageCouponItem> specialPackageCouponItems = specialPackageCouponItemMapper.selectByExample(example);
-        //<项目类型，项目明细集合>
-        Map<Integer, List<SpecialPackageCouponItem>> specialPackageItemMap = specialPackageCouponItems.stream().collect(
-                groupingBy(SpecialPackageCouponItem::getType));
-        return specialPackageItemMap.get(itemType);
+    private List<SpecialPackageCouponItem> getPackageItemInfo(PatientBenefitBo benefitBo, Integer itemType) {
+        Integer couponType = benefitBo.getCouponType();
+        Integer couponId = benefitBo.getCouponId();
+        if (EXCHANGE.equals(couponType)) {
+            Example example = new Example(SpecialPackageCouponItem.class);
+            example.createCriteria().andEqualTo("couponId", couponId);
+            List<SpecialPackageCouponItem> specialPackageCouponItems = specialPackageCouponItemMapper.selectByExample(example);
+            //<项目类型，项目明细集合>
+            Map<Integer, List<SpecialPackageCouponItem>> specialPackageItemMap = specialPackageCouponItems.stream().collect(
+                    groupingBy(SpecialPackageCouponItem::getType));
+            return specialPackageItemMap.get(itemType);
+        } else {
+            List<DeductionItemPeriod> deductionItemPeriods = deductionPeriodBiz
+                    .listByCoupon(Lists.newArrayList(couponId), benefitBo.getSoldDate());
+            List<SpecialPackageCouponItem> specialPackageCouponItems = BeanCopierUtils.listGeneralCopyBean(deductionItemPeriods, SpecialPackageCouponItem.class);
+            //<项目类型，项目明细集合>
+            Map<Integer, List<SpecialPackageCouponItem>> specialPackageItemMap = specialPackageCouponItems.stream().collect(
+                    groupingBy(SpecialPackageCouponItem::getType));
+            return specialPackageItemMap.get(itemType);
+        }
     }
 
     /**
@@ -2926,6 +2988,37 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 }
             }
         }
+        //校验划扣券
+        List<Integer> deductionIds = form.getDeductionIds();
+        List<PatientPackageVo> deductionVoList = benefitVo.getDeductionVoList();
+        if (CollectionUtils.isNotEmpty(deductionIds)) {
+            if (CollectionUtils.isEmpty(deductionVoList)) {
+                errorBo.setError(DiscountError.PATIENT_DEDUCTION_NULL);
+                return errorBo;
+            } else {
+                List<Integer> choiceCardIds = Lists.newArrayList();
+                //可作用在项目的兑换券卡券
+                List<Integer> deductionIdsForItem = deductionVoList.stream().filter(obj -> TRUE.equals(obj.getItemUsable()))
+                        .map(PatientPackageVo::getCardId).collect(toList());
+                for (Integer packageId : deductionIds) {
+                    if (!deductionIdsForItem.contains(packageId)) {
+                        errorBo.setError(DiscountError.PATIENT_NOT_OWN_DEDUCTION);
+                        Card card = mapper.selectByPrimaryKey(packageId);
+                        errorBo.setMsg(card == null ? null : card.getOrgId() == 0 ? card.getThirdCardNumber() : card.getCardNumber());
+                        return errorBo;
+                    } else {
+                        choiceCardIds.add(packageId);
+                    }
+                }
+                Map<Integer, Long> limitCountMap = deductionVoList.stream().filter(obj -> choiceCardIds.contains(obj.getCardId())).
+                        collect(groupingBy(PatientPackageVo::getCouponId, counting()));
+                //校验单个账单使用限制数
+                errorBo = checkLimitCount(limitCountMap, DeductionCoupon.class, DEDUCTION.getCode());
+                if (errorBo.getError() != null) {
+                    return errorBo;
+                }
+            }
+        }
         return errorBo;
     }
 
@@ -2952,6 +3045,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         List<Integer> voucherIds = form.getVoucherIds();
         if (CollectionUtils.isNotEmpty(voucherIds)) {
             cardIds.addAll(voucherIds);
+        }
+        List<Integer> deductionIds = form.getDeductionIds();
+        if (CollectionUtils.isNotEmpty(deductionIds)) {
+            cardIds.addAll(deductionIds);
         }
         return cardIds;
     }
@@ -3011,6 +3108,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             VoucheCoupon voucherCoupon = voucherMapper.selectOneByExample(example);
             if (voucherCoupon != null) {
                 limitCount = voucherCoupon.getLimitCount();
+            }
+        }
+        if (DEDUCTION.equals(couponType)) {
+            DeductionCoupon deductionCoupon = deductionPackageCouponMapper.selectOneByExample(example);
+            if (deductionCoupon != null) {
+                limitCount = deductionCoupon.getLimitCount();
             }
         }
         return limitCount;
@@ -3074,6 +3177,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         List<PatientUseBenefitBo> packageBenefitBos = benefitUseBo.getPackageBenefitBos();
         PatientUseBenefitBo discountBenefitBo = benefitUseBo.getDiscountBenefitBos();
         List<PatientUseBenefitBo> voucherBenefitBos = benefitUseBo.getVoucherBenefitBos();
+        List<PatientUseBenefitBo> deductionBenefitBos = benefitUseBo.getDeductionBenefitBos();
         //兑换券设置可使用项目
         exchangeBenefitBos.forEach(obj -> {
             List<CouponItemUseBo> couponItemUseBos = mapper.getCouponItemUseInfo(obj.getCouponId(), obj.getCardId(), null, EXCHANGE.getCode());
@@ -3096,6 +3200,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             //代金折扣券基础，价目范围映射 <选择范围，项目id（分类/明细）>
             List<VoucherDiscountItem> voucherItems = getCouponItemByCouponId(voucherBo.getCouponId(), voucherDiscountItemMapper, VoucherDiscountItem.class);
             assignedCouponItem(voucherItems, voucherBo);
+        });
+        //划扣券设置可使用项目
+        deductionBenefitBos.forEach(obj -> {
+            List<CouponItemUseBo> couponItemUseBos = mapper.getCouponItemUseInfo(obj.getCouponId(), obj.getCardId(), null, DEDUCTION.getCode());
+            obj.setPackageCouponItemDetail(couponItemUseBos);
         });
     }
 
@@ -3336,6 +3445,24 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             //设置可用门诊
             assignedUseClinicForBo(voucherUseBos);
             benefitUseBo.setVoucherBenefitBos(voucherUseBos);
+        }
+
+        List<PatientPackageVo> deductionVoList = benefitVo.getDeductionVoList();
+        List<Integer> deductionIds = form.getDeductionIds();
+        //设置套餐券
+        if (CollectionUtils.isNotEmpty(deductionIds) && CollectionUtils.isNotEmpty(deductionVoList)) {
+            Map<Integer, PatientPackageVo> deductionVoMap = deductionVoList.stream().collect(toMap(PatientPackageVo::getCardId, Function.identity()));
+            List<PatientUseBenefitBo> deductionUseBos = deductionIds.stream().filter(cardId -> deductionVoMap.get(cardId) != null)
+                    .map(cardId -> {
+                        PatientPackageVo deductionVo = deductionVoMap.get(cardId);
+                        PatientUseBenefitBo deductionBenefitBo = BeanCopierUtils.generalCopyBean(deductionVo, PatientUseBenefitBo.class);
+                        deductionBenefitBo.setCouponType(DEDUCTION.getCode());
+                        deductionBenefitBo.setLimitCount(getCouponLimitCount(deductionVo.getCouponId(), SpecialPackageCoupon.class, SPECIAL_PACKAGE.getCode()));
+                        return deductionBenefitBo;
+                    }).collect(toList());
+            //设置可用门诊
+            assignedUseClinicForBo(deductionUseBos);
+            benefitUseBo.setDeductionBenefitBos(deductionUseBos);
         }
     }
 

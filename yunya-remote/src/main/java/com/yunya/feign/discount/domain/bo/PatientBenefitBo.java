@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author xiangyang
@@ -24,7 +25,7 @@ public class PatientBenefitBo implements Serializable {
     private Integer itemUsable;
     private String path;
     private Integer limitCount;
-
+    private Date soldDate;
     public PatientBenefitBo() {
         this.itemUsable = 0;
     }
