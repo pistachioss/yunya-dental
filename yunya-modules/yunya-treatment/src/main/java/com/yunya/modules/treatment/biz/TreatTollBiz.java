@@ -238,6 +238,7 @@ public class TreatTollBiz {
    * 确认收费
    *
    * @param model 收费参数
+   * @param type 1-挂账，2-确认收费
    */
   @Transactional
   public TollConfirmVO confirmCharge(TreatTollModel model, byte type) {

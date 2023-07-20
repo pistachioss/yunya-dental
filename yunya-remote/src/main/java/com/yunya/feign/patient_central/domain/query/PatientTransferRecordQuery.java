@@ -29,4 +29,8 @@ public class PatientTransferRecordQuery extends PageQuery {
     @ApiModelProperty(value = "卡号", required = true)
     @NotEmpty(message = "卡号不能为空")
     private String cardNumber;
+
+    /** 类型：1-转入，2-转出 */
+    @ApiModelProperty(value = "类型：1-转入，2-转出，查询充值到会员卡需要传2")
+    private Byte type;
 }

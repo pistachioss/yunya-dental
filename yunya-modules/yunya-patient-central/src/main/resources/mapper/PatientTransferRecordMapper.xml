@@ -43,6 +43,9 @@
       <if test="query.queryType != null">
         AND ptr.operate_type = #{query.queryType}
       </if>
+      <if test="query.type != null">
+        AND ptr.type = #{query.type}
+      </if>
       <if test="query.cardNumber!=null and query.cardNumber!=''">
       AND ptr.main_number = #{query.cardNumber}
       </if>
