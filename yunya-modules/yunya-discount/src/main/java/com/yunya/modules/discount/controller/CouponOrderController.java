@@ -33,12 +33,14 @@ public class CouponOrderController {
 
     @ApiOperation(value = "划扣卡购买列表")
     @PostMapping("/coupon/goods/list")
+    @CurrentUser
     public ResponseResult<List<CouponGoodsVO>> hkList(@NotNull @RequestParam Integer categoryId) {
         return ResponseUtil.success(couponGoodsBiz.hkList(categoryId));
     }
 
     @ApiOperation(value = "划扣卡分类")
     @PostMapping("/coupon/goods/category")
+    @CurrentUser
     public ResponseResult<Set<DeductionCategoryVO>> category() {
         return ResponseUtil.success(couponGoodsBiz.category());
     }
@@ -61,5 +63,13 @@ public class CouponOrderController {
     @CurrentUser
     public ResponseResult<Integer> click(@NotNull @RequestParam Integer patientId) {
         return ResponseUtil.success(couponOrderBiz.click(patientId));
+    }
+
+    @ApiOperation(value = "删除订单")
+    @PostMapping("/coupon/order/delete")
+    @CurrentUser
+    public ResponseResult<Boolean> delete(@NotNull @RequestParam Integer orderId) {
+        couponOrderBiz.delete(orderId);
+        return ResponseUtil.success(true);
     }
 }
