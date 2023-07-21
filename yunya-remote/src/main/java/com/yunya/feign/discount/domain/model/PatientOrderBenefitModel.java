@@ -34,6 +34,8 @@ public class PatientOrderBenefitModel implements Serializable {
     private List<Integer> packageIds;
     @ApiModelProperty(value = "代金券id集合")
     private List<Integer> voucherIds;
+    @ApiModelProperty(value = "划扣券id集合")
+    private List<Integer> deductionIds;
     @ApiModelProperty(value = "优惠方式（0-卡券优惠  1-授权折扣 2-混搭优惠（价目使用卡券+商品使用折扣））")
     private Integer benefitType;
 }
