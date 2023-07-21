@@ -29,8 +29,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
-import static com.yunya.modules.discount.enums.CouponOrderError.COUPON_STOCK_LACK;
-import static com.yunya.modules.discount.enums.CouponOrderError.SALE_CHANNEL_NULL;
+import static com.yunya.modules.discount.enums.CouponOrderError.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -81,7 +80,7 @@ public class CouponOrderBiz {
             list = selectCard(model.getPatientId(), cards, detail, now);
             CouponOrder couponOrder = new CouponOrder();
             List<CouponOrderDetail> build = build(model.getPatientId(), detail, couponIds, collect, couponOrder, now);
-            couponOrderMapper.insert(couponOrder);
+            couponOrderMapper.insertSelective(couponOrder);
             build.forEach(o -> o.setOrderId(couponOrder.getId()));
             orderDetailMapper.insertList(build);
             List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now);
@@ -91,6 +90,7 @@ public class CouponOrderBiz {
             if (CollectionUtils.isNotEmpty(list)) {
                 revoke(list);
             }
+            throw ClientServiceException.wrap(COUPON_SOLD_ERROR, e);
         }
         return vo;
     }
@@ -179,6 +179,7 @@ public class CouponOrderBiz {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             totalPrice = totalPrice.add(price);
             orderDetail = new CouponOrderDetail();
+            orderDetail.setInservice(true);
             orderDetail.setOrgId(orgId);
             orderDetail.setType(5);
             orderDetail.setCouponId(couponId);
@@ -194,11 +195,14 @@ public class CouponOrderBiz {
             orderDetail.setRemarks(detailModel.getRemark());
             orderDetail.setCrtId(userId);
             orderDetail.setCrtTime(date);
+            orderDetail.setUpdId(userId);
             orderDetail.setUpdTime(date);
             list.add(orderDetail);
         }
         couponOrder.setTotalAmount(totalPrice);
         couponOrder.setReceivableAmount(totalReceivable);
+        couponOrder.setCrtId(Objects.isNull(couponOrder.getCrtId()) ? userId : couponOrder.getCrtId());
+        couponOrder.setUpdId(userId);
         couponOrder.setUpdTime(date);
         couponOrder.setCrtTime(Objects.isNull(couponOrder.getCrtTime()) ? date : couponOrder.getCrtTime());
         return list;
@@ -252,12 +256,14 @@ public class CouponOrderBiz {
             detailVOS.add(detailVO);
         }
         CouponBillPay billPay = listPay(orderId);
-        CouponPayDetailVO payDetailVO = new CouponPayDetailVO();
-        payDetailVO.setOrgId(billPay.getOrgId());
-        payDetailVO.setOrgName(systemServiceFeign.findOrgInfoByOrgId(billPay.getOrgId()).getAbbreviation());
-        payDetailVO.setReceivedAmount(billPay.getReceivedAmount());
-        payDetailVO.setPayDate(DateUtil.format(billPay.getCrtTime()));
-        couponOrderVO.setPayDetail(payDetailVO);
+        if (Objects.nonNull(billPay)) {
+            CouponPayDetailVO payDetailVO = new CouponPayDetailVO();
+            payDetailVO.setOrgId(billPay.getOrgId());
+            payDetailVO.setOrgName(systemServiceFeign.findOrgInfoByOrgId(billPay.getOrgId()).getAbbreviation());
+            payDetailVO.setReceivedAmount(billPay.getReceivedAmount());
+            payDetailVO.setPayDate(DateUtil.format(billPay.getCrtTime()));
+            couponOrderVO.setPayDetail(payDetailVO);
+        }
         couponOrderVO.setDetail(detailVOS);
         couponOrderVO.setReceivableAmount(detailVOS.stream().map(CouponOrderDetailVO::getReceivableAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
         return couponOrderVO;
@@ -272,7 +278,7 @@ public class CouponOrderBiz {
 
     private List<CouponOrderDetail> listOrderDetail(Integer orderId) {
         Example example = new Example(CouponOrderDetail.class);
-        example.createCriteria().andEqualTo("orderRecordId", orderId)
+        example.createCriteria().andEqualTo("orderId", orderId)
                 .andEqualTo("inservice", true);
         return orderDetailMapper.selectByExample(example);
     }

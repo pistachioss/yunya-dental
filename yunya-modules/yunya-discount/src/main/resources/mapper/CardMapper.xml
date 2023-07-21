@@ -1142,7 +1142,7 @@ WHERE
             <trim prefix="upd_time = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.updTime != null">
-                        when `id` = #{item.id} then #{item.upd_time}
+                        when `id` = #{item.id} then #{item.updTime}
                     </if>
                 </foreach>
             </trim>
@@ -1155,9 +1155,9 @@ WHERE
             </trim>
         </trim>
         where `id` in
-            `status` = 0
         <foreach collection="list" item="item" open="(" separator="," close=")">
             #{item.id}
         </foreach>
+        and `status` = 0
     </update>
 </mapper>

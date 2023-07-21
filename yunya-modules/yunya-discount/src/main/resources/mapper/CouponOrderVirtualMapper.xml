@@ -26,7 +26,7 @@
         (`order_id`, `order_sn`, `card_id`, `coupon_id`, `patient_id`, `patient_name`, `card_number`, `sold_date`,
         `crt_id`, `crt_time`, `upd_id`)
         values
-        <foreach collection="List" item="item" separator=",">
+        <foreach collection="virtuals" item="item" separator=",">
             (#{item.orderId}, #{item.orderSn}, #{item.cardId}, #{item.couponId},#{item.patientId},
             #{item.patientName},#{item.cardNumber},#{item.soldDate},#{item.crtId},#{item.crtTime},#{item.updId})
         </foreach>
