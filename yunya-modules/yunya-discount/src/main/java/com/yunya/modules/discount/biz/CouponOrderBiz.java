@@ -328,4 +328,19 @@ public class CouponOrderBiz {
             cardMapper.updateByPrimaryKey(card);
         }
     }
+
+    public Integer click(Integer patientId) {
+        int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        CouponOrder order = existChargeOrder(patientId, orgId);
+        return Objects.nonNull(order) ? order.getId() : null;
+    }
+
+    private CouponOrder existChargeOrder(Integer patientId, Integer orgId) {
+        Example example = new Example(CouponOrder.class);
+        example.createCriteria().andEqualTo("patientId", patientId)
+                .andEqualTo("orgId", orgId)
+                .andEqualTo("status", 0)
+                .andEqualTo("inservice", true);
+        return couponOrderMapper.selectOneByExample(example);
+    }
 }
