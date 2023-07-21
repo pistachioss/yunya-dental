@@ -3,6 +3,7 @@ package com.yunya.modules.discount.controller;
 import com.yunya.feign.discount.domain.model.CouponOrderModel;
 import com.yunya.feign.discount.domain.vo.CouponGoodsVO;
 import com.yunya.feign.discount.domain.vo.CouponOrderVO;
+import com.yunya.feign.discount.domain.vo.DeductionCategoryVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.modules.discount.biz.CouponGoodsBiz;
 import com.yunya.modules.discount.biz.CouponOrderBiz;
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @auther: xy
@@ -28,9 +31,14 @@ public class CouponOrderController {
 
     @ApiOperation(value = "划扣卡购买列表")
     @PostMapping("/coupon/goods/list")
-    @CurrentUser
-    public List<CouponGoodsVO> hkList() {
-        return couponGoodsBiz.hkList();
+    public List<CouponGoodsVO> hkList(@NotNull @RequestParam Integer categoryId) {
+        return couponGoodsBiz.hkList(categoryId);
+    }
+
+    @ApiOperation(value = "划扣卡分类")
+    @PostMapping("/coupon/goods/category")
+    public Set<DeductionCategoryVO> category() {
+        return couponGoodsBiz.category();
     }
 
     @ApiOperation(value = "划扣卡下单")

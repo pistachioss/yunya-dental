@@ -19,5 +19,5 @@ public class PatientOrderBenefitVo {
     @ApiModelProperty(value = "项目使用优惠")
     private List<PatientItemBenefitVo> itemList;
     @ApiModelProperty(value = "划扣项目使用优惠")
-    private List<PatientItemBenefitVo> deductionList;
+    private List<DeductionItemBenefitVo> deductionList;
 }

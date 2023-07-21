@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @ApiModel(value = "患者开单项目明细优惠返回")
 public class DeductionItemBenefitVo extends PatientItemBenefitVo{
-    @ApiModelProperty(value = "数量")
+    @ApiModelProperty(value = "优惠划扣数量")
     private Integer quantity;
 
 }

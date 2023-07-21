@@ -1484,7 +1484,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             result.setBenefitTotalAmount(totalBenefitAmount);
             List<PatientItemBenefitVo> itemList = Lists.newArrayList();
-            List<PatientItemBenefitVo> deductionList = Lists.newArrayList();
+            List<DeductionItemBenefitVo> deductionList = Lists.newArrayList();
             for (OrderItemUseBo orderItemBo : orderItemBos) {
                 List<ItemUseBenefitBo> itemUseBenefitBos = orderItemBo.getItemUseBenefitBos();
                 if (CollectionUtils.isEmpty(itemUseBenefitBos)) {
@@ -1508,10 +1508,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                         itemList.add(vo);
                     }
                     if (CollectionUtils.isNotEmpty(collect1)) {
-                        PatientItemBenefitVo vo1 = BeanCopierUtils.generalCopyBean(vo, PatientItemBenefitVo.class);
+                        DeductionItemBenefitVo vo1 = BeanCopierUtils.generalCopyBean(vo, DeductionItemBenefitVo.class);
                         List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(collect1, ItemUseBenefitVo.class);
                         vo1.setItemBenefitList(itemUseBenefitVos);
                         vo1.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
+                        vo1.setQuantity(itemUseBenefitVos.size());
                         deductionList.add(vo1);
                     }
 
