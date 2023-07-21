@@ -32,7 +32,7 @@ public class CouponOrderController {
     private CouponOrderBiz couponOrderBiz;
 
     @ApiOperation(value = "划扣卡购买列表")
-    @PostMapping("/coupon/goods/list")
+    @GetMapping("/coupon/goods/list")
     @CurrentUser
     public ResponseResult<List<CouponGoodsVO>> hkList(@NotNull @RequestParam Integer categoryId) {
         return ResponseUtil.success(couponGoodsBiz.hkList(categoryId));
@@ -59,7 +59,7 @@ public class CouponOrderController {
     }
 
     @ApiOperation(value = "购买按钮跳转")
-    @PostMapping("/coupon/order/click")
+    @GetMapping("/coupon/order/click")
     @CurrentUser
     public ResponseResult<Integer> click(@NotNull @RequestParam Integer patientId) {
         return ResponseUtil.success(couponOrderBiz.click(patientId));
