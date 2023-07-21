@@ -84,8 +84,7 @@
             cci.sold_amount as packageUnitPrice,
             pt.id as categoryId,
             pt.name as categoryName
-        from special_package_coupon_item si
-        left join coupon_common_info cci on si.coupon_id = cci.id
+        from coupon_common_info cci
         left join product_type pt on pt.id = cci.product_type_id
         where  cci.type = 5
             and cci.is_inservice = 1
