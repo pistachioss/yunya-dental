@@ -17,4 +17,8 @@ public class CouponGoodsVO {
     private BigDecimal price;
     @ApiModelProperty("套餐单价")
     private BigDecimal packageUnitPrice;
+    @ApiModelProperty("分类id")
+    private Integer categoryId;
+    @ApiModelProperty("分类名称")
+    private String categoryName;
 }

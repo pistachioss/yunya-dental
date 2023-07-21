@@ -18,12 +18,13 @@ public class BenefitUseBo {
     private PatientUseBenefitBo discountBenefitBos;
     private PatientUseBenefitBo memberBenefitBo;
     private List<PatientUseBenefitBo> voucherBenefitBos;
-
+    private List<PatientUseBenefitBo> deductionBenefitBos;
     public static BenefitUseBo getInstance() {
         BenefitUseBo benefitBo = new BenefitUseBo();
         benefitBo.setExchangeBenefitBos(Lists.newArrayList());
         benefitBo.setPackageBenefitBos(Lists.newArrayList());
         benefitBo.setVoucherBenefitBos(Lists.newArrayList());
+        benefitBo.setDeductionBenefitBos(Lists.newArrayList());
         return benefitBo;
     }
 

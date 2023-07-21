@@ -328,4 +328,65 @@ public class CouponOrderBiz {
             cardMapper.updateByPrimaryKey(card);
         }
     }
+
+    public Integer click(Integer patientId) {
+        int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        CouponOrder order = existChargeOrder(patientId, orgId);
+        return Objects.nonNull(order) ? order.getId() : null;
+    }
+
+    public void delete(Integer orderId) {
+        CouponOrder couponOrder = getOrder(orderId);
+        if (Objects.nonNull(couponOrder)) {
+            deleteVirtual(orderId);
+            List<CouponOrderDetail> details = listOrderDetail(orderId);
+            details.forEach(t -> {
+                t.setInservice(false);
+                orderDetailMapper.updateByPrimaryKeySelective(t);
+            });
+            couponOrder.setInservice(false);
+            couponOrderMapper.updateByPrimaryKeySelective(couponOrder);
+        }
+    }
+
+    private CouponOrder existChargeOrder(Integer patientId, Integer orgId) {
+        Example example = new Example(CouponOrder.class);
+        example.createCriteria().andEqualTo("patientId", patientId)
+                .andEqualTo("orgId", orgId)
+                .andEqualTo("status", 0)
+                .andEqualTo("inservice", true);
+        return couponOrderMapper.selectOneByExample(example);
+    }
+
+    private List<CouponOrderVirtual> getOrderVirtual(Integer orderId) {
+        Example example = new Example(CouponOrderVirtual.class);
+        example.createCriteria().andEqualTo("orderId", orderId)
+                .andEqualTo("inservice", true);
+        return virtualMapper.selectByExample(example);
+    }
+
+    private List<Card> listCard(Collection<Integer> cardIds) {
+        Example example = new Example(Card.class);
+        example.createCriteria().andIn("id", cardIds)
+                .andGreaterThan("status", 2)
+                .andEqualTo("inservice", true);
+        return cardMapper.selectByExample(example);
+    }
+
+    private void deleteVirtual(Integer orderId) {
+        List<CouponOrderVirtual> virtuals = getOrderVirtual(orderId);
+        List<Integer> cardIds = virtuals.stream().map(CouponOrderVirtual::getCardId).collect(toList());
+        List<Card> cards = listCard(cardIds);
+        if (CollectionUtils.isNotEmpty(cards)) {
+            revoke(cards);
+        }
+    }
+
+    private void updateDetail(Integer orderId) {
+        Example example = new Example(CouponOrderDetail.class);
+        example.createCriteria().andEqualTo("orderId", orderId);
+        CouponOrderDetail detail = new CouponOrderDetail();
+        detail.setInservice(false);
+        orderDetailMapper.updateByExampleSelective(detail, example);
+    }
 }

@@ -74,12 +74,6 @@ public class CouponOrder {
     private Integer crtId;
 
     /**
-     * 创建人姓名
-     */
-    @Column(name = "crt_name")
-    private String crtName;
-
-    /**
      * 创建时间
      */
     @Column(name = "crt_time")

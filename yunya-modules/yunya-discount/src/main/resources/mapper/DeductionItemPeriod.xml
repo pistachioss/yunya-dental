@@ -5,14 +5,18 @@
     <!-- 查询门诊最大订单编号 -->
     <select id="selectItem" resultType="com.yunya.models.discount.DeductionItemPeriod">
         select
-            *
-        from deduction_item_period
-        where coupon_id in
-            <foreach collection="couponIds" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-            and crt_time &lt;= #{date}
-        order by crt_time desc
-            limit 1
+            t1.*
+        from deduction_item_period t1
+        inner join (
+            select
+                coupon_id, max(crt_time) as max_crt_time
+            from deduction_item_period
+            where coupon_id in
+                <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+                and crt_time &lt;= #{date}
+            group by coupon_id
+            ) t2 on t1.coupon_id = t2.coupon_id and t1.crt_time = t2.max_crt_time;
     </select>
 </mapper>

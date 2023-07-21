@@ -2,6 +2,7 @@ package com.yunya.modules.discount.biz;
 
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.domain.vo.CouponGoodsVO;
+import com.yunya.feign.discount.domain.vo.DeductionCategoryVO;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.discount.Card;
 import com.yunya.modules.discount.mapper.CardMapper;
@@ -17,8 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 /**
  * @auther: xy
@@ -38,9 +38,9 @@ public class CouponGoodsBiz {
     @Resource
     private CouponCommonInfoMapper couponMapper;
 
-    public List<CouponGoodsVO> hkList() {
+    public List<CouponGoodsVO> hkList(Integer categoryId) {
         int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        List<CouponGoodsVO> coupons = couponMapper.listCouponGoods(null);
+        List<CouponGoodsVO> coupons = couponMapper.listCouponGoods(null, categoryId);
         if (CollectionUtils.isEmpty(coupons)) {
             return Lists.newArrayList();
         }
@@ -56,6 +56,16 @@ public class CouponGoodsBiz {
                 .collect(toList());
         coupons.removeIf(t -> !collect1.contains(t.getId()));
         return coupons;
+    }
+
+    public Set<DeductionCategoryVO> category() {
+        List<CouponGoodsVO> goodsVOS = hkList(null);
+        return goodsVOS.stream().map(t -> {
+            DeductionCategoryVO vo = new DeductionCategoryVO();
+            vo.setId(t.getCategoryId());
+            vo.setName(t.getCategoryName());
+            return vo;
+        }).collect(toSet());
     }
 
 }

@@ -34,4 +34,6 @@ public class PatientChooseBenefitForm implements Serializable {
     private List<Integer> packageIds;
     @ApiModelProperty(value = "代金券id集合")
     private List<Integer> voucherIds;
+    @ApiModelProperty(value = "划扣券id集合")
+    private List<Integer> deductionIds;
 }

@@ -1,10 +1,9 @@
 package com.yunya.feign.discount.domain.vo;
 
-import io.swagger.annotations.*;
-import lombok.*;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
-import java.io.*;
-import java.time.*;
+import java.io.Serializable;
 
 /**
  * @author xiangyang
@@ -35,5 +34,5 @@ public class PatientPackageVo implements Serializable {
     @ApiModelProperty(value = "是否可以在项目使用优惠（0：否 1：是）")
     private Integer itemUsable;
     @ApiModelProperty(value = "优惠券类型")
-    private Integer couponType = 3;
+    private Integer couponType = 5;
 }
