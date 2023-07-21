@@ -1,5 +1,6 @@
 package com.yunya.modules.discount.controller;
 
+import com.yunya.feign.discount.domain.form.CouponOrderForm;
 import com.yunya.feign.discount.domain.model.CouponOrderModel;
 import com.yunya.feign.discount.domain.vo.CouponGoodsVO;
 import com.yunya.feign.discount.domain.vo.CouponOrderVO;
@@ -50,6 +51,13 @@ public class CouponOrderController {
     @CurrentUser
     public ResponseResult<CouponOrderVO> soldCard(@Valid @RequestBody CouponOrderModel model) {
         return ResponseUtil.success(couponOrderBiz.soldCard(model));
+    }
+
+    @ApiOperation(value = "修改划扣卡订单")
+    @PutMapping("/coupon/order")
+    @CurrentUser
+    public ResponseResult<CouponOrderVO> edit(@Valid @RequestBody CouponOrderForm form) {
+        return ResponseUtil.success(couponOrderBiz.edit(form));
     }
 
     @ApiOperation(value = "划扣卡订单详情")

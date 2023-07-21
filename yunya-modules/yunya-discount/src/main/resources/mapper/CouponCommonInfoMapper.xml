@@ -81,16 +81,13 @@
         select
             cci.id,
             cci.name,
-            sum(si.price) as price,
             cci.sold_amount as packageUnitPrice,
             pt.id as categoryId,
             pt.name as categoryName
-        from deduction_item_period si
-        left join deduction_item_period s2 on si.coupon_id = s2.coupon_id and si.crt_time &lt; s2.crt_time
+        from special_package_coupon_item si
         left join coupon_common_info cci on si.coupon_id = cci.id
         left join product_type pt on pt.id = cci.product_type_id
-        where isnull(s2.id) = 1
-            and cci.type = 5
+        where  cci.type = 5
             and cci.is_inservice = 1
             <if test="categoryId != null and categoryId != 0">
                 and cci.product_type_id = #{categoryId}
@@ -103,6 +100,5 @@
             </if>
             and (isnull(cci.available_sale_start_date) = 1
                 or (cci.available_sale_start_date &lt;= now() and cci.available_sale_end_date &gt;= now()))
-        group by cci.id, cci.name, cci.sold_amount
     </select>
 </mapper>

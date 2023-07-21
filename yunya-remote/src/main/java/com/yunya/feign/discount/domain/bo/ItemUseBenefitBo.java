@@ -24,7 +24,7 @@ public class ItemUseBenefitBo implements Serializable {
     private Integer couponId;
     @ApiModelProperty(value = "优惠类型（0：会员卡 1：优惠券）")
     private Integer benefitType;
-    @ApiModelProperty(value = "优惠券类型（0：代金券 1：折扣券 2：兑换券 3：套餐券）")
+    @ApiModelProperty(value = "优惠券类型（0：代金券 1：折扣券 2：兑换券 3：套餐券 5：划扣券）")
     private Integer couponType;
     @ApiModelProperty(value = "优惠名称")
     private String benefitName;

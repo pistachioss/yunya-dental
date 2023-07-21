@@ -1477,9 +1477,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @return PatientOrderBenefitVo
      */
     private PatientOrderBenefitVo transformBenefitInfo(List<OrderItemUseBo> orderItemBos) {
-        PatientOrderBenefitVo result = null;
+        PatientOrderBenefitVo result = new PatientOrderBenefitVo();
         if (CollectionUtils.isNotEmpty(orderItemBos)) {
-            result = new PatientOrderBenefitVo();
             BigDecimal totalBenefitAmount = orderItemBos.stream().map(OrderItemUseBo::getBenefitAmount).filter(benefitAmount -> benefitAmount != null)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             result.setBenefitTotalAmount(totalBenefitAmount);
@@ -1490,36 +1489,32 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 if (CollectionUtils.isEmpty(itemUseBenefitBos)) {
                     continue;
                 }
-                if (itemUseBenefitBos.stream()
-                        .anyMatch(t -> DEDUCTION.equals(t.getCouponType()))) {
-                    BigDecimal benefitAmount = orderItemBo.getBenefitAmount() == null ? BigDecimal.ZERO : orderItemBo.getBenefitAmount();
-                    PatientItemBenefitVo vo = new PatientItemBenefitVo();
-                    vo.setOrderDetailId(orderItemBo.getOrderDetailId());
-                    vo.setType(orderItemBo.getType());
-                    vo.setItemId(orderItemBo.getItemId());
-                    vo.setBenefitDiscountRate(orderItemBo.getBenefitDiscountRate());
-                    vo.setItemBenefitAmount(benefitAmount);
-                    List<ItemUseBenefitBo> collect = orderItemBo.getItemUseBenefitBos().stream().filter(t -> !DEDUCTION.equals(t.getCouponType())).collect(toList());
-                    List<ItemUseBenefitBo> collect1 = orderItemBo.getItemUseBenefitBos().stream().filter(t -> DEDUCTION.equals(t.getCouponType())).collect(toList());
-                    if (CollectionUtils.isNotEmpty(collect)) {
-                        List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(collect, ItemUseBenefitVo.class);
-                        vo.setItemBenefitList(itemUseBenefitVos);
-                        vo.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
-                        itemList.add(vo);
-                    }
-                    if (CollectionUtils.isNotEmpty(collect1)) {
-                        DeductionItemBenefitVo vo1 = BeanCopierUtils.generalCopyBean(vo, DeductionItemBenefitVo.class);
-                        List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(collect1, ItemUseBenefitVo.class);
-                        vo1.setItemBenefitList(itemUseBenefitVos);
-                        vo1.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
-                        vo1.setQuantity(itemUseBenefitVos.size());
-                        deductionList.add(vo1);
-                    }
-
+                BigDecimal benefitAmount = orderItemBo.getBenefitAmount() == null ? BigDecimal.ZERO : orderItemBo.getBenefitAmount();
+                PatientItemBenefitVo vo = new PatientItemBenefitVo();
+                vo.setOrderDetailId(orderItemBo.getOrderDetailId());
+                vo.setType(orderItemBo.getType());
+                vo.setItemId(orderItemBo.getItemId());
+                vo.setBenefitDiscountRate(orderItemBo.getBenefitDiscountRate());
+                vo.setItemBenefitAmount(benefitAmount);
+                List<ItemUseBenefitBo> collect = orderItemBo.getItemUseBenefitBos().stream().filter(t -> !DEDUCTION.equals(t.getCouponType())).collect(toList());
+                List<ItemUseBenefitBo> collect1 = orderItemBo.getItemUseBenefitBos().stream().filter(t -> DEDUCTION.equals(t.getCouponType())).collect(toList());
+                if (CollectionUtils.isNotEmpty(collect)) {
+                    List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(collect, ItemUseBenefitVo.class);
+                    vo.setItemBenefitList(itemUseBenefitVos);
+                    vo.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
+                    itemList.add(vo);
+                }
+                if (CollectionUtils.isNotEmpty(collect1)) {
+                    DeductionItemBenefitVo vo1 = BeanCopierUtils.generalCopyBean(vo, DeductionItemBenefitVo.class);
+                    List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(collect1, ItemUseBenefitVo.class);
+                    vo1.setItemBenefitList(itemUseBenefitVos);
+                    vo1.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
+                    vo1.setQuantity(itemUseBenefitVos.size());
+                    deductionList.add(vo1);
                 }
             }
             result.setDeductionList(deductionList);
-
+            result.setItemList(itemList);
         }
         return result;
     }

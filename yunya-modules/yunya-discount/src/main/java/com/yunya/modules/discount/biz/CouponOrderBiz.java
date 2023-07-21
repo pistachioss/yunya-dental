@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.biz;
 
 import com.google.common.collect.Lists;
+import com.yunya.feign.discount.domain.form.CouponOrderForm;
 import com.yunya.feign.discount.domain.model.CouponOrderDetailModel;
 import com.yunya.feign.discount.domain.model.CouponOrderModel;
 import com.yunya.feign.discount.domain.vo.CouponOrderDetailVO;
@@ -16,6 +17,7 @@ import com.yunya.models.discount.*;
 import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,13 +80,48 @@ public class CouponOrderBiz {
             LocalDateTime now = LocalDateTime.now();
             list = selectCard(model.getPatientId(), cards, detail, now);
             CouponOrder couponOrder = new CouponOrder();
-            List<CouponOrderDetail> build = build(model, couponIds, collect, couponOrder, now);
+            List<CouponOrderDetail> build = build(model.getPatientId(), detail, couponIds, collect, couponOrder, now);
             couponOrderMapper.insert(couponOrder);
             build.forEach(o -> o.setOrderId(couponOrder.getId()));
             orderDetailMapper.insertList(build);
             List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now);
             virtualMapper.insertList(virtuals);
             vo = detail(couponOrder.getId());
+        } catch (Exception e) {
+            if (CollectionUtils.isNotEmpty(list)) {
+                revoke(list);
+            }
+        }
+        return vo;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public CouponOrderVO edit( CouponOrderForm form) {
+        log.info("划扣修改下单参数：{}", form);
+        int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        List<CouponOrderDetailModel> detail = form.getDetail();
+        List<Integer> couponIds = detail.stream().map(CouponOrderDetailModel::getCouponId).collect(toList());
+        Map<Integer, CouponCommonInfo> collect = listCoupon(couponIds);
+        List<Card> list = null;
+        CouponOrderVO vo = null;
+        try {
+            Integer orderId = form.getOrderId();
+            CouponOrder order = getOrder(orderId);
+            if (Objects.nonNull(order)) {
+                deleteDetail(orderId);
+                deleteVirtual(orderId);
+                List<Card> cards = cardMapper.listRemaining(couponIds, orgId);
+                checkRemaining(cards, detail, collect);
+                LocalDateTime now = LocalDateTime.now();
+                list = selectCard(order.getPatientId(), cards, detail, now);
+                List<CouponOrderDetail> build = build(order.getPatientId(), detail, couponIds, collect, order, now);
+                couponOrderMapper.updateByPrimaryKeySelective(order);
+                build.forEach(o -> o.setOrderId(order.getId()));
+                orderDetailMapper.insertList(build);
+                List<CouponOrderVirtual> virtuals = orderVirtual(order, list, now);
+                virtualMapper.insertList(virtuals);
+                vo = detail(order.getId());
+            }
         } catch (Exception e) {
             if (CollectionUtils.isNotEmpty(list)) {
                 revoke(list);
@@ -113,21 +150,21 @@ public class CouponOrderBiz {
         }
     }
 
-    private List<CouponOrderDetail> build(CouponOrderModel model, List<Integer> couponIds, Map<Integer, CouponCommonInfo> collect1
+    private List<CouponOrderDetail> build(Integer patientId, List<CouponOrderDetailModel> detail, List<Integer> couponIds, Map<Integer, CouponCommonInfo> collect1
             , CouponOrder couponOrder, LocalDateTime now) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        Integer patientId = model.getPatientId();
-        List<CouponOrderDetailModel> detail = model.getDetail();
-        List<DeductionItemPeriod> periods = periodBiz.listByCoupon(couponIds, DateUtil.localDateTimeToDate(now));
+        Date date = DateUtil.localDateTimeToDate(now);
+        List<DeductionItemPeriod> periods = periodBiz.listByCoupon(couponIds, date);
         SalesChannel name = salesChannelBiz.getByName("艾维门诊");
         if (Objects.isNull(name)) {
             throw ClientServiceException.wrap(SALE_CHANNEL_NULL);
         }
         Map<Integer, List<DeductionItemPeriod>> collect = periods.stream().collect(groupingBy(DeductionItemPeriod::getCouponId, toList()));
-        couponOrder.setOrgId(orgId);
+        couponOrder.setOrgId(Objects.isNull(couponOrder.getOrgId()) ? orgId : couponOrder.getOrgId());
         couponOrder.setPatientId(patientId);
-        couponOrder.setOrderRecordNum(generateOrderRecordNumber(orgId));
+        couponOrder.setOrderRecordNum(StringUtils.isBlank(couponOrder.getOrderRecordNum())
+                ? generateOrderRecordNumber(orgId) : couponOrder.getOrderRecordNum());
         couponOrder.setStatus(0);
         BigDecimal totalPrice = BigDecimal.ZERO;
         BigDecimal totalReceivable = BigDecimal.ZERO;
@@ -156,10 +193,14 @@ public class CouponOrderBiz {
             orderDetail.setSaleChannelId(name.getId());
             orderDetail.setRemarks(detailModel.getRemark());
             orderDetail.setCrtId(userId);
+            orderDetail.setCrtTime(date);
+            orderDetail.setUpdTime(date);
             list.add(orderDetail);
         }
         couponOrder.setTotalAmount(totalPrice);
         couponOrder.setReceivableAmount(totalReceivable);
+        couponOrder.setUpdTime(date);
+        couponOrder.setCrtTime(Objects.isNull(couponOrder.getCrtTime()) ? date : couponOrder.getCrtTime());
         return list;
     }
 
@@ -296,6 +337,7 @@ public class CouponOrderBiz {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         CouponOrderVirtual orderVirtual;
         List<CouponOrderVirtual> list1 = Lists.newArrayList();
+        Date date = DateUtil.localDateTimeToDate(now);
         for (Card card : list) {
             orderVirtual = new CouponOrderVirtual();
             orderVirtual.setOrderId(couponOrder.getId());
@@ -304,9 +346,11 @@ public class CouponOrderBiz {
             orderVirtual.setCouponId(card.getCouponId());
             orderVirtual.setPatientId(couponOrder.getPatientId());
             orderVirtual.setCardNumber(card.getCardNumber());
-            orderVirtual.setSoldDate(DateUtil.localDateTimeToDate(now));
+            orderVirtual.setSoldDate(date);
             orderVirtual.setCrtId(userId);
             orderVirtual.setUpdId(userId);
+            orderVirtual.setUpdTime(date);
+            orderVirtual.setCrtTime(date);
             list1.add(orderVirtual);
         }
         return list1;
@@ -339,11 +383,7 @@ public class CouponOrderBiz {
         CouponOrder couponOrder = getOrder(orderId);
         if (Objects.nonNull(couponOrder)) {
             deleteVirtual(orderId);
-            List<CouponOrderDetail> details = listOrderDetail(orderId);
-            details.forEach(t -> {
-                t.setInservice(false);
-                orderDetailMapper.updateByPrimaryKeySelective(t);
-            });
+            deleteDetail(orderId);
             couponOrder.setInservice(false);
             couponOrderMapper.updateByPrimaryKeySelective(couponOrder);
         }
@@ -358,7 +398,7 @@ public class CouponOrderBiz {
         return couponOrderMapper.selectOneByExample(example);
     }
 
-    private List<CouponOrderVirtual> getOrderVirtual(Integer orderId) {
+    private List<CouponOrderVirtual> listOrderVirtual(Integer orderId) {
         Example example = new Example(CouponOrderVirtual.class);
         example.createCriteria().andEqualTo("orderId", orderId)
                 .andEqualTo("inservice", true);
@@ -368,18 +408,25 @@ public class CouponOrderBiz {
     private List<Card> listCard(Collection<Integer> cardIds) {
         Example example = new Example(Card.class);
         example.createCriteria().andIn("id", cardIds)
-                .andGreaterThan("status", 2)
                 .andEqualTo("inservice", true);
         return cardMapper.selectByExample(example);
     }
 
     private void deleteVirtual(Integer orderId) {
-        List<CouponOrderVirtual> virtuals = getOrderVirtual(orderId);
+        List<CouponOrderVirtual> virtuals = listOrderVirtual(orderId);
         List<Integer> cardIds = virtuals.stream().map(CouponOrderVirtual::getCardId).collect(toList());
         List<Card> cards = listCard(cardIds);
         if (CollectionUtils.isNotEmpty(cards)) {
             revoke(cards);
         }
+    }
+
+    private void deleteDetail(Integer orderId) {
+        List<CouponOrderDetail> details = listOrderDetail(orderId);
+        details.forEach(t -> {
+            t.setInservice(false);
+            orderDetailMapper.updateByPrimaryKeySelective(t);
+        });
     }
 
     private void updateDetail(Integer orderId) {

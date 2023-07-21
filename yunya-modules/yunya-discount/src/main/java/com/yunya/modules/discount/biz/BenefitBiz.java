@@ -100,6 +100,8 @@ public class BenefitBiz {
     private RemoteRabbitMqServiceFeign mqServiceFeign;
     @Resource(name = "customizeThreadPool")
     private ExecutorService cardThreadPool;
+    @Resource
+    private DeductionPeriodBiz periodBiz;
 
     /**
      * 收费 - 卡券保存优惠
@@ -543,6 +545,7 @@ public class BenefitBiz {
         if (COUPON_TYPE.equals(itemUseBenefitBo.getBenefitType())) {
             Integer couponType = itemUseBenefitBo.getCouponType();
             Integer couponId = itemUseBenefitBo.getCouponId();
+            Integer cardId = itemUseBenefitBo.getBenefitId();
             if (VOUCHER.equals(couponType)) {
                 example = new Example(VoucheCoupon.class);
                 example.createCriteria().andEqualTo("couponId", couponId);
@@ -579,6 +582,13 @@ public class BenefitBiz {
                 SpecialPackageCouponItem specialPackageCouponItem = specialPackageCouponItemMapper.selectOneByExample(example);
                 if (specialPackageCouponItem != null) {
                     supplyWorkload = supplyWorkload.add(specialPackageCouponItem.getWorkloadLoad());
+                }
+            }
+            if (DEDUCTION.equals(couponType)) {
+                List<DeductionItemPeriod> list = periodBiz.list(cardId);
+                DeductionItemPeriod period = list.stream().filter(t -> itemBenefitBo.getItemId().equals(t.getItemId())).findFirst().orElse(null);
+                if (period != null) {
+                    supplyWorkload = supplyWorkload.add(period.getWorkloadLoad());
                 }
             }
         }
