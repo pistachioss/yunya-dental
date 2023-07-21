@@ -2,14 +2,13 @@ package com.yunya.models.discount;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 @Data
 @Table(name = "coupon_order_virtual")
 public class CouponOrderVirtual {
     @Id
+    @GeneratedValue(generator = "JDBC", strategy = GenerationType.IDENTITY)
     private Integer id;
 
     /**

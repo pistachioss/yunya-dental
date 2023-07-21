@@ -7,9 +7,8 @@
     -->
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
+    <result column="order_id" property="orderId" jdbcType="INTEGER" />
     <result column="type" property="type" jdbcType="TINYINT" />
-    <result column="card_id" property="cardId" jdbcType="INTEGER" />
     <result column="coupon_id" property="couponId" jdbcType="INTEGER" />
     <result column="coupon_name" property="couponName" jdbcType="VARCHAR" />
     <result column="price" property="price" jdbcType="DECIMAL" />
@@ -24,14 +23,14 @@
 
     <insert id="insertList" parameterType="List">
         insert into
-        `card`
-        (`org_id`, `order_record_id`, `type`, `card_id`, `coupon_id`, `coupon_name`, `price`, `quantity`,`receivable_amount`,`consulter_id`,
-        `executor_id`,`remarks`,`crt_id`,`crt_time`,)
+        `coupon_order_detail`
+        (`org_id`, `order_id`, `type`, `coupon_id`, `coupon_number`, `coupon_name`,`price`, `quantity`,`receivable_amount`,`consulter_id`,
+        `executor_id`,`remarks`,`sale_channel_id`,`crt_id`,`crt_time`,inservice,`upd_id`,`upd_time`)
         values
         <foreach collection="List" item="item" separator=",">
-            (#{item.orgId}, #{item.orderRecordId}, #{item.type}, #{item.cardId}, #{item.couponId}, #{item.couponName},
+            (#{item.orgId}, #{item.orderId}, #{item.type}, #{item.couponId}, #{item.couponNumber}, #{item.couponName},
             #{item.price},#{item.quantity},#{item.receivableAmount},#{item.consulterId},#{item.executorId}
-            ,#{item.remarks},#{item.crtId},#{item.crtTime})
+            ,#{item.remarks},#{item.saleChannelId},#{item.crtId},#{item.crtTime},#{item.inservice},#{item.updId},#{item.updTime})
         </foreach>
     </insert>
 </mapper>

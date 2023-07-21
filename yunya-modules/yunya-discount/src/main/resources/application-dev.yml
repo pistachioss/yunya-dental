@@ -25,4 +25,8 @@ spring:
     port: 6379
     password: foobared
 
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
 domainUrl: http://test.ivy2.yunya365.com

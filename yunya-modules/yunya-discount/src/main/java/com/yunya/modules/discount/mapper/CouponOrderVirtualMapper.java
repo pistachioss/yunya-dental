@@ -7,5 +7,5 @@ import tk.mybatis.mapper.common.Mapper;
 import java.util.List;
 
 public interface CouponOrderVirtualMapper extends Mapper<CouponOrderVirtual> {
-    void insertList(@Param("List") List<CouponOrderVirtual> virtuals);
+    void insertList(@Param("virtuals") List<CouponOrderVirtual> virtuals);
 }

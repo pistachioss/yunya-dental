@@ -2,9 +2,7 @@ package com.yunya.models.discount;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 @Data
@@ -14,6 +12,7 @@ public class CouponOrder {
      * 主键ID
      */
     @Id
+    @GeneratedValue(generator = "JDBC", strategy = GenerationType.IDENTITY)
     private Integer id;
 
     /**
