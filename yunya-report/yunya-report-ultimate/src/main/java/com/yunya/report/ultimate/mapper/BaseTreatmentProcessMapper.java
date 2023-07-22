@@ -194,5 +194,5 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    */
   List<EmployeeDiagnosisInfoVO> selectEmployeeReceptionStatistics(@Param("query") MultiClinicEmloyeeDateRangeQueryForm query);
 
-  List<BaseTreatmentProcess> selectPatientRegisteredList(@Param("query") DateRangeQueryForm query);
+  List<BasePatientBehaviorTagVO> selectPatientFrequencyOfTreatment(@Param("query") DateRangeQueryForm query);
 }
