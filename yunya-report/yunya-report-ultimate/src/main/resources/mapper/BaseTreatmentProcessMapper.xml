@@ -1283,9 +1283,9 @@
             FROM (
                 SELECT
                     patient_id,
-                    DATE_FORMAT(registered_date,'%Y-%m-%d'),
+                    DATE_FORMAT(registered_date,'%Y-%m-%d') AS registeredDate,
                     1 times
-                FROM FROM base_treatment_process btp
+                FROM base_treatment_process btp
                 <where>btp.registered_dentist_id > 0
                 <if test="query.dateType==0">
                         <if test="query.startDate != null and query.startDate != ''">
@@ -1312,7 +1312,7 @@
                         </if>
                     </if>
                 </where>
-                GROUP BY patient_id, registered_date
+                GROUP BY patient_id, registeredDate
             ) btp GROUP BY patient_id
         ) btp ON bp.patient_id=btp.patient_id
     </select>
