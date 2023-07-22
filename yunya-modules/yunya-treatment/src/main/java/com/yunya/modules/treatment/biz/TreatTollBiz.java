@@ -2,12 +2,10 @@ package com.yunya.modules.treatment.biz;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
-import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
-import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
-import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.model.*;
@@ -15,6 +13,7 @@ import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
 import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
+import com.yunya.feign.treatment.domain.vo.TreatOrderRecordVO;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -39,7 +38,6 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
@@ -97,7 +95,7 @@ public class TreatTollBiz {
    * @param query 优惠条件
    * @return List<OrderDetailChargeVO>
    */
-  public List<OrderDetailChargeVO> matchOrderTailPrivilege(OrderPrivilegeQuery query) {
+  public TreatOrderRecordVO matchOrderTailPrivilege(OrderPrivilegeQuery query) {
     Integer orderRecordId = query.getOrderRecordId();
     List<OrderDetailChargeVO> detailList = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
     if (StringHelper.isEmpty(detailList)) {
@@ -107,94 +105,116 @@ public class TreatTollBiz {
     GeneralDiscountModel generalDiscountModel = query.getGeneralDiscountModel();
     // 校验优惠参数
     checkPrivilegeParam(discountType, generalDiscountModel);
+    TreatOrderRecordVO result = new TreatOrderRecordVO();
     switch (discountType) {
       case 1:
         // 匹配卡券优惠
-        matchGeneralDiscountOrderDetailValue(orderRecordId, detailList, generalDiscountModel);
+        ResponseResult<PatientOrderBenefitVo> responseResult = findGeneralPrivilege(orderRecordId, null, generalDiscountModel);
+        PatientOrderBenefitVo resultData = responseResult.getData();
+        // 卡券优惠为空
+        if (null == resultData) {
+          throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
+        }
+        matchGeneralDiscountOrderDetailValue(detailList, resultData, result);
         break;
       default:
         break;
     }
-    return detailList;
-  }
-
-  /**
-   * 匹配普通折扣订单详情信息列表
-   *
-   * @param orderRecordId 订单记录ID
-   * @param detailList 订单详情列表
-   * @param generalDiscountModel 卡券列表
-   */
-  private void matchGeneralDiscountOrderDetailValue(
-      Integer orderRecordId,
-      List<OrderDetailChargeVO> detailList,
-      GeneralDiscountModel generalDiscountModel) {
-    ResponseResult<PatientOrderBenefitVo> responseResult = findGeneralPrivilege(orderRecordId, null, generalDiscountModel);
-    PatientOrderBenefitVo resultData = responseResult.getData();
-    // 卡券优惠为空
-    if (null == resultData) {
-      throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
-    }
-    matchGeneralDiscountOrderDetailValue(detailList, resultData.getItemList());
+    return result;
   }
 
   /**
    * 匹配普通折扣订单详情信息列表
    *
    * @param detailList 订单详情列表
-   * @param itemList 优惠项目列表
+   * @param privilege  优惠项目列表
+   * @param result
    */
   private void matchGeneralDiscountOrderDetailValue(
           List<OrderDetailChargeVO> detailList,
-          List<PatientItemBenefitVo> itemList) {
+          PatientOrderBenefitVo privilege,
+          TreatOrderRecordVO result) {
+    Map<Integer, OrderDetailChargeVO> detailMap = detailList.stream().collect(toMap(OrderDetailChargeVO::getOrderDetailId, Function.identity()));
+    List<DeductionItemBenefitVo> deductions = privilege.getDeductionList();
+    List<PatientItemBenefitVo> itemList = privilege.getItemList();
+    List<OrderDetailChargeVO> swipeItemList = Lists.newArrayList();
+    if (StringHelper.isNotEmpty(deductions)) {
+      deductions.forEach(deduct->{
+        Integer orderDetailId = deduct.getOrderDetailId();
+        OrderDetailChargeVO item = detailMap.get(orderDetailId);
+        if (StringHelper.isNotNull(item)) {
+          int swipeQuantity = deduct.getQuantity();
+          int unSwipeQuantity = item.getQuantity() - swipeQuantity;
+          OrderDetailChargeVO deductItem = null;
+          if (unSwipeQuantity >= 0) {
+            // 项目已全部划扣
+            deductItem = detailMap.remove(orderDetailId);
+          } else {
+            // 设置剩余未划扣的项目数量
+            item.setQuantity(unSwipeQuantity);
+            try {
+              deductItem = item.clone();
+            } catch (CloneNotSupportedException e) {
+              log.error("matchGeneralDiscountOrderDetailValue error: {}", e);
+              throw new ClientServiceException("划扣项目账单明细错误", DATA_ERROR);
+            }
+          }
+          deductItem.setQuantity(swipeQuantity);
+          deductItem.setReceivableAmount(item.getPrice().multiply(BigDecimal.valueOf(swipeQuantity)));
+          deductItem.setDiscountAppliesCoupons(getPrivilegeInfo(deduct.getItemBenefitList()));
+          swipeItemList.add(deductItem);
+        }
+      });
+    }
+    result.setSwipeItemList(swipeItemList);
+    BigDecimal actualTotalAmount = BigDecimal.ZERO;
     for (OrderDetailChargeVO vo : detailList) {
       for (PatientItemBenefitVo benefitVo : itemList) {
-        BigDecimal receivableAmount = vo.getReceivableAmount();
-        BigDecimal actualAmount = vo.getActualAmount();
-        List<PrivilegeCouponInfoVO> discountAppliesCoupon = vo.getDiscountAppliesCoupons();
+        BigDecimal receivableAmount = vo.getPrice().multiply(BigDecimal.valueOf(vo.getQuantity()));
+        BigDecimal actualAmount = receivableAmount;
         if (vo.getOrderDetailId().equals(benefitVo.getOrderDetailId())) {
-          BigDecimal discountAmount = benefitVo.getItemBenefitAmount();
-          actualAmount = actualAmount.subtract(discountAmount);
-          BigDecimal discountRate = actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+          actualAmount = actualAmount.subtract(benefitVo.getItemBenefitAmount());
           // 设置折扣率
-          vo.setDiscountRate(discountRate);
+          vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
           // 设置订单明细卡券匹配信息
-          List<ItemUseBenefitVo> benefitList = benefitVo.getItemBenefitList();
-          if (StringHelper.isNotEmpty(benefitList)) {
-            setPrivilegeCouponInfoValue(discountAppliesCoupon, benefitList);
-          }
-          if (discountAmount.compareTo(BigDecimal.ZERO) > 0) {
-            vo.setHasDiscount(true);
+          if (StringHelper.gt(receivableAmount, actualAmount)) {
+            vo.setDiscountAppliesCoupons(getPrivilegeInfo(benefitVo.getItemBenefitList()));
           }
         }
+        vo.setReceivableAmount(receivableAmount);
         vo.setActualAmount(actualAmount);
-        if (receivableAmount.compareTo(actualAmount) > 0) {
-          vo.setDiscountAppliesCoupons(discountAppliesCoupon);
-        }
+        actualTotalAmount = actualTotalAmount.add(actualAmount);
       }
     }
+    result.setActualTotalAmount(actualTotalAmount);
+    result.setItemList(detailList);
   }
 
   /**
-   * 设置订单卡券优惠信息
+   * 获取订单卡券优惠信息
    *
-   * @param discountAppliesCoupon 订单卡券优惠匹配信息
    * @param benefitList 匹配卡券列表
    */
-  private void setPrivilegeCouponInfoValue(
-      List<PrivilegeCouponInfoVO> discountAppliesCoupon, List<ItemUseBenefitVo> benefitList) {
-    benefitList.forEach(
+  private List<PrivilegeCouponInfoVO> getPrivilegeInfo(
+      List<ItemUseBenefitVo> benefitList) {
+    List<PrivilegeCouponInfoVO> discountAppliesCoupon = Lists.newArrayList();
+    if (StringHelper.isNotEmpty(benefitList)) {
+      benefitList.forEach(
         benefitVo -> {
           Integer benefitType = benefitVo.getBenefitType();
-            PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();
-            couponInfoVO.setBenefitId(benefitVo.getBenefitId());
-            couponInfoVO.setCouponType(
-                    0 == benefitType ? Integer.valueOf(99) : benefitVo.getCouponType());
-            couponInfoVO.setBenefitName(benefitVo.getBenefitName());
-            couponInfoVO.setBenefitAmount(benefitVo.getBenefitAmount());
-            couponInfoVO.setCardNumber(benefitVo.getCardNumber());
-            discountAppliesCoupon.add(couponInfoVO);
+          PrivilegeCouponInfoVO couponInfo = new PrivilegeCouponInfoVO();
+          couponInfo.setBenefitId(benefitVo.getBenefitId());
+          couponInfo.setCouponType(
+                  0 == benefitType ? Integer.valueOf(99) : benefitVo.getCouponType());
+          couponInfo.setBenefitName(benefitVo.getBenefitName());
+          couponInfo.setBenefitAmount(benefitVo.getBenefitAmount());
+          couponInfo.setCardNumber(benefitVo.getCardNumber());
+          // TODO: 2023/7/21 设置划扣卡套餐单价
+//            couponInfo.setPackageUnitPrice(benefitVo.getPackageUnitPrice());
+          discountAppliesCoupon.add(couponInfo);
         });
+    }
+    return discountAppliesCoupon;
   }
 
   private void updateTreatmentStatus(TreatmentRecord treatmentRecord) {
@@ -272,12 +292,6 @@ public class TreatTollBiz {
     orderRecordBiz.updateOrderStatus(orderRecord.getId(), BusinessConstants.ORDER_FINISH_STATUS);
     // 更新就诊状态
     updateTreatmentRecordStatus(orderRecord.getTreatmentRecordId());
-
-    try {
-      TimeUnit.SECONDS.sleep(5);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
     // 异步处理收费次要流程
     asyncProcessCharge(billPayRecord, model, totalCharge, totalAmount[1], true);
     recordChargeLog(billPayRecord, model, totalCharge, totalAmount[1], type);
@@ -296,7 +310,7 @@ public class TreatTollBiz {
    * @param totalPrincipal
    * @param type
    */
-  private void recordChargeLog(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, byte type) {
+  private void recordChargeLog(BillPayRecord billPayRecord, TreatTollModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, byte type) {
     BillPayRecordLog logEntity = new BillPayRecordLog();
     logEntity.setBillPayRecordId(billPayRecord.getId());
     logEntity.setOrderRecordId(billPayRecord.getOrderRecordId());
@@ -312,7 +326,7 @@ public class TreatTollBiz {
     billPayRecordLogMapper.insertSelective(logEntity);
   }
 
-  private void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, boolean isMqTreatment) {
+  private void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, boolean isMqTreatment) {
     TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
       /**
        * 事务提交后回调该方法
@@ -335,7 +349,7 @@ public class TreatTollBiz {
    * @return
    */
   @Transactional
-  public BillPayRecord generalBillPayRecordWithDetail(BillRecord billRecord, BigDecimal totalCharge, BigDecimal actualReceivableAmount, TreatTollDebtModel model) {
+  public BillPayRecord generalBillPayRecordWithDetail(BillRecord billRecord, BigDecimal totalCharge, BigDecimal actualReceivableAmount, TreatTollModel model) {
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer billRecordId = billRecord.getId();
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -419,9 +433,8 @@ public class TreatTollBiz {
       BigDecimal totalCharge,
       BillRecord billRecord,
       TreatTollModel model) {
-    Map<String, List<SwipeItemModel>> swipeMap = extractSwipeItemMap(model);
     // 构建明细收费列表
-    Map<Integer, PatientItemBenefitVo> discountMap = findBillDiscountCoupons(model, billRecord);
+    Map<Integer, OrderDetailPayRecord> discountMap = findBillDiscountCoupons(model, billRecord);
     List<OrderDetailPayRecord> orderDetailPayRecords = Lists.newArrayList();
     OrderDetail orderDetail = new OrderDetail();
     Integer orderRecordId = billRecord.getOrderRecordId();
@@ -435,9 +448,11 @@ public class TreatTollBiz {
         BigDecimal privilegeAmount = BigDecimal.ZERO;
         BigDecimal actualAmount = receivableAmount;
         BigDecimal couponWorkload = BigDecimal.ZERO;
-        PatientItemBenefitVo benefitVO = discountMap.get(orderDetailId);
+        BigDecimal swipeWorkload = BigDecimal.ZERO;
+        BigDecimal swipeCouponWorkload = BigDecimal.ZERO;
+        OrderDetailPayRecord benefitVO = discountMap.get(orderDetailId);
         if (StringHelper.isNotNull(benefitVO)) {
-          privilegeAmount = benefitVO.getItemBenefitAmount();
+          privilegeAmount = benefitVO.getPrivilegeAmount();
           if (privilegeAmount.compareTo(actualAmount) > 0) {
             privilegeAmount = actualAmount;
           }
@@ -446,22 +461,12 @@ public class TreatTollBiz {
             actualAmount = BigDecimal.ZERO;
           }
           // 获取补入工作量
-          couponWorkload = benefitVO.getSupplyWorkload();
+          couponWorkload = benefitVO.getCouponWorkload();
+          swipeWorkload = benefitVO.getSwipeWorkload();
+          swipeCouponWorkload = benefitVO.getSwipeCouponWorkload();
         }
 
         detailPayRecord.setReceivableAmount(receivableAmount);
-        BigDecimal swipeWorkload = BigDecimal.ZERO;
-        BigDecimal swipeCouponWorkload = BigDecimal.ZERO;
-        String key = StringHelper.joinWith(",", detail.getType(), detail.getBillingItemId());
-        List<SwipeItemModel> swipeItemModels = swipeMap.get(key);
-        if (StringHelper.isNotEmpty(swipeItemModels)) {
-          for (SwipeItemModel swipeItemModel : swipeItemModels) {
-            BigDecimal quantity = BigDecimal.valueOf(swipeItemModel.getQuantity());
-            swipeWorkload = swipeWorkload.add(swipeItemModel.getPackagePrice().multiply(quantity));
-            swipeCouponWorkload = swipeCouponWorkload.add(swipeItemModel.getSupplyWorkload().multiply(quantity));
-            swipeItemModel.setOrderDetailId(orderDetailId);
-          }
-        }
         detailPayRecord.setSwipeCouponWorkload(swipeCouponWorkload);
         detailPayRecord.setSwipeWorkload(swipeWorkload);
         detailPayRecord.setPrivilegeAmount(privilegeAmount);
@@ -475,19 +480,6 @@ public class TreatTollBiz {
     if (StringHelper.isNotEmpty(orderDetailPayRecords)) {
       orderDetailPayRecordBiz.batchInsert(orderDetailPayRecords);
     }
-  }
-
-  private Map<String, List<SwipeItemModel>> extractSwipeItemMap(TreatTollModel model) {
-    Map<String, List<SwipeItemModel>> result = new HashMap<>();
-    List<SwipeItemModel> swipeItemModels = model.getSwipeItemModels();
-    if (StringHelper.isNotEmpty(swipeItemModels)) {
-      swipeItemModels.forEach(vo->{
-        String key = StringHelper.joinWith(",", vo.getItemType(), vo.getItemId());
-        List<SwipeItemModel> list = result.computeIfAbsent(key, k->new ArrayList<>());
-        list.add(vo);
-      });
-    }
-    return result;
   }
 
   /**
@@ -517,133 +509,41 @@ public class TreatTollBiz {
     return detailPayRecord;
   }
 
-  private void saveBillPayDetailRecordWithMixDiscount(BigDecimal totalCharge, Integer orderRecordId, Integer billRecordId, GeneralDiscountModel generalDiscount, AccreditDiscountModel accreditDiscount) {
-    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
-    OrderDetail orderDetail = new OrderDetail();
-    orderDetail.setOrderRecordId(orderRecordId);
-    orderDetail.setInservice(true);
-    List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
-
-    Integer patientId = orderRecord.getPatientId();
-    Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-    ResponseResult<PatientOrderBenefitVo> result = findGeneralPrivilege(orderRecordId, patientId, generalDiscount);
-    PatientOrderBenefitVo benefitVo = result.getData();
-    Map<Integer, OrderDetailPayRecord> detailPays = new HashMap<>(16);
-    if (null != benefitVo) {
-      List<PatientItemBenefitVo> benefitVos = benefitVo.getItemList();
-      for (OrderDetail detail : orderDetails) {
-        OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
-        detailPayRecord.setOrgId(orgId);
-        detailPayRecord.setPatientId(patientId);
-        detailPayRecord.setTreatmentRecordId(treatmentRecordId);
-        detailPayRecord.setOrderRecordId(orderRecordId);
-        Integer detailId = detail.getId();
-        detailPayRecord.setOrderDetailId(detailId);
-        detailPayRecord.setBillRecordId(billRecordId);
-        BigDecimal receivableAmount = detail.getReceivableAmount();
-        detailPayRecord.setReceivableAmount(receivableAmount);
-        BigDecimal privilegeAmount = BigDecimal.valueOf(0);
-        BigDecimal actualAmount = receivableAmount;
-        BigDecimal couponWorkload = BigDecimal.valueOf(0);
-        for (PatientItemBenefitVo vo : benefitVos) {
-          Integer orderDetailId = vo.getOrderDetailId();
-          if (detailId.equals(orderDetailId)) {
-            privilegeAmount = vo.getItemBenefitAmount();
-            if (privilegeAmount.compareTo(actualAmount) > 0) {
-              privilegeAmount = actualAmount;
-            }
-            actualAmount = receivableAmount.subtract(privilegeAmount);
-            if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
-              actualAmount = BigDecimal.ZERO;
-            }
-            // 获取补入工作量
-            couponWorkload = vo.getSupplyWorkload();
-          }
-        }
-        detailPayRecord.setPrivilegeAmount(privilegeAmount);
-        detailPayRecord.setActualReceivable(actualAmount);
-        // 设置已收
-        totalCharge = totalItemCharge(totalCharge, detailPayRecord);
-        detailPayRecord.setCouponWorkload(couponWorkload);
-        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        detailPayRecord.setCrtId(userId);
-        String name = BaseContextHandler.getName();
-        detailPayRecord.setCrtName(name);
-        detailPayRecord.setUpdId(userId);
-        detailPayRecord.setUpdName(name);
-        detailPays.put(detailId, detailPayRecord);
-      }
-      //      } else {
-      //        throw new ClientServiceException("收费失败，当前选择卡券未匹配任何优惠！", PARAMETERS_IS_ILLEGAL);
-      //      }
-    } else {
-      throw new ClientServiceException(result.getMsg(), result.getStatus());
-    }
-
-    List<AccreditDiscountDetailModel> discountDetailModels =
-            accreditDiscount.getAccreditDiscountDetailModels();
-    if (StringHelper.isNotEmpty(orderDetails)) {
-      for (OrderDetail detail : orderDetails) {
-        Integer detailId = detail.getId();
-        OrderDetailPayRecord detailPayRecord = detailPays.computeIfAbsent(detailId, k->new OrderDetailPayRecord());
-        BigDecimal receivableAmount = detail.getReceivableAmount();
-        BigDecimal privilegeAmount = BigDecimal.valueOf(0);
-        BigDecimal actualAmount = receivableAmount;
-        for (AccreditDiscountDetailModel discountDetailModel : discountDetailModels) {
-          if (detail.getBillingItemId().equals(discountDetailModel.getBillingItemId())
-                  && detail.getType().equals(discountDetailModel.getType())) {
-            // 折扣单价
-            BigDecimal discountPrice =
-                    discountDetailModel
-                            .getActualAmount()
-                            .divide(
-                                    BigDecimal.valueOf(discountDetailModel.getQuantity()),
-                                    4,
-                                    RoundingMode.HALF_UP);
-            actualAmount = discountPrice.multiply(BigDecimal.valueOf(detail.getQuantity()));
-            if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
-              throw new ClientServiceException("实收金额不能小于0！", PARAMETERS_IS_ILLEGAL);
-            }
-            privilegeAmount = receivableAmount.subtract(actualAmount);
-            if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
-              throw new ClientServiceException("授权折扣的实收金额不能大于原价！", PARAMETERS_IS_ILLEGAL);
-            }
-          }
-        }
-        if (privilegeAmount.compareTo(BigDecimal.ZERO) > 0) {
-          detailPayRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-          detailPayRecord.setPatientId(orderRecord.getPatientId());
-          detailPayRecord.setTreatmentRecordId(orderRecord.getTreatmentRecordId());
-          detailPayRecord.setOrderRecordId(orderRecordId);
-          detailPayRecord.setOrderDetailId(detailId);
-          detailPayRecord.setBillRecordId(billRecordId);
-          detailPayRecord.setReceivableAmount(receivableAmount);
-
-          detailPayRecord.setPrivilegeAmount(privilegeAmount);
-          detailPayRecord.setActualReceivable(actualAmount);
-          detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
-          // 设置已收
-          totalCharge = totalItemCharge(totalCharge, detailPayRecord);
-          Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-          detailPayRecord.setCrtId(userId);
-          String name = BaseContextHandler.getName();
-          detailPayRecord.setCrtName(name);
-          detailPayRecord.setUpdId(userId);
-          detailPayRecord.setUpdName(name);
-        }
-      }
-      if (StringHelper.isNotEmpty(detailPays)) {
-        orderDetailPayRecordBiz.batchInsert(new ArrayList<>(detailPays.values()));
-      }
-    }
-  }
-
-  private Map<Integer, PatientItemBenefitVo> findBillDiscountCoupons(TreatTollModel model, BillRecord billRecord) {
+  /**
+   * 获取账单收费时的优惠明细
+   *
+   * @param model
+   * @param billRecord
+   * @return
+   */
+  private Map<Integer, OrderDetailPayRecord> findBillDiscountCoupons(TreatTollModel model, BillRecord billRecord) {
     if (model.getDiscountType() != 0) {
-      ResponseResult<PatientOrderBenefitVo> privileges = findGeneralPrivilege(billRecord.getOrderRecordId(), billRecord.getPatientId(), model.getGeneralDiscountModel());
-      List<PatientItemBenefitVo> itemList = privileges.getData().getItemList();
-      return itemList.stream().collect(toMap(PatientItemBenefitVo::getOrderDetailId, Function.identity()));
+      PatientOrderBenefitVo privileges = findGeneralPrivilege(billRecord.getOrderRecordId(),
+              billRecord.getPatientId(), model.getGeneralDiscountModel()).getData();
+      List<PatientItemBenefitVo> itemList = privileges.getItemList();
+      List<DeductionItemBenefitVo> deductionList = privileges.getDeductionList();
+      Map<Integer, OrderDetailPayRecord> result = Maps.newHashMap();
+      if (StringHelper.isNotEmpty(itemList)) {
+        itemList.forEach(item->{
+          Integer orderDetailId = item.getOrderDetailId();
+          OrderDetailPayRecord orderDetailPayRecord = result.computeIfAbsent(orderDetailId, v -> new OrderDetailPayRecord());
+          orderDetailPayRecord.setOrderDetailId(orderDetailId);
+          orderDetailPayRecord.setPrivilegeAmount(item.getItemBenefitAmount());
+          orderDetailPayRecord.setCouponWorkload(item.getSupplyWorkload());
+        });
+      }
+      if (StringHelper.isNotEmpty(deductionList)) {
+        deductionList.forEach(item->{
+          Integer orderDetailId = item.getOrderDetailId();
+          OrderDetailPayRecord orderDetailPayRecord = result.computeIfAbsent(orderDetailId, v -> new OrderDetailPayRecord());
+          orderDetailPayRecord.setOrderDetailId(orderDetailId);
+          orderDetailPayRecord.setPrivilegeAmount(orderDetailPayRecord.getPrivilegeAmount().add(item.getItemBenefitAmount()));
+          // TODO: 2023/7/22 设置划扣卡工作量
+//          orderDetailPayRecord.setSwipeWorkload(BigDecimal.valueOf(item.getQuantity()).multiply(item.getPackageUnitPrice()));
+          orderDetailPayRecord.setSwipeCouponWorkload(item.getSupplyWorkload());
+        });
+      }
+      return result;
     }
     return new HashMap<>();
   }
@@ -670,169 +570,6 @@ public class TreatTollBiz {
       }
     }
     return totalCharge;
-  }
-
-  /**
-   * 保存使用卡券优惠的订单明细优惠记录
-   *
-   * @param totalCharge 总入账金额
-   * @param orderRecordId 订单记录ID
-   * @param billRecordId 账单记录ID
-   * @param generalDiscount 卡券列表
-   */
-  private void saveBillPayDetailRecordWithGeneralDiscount(
-      BigDecimal totalCharge,
-      Integer orderRecordId,
-      Integer billRecordId,
-      GeneralDiscountModel generalDiscount) {
-    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
-    Integer patientId = orderRecord.getPatientId();
-    Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-    PatientChooseBenefitForm paramForm = new PatientChooseBenefitForm();
-    paramForm.setPatientId(patientId);
-    paramForm.setOrderId(orderRecordId);
-    paramForm.setOrgId(orgId);
-    paramForm.setMemberCardId(generalDiscount.getMemberTypeId());
-    paramForm.setDiscountId(generalDiscount.getDiscountCouponId());
-    List<Integer> voucherIds = Lists.newArrayList();
-    List<Integer> exchangeIds = Lists.newArrayList();
-    List<Integer> packageIds = Lists.newArrayList();
-    List<CouponDiscountInfoModel> discountInfoModels =
-        generalDiscount.getCouponDiscountInfoModels();
-    minorChargeProcessBiz.setCouponListValue(discountInfoModels, voucherIds, exchangeIds, packageIds);
-    paramForm.setVoucherIds(voucherIds);
-    paramForm.setExchangeIds(exchangeIds);
-    paramForm.setPackageIds(packageIds);
-    ResponseResult<PatientOrderBenefitVo> result = discountFeign.choiceBenefit(paramForm);
-    PatientOrderBenefitVo benefitVo = result.getData();
-    if (null != benefitVo) {
-      OrderDetail orderDetail = new OrderDetail();
-      orderDetail.setOrderRecordId(orderRecordId);
-      orderDetail.setInservice(true);
-      List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
-      List<PatientItemBenefitVo> benefitVos = benefitVo.getItemList();
-      // TODO: bug3210 要求去掉优惠判断
-      //      if (StringHelper.isNotEmpty(benefitVos)) {
-      for (OrderDetail detail : orderDetails) {
-        OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
-        detailPayRecord.setOrgId(orgId);
-        detailPayRecord.setPatientId(patientId);
-        detailPayRecord.setTreatmentRecordId(treatmentRecordId);
-        detailPayRecord.setOrderRecordId(orderRecordId);
-        Integer detailId = detail.getId();
-        detailPayRecord.setOrderDetailId(detailId);
-        detailPayRecord.setBillRecordId(billRecordId);
-        BigDecimal receivableAmount = detail.getReceivableAmount();
-        detailPayRecord.setReceivableAmount(receivableAmount);
-        BigDecimal privilegeAmount = BigDecimal.valueOf(0);
-        BigDecimal actualAmount = receivableAmount;
-        BigDecimal couponWorkload = BigDecimal.valueOf(0);
-        for (PatientItemBenefitVo vo : benefitVos) {
-          Integer orderDetailId = vo.getOrderDetailId();
-          if (detailId.equals(orderDetailId)) {
-            privilegeAmount = vo.getItemBenefitAmount();
-            if (privilegeAmount.compareTo(actualAmount) > 0) {
-              privilegeAmount = actualAmount;
-            }
-            actualAmount = receivableAmount.subtract(privilegeAmount);
-            if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
-              actualAmount = BigDecimal.ZERO;
-            }
-            // 获取补入工作量
-            couponWorkload = vo.getSupplyWorkload();
-          }
-        }
-        detailPayRecord.setPrivilegeAmount(privilegeAmount);
-        detailPayRecord.setActualReceivable(actualAmount);
-        // 设置已收
-        totalCharge = totalItemCharge(totalCharge, detailPayRecord);
-        detailPayRecord.setCouponWorkload(couponWorkload);
-        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        detailPayRecord.setCrtId(userId);
-        String name = BaseContextHandler.getName();
-        detailPayRecord.setCrtName(name);
-        detailPayRecord.setUpdId(userId);
-        detailPayRecord.setUpdName(name);
-        orderDetailPayRecordBiz.insertSelective(detailPayRecord);
-      }
-      //      } else {
-      //        throw new ClientServiceException("收费失败，当前选择卡券未匹配任何优惠！", PARAMETERS_IS_ILLEGAL);
-      //      }
-    } else {
-      throw new ClientServiceException(result.getMsg(), result.getStatus());
-    }
-  }
-
-
-  /**
-   * 保存使用授权折扣的订单明细优惠记录
-   *
-   * @param totalCharge 总入账金额
-   * @param orderRecordId 订单记录ID
-   * @param billRecordId 账单记录ID
-   * @param accreditDiscount 授权折扣列表
-   */
-  private void saveBillPayDetailRecordWithAccreditDiscount(
-      BigDecimal totalCharge,
-      Integer orderRecordId,
-      Integer billRecordId,
-      AccreditDiscountModel accreditDiscount) {
-    OrderDetail orderDetail = new OrderDetail();
-    orderDetail.setOrderRecordId(orderRecordId);
-    List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
-    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
-    List<AccreditDiscountDetailModel> discountDetailModels =
-        accreditDiscount.getAccreditDiscountDetailModels();
-    if (StringHelper.isNotEmpty(orderDetails)) {
-      for (OrderDetail detail : orderDetails) {
-        OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
-        detailPayRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-        detailPayRecord.setPatientId(orderRecord.getPatientId());
-        detailPayRecord.setTreatmentRecordId(orderRecord.getTreatmentRecordId());
-        detailPayRecord.setOrderRecordId(orderRecordId);
-        Integer detailId = detail.getId();
-        detailPayRecord.setOrderDetailId(detailId);
-        detailPayRecord.setBillRecordId(billRecordId);
-        BigDecimal receivableAmount = detail.getReceivableAmount();
-        detailPayRecord.setReceivableAmount(receivableAmount);
-        BigDecimal privilegeAmount = BigDecimal.valueOf(0);
-        BigDecimal actualAmount = receivableAmount;
-        for (AccreditDiscountDetailModel discountDetailModel : discountDetailModels) {
-          if (detail.getBillingItemId().equals(discountDetailModel.getBillingItemId())
-              && detail.getType().equals(discountDetailModel.getType())) {
-            // 折扣单价
-            BigDecimal discountPrice =
-                discountDetailModel
-                    .getActualAmount()
-                    .divide(
-                        BigDecimal.valueOf(discountDetailModel.getQuantity()),
-                        4,
-                        RoundingMode.HALF_UP);
-            actualAmount = discountPrice.multiply(BigDecimal.valueOf(detail.getQuantity()));
-            if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
-              throw new ClientServiceException("实收金额不能小于0！", PARAMETERS_IS_ILLEGAL);
-            }
-            privilegeAmount = receivableAmount.subtract(actualAmount);
-            if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
-              throw new ClientServiceException("授权折扣的实收金额不能大于原价！", PARAMETERS_IS_ILLEGAL);
-            }
-          }
-        }
-        detailPayRecord.setPrivilegeAmount(privilegeAmount);
-        detailPayRecord.setActualReceivable(actualAmount);
-        detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
-        // 设置已收
-        totalCharge = totalItemCharge(totalCharge, detailPayRecord);
-        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        detailPayRecord.setCrtId(userId);
-        String name = BaseContextHandler.getName();
-        detailPayRecord.setCrtName(name);
-        detailPayRecord.setUpdId(userId);
-        detailPayRecord.setUpdName(name);
-        orderDetailPayRecordBiz.insertSelective(detailPayRecord);
-      }
-    }
   }
 
   /**
@@ -880,6 +617,14 @@ public class TreatTollBiz {
     return privilegeAmount;
   }
 
+  /**
+   * 查询一般优惠
+   *
+   * @param orderRecordId
+   * @param patientId
+   * @param generalDiscountModel
+   * @return
+   */
   private ResponseResult<PatientOrderBenefitVo> findGeneralPrivilege(Integer orderRecordId, Integer patientId, GeneralDiscountModel generalDiscountModel) {
     PatientChooseBenefitForm form = new PatientChooseBenefitForm();
     if (StringHelper.isNull(patientId)) {
@@ -897,9 +642,10 @@ public class TreatTollBiz {
     List<Integer> exchangeIds = Lists.newArrayList();
     List<Integer> voucherIds = Lists.newArrayList();
     List<Integer> packageIds = Lists.newArrayList();
+    List<Integer> deductionIds = Lists.newArrayList();
     List<CouponDiscountInfoModel> models = generalDiscountModel.getCouponDiscountInfoModels();
     // 分类卡券列表
-    minorChargeProcessBiz.setCouponListValue(models, voucherIds, exchangeIds, packageIds);
+    minorChargeProcessBiz.setCouponListValue(models, voucherIds, exchangeIds, packageIds, deductionIds);
     form.setExchangeIds(exchangeIds);
     form.setPackageIds(packageIds);
     form.setVoucherIds(voucherIds);
@@ -994,7 +740,7 @@ public class TreatTollBiz {
    *
    * @param tollModel 收费基础添加模型
    */
-  private BigDecimal[] calculateTotalCharge(TreatTollDebtModel tollModel) {
+  private BigDecimal[] calculateTotalCharge(TreatTollModel tollModel) {
     Set<PrepaymentAccountModel> prepaymentAccounts = tollModel.getPrepaymentAccountModels();
     Set<MemberAccountModel> memberAccounts = tollModel.getMemberAccountModels();
     Set<PaymentModel> payments = tollModel.getPaymentModels();
@@ -1120,7 +866,7 @@ public class TreatTollBiz {
    * @param model 收费参数
    */
   @Transactional
-  public TollConfirmVO collectDebt(TreatTollDebtModel model) {
+  public TollConfirmVO collectDebt(TreatTollModel model) {
     checkPrepayments(model.getPrepaymentAccountModels());
     //    // TODO: bug3210 未收费走收欠费流程
     //    if(null == generalDiscount.getMemberTypeId() && null ==
@@ -1358,7 +1104,7 @@ public class TreatTollBiz {
    * @param model 收欠费添加模型
    */
   private BillRecord checkCollectDebtParams(
-          TreatTollDebtModel model) {
+          TreatTollModel model) {
     if (!StringHelper.eqZero(model.getOutstandingAmount())) {
       throw new ClientServiceException("收欠费失败，只能挂账一次", OPERATION_NOT_ALLOW);
     }

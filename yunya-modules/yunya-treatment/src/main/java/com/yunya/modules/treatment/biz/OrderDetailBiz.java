@@ -142,6 +142,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
   @Autowired private SysConfig sysConfig;
   @Autowired private BillPayShareDetailMapper billPayShareDetailMapper;
+  @Autowired private TreatTollBiz treatTollBiz;
 
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
@@ -265,7 +266,6 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param orderRecordId 开单记录ID
    * @return List<OrderDetailChargeVO>
    */
-  @Deprecated
   public List<OrderDetailChargeVO> findChargeOrderDetailList(Integer orderRecordId) {
     String redisKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
     String redisValue = redisUtils.get(redisKey);
@@ -278,14 +278,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (BusinessConstants.ORDER_UN_LOCK_STATUS.equals(orderRecord.getStatus())) {
       throw new ClientServiceException("收费失败，当前账单已解锁，暂不能进行收费！", PARAMETERS_IS_ILLEGAL);
     }
-    List<OrderDetailChargeVO> chargeOrderDetailList;
-    List<OrderDetailChargeVO> chargeVOS = this.buildMember(orderRecordId, orderRecord.getPatientId());
-    assemblyMemberDiscountPrice(chargeVOS);
-    if (chargeVOS != null) {
-      chargeOrderDetailList = chargeVOS;
-    } else {
-      chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
-    }
+    List<OrderDetailChargeVO> chargeOrderDetailList = this.buildMember(orderRecordId, orderRecord.getPatientId());
+    assemblyMemberDiscountPrice(chargeOrderDetailList);
     if (StringHelper.isNotEmpty(chargeOrderDetailList)) {
       List<Integer> orderDetailIds =
           chargeOrderDetailList.stream()
@@ -418,7 +412,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       query.setOrderRecordId(orderRecordId);
       query.setDiscountType((byte) 1);
       query.setGeneralDiscountModel(generalDiscountModel);
-      List<OrderDetailChargeVO> chargeVOS = tollBiz.matchOrderTailPrivilege(query);
+      List<OrderDetailChargeVO> chargeVOS = treatTollBiz.matchOrderTailPrivilege(query).getItemList();
+//      List<OrderDetailChargeVO> chargeVOS = tollBiz.matchOrderTailPrivilege(query);
       System.out.println("订单自动勾选优惠" + chargeVOS);
       if (CollectionUtils.isNotEmpty(chargeVOS)) {
         chargeVOS.stream()
@@ -434,7 +429,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         return chargeVOS;
       }
     }
-    return null;
+    return getChargeOrderDetailList(orderRecordId);
   }
 
   /**
@@ -503,9 +498,6 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                   systemServiceFeign.findSysUserEmployeeInfoByUserId(consulterId);
               vo.setConsulterName(null != consulter ? consulter.getName() : "--");
             }
-            // 设置订单明细卡券匹配信息
-            List<PrivilegeCouponInfoVO> couponInfos = Lists.newArrayList();
-            vo.setDiscountAppliesCoupons(couponInfos);
           });
     }
     return resultList;

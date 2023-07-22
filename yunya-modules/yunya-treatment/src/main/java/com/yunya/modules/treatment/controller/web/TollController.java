@@ -2,12 +2,12 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.model.TollDebtModel;
 import com.yunya.feign.treatment.domain.model.TollModel;
-import com.yunya.feign.treatment.domain.model.TreatTollDebtModel;
 import com.yunya.feign.treatment.domain.model.TreatTollModel;
 import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
+import com.yunya.feign.treatment.domain.vo.TreatOrderRecordVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -57,10 +57,26 @@ public class TollController {
    */
   @CurrentUser
   @ApiOperation("匹配订单列表优惠信息")
-  @PostMapping(value = "/privilege/match", name = "匹配订单列表优惠信息")
-  public ResponseResult<List<OrderDetailChargeVO>> matchOrderTailPrivilegeList(
+  @PostMapping(value = "/privilege/match/old", name = "匹配订单列表优惠信息")
+  @Deprecated
+  public ResponseResult<List<OrderDetailChargeVO>> matchOrderTailPrivilegeListOld(
       @RequestBody @Validated OrderPrivilegeQuery query) {
     List<OrderDetailChargeVO> resultList = tollBiz.matchOrderTailPrivilege(query);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 匹配订单列表优惠信息
+   *
+   * @param query 匹配条件
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("匹配订单列表优惠信息")
+  @PostMapping(value = "/privilege/match", name = "匹配订单列表优惠信息")
+  public ResponseResult<TreatOrderRecordVO> matchOrderTailPrivilegeList(
+      @RequestBody @Validated OrderPrivilegeQuery query) {
+    TreatOrderRecordVO resultList = treatTollBiz.matchOrderTailPrivilege(query);
     return ResponseUtil.success(resultList);
   }
 
@@ -227,7 +243,7 @@ public class TollController {
   @CurrentUser
   @ApiOperation("收欠费")
   @PostMapping("/collectDebt")
-  public ResponseResult<TollConfirmVO> collectDebt(@RequestBody @Validated TreatTollDebtModel model) {
+  public ResponseResult<TollConfirmVO> collectDebt(@RequestBody @Validated TreatTollModel model) {
     TollConfirmVO tollConfirmVO = treatTollBiz.collectDebt(model);
     return ResponseUtil.success(tollConfirmVO);
   }

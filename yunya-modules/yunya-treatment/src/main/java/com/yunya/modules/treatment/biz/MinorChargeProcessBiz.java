@@ -67,7 +67,7 @@ public class MinorChargeProcessBiz {
     @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
 
     @Async("asyncExecutor")
-    protected void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollDebtModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, Boolean isMqTreatment) {
+    protected void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, Boolean isMqTreatment) {
         Integer orderRecordId = billPayRecord.getOrderRecordId();
         Set<PrepaymentAccountModel> prepaymentAccounts = model.getPrepaymentAccountModels();
         Set<MemberAccountModel> memberAccounts = model.getMemberAccountModels();
@@ -332,7 +332,7 @@ public class MinorChargeProcessBiz {
             Byte discountType,
             Integer patientId,
             Integer orderRecordId,
-            TreatTollDebtModel model) {
+            TreatTollModel model) {
         switch (discountType) {
             case 1:
                 GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
@@ -364,10 +364,12 @@ public class MinorChargeProcessBiz {
         List<Integer> voucherIds = Lists.newArrayList();
         List<Integer> exchangeIds = Lists.newArrayList();
         List<Integer> packageIds = Lists.newArrayList();
-        setCouponListValue(coupons, voucherIds, exchangeIds, packageIds);
+        List<Integer> deductionIds = Lists.newArrayList();
+        setCouponListValue(coupons, voucherIds, exchangeIds, packageIds, deductionIds);
         benefitModel.setExchangeIds(exchangeIds);
         benefitModel.setPackageIds(packageIds);
         benefitModel.setVoucherIds(voucherIds);
+        benefitModel.setDeductionIds(deductionIds);
         discountFeign.saveCardBenefit(benefitModel);
     }
 
@@ -384,7 +386,8 @@ public class MinorChargeProcessBiz {
             List<CouponDiscountInfoModel> coupons,
             List<Integer> voucherIds,
             List<Integer> exchangeIds,
-            List<Integer> packageIds) {
+            List<Integer> packageIds,
+            List<Integer> deductionIds) {
         if (StringHelper.isNotEmpty(coupons)) {
             for (CouponDiscountInfoModel model : coupons) {
                 Byte couponType = model.getCouponType();
@@ -402,6 +405,9 @@ public class MinorChargeProcessBiz {
                     case 3:
                         packageIds.add(couponCommonInfoId);
                         break;
+                    // 划扣卡券
+                    case 5:
+                        deductionIds.add(couponCommonInfoId);
                     default:
                         break;
                 }
