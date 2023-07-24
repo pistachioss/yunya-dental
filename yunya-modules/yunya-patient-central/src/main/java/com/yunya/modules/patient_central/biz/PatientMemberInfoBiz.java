@@ -529,7 +529,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public void makeMemberLevelByCashAmount(String cardNumber) {
     // TODO: 消费后判断是否升级会员等级
     BigDecimal sum = remoteReportServiceFeign.getCashInfo().getCumulativeConsumption();
-    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(null);
+    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
     MemberType tmp = new MemberType();
     memberTypeList.stream().filter(memberType -> {
       return memberType.getTotalAmount().compareTo(BigDecimal.ZERO) > 0 && memberType.getTotalAmount().compareTo(sum) <= 0;
