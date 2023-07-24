@@ -46,4 +46,17 @@
         where mrrd.member_id = #{form.cardNumber} and type = ${type}
         order by operatingTime desc
     </select>
+
+    <!-- 查询充值记录 -->
+    <select id="findRechargeTotalAmountByCardNumber" resultType="BigDecimal">
+        select (
+            SELECT sum(mrrd.recharge_principal)
+            FROM member_recharge_record mrrd
+            where mrrd.member_id = #{cardNumber} and type = 0 and crt_time &gt;= '2023-07-24'
+        ) - (
+            SELECT sum(mrr.return_principal_amount)
+            FROM member_return_record mrr
+            where mrr.member_id = #{cardNumber} and crt_time &gt;= '2023-07-24'
+        )
+    </select>
 </mapper>

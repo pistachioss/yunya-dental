@@ -71,4 +71,9 @@ public class RemoteReportServiceFactory implements RemoteReportServiceFeign {
     public List<PatientHasBillItemVO> getHasItemList() {
         return null;
     }
+
+    @Override
+    public PatientCostInfoVO getCashInfo() {
+        return null;
+    }
 }

@@ -8,8 +8,8 @@ import com.yunya.feign.report.domain.query.PatientOriginConsumptionQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.report.ultimate.biz.BaseBillBiz;
 import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
-import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 简介:
@@ -39,7 +37,7 @@ public class PatientBaseInfoController {
   @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
 
   @Autowired
-  private BaseBillMapper baseBillMapper;
+  private BaseBillBiz baseBillBiz;
 
   /**
    * 根据关键字搜索患者信息
@@ -145,13 +143,7 @@ public class PatientBaseInfoController {
   @ApiOperation("查询患者累计现金消费（新版会员）")
   @PostMapping(value = "/cashinfo/{id}", name = "查询患者累计现金消费（新版会员）")
   public ResponseResult<PatientCostInfoVO> exportMemberBalanceList(@PathVariable(value = "id") Integer patientId) throws IOException {
-    ArrayList<Integer> list = new ArrayList<>();
-    list.add(patientId);
-    List<PatientCostInfoVO> patientCostInfoVOList = baseBillMapper.selectPatientCashById(list);
-    PatientCostInfoVO ret = new PatientCostInfoVO();
-    if (patientCostInfoVOList.size() > 0) {
-      ret = patientCostInfoVOList.get(0);
-    }
+    PatientCostInfoVO ret = baseBillBiz.findCashAmountByPatientId(patientId);
     return ResponseUtil.success(ret);
   }
 }

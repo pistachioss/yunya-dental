@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -22,4 +23,6 @@ public interface MemberRechargeRecordMapper extends Mapper<MemberRechargeRecord>
      * @return RechargeRecordVo
      */
     List<RechargeRecordVo> RechargeRecord(@Param("form") RechargeRecordQueryForm form, @Param("type") Integer type);
+
+    BigDecimal findRechargeTotalAmountByCardNumber(@Param("cardNumber") String cardNumber);
 }
