@@ -26,4 +26,7 @@ public class PatientCardBo implements Serializable {
     private Integer cardOwner;
     private Integer couponEnable;
     private String remark;
+    private String soldTarget;
+    private Integer buyerId;
+    private Integer status;
 }

@@ -86,11 +86,10 @@ public class CouponOrderBiz {
             List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now);
             virtualMapper.insertList(virtuals);
             vo = detail(couponOrder.getId());
-        } catch (Exception e) {
+        } finally {
             if (CollectionUtils.isNotEmpty(list)) {
                 revoke(list);
             }
-            throw ClientServiceException.wrap(COUPON_SOLD_ERROR, e);
         }
         return vo;
     }
@@ -241,11 +240,13 @@ public class CouponOrderBiz {
             if (null != executorId) {
                 SysUserInfoDetail executor = systemServiceFeign.findSysUserEmployeeInfoByUserId(executorId);
                 detailVO.setExecutorName(null != executor ? executor.getName() : "--");
+                detailVO.setExecutorId(executorId);
             }
             Integer consulterId = detail.getConsulterId();
             if (null != consulterId) {
                 SysUserInfoDetail consulter = systemServiceFeign.findSysUserEmployeeInfoByUserId(consulterId);
                 detailVO.setConsulterName(null != consulter ? consulter.getName() : "--");
+                detail.setConsulterId(consulterId);
             }
             detailVO.setOrderDetailId(detail.getId());
             detailVO.setCouponName(detail.getCouponName());
@@ -318,6 +319,7 @@ public class CouponOrderBiz {
                 card.setSellerUserId(userId);
                 card.setUpdId(userId);
                 card.setUpdTime(date);
+                card.setBuyerId(patientId);
             });
             list1.addAll(list);
         }
@@ -375,14 +377,15 @@ public class CouponOrderBiz {
             card.setSoldDate(null);
             card.setPayDate(null);
             card.setSellerUserId(null);
+            card.setBuyerId(null);
             cardMapper.updateByPrimaryKey(card);
         }
     }
 
     public Integer click(Integer patientId) {
         int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        CouponOrder order = existChargeOrder(patientId, orgId);
-        return Objects.nonNull(order) ? order.getId() : null;
+        List<CouponOrder> orders = existChargeOrder(patientId, orgId);
+        return CollectionUtils.isNotEmpty(orders) ? orders.get(0).getId() : null;
     }
 
     public void delete(Integer orderId) {
@@ -395,13 +398,13 @@ public class CouponOrderBiz {
         }
     }
 
-    private CouponOrder existChargeOrder(Integer patientId, Integer orgId) {
+    private List<CouponOrder> existChargeOrder(Integer patientId, Integer orgId) {
         Example example = new Example(CouponOrder.class);
         example.createCriteria().andEqualTo("patientId", patientId)
                 .andEqualTo("orgId", orgId)
                 .andEqualTo("status", 0)
                 .andEqualTo("inservice", true);
-        return couponOrderMapper.selectOneByExample(example);
+        return couponOrderMapper.selectByExample(example);
     }
 
     private List<CouponOrderVirtual> listOrderVirtual(Integer orderId) {

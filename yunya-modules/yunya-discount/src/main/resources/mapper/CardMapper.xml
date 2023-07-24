@@ -1132,6 +1132,13 @@ WHERE
                     </if>
                 </foreach>
             </trim>
+            <trim prefix="buyer_id = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.buyerId != null">
+                        when `id` = #{item.id} then #{item.buyerId}
+                    </if>
+                </foreach>
+            </trim>
             <trim prefix="upd_id = case" suffix="end," >
                 <foreach collection="list" item="item" index="index">
                     <if test="item.updId != null">
@@ -1160,4 +1167,96 @@ WHERE
         </foreach>
         and `status` = 0
     </update>
+
+    <select id="listPatientDeductionByParam" resultType="com.yunya.feign.discount.domain.bo.PatientCardBo">
+        select
+            `c`.remark,
+            `c`.`id`                                   as `cardId`,
+            `cci`.`id`                                 as `couponId`,
+            `cci`.`name`                               as `couponName`,
+            `c`.`sold_target`                          as `soldTarget`,
+            `c`.`buyer_id`                             as `buyerId`,
+            `c`.`status`                               as `status`,
+            case
+                when `c`.`org_id` = 0 then `c`.`third_card_number`
+                else `c`.`card_number`
+                end                                    as `cardNumber`,
+            `cci`.`type`                               as `couponType`,
+            `cci`.`product_type_id`,
+            `cci`.`is_inservice`                       as `couponEnable`,
+            `c`.`sale_channel_id`,
+            case
+                when `cci`.`type` = 2 then
+                    (select `use_way` from `package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 3 then
+                    (select `use_way` from `special_package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                else null
+                end                                    as `useWay`,
+            case
+                when `cci`.`type` = 0 then
+                    (select
+                        if(isnull(`c`.`active_date`), null,
+                        if(isnull(`vc`.`activation_deadline`), if(`vc`.`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `vc`.`effective_days` day), '%Y-%m-%d')),
+                        if(date_format(`vc`.`activation_deadline`, '%Y-%m-%d') &gt;
+                        date_format(date_add(`c`.`active_date`, interval ifnull(`vc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                        date_format(date_add(`c`.`active_date`, interval ifnull(`vc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                        date_format(`vc`.`activation_deadline`, '%Y-%m-%d'))))
+                    from `vouche_coupon` `vc`
+                where `vc`.`coupon_id` = `c`.coupon_id)
+                when `cci`.`type` = 1 then
+                    (select
+                        if(isnull(`c`.`active_date`), null,
+                        if(isnull(`dc`.`activation_deadline`), if(`dc`.`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `dc`.`effective_days` day), '%Y-%m-%d')),
+                        if(date_format(`dc`.`activation_deadline`, '%Y-%m-%d') &gt;
+                        date_format(date_add(`c`.`active_date`, interval ifnull(`dc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                        date_format(date_add(`c`.`active_date`, interval ifnull(`dc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                        date_format(`dc`.`activation_deadline`, '%Y-%m-%d'))))
+                    from `discount_coupon` `dc`
+                     where `dc`.`coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 2 then
+                    (select
+                        if(isnull(`c`.`active_date`), null,
+                        if(isnull(`pc`.`activation_deadline`), if(`pc`.`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `pc`.`effective_days` day), '%Y-%m-%d')),
+                        if(date_format(`pc`.`activation_deadline`, '%Y-%m-%d') &gt;
+                        date_format(date_add(`c`.`active_date`, interval ifnull(`pc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                        date_format(date_add(`c`.`active_date`, interval ifnull(`pc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                        date_format(`pc`.`activation_deadline`, '%Y-%m-%d'))))
+                    from `package_coupon` `pc`
+                    where `pc`.`coupon_id` = `c`.`coupon_id`)
+                 when `cci`.`type` = 5 then
+                    (select
+                        if(isnull(`c`.`active_date`), null,
+                        if(isnull(`spc`.`activation_deadline`), if(`spc`.`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `spc`.`effective_days` day), '%Y-%m-%d')),
+                        if(date_format(`spc`.`activation_deadline`, '%Y-%m-%d') &gt;
+                        date_format(date_add(`c`.`active_date`, interval ifnull(`spc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                        date_format(date_add(`c`.`active_date`, interval ifnull(`spc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                        date_format(`spc`.`activation_deadline`, '%Y-%m-%d'))))
+                    from `deduction_coupon` `spc`
+                    where `spc`.`coupon_id` = `c`.`coupon_id`)
+                else null
+                end                                    as `useDeadline`,
+            date_format(`c`.`active_date`, '%Y-%m-%d') as `activeDate`,
+            case
+                when `cci`.`type` = 0 then
+                    (select `is_share` from `vouche_coupon` where `coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 1 then
+                    (select `is_share` from `discount_coupon` where `coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 2 then
+                    (select `is_share` from `package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 5 then
+                    (select `is_share` from `deduction_coupon` where `coupon_id` = `c`.`coupon_id`)
+                else null
+                end                                     as `share`,
+            `c`.`patient_id`                      as `cardOwner`
+        from `card` `c`
+        inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
+        where
+            `c`.`status` in (2,3,4)
+            and `cci`.`type` = 5
+           and `c`.`patient_id` = #{patientId}
+            <if test="couponName !=null and couponName != ''">
+                and `cci`.`name` like concat('%', #{couponName}, '%')
+            </if>
+        order by `activeDate` desc
+    </select>
 </mapper>

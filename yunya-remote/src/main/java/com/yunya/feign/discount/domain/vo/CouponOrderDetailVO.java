@@ -33,4 +33,8 @@ public class CouponOrderDetailVO {
     private String consulterName;
     @ApiModelProperty(value = "备注")
     private String remark;
+    @ApiModelProperty(value = "咨询师id")
+    private Integer executorId;
+    @ApiModelProperty(value = "操作人id")
+    private Integer consulterId;
 }
