@@ -500,7 +500,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public void makeMemberLevelByRecharge(String cardNumber) {
     // TODO: 充值后判断是否升级会员等级，退费后判断是否降级
     BigDecimal sum = memberRechargeRecordMapper.findRechargeTotalAmountByCardNumber(cardNumber);
-    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(null);
+    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
     MemberType tmp = new MemberType();
     memberTypeList.stream().filter(memberType -> {
       return memberType.getRechargeMaxAmount().compareTo(BigDecimal.ZERO) > 0 && memberType.getRechargeMaxAmount().compareTo(sum) <= 0;
@@ -965,6 +965,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
           memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
           memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
         }
+        // TODO: 充值后判断是否升级会员等级，退费后判断是否降级
+        makeMemberLevelByRecharge(model.getMemberId());
+
         // 会员卡充值发送短信 type:0充值 1消费
         memberSendMessages(memberRechargeRecord, 0);
         // 会员卡充值成功发送推送
