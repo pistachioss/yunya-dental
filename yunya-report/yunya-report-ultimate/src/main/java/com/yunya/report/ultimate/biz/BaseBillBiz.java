@@ -19,10 +19,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
@@ -465,5 +462,16 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   public List<EmployeeAmountVO> findPatientDebAmount(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
     return mapper.selectPatientDebtAmount(query, groupByOrgId);
+  }
+
+  public PatientCostInfoVO findCashAmountByPatientId (Integer patientId) {
+    ArrayList<Integer> list = new ArrayList<>();
+    list.add(patientId);
+    List<PatientCostInfoVO> patientCostInfoVOList = mapper.selectPatientCashById(list);
+    PatientCostInfoVO ret = new PatientCostInfoVO();
+    if (patientCostInfoVOList.size() > 0) {
+      ret = patientCostInfoVOList.get(0);
+    }
+    return ret;
   }
 }

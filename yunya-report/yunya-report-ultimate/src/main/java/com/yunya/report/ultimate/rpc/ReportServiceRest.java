@@ -8,16 +8,21 @@ import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.report.domain.vo.PatientCostInfoVO;
 import com.yunya.feign.report.domain.vo.PatientHasBillItemVO;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.report.CreditsShop;
+import com.yunya.report.ultimate.biz.BaseBillBiz;
 import com.yunya.report.ultimate.biz.BaseTreatmentProcessBiz;
 import com.yunya.report.ultimate.biz.DiscountBiz;
 import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
 import com.yunya.report.ultimate.biz.tag.PatientTreatmentTagBiz;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 
 @Api("报表服务接口暴露")
@@ -34,6 +39,8 @@ public class ReportServiceRest {
     private PatientTreatmentTagBiz patientTreatmentTagBiz;
     @Resource
     private BaseBillMapper baseBillMapper;
+    @Resource
+    private BaseBillBiz baseBillBiz;
 
     @PostMapping("/card/{cardId}/item/usage")
     public List<BenefitItemVo> listWxCouponsUseItem(@PathVariable(value = "cardId") Integer cardId) {
@@ -90,5 +97,10 @@ public class ReportServiceRest {
     @PostMapping(value = "/patient/bill/hasitemlist")
     List<PatientHasBillItemVO> hasItemlist() {
         return baseBillMapper.selectPatientBillItemList();
+    }
+
+    @PostMapping(value = "/patient/bill/cashinfo")
+    PatientCostInfoVO exportMemberBalanceList(@PathVariable(value = "id") Integer patientId) throws IOException {
+        return baseBillBiz.findCashAmountByPatientId(patientId);
     }
 }

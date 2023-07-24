@@ -11,6 +11,7 @@ import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
@@ -78,36 +79,82 @@ import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NOR
 public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, PatientMemberInfo> {
 
   private static final Logger log = org.slf4j.LoggerFactory.getLogger(PatientMemberInfoBiz.class);
-  /** 注入会员卡Mapper */
-  @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
-  /** 注入会员绑定关系Mapper */
-  @Autowired private PatientMemberRelationMapper patientMemberRelationMapper;
-  /** 注入会员变更记录Mapper */
-  @Autowired private PatientMemberChangeLogMapper patientMemberChangeLogMapper;
-  /** 注入系统feign对象 */
-  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
-  /** 注入会员充值Mapper */
-  @Autowired private MemberRechargeRecordMapper memberRechargeRecordMapper;
-  /** 注入会员充值明细Mapper */
-  @Autowired private MemberRechargeTollRecordMapper memberRechargeTollRecordMapper;
-  /** 注入会员退费Mapper */
-  @Autowired private MemberReturnRecordMapper memberReturnRecordMapper;
-  /** 注入会员消费记录Mapper */
-  @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
-  /** 注入服务 */
-  @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
-  /** 患者服务 */
-  @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
-  /** redis队列 */
-  @Autowired private RedisUtils redisUtils;
-  /** 微信推送 */
-  @Autowired private RemoteWechatServiceFeign remoteWechatServiceFeign;
+  /**
+   * 注入会员卡Mapper
+   */
+  @Autowired
+  private PatientMemberInfoMapper patientMemberInfoMapper;
+  /**
+   * 注入会员绑定关系Mapper
+   */
+  @Autowired
+  private PatientMemberRelationMapper patientMemberRelationMapper;
+  /**
+   * 注入会员变更记录Mapper
+   */
+  @Autowired
+  private PatientMemberChangeLogMapper patientMemberChangeLogMapper;
+  /**
+   * 注入系统feign对象
+   */
+  @Autowired
+  private RemoteSystemServiceFeign remoteSystemServiceFeign;
+  /**
+   * 注入报表feign对象
+   */
+  @Autowired
+  private RemoteReportServiceFeign remoteReportServiceFeign;
+  /**
+   * 注入会员充值Mapper
+   */
+  @Autowired
+  private MemberRechargeRecordMapper memberRechargeRecordMapper;
+  /**
+   * 注入会员充值明细Mapper
+   */
+  @Autowired
+  private MemberRechargeTollRecordMapper memberRechargeTollRecordMapper;
+  /**
+   * 注入会员退费Mapper
+   */
+  @Autowired
+  private MemberReturnRecordMapper memberReturnRecordMapper;
+  /**
+   * 注入会员消费记录Mapper
+   */
+  @Autowired
+  private MemberExpendRecordMapper memberExpendRecordMapper;
+  /**
+   * 注入服务
+   */
+  @Autowired
+  private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
+  /**
+   * 患者服务
+   */
+  @Autowired
+  private PatientBaseInfoMapper patientBaseInfoMapper;
+  /**
+   * redis队列
+   */
+  @Autowired
+  private RedisUtils redisUtils;
+  /**
+   * 微信推送
+   */
+  @Autowired
+  private RemoteWechatServiceFeign remoteWechatServiceFeign;
 
-  @Autowired private WxFansBiz wxFansBiz;
-  /** 预付款Mapper */
-  @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
+  @Autowired
+  private WxFansBiz wxFansBiz;
+  /**
+   * 预付款Mapper
+   */
+  @Autowired
+  private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
-  @Autowired private PatientPrepaymentRelationBiz patientPrepaymentRelationBiz;
+  @Autowired
+  private PatientPrepaymentRelationBiz patientPrepaymentRelationBiz;
 
   public List<MasertMemberRechargeRecordDetailVo> findMemberRechargeRecordInfo(
       MemberExpendRecordQueryForm form) {
@@ -263,7 +310,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   /**
    * 会员关联消息 参数模板
    *
-   * @param id 操作
+   * @param id          操作
    * @param OperateType 操作类型
    */
   public void sendMemberRelationMessages(Integer id, Integer OperateType) {
@@ -280,8 +327,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   /**
    * 会员操作消息 参数模板
    *
-   * @param id 操作LogId
-   * @param operateType 操作类型
+   * @param id            操作LogId
+   * @param operateType   操作类型
    * @param operationType Log类型: 1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.账单返点 7.转账转入 8.转账转出
    */
   public void sendMemberLogMessages(Integer id, Integer operateType, Integer operationType) {
@@ -311,7 +358,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       generateCardNumber(patientMemberInfo);
       this.cardLog(patientMemberInfo, "开卡", "");
       remoteRabbitMqServiceFeign.sendMessage(
-              patientMemberInfo.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
+          patientMemberInfo.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
       remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
     } else {
       // 升级开卡，普通会员转VIP
@@ -323,7 +370,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       this.mapper.updateByPrimaryKeySelective(patientMember);
       this.cardLog(patientMember, "变更", "更新");
       remoteRabbitMqServiceFeign.sendMessage(
-              patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
+          patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
     }
     return ResponseUtil.success();
   }
@@ -347,6 +394,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       remoteRabbitMqServiceFeign.sendMessage(
           patientMemberInfo.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
       remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
+      // 开卡后赋值卡号
+      openCardModel.setCardNumber(patientMemberInfo.getCardNumber());
     } else {
       // 升级开卡，普通会员转VIP
       PatientMemberInfo patientMember =
@@ -363,8 +412,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
     // 充值
     if (openCardModel
-            .getRechargePrincipal()
-            .compareTo(openCardModel.getAccountedWayModel().getCreditAmount())
+        .getRechargePrincipal()
+        .compareTo(openCardModel.getAccountedWayModel().getCreditAmount())
         == 0) {
       // 查询会员余额 余额增加
       PatientMemberInfo patientMemberInfo =
@@ -404,6 +453,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
           memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
           memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
         }
+        // TODO: 充值后判断是否升级会员等级，退费后判断是否降级
+        makeMemberLevelByRecharge(openCardModel.getCardNumber());
+
         // 会员卡充值发送短信 type:0充值 1消费
         memberSendMessages(memberRechargeRecord, 0);
         // 会员卡充值成功发送推送
@@ -441,6 +493,64 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   }
 
   /**
+   * 根据充值记录，判断会员等级
+   *
+   * @param cardNumber 会员卡号
+   */
+  public void makeMemberLevelByRecharge(String cardNumber) {
+    // TODO: 充值后判断是否升级会员等级，退费后判断是否降级
+    BigDecimal sum = memberRechargeRecordMapper.findRechargeTotalAmountByCardNumber(cardNumber);
+    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(null);
+    MemberType tmp = new MemberType();
+    memberTypeList.stream().filter(memberType -> {
+      return memberType.getRechargeMaxAmount().compareTo(BigDecimal.ZERO) > 0 && memberType.getRechargeMaxAmount().compareTo(sum) <= 0;
+    }).sorted(Comparator.comparing(MemberType::getRechargeMaxAmount).reversed());
+    if (memberTypeList != null && !memberTypeList.isEmpty()) {
+      // 变更等级
+      PatientMemberInfo patientMember =
+          this.patientMemberInfoMapper.selectOneByCardNumber(cardNumber);
+      patientMember.setMemberTypeId(memberTypeList.get(0).getId());
+      patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientMember.setUpdName(BaseContextHandler.getName());
+      patientMember.setUpdTime(new Date());
+      patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      this.mapper.updateByPrimaryKeySelective(patientMember);
+      this.cardLog(patientMember, "变更", "更新");
+      remoteRabbitMqServiceFeign.sendMessage(
+          patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
+    }
+  }
+
+  /**
+   * 根据累计现金消费，判断会员等级
+   *
+   * @param cardNumber 会员卡号
+   */
+  public void makeMemberLevelByCashAmount(String cardNumber) {
+    // TODO: 消费后判断是否升级会员等级
+    BigDecimal sum = remoteReportServiceFeign.getCashInfo().getCumulativeConsumption();
+    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(null);
+    MemberType tmp = new MemberType();
+    memberTypeList.stream().filter(memberType -> {
+      return memberType.getTotalAmount().compareTo(BigDecimal.ZERO) > 0 && memberType.getTotalAmount().compareTo(sum) <= 0;
+    }).sorted(Comparator.comparing(MemberType::getTotalAmount).reversed());
+    if (memberTypeList != null && !memberTypeList.isEmpty()) {
+      // 变更等级
+      PatientMemberInfo patientMember =
+          this.patientMemberInfoMapper.selectOneByCardNumber(cardNumber);
+      patientMember.setMemberTypeId(memberTypeList.get(0).getId());
+      patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientMember.setUpdName(BaseContextHandler.getName());
+      patientMember.setUpdTime(new Date());
+      patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      this.mapper.updateByPrimaryKeySelective(patientMember);
+      this.cardLog(patientMember, "变更", "更新");
+      remoteRabbitMqServiceFeign.sendMessage(
+          patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
+    }
+  }
+
+  /**
    * 原藤卡激活（存在连带转换亲密付）
    *
    * @param openCardModel 原藤卡激活（存在连带转换亲密付）Model
@@ -460,7 +570,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public ResponseResult addMemberCard3(OpenCardModel3 openCardModel) {
     // 激活卡主身份
     PatientMemberInfo patientMemberInfo =
-            patientMemberInfoMapper.selectOneByPatientId(openCardModel.getPatientId());
+        patientMemberInfoMapper.selectOneByPatientId(openCardModel.getPatientId());
     if (patientMemberInfo == null) {
       throw new ClientServiceException("未找到会员卡信息", DATA_NOT_EXIST);
     }
@@ -477,64 +587,64 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
 
     // TODO：不转化亲密付的用户，无藤卡转次一级新卡
     List<Integer> patientMemberRelations =
-            patientMemberRelationMapper.FindMemberBindingRelation2(
-                    openCardModel.getPatientId(), openCardModel.getTransformPatientIds());
+        patientMemberRelationMapper.FindMemberBindingRelation2(
+            openCardModel.getPatientId(), openCardModel.getTransformPatientIds());
     Integer finalNextLevelId = nextLevelId;
     patientMemberRelations.forEach(
-            r -> {
-              PatientMemberInfo patientMemberInfo1 =
-                      patientMemberInfoMapper.selectOneByPatientId(r);
-              // 执行无卡规则：开次一级卡，或升级到次一级卡
-              if (patientMemberInfo1 == null) {
-                // 开卡
-                PatientMemberInfo patientMemberInfo2 = new PatientMemberInfo();
-                patientMemberInfo2.setPatientId(r);
-                patientMemberInfo2.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-                patientMemberInfo2.setMemberTypeId(finalNextLevelId);
-                patientMemberInfo2.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-                patientMemberInfo2.setCrtName(BaseContextHandler.getName());
-                generateCardNumber(patientMemberInfo2);
-                this.cardLog(patientMemberInfo2, "开卡", "");
-                remoteRabbitMqServiceFeign.sendMessage(
-                        patientMemberInfo2.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
-                remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo2));
-              } else if (patientMemberInfo1.getMemberTypeId() == 4 && finalNextLevelId != 4) {
-                // 升级到次一级卡，普通会员转VIP
-                PatientMemberInfo patientMember =
-                        this.patientMemberInfoMapper.selectOneByCardNumber(patientMemberInfo1.getCardNumber());
-                patientMember.setMemberTypeId(finalNextLevelId);
-                patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-                patientMember.setUpdName(BaseContextHandler.getName());
-                patientMember.setUpdTime(new Date());
-                patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-                this.mapper.updateByPrimaryKeySelective(patientMember);
-                this.cardLog(patientMember, "变更", "更新");
-                remoteRabbitMqServiceFeign.sendMessage(
-                        patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
-              }
-            });
+        r -> {
+          PatientMemberInfo patientMemberInfo1 =
+              patientMemberInfoMapper.selectOneByPatientId(r);
+          // 执行无卡规则：开次一级卡，或升级到次一级卡
+          if (patientMemberInfo1 == null) {
+            // 开卡
+            PatientMemberInfo patientMemberInfo2 = new PatientMemberInfo();
+            patientMemberInfo2.setPatientId(r);
+            patientMemberInfo2.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+            patientMemberInfo2.setMemberTypeId(finalNextLevelId);
+            patientMemberInfo2.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+            patientMemberInfo2.setCrtName(BaseContextHandler.getName());
+            generateCardNumber(patientMemberInfo2);
+            this.cardLog(patientMemberInfo2, "开卡", "");
+            remoteRabbitMqServiceFeign.sendMessage(
+                patientMemberInfo2.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
+            remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo2));
+          } else if (patientMemberInfo1.getMemberTypeId() == 4 && finalNextLevelId != 4) {
+            // 升级到次一级卡，普通会员转VIP
+            PatientMemberInfo patientMember =
+                this.patientMemberInfoMapper.selectOneByCardNumber(patientMemberInfo1.getCardNumber());
+            patientMember.setMemberTypeId(finalNextLevelId);
+            patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+            patientMember.setUpdName(BaseContextHandler.getName());
+            patientMember.setUpdTime(new Date());
+            patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+            this.mapper.updateByPrimaryKeySelective(patientMember);
+            this.cardLog(patientMember, "变更", "更新");
+            remoteRabbitMqServiceFeign.sendMessage(
+                patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
+          }
+        });
 
     // 删除不转化亲密付的用户，已改为删除所有关系
     patientMemberRelationMapper.deleteOtherMemberRelation(
-            openCardModel.getPatientId(), openCardModel.getTransformPatientIds());
+        openCardModel.getPatientId(), openCardModel.getTransformPatientIds());
 
     // 转化亲密付用户列表
     openCardModel
-            .getTransformPatientIds()
-            .forEach(
-                    p -> {
-                      try {
-                        MemberBindingRelationInfoModel form = new MemberBindingRelationInfoModel();
-                        form.setMasterCardId(openCardModel.getPatientId());
-                        form.setPatientId(openCardModel.getPatientId());
-                        form.setSecondaryCardId(p);
-                        form.setBindType((byte) 1); // 原 共享会员卡余额，现 会员卡亲密付
-                        this.addMemberBindingRelation(form);
-                      } catch (Exception e) {
-                        // 已绑过的直接抛出异常
-                        log.info(e.toString());
-                      }
-                    });
+        .getTransformPatientIds()
+        .forEach(
+            p -> {
+              try {
+                MemberBindingRelationInfoModel form = new MemberBindingRelationInfoModel();
+                form.setMasterCardId(openCardModel.getPatientId());
+                form.setPatientId(openCardModel.getPatientId());
+                form.setSecondaryCardId(p);
+                form.setBindType((byte) 1); // 原 共享会员卡余额，现 会员卡亲密付
+                this.addMemberBindingRelation(form);
+              } catch (Exception e) {
+                // 已绑过的直接抛出异常
+                log.info(e.toString());
+              }
+            });
     return ResponseUtil.success();
   }
 
@@ -742,8 +852,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * 开卡日志
    *
    * @param patientMemberInfo 患者会员信息
-   * @param operationType 标识：开卡 or 变更
-   * @param isUpd 是否修改
+   * @param operationType     标识：开卡 or 变更
+   * @param isUpd             是否修改
    */
   public void cardLog(PatientMemberInfo patientMemberInfo, String operationType, String isUpd) {
     // 会员卡记录日志
@@ -898,13 +1008,13 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public ResponseResult recharge2(MemberRechargeModel model) {
     if (model.getRechargePrincipal().compareTo(model.getAccountedWayModel().getCreditAmount())
-            == 0) {
+        == 0) {
       // 赠金转入
       PatientMemberInfo patientMemberInfo =
-              patientMemberInfoMapper.selectCardNumber(model.getMemberId());//memberId转入的会员卡
+          patientMemberInfoMapper.selectCardNumber(model.getMemberId());//memberId转入的会员卡
       // 赠金转出
       PatientMemberInfo patientMemberInfo2 =
-              patientMemberInfoMapper.selectOneByPatientId(model.getPatientId());//patientId转出的患者
+          patientMemberInfoMapper.selectOneByPatientId(model.getPatientId());//patientId转出的患者
       // 赠金转入 查询会员余额 余额增加
       if (patientMemberInfo != null) {
         BigDecimal rechargeBonus = model.getRechargeBonus();
@@ -945,7 +1055,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         wxTemplateMsgModel.setPatientId(patientMemberInfo.getPatientId());
         wxTemplateMsgModel.setTemplateEnum(TemplateEnum.RECHARGE_SUCCESS);
         PatientBaseInfoVo patientBaseInfoVo =
-                patientBaseInfoMapper.selectOneById(patientMemberInfo.getPatientId());
+            patientBaseInfoMapper.selectOneById(patientMemberInfo.getPatientId());
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put(TemplateDataEnum.PATIENT_NAME.getArgName(), patientBaseInfoVo.getName());
         paramMap.put("keyword1", model.getRechargePrincipal());
@@ -956,7 +1066,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         organizationModel.setId(Integer.valueOf(BaseContextHandler.getOrgId()));
 
         List<OrganizationInfoDetail> orgList =
-                remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+            remoteSystemServiceFeign.findOrgInfoList(organizationModel);
         log.info("门诊信息：" + orgList.get(0).toString());
         if (orgList != null && orgList.size() > 0) {
           paramMap.put("keyword4", orgList.get(0).getName());
@@ -1008,7 +1118,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         wxTemplateMsgModel.setPatientId(model.getPatientId());
         wxTemplateMsgModel.setTemplateEnum(TemplateEnum.RECHARGE_SUCCESS);
         PatientBaseInfoVo patientBaseInfoVo =
-                patientBaseInfoMapper.selectOneById(model.getPatientId());
+            patientBaseInfoMapper.selectOneById(model.getPatientId());
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put(TemplateDataEnum.PATIENT_NAME.getArgName(), patientBaseInfoVo.getName());
         paramMap.put("keyword1", model.getRechargePrincipal());
@@ -1019,7 +1129,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         organizationModel.setId(Integer.valueOf(BaseContextHandler.getOrgId()));
 
         List<OrganizationInfoDetail> orgList =
-                remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+            remoteSystemServiceFeign.findOrgInfoList(organizationModel);
         log.info("门诊信息：" + orgList.get(0).toString());
         if (orgList != null && orgList.size() > 0) {
           paramMap.put("keyword4", orgList.get(0).getName());
@@ -1040,7 +1150,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * 会员卡充值/消费 短信发送
    *
    * @param object 泛型类
-   * @param type type:0充值 1消费
+   * @param type   type:0充值 1消费
    */
   public void memberSendMessages(Object object, Integer type) {
     String eventCode = null;
@@ -1203,15 +1313,15 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       for (RechargeRecordVo rechargeRecordVo : resultList) {
         // 获取门诊简称
         OrganizationInfo organizationInfo =
-                remoteSystemServiceFeign.findOrgInfoByOrgId(rechargeRecordVo.getOrgId());
+            remoteSystemServiceFeign.findOrgInfoByOrgId(rechargeRecordVo.getOrgId());
         if (organizationInfo != null) {
           rechargeRecordVo.setOrgName(organizationInfo.getAbbreviation());
         }
         String patientName2 =
-                patientMemberInfoMapper.selectPatientNameByCardNumber2(rechargeRecordVo.getRemarks());//memberId转入的会员卡
+            patientMemberInfoMapper.selectPatientNameByCardNumber2(rechargeRecordVo.getRemarks());//memberId转入的会员卡
         rechargeRecordVo.setPatientName2(patientName2);
         String patientName1 =
-                patientMemberInfoMapper.selectPatientNameByCardNumber2(form.getCardNumber());
+            patientMemberInfoMapper.selectPatientNameByCardNumber2(form.getCardNumber());
         rechargeRecordVo.setPatientName1(patientName1);
       }
     }
@@ -1259,6 +1369,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberReturnRecord.setActualReturnAmount(model.getReturnPayAmount());
       memberReturnRecord.setRemarks(model.getReturnReason());
       memberReturnRecordMapper.insertSelective(memberReturnRecord);
+
+      // TODO: 充值后判断是否升级会员等级，退费后判断是否降级
+      makeMemberLevelByRecharge(model.getMemberId());
+
       sendMemberLogMessages(memberReturnRecord.getId(), 0, 3);
       return ResponseUtil.success();
     }
@@ -1361,7 +1475,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   /**
    * 消费
    *
-   * @param model 消费Model
+   * @param model             消费Model
    * @param patientMemberInfo 会员卡信息
    */
   public void spending(MemberExpendRecordModel model, PatientMemberInfo patientMemberInfo) {
@@ -1434,7 +1548,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     return new PageInfo<>(getOrgInfo(queryForm));
   }
 
-  /** 查询消费记录并获取门诊名称 */
+  /**
+   * 查询消费记录并获取门诊名称
+   */
   public List<MemberExpendRecordVo> getOrgInfo(MemberExpendRecordQueryForm queryForm) {
     List<MemberExpendRecordVo> resultList = memberExpendRecordMapper.expendList(queryForm);
     if (!StringHelper.isEmpty(resultList)) {
@@ -1734,7 +1850,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * 充值记录-导出
    *
    * @param response 请求
-   * @param query 条件
+   * @param query    条件
    */
   public void expendExportRechargeRecord(
       HttpServletResponse response, RechargeRecordQueryForm query) throws IOException {
@@ -1750,7 +1866,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * 退费记录-导出
    *
    * @param response 请求
-   * @param query 条件
+   * @param query    条件
    */
   public void expendExportRefundList(
       HttpServletResponse response, MemberReturnRecordQueryForm query) throws IOException {
@@ -1841,8 +1957,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     // 更新会员卡账户信息
     Example condition = new Example(PatientMemberInfo.class);
     condition.createCriteria().andEqualTo("id", member.getId())
-            .andEqualTo("principalAmount", principalAmount)
-            .andEqualTo("bonusAmount", bonusAmount);
+        .andEqualTo("principalAmount", principalAmount)
+        .andEqualTo("bonusAmount", bonusAmount);
     int i = patientMemberInfoMapper.updateByExampleSelective(member, condition);
     if (i != 1) {
       throw new ClientServiceException("账单返点失败，请稍后再试", DATA_ERROR);
