@@ -189,6 +189,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private String domainUrl;
     @Resource
     private DeductionPeriodBiz deductionPeriodBiz;
+    @Resource
+    private DeductionPeriodBiz periodBiz;
 
     /**
      * 加密加密生成卡券密码
@@ -1505,12 +1507,15 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                     itemList.add(vo);
                 }
                 if (CollectionUtils.isNotEmpty(collect1)) {
-                    DeductionItemBenefitVo vo1 = BeanCopierUtils.generalCopyBean(vo, DeductionItemBenefitVo.class);
-                    List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(collect1, ItemUseBenefitVo.class);
-                    vo1.setItemBenefitList(itemUseBenefitVos);
-                    vo1.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
-                    vo1.setQuantity(itemUseBenefitVos.size());
-                    deductionList.add(vo1);
+                    Map<Integer, List<ItemUseBenefitBo>> collect2 = collect1.stream().collect(groupingBy(ItemUseBenefitBo::getCouponId, toList()));
+                    collect2.forEach((k, v) ->{
+                        DeductionItemBenefitVo vo1 = BeanCopierUtils.generalCopyBean(vo, DeductionItemBenefitVo.class);
+                        List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(v, ItemUseBenefitVo.class);
+                        vo1.setItemBenefitList(itemUseBenefitVos);
+                        vo1.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
+                        vo1.setQuantity(v.size());
+                        deductionList.add(vo1);
+                    });
                 }
             }
             result.setDeductionList(deductionList);
@@ -1532,6 +1537,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             if (COUPON_TYPE.equals(itemUseBenefitBo.getBenefitType())) {
                 Integer couponType = itemUseBenefitBo.getCouponType();
                 Integer couponId = itemUseBenefitBo.getCouponId();
+                Integer cardId = itemUseBenefitBo.getBenefitId();
                 if (VOUCHER.equals(couponType)) {
                     example = new Example(VoucheCoupon.class);
                     example.createCriteria().andEqualTo("couponId", couponId);
@@ -1568,6 +1574,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                     SpecialPackageCouponItem specialPackageCouponItem = specialPackageCouponItemMapper.selectOneByExample(example);
                     if (specialPackageCouponItem != null) {
                         supplyWorkload = supplyWorkload.add(specialPackageCouponItem.getWorkloadLoad());
+                    }
+                }
+                if (DEDUCTION.equals(couponType)) {
+                    List<DeductionItemPeriod> list = periodBiz.list(cardId);
+                    DeductionItemPeriod period = list.stream().filter(t -> itemBenefitBo.getItemId().equals(t.getItemId())).findFirst().orElse(null);
+                    if (period != null) {
+                        supplyWorkload = supplyWorkload.add(period.getWorkloadLoad());
                     }
                 }
             }

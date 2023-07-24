@@ -15,6 +15,7 @@ import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.discount.domain.vo.OrderBenefitVO;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -271,24 +272,27 @@ public class BenefitBiz {
      * @param orderId 订单id
      * @return list
      */
-    public List<OrderBenefitDetailVo> getOrderBenefit(Integer orderId) {
+    public OrderBenefitVO getOrderBenefit(Integer orderId) {
+        OrderBenefitVO vo = new OrderBenefitVO();
         List<OrderBenefitDetailVo> resultList = Lists.newArrayList();
         //查询订单优惠汇总信息
         OrderBenefit summary = getOrderBenefitSummary(orderId, null);
         if (summary == null) {
-            return resultList;
+            return vo;
         }
         Integer benefitType = summary.getBenefitType();
         if (CARD_BENEFIT.equals(benefitType)) {
-            findSetCardBenefit(summary, resultList);
+            OrderBenefitVO vo1 = new OrderBenefitVO();
+            findSetCardBenefit(summary, vo1);
         }
         if (AUTH_BENEFIT.equals(benefitType)) {
             findSetAuthBenefit(summary, resultList);
         }
         if (MIX_MATCH_BENEFIT.equals(benefitType)) {
-            return findSetMixMatchBenefit(summary);
+            resultList = findSetMixMatchBenefit(summary);
         }
-        return resultList;
+        vo.setItemBenefit(resultList);
+        return vo;
     }
 
     /**
@@ -397,12 +401,18 @@ public class BenefitBiz {
     /**
      * 查找并设置使用优惠信息（会员卡+卡券）
      * @param summary
-     * @param resultList
+     * @param vo1
      */
-    private void findSetCardBenefit(OrderBenefit summary, List<OrderBenefitDetailVo> resultList) {
+    private void findSetCardBenefit(OrderBenefit summary, OrderBenefitVO vo1) {
+        List<OrderBenefitDetailVo> resultList = Lists.newArrayList();
+        List<OrderBenefitDetailVo> deductionList = Lists.newArrayList();
         List<CardBenefit> cardBenefits = getOrderBenefitDetail(summary.getOrderId(), CardBenefit.class, cardBenefitMapper, null);
         if (CollectionUtils.isNotEmpty(cardBenefits)) {
-            Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
+            Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream()
+                    .filter(t -> !DEDUCTION.equals(t.getCouponType())).collect(groupingBy(CardBenefit::getOrderDetailId));
+            Map<String, List<CardBenefit>> listMap1 = cardBenefits.stream()
+                    .filter(t -> DEDUCTION.equals(t.getCouponType()))
+                    .collect(groupingBy( t -> Joiner.on("-").join(t.getOrderId(), t.getCouponId())));
             listMap.forEach((k, v) -> {
                 OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
                 BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -433,6 +443,39 @@ public class BenefitBiz {
                 vo.setItemBenefitList(itemBenefits);
                 vo.setSupplyWorkload(supplyWorkTotalLoad);
                 resultList.add(vo);
+            });
+
+            listMap1.forEach((k, v) -> {
+                OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
+                BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal supplyWorkTotalLoad = v.stream()
+                        .filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
+                        .map(CardBenefit::getSupplyWorkload).reduce(BigDecimal.ZERO, BigDecimal::add);
+                Integer orderId = Integer.valueOf(k.split("-")[0]);
+                log.info("查询账单划扣优惠明细，开单明细id：{}，计算补入工作量：{}", orderId, supplyWorkTotalLoad);
+                vo.setOrderDetailId(orderId);
+                vo.setItemBenefitAmount(itemBenefitAmount);
+                //按照优惠提交顺序排序
+                v.sort(Comparator.comparing(CardBenefit::getSort));
+                List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
+                    ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
+                    benefitVo.setBenefitId(obj.getCardId());
+                    benefitVo.setBenefitType(obj.getBenefitType());
+                    benefitVo.setCouponType(obj.getCouponType());
+                    if (MEMBER_TYPE.equals(obj.getBenefitType())) {
+                        MemberType memberType = systemServiceFeign.findMemberTypeById(obj.getCardId());
+                        benefitVo.setBenefitName(memberType == null ? null : memberType.getName());
+                    }
+                    if (COUPON_TYPE.equals(obj.getBenefitType())) {
+                        CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(obj.getCouponId());
+                        benefitVo.setBenefitName(coupon == null ? null : coupon.getName());
+                    }
+                    benefitVo.setBenefitAmount(obj.getBenefitAmount());
+                    return benefitVo;
+                }).collect(toList());
+                vo.setItemBenefitList(itemBenefits);
+                vo.setSupplyWorkload(supplyWorkTotalLoad);
+                deductionList.add(vo);
             });
         }
     }
