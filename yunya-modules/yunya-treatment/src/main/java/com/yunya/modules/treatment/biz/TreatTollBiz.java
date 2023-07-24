@@ -10,10 +10,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
-import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
-import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
-import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
-import com.yunya.feign.treatment.domain.vo.TreatOrderRecordVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -115,7 +112,7 @@ public class TreatTollBiz {
         if (null == resultData) {
           throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
         }
-        matchGeneralDiscountOrderDetailValue(detailList, resultData, result);
+        orderDetailMatchDiscount(detailList, resultData, result);
         break;
       default:
         break;
@@ -124,20 +121,19 @@ public class TreatTollBiz {
   }
 
   /**
-   * 匹配普通折扣订单详情信息列表
+   * 订单明细匹配优惠信息列表
    *
    * @param detailList 订单详情列表
    * @param privilege  优惠项目列表
    * @param result
    */
-  private void matchGeneralDiscountOrderDetailValue(
+  public void orderDetailMatchDiscount(
           List<OrderDetailChargeVO> detailList,
-          PatientOrderBenefitVo privilege,
-          TreatOrderRecordVO result) {
+          PatientOrderBenefitVo privilege, TreatOrderRecordVO result) {
     Map<Integer, OrderDetailChargeVO> detailMap = detailList.stream().collect(toMap(OrderDetailChargeVO::getOrderDetailId, Function.identity()));
-    List<DeductionItemBenefitVo> deductions = privilege.getDeductionList();
-    List<PatientItemBenefitVo> itemList = privilege.getItemList();
     List<OrderDetailChargeVO> swipeItemList = Lists.newArrayList();
+    List<PatientItemBenefitVo> itemList = privilege.getItemList();
+    List<DeductionItemBenefitVo> deductions = privilege.getDeductionList();
     if (StringHelper.isNotEmpty(deductions)) {
       deductions.forEach(deduct->{
         Integer orderDetailId = deduct.getOrderDetailId();
@@ -161,7 +157,8 @@ public class TreatTollBiz {
           }
           deductItem.setQuantity(swipeQuantity);
           deductItem.setReceivableAmount(item.getPrice().multiply(BigDecimal.valueOf(swipeQuantity)));
-          deductItem.setDiscountAppliesCoupons(getPrivilegeInfo(deduct.getItemBenefitList()));
+          List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(deduct.getItemBenefitList(), deduct.getPackageUnitPrice());
+          deductItem.setDiscountAppliesCoupons(privilegeInfo);
           swipeItemList.add(deductItem);
         }
       });
@@ -178,7 +175,8 @@ public class TreatTollBiz {
           vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
           // 设置订单明细卡券匹配信息
           if (StringHelper.gt(receivableAmount, actualAmount)) {
-            vo.setDiscountAppliesCoupons(getPrivilegeInfo(benefitVo.getItemBenefitList()));
+            List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(benefitVo.getItemBenefitList(), null);
+            vo.setDiscountAppliesCoupons(privilegeInfo);
           }
         }
         vo.setReceivableAmount(receivableAmount);
@@ -186,7 +184,6 @@ public class TreatTollBiz {
         actualTotalAmount = actualTotalAmount.add(actualAmount);
       }
     }
-    result.setActualTotalAmount(actualTotalAmount);
     result.setItemList(detailList);
   }
 
@@ -196,7 +193,7 @@ public class TreatTollBiz {
    * @param benefitList 匹配卡券列表
    */
   private List<PrivilegeCouponInfoVO> getPrivilegeInfo(
-      List<ItemUseBenefitVo> benefitList) {
+      List<ItemUseBenefitVo> benefitList, BigDecimal packageUnitPrice) {
     List<PrivilegeCouponInfoVO> discountAppliesCoupon = Lists.newArrayList();
     if (StringHelper.isNotEmpty(benefitList)) {
       benefitList.forEach(
@@ -204,13 +201,13 @@ public class TreatTollBiz {
           Integer benefitType = benefitVo.getBenefitType();
           PrivilegeCouponInfoVO couponInfo = new PrivilegeCouponInfoVO();
           couponInfo.setBenefitId(benefitVo.getBenefitId());
-          couponInfo.setCouponType(
-                  0 == benefitType ? Integer.valueOf(99) : benefitVo.getCouponType());
+          // 99-会员卡，-1-授权折扣
+          int couponType = 0 == benefitType ? 99 : 2==benefitType?-1:benefitVo.getCouponType();
+          couponInfo.setCouponType(couponType);
           couponInfo.setBenefitName(benefitVo.getBenefitName());
           couponInfo.setBenefitAmount(benefitVo.getBenefitAmount());
           couponInfo.setCardNumber(benefitVo.getCardNumber());
-          // TODO: 2023/7/21 设置划扣卡套餐单价
-//            couponInfo.setPackageUnitPrice(benefitVo.getPackageUnitPrice());
+          couponInfo.setPackageUnitPrice(packageUnitPrice);
           discountAppliesCoupon.add(couponInfo);
         });
     }
@@ -538,8 +535,7 @@ public class TreatTollBiz {
           OrderDetailPayRecord orderDetailPayRecord = result.computeIfAbsent(orderDetailId, v -> new OrderDetailPayRecord());
           orderDetailPayRecord.setOrderDetailId(orderDetailId);
           orderDetailPayRecord.setPrivilegeAmount(orderDetailPayRecord.getPrivilegeAmount().add(item.getItemBenefitAmount()));
-          // TODO: 2023/7/22 设置划扣卡工作量
-//          orderDetailPayRecord.setSwipeWorkload(BigDecimal.valueOf(item.getQuantity()).multiply(item.getPackageUnitPrice()));
+          orderDetailPayRecord.setSwipeWorkload(BigDecimal.valueOf(item.getQuantity()).multiply(item.getPackageUnitPrice()));
           orderDetailPayRecord.setSwipeCouponWorkload(item.getSupplyWorkload());
         });
       }
@@ -1026,75 +1022,6 @@ public class TreatTollBiz {
         detailPayRecord.setUpdName(BaseContextHandler.getName());
         orderDetailPayRecordBiz.updateSelectiveById(detailPayRecord);
       }
-    }
-  }
-
-  /**
-   * 更新订单明细收费记录
-   *
-   * @param orderRecordId 开单记录ID
-   * @param totalCharge 总入账金额
-   */
-  private void updateOrderDetailPayRecordWithPrivilege(
-      Integer orderRecordId, BigDecimal totalCharge) {
-    OrderDetailPayRecord orderDetailPayRecord = new OrderDetailPayRecord();
-    orderDetailPayRecord.setOrderRecordId(orderRecordId);
-    orderDetailPayRecord.setInservice(true);
-    List<OrderDetailPayRecord> detailPayRecords =
-        orderDetailPayRecordBiz.selectList(orderDetailPayRecord);
-    // 根据订单号查询优惠列表
-    List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
-    log.info(
-        "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单号查询优惠列表[orderBenefitD]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-    orderBenefitD.forEach(
-        orderBenefitDetailVo -> {
-          log.info("==> {}", orderBenefitDetailVo);
-        });
-    log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
-
-    log.info(
-        "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-    detailPayRecords.forEach(
-        orderDetailPayRecord1 -> {
-          log.info("==> {}", orderDetailPayRecord1);
-        });
-    log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
-    for (OrderDetailPayRecord detail : detailPayRecords) {
-      BigDecimal receivableAmount = detail.getReceivableAmount();
-      BigDecimal privilegeAmount = BigDecimal.valueOf(0);
-      BigDecimal actualAmount = receivableAmount;
-      for (OrderBenefitDetailVo vo : orderBenefitD) {
-        Integer orderDetailId = vo.getOrderDetailId();
-        if (detail.getOrderDetailId().equals(orderDetailId)) {
-          privilegeAmount = vo.getItemBenefitAmount();
-          actualAmount = receivableAmount.subtract(privilegeAmount);
-          if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
-            actualAmount = BigDecimal.ZERO;
-            privilegeAmount = receivableAmount;
-          }
-          // 补入工作量
-          detail.setCouponWorkload(vo.getSupplyWorkload());
-        }
-      }
-      detail.setPrivilegeAmount(privilegeAmount);
-      detail.setActualReceivable(actualAmount);
-      // 设置已收
-      totalCharge = totalItemCharge(totalCharge, detail);
-
-      Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-      String name = BaseContextHandler.getName();
-      detail.setUpdId(userId);
-      detail.setUpdName(name);
-
-      log.info(
-          "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-      detailPayRecords.forEach(
-          orderDetailPayRecord1 -> {
-            log.info("==> {}", orderDetailPayRecord1);
-          });
-      log.info(
-          "↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
-      orderDetailPayRecordBiz.updateSelectiveById(detail);
     }
   }
 

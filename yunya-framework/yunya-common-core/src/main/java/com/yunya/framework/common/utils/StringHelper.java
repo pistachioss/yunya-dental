@@ -539,7 +539,11 @@ public class StringHelper extends StringUtils {
   }
 
   public static Integer defaultInt(Integer value) {
-    return isNotNull(value) ? value : 0;
+    return defaultInt(value, 0);
+  }
+
+  public static Integer defaultInt(Integer value, @NotNull Integer defaultValue) {
+    return isNotNull(value) ? value : defaultValue;
   }
 
   public static BigDecimal defaultBigDecimal(BigDecimal value) {

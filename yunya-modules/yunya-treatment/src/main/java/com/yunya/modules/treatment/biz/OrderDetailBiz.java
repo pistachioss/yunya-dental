@@ -10,7 +10,7 @@ import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectTargetVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
 import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
@@ -787,12 +787,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         }
       }
       Integer orderRecordId = billPrintInfoVO.getOrderRecordId();
-      List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
+      List<PatientItemBenefitVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId).getItemList();
       billPrintInfoVO
           .getBillDetail()
           .forEach(
               billDetailPrintInfoVO -> {
-                List<OrderBenefitDetailVo> collect =
+                List<PatientItemBenefitVo> collect =
                     orderBenefitD.stream()
                         .filter(
                             orderBenefitDetailVo ->
@@ -801,7 +801,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                                     .equals(billDetailPrintInfoVO.getOrderDetailId()))
                         .collect(Collectors.toList());
                 if (StringHelper.isNotEmpty(collect)) {
-                  OrderBenefitDetailVo orderBenefitDetailVo = collect.get(0);
+                  PatientItemBenefitVo orderBenefitDetailVo = collect.get(0);
                   List<ItemUseBenefitVo> itemBenefitList =
                       orderBenefitDetailVo.getItemBenefitList();
                   List<Integer> couponTypes = new ArrayList<>();

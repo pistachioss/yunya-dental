@@ -52,7 +52,7 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     }
 
     @Override
-    public List<OrderBenefitDetailVo> getOrderBenefitD(Integer orderId) {
+    public PatientOrderBenefitVo getOrderBenefitD(Integer orderId) {
         return null;
     }
 

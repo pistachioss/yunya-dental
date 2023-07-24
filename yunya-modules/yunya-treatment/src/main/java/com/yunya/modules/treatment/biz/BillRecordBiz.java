@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberBillRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
@@ -44,8 +44,10 @@ import org.springframework.util.ObjectUtils;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -104,6 +106,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private RedisUtils redisUtils;
   /** 账单收费记录 */
   @Autowired private BillPayRecordBiz billPayRecordBiz;
+  @Autowired private TreatTollBiz treatTollBiz;
 
   /**
    * 生成账单编号
@@ -134,10 +137,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     if (orderRecord == null) {
       throw new ClientServiceException("订单记录不存在", PARAMETERS_IS_ILLEGAL);
     }
-    BillDetailGroupVO resultData = new BillDetailGroupVO();
     // 获取开单优惠详情
-    List<OrderDetailChargeVO> orderDetails = getOrderDetailCharges(orderRecordId);
-    resultData.setOrderDetails(orderDetails);
+    BillDetailGroupVO resultData = getOrderDetailCharges(orderRecordId);
     // 账单收费记录
     List<BillPayRecordVO> billPayRecords = mapper.selectBillPayRecord(orderRecordId);
     if (StringHelper.isNotEmpty(billPayRecords)) {
@@ -186,43 +187,29 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   }
 
   /**
-   * 获取账单开单优惠详情
+   * 获取账单开单优惠详情，老订单只含非划扣项目明细
    *
    * @param orderRecordId 开单详情
    * @return
    */
-  public List<OrderDetailChargeVO> getOrderDetailCharges(Integer orderRecordId) {
+  public List<OrderDetailChargeVO> getOldOrderDetailCharges(Integer orderRecordId) {
+    return getOrderDetailCharges(orderRecordId).getItemList();
+  }
+
+  /**
+   * 获取账单开单优惠详情，含非划扣和划扣项目明细
+   *
+   * @param orderRecordId 开单详情
+   * @return
+   */
+  public BillDetailGroupVO getOrderDetailCharges(Integer orderRecordId) {
+    BillDetailGroupVO result = new BillDetailGroupVO();
     List<OrderDetailChargeVO> orderDetails = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
-    if (StringHelper.isEmpty(orderDetails)) {
-      orderDetails = new ArrayList<>();
-    } else {
-      List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
-      if (StringHelper.isNotEmpty(orderBenefitD)) {
-        for (OrderDetailChargeVO orderDetail : orderDetails) {
-          for (OrderBenefitDetailVo benefitDetailVo : orderBenefitD) {
-            if (orderDetail.getOrderDetailId().equals(benefitDetailVo.getOrderDetailId())) {
-              BigDecimal receivableAmount = orderDetail.getReceivableAmount();
-              BigDecimal actualAmount = orderDetail.getActualAmount();
-              BigDecimal itemBenefitAmount = benefitDetailVo.getItemBenefitAmount();
-              actualAmount = actualAmount.subtract(itemBenefitAmount);
-              if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
-                actualAmount = BigDecimal.valueOf(0);
-              }
-              orderDetail.setActualAmount(actualAmount);
-              if (receivableAmount.compareTo(new BigDecimal(0)) != 0) {
-                orderDetail.setDiscountRate(
-                    actualAmount
-                        .divide(receivableAmount, 4, RoundingMode.HALF_UP)
-                        .multiply(BigDecimal.valueOf(100)));
-              }
-              List<ItemUseBenefitVo> benefitList = benefitDetailVo.getItemBenefitList();
-              setPrivilegeCouponInfo(orderDetail, benefitList);
-            }
-          }
-        }
-      }
+    if (StringHelper.isNotEmpty(orderDetails)) {
+      PatientOrderBenefitVo orderBenefits = discountFeign.getOrderBenefitD(orderRecordId);
+      treatTollBiz.orderDetailMatchDiscount(orderDetails, orderBenefits, result);
     }
-    return orderDetails;
+    return result;
   }
 
   /**

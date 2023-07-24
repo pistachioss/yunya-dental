@@ -9,7 +9,6 @@ import com.yunya.feign.discount.domain.model.AuthItemBenefitModel;
 import com.yunya.feign.discount.domain.model.MixMatchBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
@@ -2083,7 +2082,7 @@ public class TollBiz {
     List<OrderDetailPayRecord> detailPayRecords =
         orderDetailPayRecordBiz.selectList(orderDetailPayRecord);
     // 根据订单号查询优惠列表
-    List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
+    List<PatientItemBenefitVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId).getItemList();
     log.info(
         "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单号查询优惠列表[orderBenefitD]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
     orderBenefitD.forEach(
@@ -2103,7 +2102,7 @@ public class TollBiz {
       BigDecimal receivableAmount = detail.getReceivableAmount();
       BigDecimal privilegeAmount = BigDecimal.valueOf(0);
       BigDecimal actualAmount = receivableAmount;
-      for (OrderBenefitDetailVo vo : orderBenefitD) {
+      for (PatientItemBenefitVo vo : orderBenefitD) {
         Integer orderDetailId = vo.getOrderDetailId();
         if (detail.getOrderDetailId().equals(orderDetailId)) {
           privilegeAmount = vo.getItemBenefitAmount();

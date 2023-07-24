@@ -1,9 +1,11 @@
 package com.yunya.feign.treatment.domain.vo;
 
+import com.google.common.collect.Lists;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -16,13 +18,14 @@ import java.util.List;
  */
 @Data
 @ToString
-public class BillDetailGroupVO implements Serializable {
-  /** 开单明细列表 */
-  private List<OrderDetailChargeVO> orderDetails;
+@ApiModel("账单详情组合信息VO")
+public class BillDetailGroupVO extends TreatOrderRecordVO {
 
   /** 收费记录列表 */
-  private List<BillPayRecordVO> billPayRecords;
+  @ApiModelProperty("收费记录列表")
+  private List<BillPayRecordVO> billPayRecords = Lists.newArrayList();
 
   /** 账单异常处理列表 */
-  private List<BillHandleRecordVO> billHandleRecords;
+  @ApiModelProperty("账单异常处理列表")
+  private List<BillHandleRecordVO> billHandleRecords = Lists.newArrayList();
 }
