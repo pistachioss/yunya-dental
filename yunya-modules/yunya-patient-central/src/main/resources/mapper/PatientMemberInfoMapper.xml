@@ -94,7 +94,7 @@
     </select>
     <!-- 根据患者id查询会员基本信息(会员卡界面基本信息（非全部信息）) -->
     <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo">
-     select pmio.org_id orgId, pmio.patient_id, pmio.id,pmio.card_number cardNumber,pmio.member_type_id memberTypeId,pmio.crt_time crtTime,pbio.name name,
+     select pmio.org_id orgId, pmio.patient_id patientId, pmio.id,pmio.card_number cardNumber,pmio.member_type_id memberTypeId,pmio.crt_time crtTime,pbio.name name,
 				CAST((pmio.principal_amount+pmio.bonus_amount) AS decimal(15,2)) memberCardMoneySum,
 				CAST(IFNULL(pmio.principal_amount,0) AS decimal(15,2)) principalAmount,
 				CAST(IFNULL(pmio.bonus_amount,0) AS decimal(15,2)) bonusAmount,
