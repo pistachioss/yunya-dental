@@ -176,6 +176,9 @@ public class Card implements Serializable {
     @Column(name = "seller_user_id")
     private Integer sellerUserId;
 
+    @Column(name = "buyer_id")
+    private Integer buyerId;
+
     /**
      * 创建时间
      */

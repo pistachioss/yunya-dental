@@ -61,7 +61,7 @@ public class CouponOrderController {
     }
 
     @ApiOperation(value = "划扣卡订单详情")
-    @GetMapping("/coupon/order/{orderId}")
+    @GetMapping(value = "/deduction/order/{orderId}")
     public ResponseResult<CouponOrderVO> detail(@PathVariable(value = "orderId") Integer orderId) {
         return ResponseUtil.success(couponOrderBiz.detail(orderId));
     }
@@ -74,7 +74,7 @@ public class CouponOrderController {
     }
 
     @ApiOperation(value = "删除订单")
-    @PostMapping("/coupon/order/delete")
+    @GetMapping("/coupon/order/delete")
     @CurrentUser
     public ResponseResult<Boolean> delete(@NotNull @RequestParam Integer orderId) {
         couponOrderBiz.delete(orderId);
