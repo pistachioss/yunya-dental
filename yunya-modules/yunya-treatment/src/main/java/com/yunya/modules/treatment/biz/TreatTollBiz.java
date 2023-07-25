@@ -90,7 +90,7 @@ public class TreatTollBiz {
    * 根据优惠信息匹配订单优惠
    *
    * @param query 优惠条件
-   * @return List<OrderDetailChargeVO>
+   * @return TreatOrderRecordVO
    */
   public TreatOrderRecordVO matchOrderTailPrivilege(OrderPrivilegeQuery query) {
     Integer orderRecordId = query.getOrderRecordId();

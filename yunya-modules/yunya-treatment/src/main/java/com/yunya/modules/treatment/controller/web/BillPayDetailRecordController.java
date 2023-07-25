@@ -51,12 +51,12 @@ public class BillPayDetailRecordController {
   }
 
   /**
-   * 根据订单id获取本次收费的入账方式列表
+   * 根据订单id获取账单的可退费入账方式列表
    *
    * @param orderRecordId
    * @return
    */
-  @ApiOperation("根据订单id获取本次收费的入账方式列表")
+  @ApiOperation("根据订单id获取账单的可退费入账方式列表")
   @GetMapping("/refundable/{orderRecordId}")
   public ResponseResult<List<BillPayAccountVO>> findBillRefundableAccountItemList(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
     List<BillPayAccountVO> result = billPayDetailRecordBiz.findBillRefundableAccountItemList(orderRecordId);

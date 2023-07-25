@@ -36,6 +36,9 @@ public class OrderDetailChargeVO extends OrderDetailVO {
   /** 实收金额 */
   @ApiModelProperty("实收金额")
   private BigDecimal receivedAmount;
+  /** 可退金额 */
+  @ApiModelProperty("可退金额")
+  private BigDecimal refundableAmount;
   /** 添加来源（0-开单；1-收费） */
   @ApiModelProperty("添加来源（0-开单添加；1-收费（添加商品）添加）")
   private Byte sourceType;

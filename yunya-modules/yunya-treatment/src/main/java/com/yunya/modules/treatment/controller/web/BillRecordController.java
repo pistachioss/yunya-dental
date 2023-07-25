@@ -101,7 +101,7 @@ public class BillRecordController {
    */
   @RepeatSubmit
   @CurrentUser
-  @ApiOperation("账单退费")
+  @ApiOperation(value = "账单退费", notes = "弃用")
   @PostMapping(value = "/refund", name = "账单退费")
   @Deprecated
   public ResponseResult billRefund(@RequestBody @Validated BillRefundModel model) {

@@ -28,7 +28,7 @@ public class TreatBillRefundModel implements Serializable {
   @NotNull(message = "就诊记录ID")
   private Integer treatmentRecordId;
   /** 退费订单明细列表 */
-  @ApiModelProperty("退费订单明细列表")
+  @ApiModelProperty(value = "退费订单明细列表", required = true)
   @NotEmpty(message = "退费订单明细列表不能为空")
   private List<RefundOrderDetailModel> refundOrderDetailModels;
   /** 退费入账方式列表 */

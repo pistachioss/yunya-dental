@@ -433,7 +433,7 @@
         select
             bpdr.order_record_id as billPayRecordId,
             bpdr.account_item_id as accountItemId,
-            IFNUL(bpdr.amount, 0) - IFNULL(brd.refundAmount,0) as amount,
+            IFNULL(bpdr.amount, 0) - IFNULL(brd.refundAmount,0) as amount,
             IFNULL(brd.principal_amount, 0) AS refundPrincipal,
             IFNULL(brd.gift_amount, 0) AS refundBonus,
             bpdr.remark
@@ -461,7 +461,7 @@
             GROUP BY brd.order_record_id, brpdr.account_item_id, brpdr.remark
         ) brd ON bpdr.order_record_id=brd.order_record_id AND bpdr.account_item_id = brd.account_item_id AND bpdr.remark=brd.remark
         <where>
-            <if test="id != null">
+            <if test="orderRecordId != null">
                 and bpdr.order_record_id = #{orderRecordId}
             </if>
         </where>

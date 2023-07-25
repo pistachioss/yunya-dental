@@ -93,23 +93,31 @@
             od.quantity,
             od.receivable_amount AS receivableAmount,
             od.receivable_amount AS actualAmount,
-            ifnull( odpr.received_amount, 0 ) AS receivedAmount,
+            IFNULL(odpr.received_amount, 0) AS receivedAmount,
             100 AS discountRate,
             od.tooth_bit AS toothBit,
             od.executor_id AS executorId,
             od.consulter_id as consulterId,
             od.source_type AS sourceType,
-            od.remarks
-        FROM
-            order_detail od
-            LEFT JOIN (
+            od.remarks,
+            IF(IFNULL(brod.refund_Amount,0)>=IFNULL(odpr.received_amount,0), 0, IFNULL(odpr.received_amount,0)-IFNULL(brod.refund_Amount,0)) AS refundableAmount
+        FROM order_detail od
+        LEFT JOIN (
             SELECT
             odpr.order_detail_id,
             odpr.received_amount
             FROM order_detail_pay_record odpr
             WHERE
             odpr.order_record_id = #{orderRecordId}
-            ) odpr ON od.id = odpr.order_detail_id
+        ) odpr ON od.id = odpr.order_detail_id
+        LEFT JOIN (
+            SELECT
+                order_detail_id,
+                SUM(refund_amount) AS refund_Amount
+            FROM bill_refund_order_detail
+            WHERE inservice = true
+            GROUP BY order_detail_id
+        ) brod ON brod.order_detail_id = od.id
         WHERE
          od.order_record_id = #{orderRecordId}
     </select>

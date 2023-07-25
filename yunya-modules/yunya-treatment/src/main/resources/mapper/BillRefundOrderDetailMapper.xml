@@ -18,4 +18,18 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+    <select id="selectItemRefundableAmountByOrderDetailId" resultType="java.math.BigDecimal">
+        SELECT
+            IF(IFNULL(brod.refund_amount,0)>=odpr.received_amount, 0, odpr.received_amount-IFNULL(brod.refund_amount,0)) AS refundAmount
+        FROM order_detail_pay_record odpr
+        LEFT JOIN (
+            SELECT order_detail_id, SUM(refund_amount) AS refund_amount
+            FROM bill_refund_order_detail
+            WHERE inservice = true
+            GROUP BY order_detail_id
+        ) brod ON brod.order_detail_id = odpr.order_detail_id
+        WHERE odpr.inservice = true
+        AND odpr.order_detail_id = #{orderDetailId}
+    </select>
 </mapper>

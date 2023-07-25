@@ -352,8 +352,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BigDecimal refundOrderDetailAmount = calculateRefundOrderDetailAmount(refundOrderDetailModels);
     // 计算退费总额
     BigDecimal refundTotalAmount = calculateRefundAmount(orderRecordId, refundPaymentModels);
-    if (StringHelper.gt(refundTotalAmount, refundOrderDetailAmount)) {
-      throw new ClientServiceException("账单退费失败，退费总额不能大于退费项目金额合计！", PARAMETERS_IS_ILLEGAL);
+    if (!StringHelper.eq(refundTotalAmount, refundOrderDetailAmount)) {
+      throw new ClientServiceException("账单退费失败，退费总额与退费项目金额合计不一致！", PARAMETERS_IS_ILLEGAL);
     }
 
     // 保存退费记录
@@ -645,7 +645,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     if (!billRecord.getOrgId().equals(orgId)) {
       throw new ClientServiceException("账单退费失败，只能对本门诊账单退费！", DATA_NOT_EXIST);
     }
-    return entity;
+    return billRecord;
   }
 
   /**
@@ -678,24 +678,20 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   private BigDecimal calculateRefundOrderDetailAmount(List<RefundOrderDetailModel> refundOrderDetailModels) {
     BigDecimal refundOrderDetailAmount = BigDecimal.ZERO;
     if (StringHelper.isNotEmpty(refundOrderDetailModels)) {
-      OrderDetailPayRecord orderDetailPayrecord = new OrderDetailPayRecord();
       for (RefundOrderDetailModel model : refundOrderDetailModels) {
         Integer orderDetailId = model.getOrderDetailId();
         OrderDetail orderDetail = orderDetailBiz.selectById(orderDetailId);
         if (null == orderDetail) {
           throw new ClientServiceException("账单退费失败，请选择正确的订单明细进行操作！", PARAMETERS_IS_ILLEGAL);
         }
-        // 比较退费金额与订单入账金额
-        orderDetailPayrecord.setOrderDetailId(orderDetailId);
-        orderDetailPayrecord.setInservice(true);
-        OrderDetailPayRecord detailPayRecord =
-            orderDetailPayRecordMapper.selectOne(orderDetailPayrecord);
+        BigDecimal refunableAmount = billRefundOrderDetailMapper.selectItemRefundableAmountByOrderDetailId(orderDetailId);
         BigDecimal refundAmount = model.getRefundAmount();
-        if (null != detailPayRecord) {
-          BigDecimal receivedAmount = detailPayRecord.getReceivedAmount();
-          if (refundAmount.compareTo(receivedAmount) > 0) {
-            throw new ClientServiceException("账单退费失败，项目退费金额不能超过该项目实收金额！", PARAMETERS_IS_ILLEGAL);
+        if (StringHelper.isNotNull(refunableAmount)) {
+          if (StringHelper.gt(refundAmount, refunableAmount)) {
+            throw new ClientServiceException("账单退费失败，项目【" + model.getItemName() + "】的退费金额不能超过该项目可退金额！", PARAMETERS_IS_ILLEGAL);
           }
+        } else {
+          throw new ClientServiceException("账单退费失败，项目收费记录不存在", PARAMETERS_IS_ILLEGAL);
         }
         refundOrderDetailAmount = refundOrderDetailAmount.add(refundAmount);
       }

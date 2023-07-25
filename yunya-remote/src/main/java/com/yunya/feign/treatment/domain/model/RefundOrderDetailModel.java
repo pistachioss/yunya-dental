@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -25,8 +26,14 @@ public class RefundOrderDetailModel implements Serializable {
 
   /** 订单明细ID */
   @ApiModelProperty(value = "订单明细ID", required = true)
-  @NotNull(message = "退费订单明细ID不能为空！")
+  @NotNull(message = "订单明细ID不能为空！")
   private Integer orderDetailId;
+
+  /** 项目名称 */
+  @ApiModelProperty(value = "项目名称", required = true)
+  @NotEmpty(message = "项目名称不能为空！")
+  private String itemName;
+
   /** 退费金额 */
   @ApiModelProperty(value = "退费金额", required = true)
   @NotNull(message = "退费金额不能为空！")
