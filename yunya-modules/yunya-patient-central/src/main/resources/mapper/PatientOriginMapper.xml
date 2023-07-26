@@ -92,4 +92,45 @@
         where po.parent_id = #{parentId} and po.origin_type = #{originType}
     </select>
 
+    <select id="selectPatientOriginChangeTag"
+            resultType="com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO">
+        SELECT
+            pbi.id AS patientId,
+            CASE
+                WHEN pbi.origin_type=1 THEN '员工转介绍'
+                WHEN pbi.origin_type=2 THEN '患者转介绍'
+                WHEN pbi.origin_type=12 THEN '未知来源'
+                ELSE po.name
+            END AS tagName
+        FROM patient_base_info pbi
+        INNER JOIN patient_origin po ON pbi.origin_id=po.id
+        <where>
+            pbi.origin_id > 0
+            <if test="query.dateType==0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(pbi.upd_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(pbi.upd_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(pbi.upd_time, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(pbi.upd_time, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(pbi.upd_time, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(pbi.upd_time, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+    </select>
+
 </mapper>

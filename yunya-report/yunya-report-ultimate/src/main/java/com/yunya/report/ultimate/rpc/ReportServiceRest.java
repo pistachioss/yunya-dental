@@ -91,4 +91,15 @@ public class ReportServiceRest {
     List<PatientHasBillItemVO> hasItemlist() {
         return baseBillMapper.selectPatientBillItemList();
     }
+
+    /**
+     * 患者的治疗项目标签
+     *
+     * @param query
+     * @return
+     */
+    @PostMapping("/patient/treatment-tariff")
+    public List<BasePatientBehaviorTagVO> findPatientTreatmentTariffTag(@RequestBody DateRangeQueryForm query) throws InterruptedException {
+        return patientTreatmentTagBiz.findPatientTreatmentTariffTag(query);
+    }
 }

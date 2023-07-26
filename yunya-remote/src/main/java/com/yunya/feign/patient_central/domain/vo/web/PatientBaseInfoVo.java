@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -19,7 +18,7 @@ import java.util.List;
 @Data
 @ToString
 @ApiModel("返回患者信息模型")
-public class PatientBaseInfoVo implements Serializable {
+public class PatientBaseInfoVo extends PatientOriginBaseVO {
     /**
      * 主键
      */
@@ -86,30 +85,6 @@ public class PatientBaseInfoVo implements Serializable {
      */
     @ApiModelProperty("出生日期")
     private String birthday;
-
-    /**
-     * 患者来源类型 患者来源分类ID
-     */
-    @ApiModelProperty("患者来源分类ID")
-    private Integer originType;
-
-    /**
-     * 患者来源类型名称
-     */
-    @ApiModelProperty("患者来源类型名称")
-    private String originTypeName;
-
-    /**
-     * 患者来源关联ID 患者来源关联ID（活动ID）
-     */
-    @ApiModelProperty("患者来源关联ID（活动ID）")
-    private Integer originId;
-
-    /**
-     * 来源名称 或 推荐人名称
-     */
-    @ApiModelProperty("来源名称 或 推荐人名称")
-    private String originName;
 
     /**
      * 备注 备注

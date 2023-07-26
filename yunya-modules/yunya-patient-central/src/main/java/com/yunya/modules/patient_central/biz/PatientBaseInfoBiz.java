@@ -20,14 +20,12 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
-import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
@@ -57,6 +55,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.RedisConstants.PATIENT_BASE_INFO;
+import static com.yunya.framework.common.constant.RedisConstants.PATIENT_REFERRER;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -787,68 +786,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @return PatientBaseInfoVo
    */
   private PatientBaseInfoVo getTypeName(PatientBaseInfoVo patientBaseInfoVo) {
-    if (patientBaseInfoVo.getOriginType() != null) {
-      PatientOrigin patientOrig;
-      PatientOrigin patientOrigin =
-              patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
-      if (patientOrigin != null) {
-        patientBaseInfoVo.setOriginTypeName(patientOrigin.getName());
-      }
-      if (patientBaseInfoVo.getOriginId() != null) {
-        switch (patientBaseInfoVo.getOriginType()) {
-          // 查询员工
-          case 1:
-            SysUserEmployeeModel model = new SysUserEmployeeModel();
-            model.setUserId(patientBaseInfoVo.getOriginId());
-            model.setWhetherPage(false);
-            List<SysUserInfoDetail> list =
-                    remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-            if (!StringHelper.isEmpty(list)) {
-              patientBaseInfoVo.setOriginName(list.get(0).getName());
-            }
-            //              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
-            patientOrig = patientOriginMapper.getTypeName(1);
-            if (patientOrig != null) {
-              patientBaseInfoVo.setSourceName(patientOrig.getName());
-            }
-            patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
-            break;
-          // 查询患者
-          case 2:
-            PatientBaseInfo patientBaseInfo =
-                    patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
-            if (patientBaseInfo != null) {
-              patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
-            }
-            //              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
-            patientOrig = patientOriginMapper.getTypeName(2);
-            if (patientOrig != null) {
-              patientBaseInfoVo.setSourceName(patientOrig.getName());
-            }
-            patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
-            break;
-          default:
-            PatientOrigin activity =
-                    patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
-            if (activity != null) {
-              if (activity.getSourceAttribute() != null) {
-                DictionaryItem dictionaryItemById =
-                        remoteSystemServiceFeign.findDictionaryItemById(activity.getSourceAttribute());
-                if (dictionaryItemById != null) {
-                  patientBaseInfoVo.setOriginName(
-                          dictionaryItemById.getName() + "-" + activity.getName());
-                  patientBaseInfoVo.setSourceName(
-                          dictionaryItemById.getName() + "-" + activity.getName());
-                } else {
-                  patientBaseInfoVo.setOriginName(activity.getName());
-                  patientBaseInfoVo.setSourceName(activity.getName());
-                }
-              }
-            }
-            break;
-        }
-      }
-    }
+    fillingPatientOriginInfo(patientBaseInfoVo);
     Integer mobileOwner = patientBaseInfoVo.getMobileOwner();
     if (!ObjectUtils.isEmpty(mobileOwner)) {
       // 根据ID查询字典明细
@@ -860,6 +798,77 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       }
     }
     return patientBaseInfoVo;
+  }
+
+
+  /**
+   * 填充患者来源信息
+   *
+   * @param patientInfo
+   */
+  public void fillingPatientOriginInfo(PatientBaseInfoVo patientInfo) {
+    if (patientInfo.getOriginType() != null) {
+      PatientOrigin patientOrig;
+      PatientOrigin patientOrigin =
+              patientOriginMapper.getTypeName(patientInfo.getOriginType());
+      if (patientOrigin != null) {
+        patientInfo.setOriginTypeName(patientOrigin.getName());
+      }
+      if (patientInfo.getOriginId() != null) {
+        switch (patientInfo.getOriginType()) {
+          // 查询员工
+          case 1:
+            SysUserEmployeeModel model = new SysUserEmployeeModel();
+            model.setUserId(patientInfo.getOriginId());
+            model.setWhetherPage(false);
+            List<SysUserInfoDetail> list =
+                    remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+            if (!StringHelper.isEmpty(list)) {
+              patientInfo.setOriginName(list.get(0).getName());
+            }
+            //              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
+            patientOrig = patientOriginMapper.getTypeName(1);
+            if (patientOrig != null) {
+              patientInfo.setSourceName(patientOrig.getName());
+            }
+            patientInfo.setSourceId(patientInfo.getOriginId());
+            break;
+          // 查询患者
+          case 2:
+            PatientBaseInfo patientBaseInfo =
+                    patientBaseInfoMapper.selectByPrimaryKey(patientInfo.getOriginId());
+            if (patientBaseInfo != null) {
+              patientInfo.setOriginName(patientBaseInfo.getName());
+            }
+            //              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
+            patientOrig = patientOriginMapper.getTypeName(2);
+            if (patientOrig != null) {
+              patientInfo.setSourceName(patientOrig.getName());
+            }
+            patientInfo.setSourceId(patientInfo.getOriginId());
+            break;
+          default:
+            PatientOrigin activity =
+                    patientOriginMapper.selectByPrimaryKey(patientInfo.getOriginId());
+            if (activity != null) {
+              if (activity.getSourceAttribute() != null) {
+                DictionaryItem dictionaryItemById =
+                        remoteSystemServiceFeign.findDictionaryItemById(activity.getSourceAttribute());
+                if (dictionaryItemById != null) {
+                  patientInfo.setOriginName(
+                          dictionaryItemById.getName() + "-" + activity.getName());
+                  patientInfo.setSourceName(
+                          dictionaryItemById.getName() + "-" + activity.getName());
+                } else {
+                  patientInfo.setOriginName(activity.getName());
+                  patientInfo.setSourceName(activity.getName());
+                }
+              }
+            }
+            break;
+        }
+      }
+    }
   }
 
   /**
@@ -1714,5 +1723,46 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public PatientBaseInfo findPatientIntroducerByPatientId(Integer patientId) {
     return mapper.selectPatientIntroducerByPatientId(patientId);
+  }
+
+  public PatientOriginBaseVO findPatientReferrerInfo(Integer patientId) {
+    PatientOriginBaseVO result = redisUtils.get(PATIENT_REFERRER + patientId, PatientOriginBaseVO.class);
+    if (StringHelper.isNull(result)) {
+      PatientBaseInfo patient = findPatientInfoById(patientId);
+      if (StringHelper.isNotNull(patient)) {
+        Integer originType = patient.getOriginType();
+        PatientOrigin patientOrigin =
+                patientOriginMapper.getTypeName(originType);
+        result.setOriginType(originType);
+        if (StringHelper.isNotNull(patientOrigin)) {
+          result.setOriginTypeName(patientOrigin.getName());
+        }
+        Integer referrerId = patient.getOriginId();
+        result.setOriginId(referrerId);
+        if (StringHelper.isNotNull(referrerId)) {
+          switch (originType) {
+            // 查询员工
+            case 1: {
+              SysEmployee referrer = remoteSystemServiceFeign.findSysEmployeeById(referrerId);
+              if (StringHelper.isNotNull(referrer)) {
+                result.setOriginName(referrer.getName());
+              }
+              break;
+            }
+            // 查询患者
+            case 2: {
+              PatientBaseInfo referrer = findPatientInfoById(referrerId);
+              if (StringHelper.isNotNull(referrer)) {
+                result.setOriginName(referrer.getName());
+              }
+              break;
+            }
+            default:
+              break;
+          }
+        }
+      }
+    }
+    return result;
   }
 }

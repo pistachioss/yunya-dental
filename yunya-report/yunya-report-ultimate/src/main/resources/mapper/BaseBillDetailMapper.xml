@@ -6150,4 +6150,48 @@
         </where>
         GROUP BY bbd.item_type, bbd.item_id, bbd.executor_id
     </select>
+
+    <select id="selectPatientTreatmentTariffTag"
+            resultType="com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO">
+        SELECT
+            DISTINCT
+            bb.patient_id,
+            #{tagEnum.name} AS tagName
+        FROM base_bill_detail bbd
+        INNER JOIN base_bill bb ON bb.bill_id=bbd.bill_id
+        INNER JOIN base_tariff_info bti ON  bti.item_type=bbd.item_type AND bti.item_id=bbd.item_id
+        <where>
+            AND bti.item_type = 0
+            <if test="tagEnum != null">
+                AND bti.item_num IN
+                <foreach collection="tagEnum.itemNums" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+    </select>
 </mapper>

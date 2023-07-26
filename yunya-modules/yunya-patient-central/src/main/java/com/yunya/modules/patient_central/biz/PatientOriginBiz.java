@@ -10,6 +10,8 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientOriginInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginTreeVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
+import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -18,6 +20,7 @@ import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.model.TreeNode;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -40,13 +43,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * 简单介绍:</br> 患者来源业务层
@@ -83,6 +83,9 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
 
   @Resource
   private PatientOriginLogMapper patientOriginLogMapper;
+
+  /** 固定患者来源分类：1-员工转介绍，2-患者转介绍，12-未知来源 */
+  private final static List<Integer> FIX_ORIGIN_TYPES = Arrays.asList(1, 2, 12);
 
 
   /**
@@ -399,5 +402,36 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       });
     }
     return result;
+  }
+
+  /**
+   * 查询患者的患者来源标签变更情况
+   *
+   * @param query
+   * @return
+   */
+  public List<BasePatientBehaviorTagVO> findPatientOriginChangeTag(DateRangeQueryForm query) {
+    return mapper.selectPatientOriginChangeTag(query);
+  }
+
+  /**
+   * 查询患者来源的树列表，如果属于固定来源的数据，将拷贝父级来源数据作为其子级
+   *
+   * @return
+   */
+  public List<PatientOriginTreeVo> findPatientOriginTree() {
+    List<PatientOriginInfoVo> patientOriginInfoVos = patientOriginMapper.findAll();
+    List<PatientOriginTreeVo> originTree = initTree(patientOriginInfoVos);
+    return originTree.stream().filter(origin->{
+      List<TreeNode> childrens = origin.getChildren();
+      if (StringHelper.isEmpty(childrens) && FIX_ORIGIN_TYPES.contains(origin.getOriginType())) {
+        // 用父级来源构造子级来源
+        PatientOriginTreeVo children = new PatientOriginTreeVo();
+        BeanUtils.copyProperties(origin, children);
+        origin.setChildren(Arrays.asList(children));
+        return true;
+      }
+      return false;
+    }).collect(Collectors.toList());
   }
 }

@@ -64,4 +64,13 @@ public interface RemoteReportServiceFeign {
 
     @RequestMapping(value = "/api/patient/bill/hasitemlist",method = RequestMethod.POST)
     List<PatientHasBillItemVO> getHasItemList();
+
+    /**
+     * 患者的治疗项目标签
+     *
+     * @param query
+     * @return
+     */
+    @PostMapping("/api/patient/treatment-tariff")
+    List<BasePatientBehaviorTagVO> findPatientTreatmentTariffTag(@RequestBody DateRangeQueryForm query);
 }

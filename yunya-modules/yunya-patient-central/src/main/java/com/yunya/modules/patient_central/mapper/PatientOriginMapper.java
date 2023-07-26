@@ -2,6 +2,8 @@ package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
+import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.models.patient_central.PatientOrigin;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -73,4 +75,12 @@ public interface PatientOriginMapper extends Mapper<PatientOrigin> {
      * @return 患者来源信息
      */
     List<PatientOriginVo> selectOriginType(@Param("parentId") int parentId, @Param("originType") Integer originType);
+
+    /**
+     * 根据条件查询患者变更后的患者来源行为标签
+     *
+     * @param query
+     * @return
+     */
+    List<BasePatientBehaviorTagVO> selectPatientOriginChangeTag(@Param("query") DateRangeQueryForm query);
 }
