@@ -7,6 +7,7 @@ import com.yunya.feign.discount.domain.model.CouponOrderModel;
 import com.yunya.feign.discount.domain.vo.CouponOrderDetailVO;
 import com.yunya.feign.discount.domain.vo.CouponOrderVO;
 import com.yunya.feign.discount.domain.vo.CouponPayDetailVO;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -63,6 +64,8 @@ public class CouponOrderBiz {
     private SalesChannelBiz salesChannelBiz;
     @Resource
     private RemoteSystemServiceFeign systemServiceFeign;
+    @Resource
+    private RemotePatientCentralServiceFeign patientFeign;
 
     @Transactional(rollbackFor = Exception.class)
     public CouponOrderVO soldCard(CouponOrderModel model) {
@@ -121,7 +124,7 @@ public class CouponOrderBiz {
                 virtualMapper.insertList(virtuals);
                 vo = detail(order.getId());
             }
-        } catch (Exception e) {
+        } finally {
             if (CollectionUtils.isNotEmpty(list)) {
                 revoke(list);
             }
@@ -248,6 +251,7 @@ public class CouponOrderBiz {
                 detailVO.setConsulterName(null != consulter ? consulter.getName() : "--");
                 detail.setConsulterId(consulterId);
             }
+            detailVO.setRemark(detail.getRemarks());
             detailVO.setOrderDetailId(detail.getId());
             detailVO.setCouponName(detail.getCouponName());
             detailVO.setPrice(detail.getPrice());
@@ -301,12 +305,13 @@ public class CouponOrderBiz {
         SalesChannel name = salesChannelBiz.getByName("艾维门诊");
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         List<Card> list1 = Lists.newArrayList();
+        String mobile = patientFeign.findPatientInfoByIds(Lists.newArrayList(patientId)).get(0).getMobile();
         for (Map.Entry<Integer, List<Card>> entry : collect.entrySet()) {
             List<Card> list = collect.get(entry.getKey());
             list.forEach(card -> {
                 card.setStatus(1);
                 card.setSoldTarget(patientId.toString());
-                card.setSoldPhoneNumber(patientId.toString());
+                card.setSoldPhoneNumber(mobile);
                 card.setPatientId(patientId);
                 card.setSoldType(0);
                 card.setSendText(0);
@@ -364,7 +369,7 @@ public class CouponOrderBiz {
         return list1;
     }
 
-    private void revoke(List<Card> list) {
+    public void revoke(List<Card> list) {
         for (Card card : list) {
             card.setStatus(0);
             card.setPatientId(null);
@@ -392,7 +397,7 @@ public class CouponOrderBiz {
         CouponOrder couponOrder = getOrder(orderId);
         if (Objects.nonNull(couponOrder)) {
             deleteVirtual(orderId);
-            deleteDetail(orderId);
+            removeDetail(orderId);
             couponOrder.setInservice(false);
             couponOrderMapper.updateByPrimaryKeySelective(couponOrder);
         }
@@ -414,23 +419,37 @@ public class CouponOrderBiz {
         return virtualMapper.selectByExample(example);
     }
 
+
+    public CouponOrderVirtual getOrderVirtual(Integer cardId) {
+        Example example = new Example(CouponOrderVirtual.class);
+        example.createCriteria().andEqualTo("cardId", cardId)
+                .andEqualTo("inservice", true);
+        return virtualMapper.selectOneByExample(example);
+    }
+
     private List<Card> listCard(Collection<Integer> cardIds) {
         Example example = new Example(Card.class);
-        example.createCriteria().andIn("id", cardIds)
-                .andEqualTo("inservice", true);
+        example.createCriteria().andIn("id", cardIds);
         return cardMapper.selectByExample(example);
     }
 
     private void deleteVirtual(Integer orderId) {
-        List<CouponOrderVirtual> virtuals = listOrderVirtual(orderId);
+        List<CouponOrderVirtual> virtuals = deleteVirtuals(orderId);
         List<Integer> cardIds = virtuals.stream().map(CouponOrderVirtual::getCardId).collect(toList());
-        List<Card> cards = listCard(cardIds);
-        if (CollectionUtils.isNotEmpty(cards)) {
+        if (CollectionUtils.isNotEmpty(cardIds)) {
+            List<Card> cards = listCard(cardIds);
             revoke(cards);
         }
     }
 
-    private void deleteDetail(Integer orderId) {
+//    private void removeVirtual(Integer cardId) {
+//        virtuals.forEach(t -> {
+//            t.setInservice(false);
+//            virtualMapper.updateByPrimaryKeySelective(t);
+//        });
+//    }
+
+    private void removeDetail(Integer orderId) {
         List<CouponOrderDetail> details = listOrderDetail(orderId);
         details.forEach(t -> {
             t.setInservice(false);
@@ -438,11 +457,18 @@ public class CouponOrderBiz {
         });
     }
 
-    private void updateDetail(Integer orderId) {
-        Example example = new Example(CouponOrderDetail.class);
-        example.createCriteria().andEqualTo("orderId", orderId);
-        CouponOrderDetail detail = new CouponOrderDetail();
-        detail.setInservice(false);
-        orderDetailMapper.updateByExampleSelective(detail, example);
+    private void deleteDetail(Integer orderId) {
+        List<CouponOrderDetail> details = listOrderDetail(orderId);
+        details.forEach(t -> {
+            orderDetailMapper.deleteByPrimaryKey(t.getId());
+        });
+    }
+
+    private List<CouponOrderVirtual> deleteVirtuals(Integer orderId) {
+        List<CouponOrderVirtual>  virtuals = listOrderVirtual(orderId);
+        virtuals.forEach(t -> {
+            virtualMapper.deleteByPrimaryKey(t.getId());
+        });
+        return virtuals;
     }
 }

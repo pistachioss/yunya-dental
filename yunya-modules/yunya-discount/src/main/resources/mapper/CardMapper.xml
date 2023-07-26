@@ -1177,6 +1177,8 @@ WHERE
             `c`.`sold_target`                          as `soldTarget`,
             `c`.`buyer_id`                             as `buyerId`,
             `c`.`status`                               as `status`,
+            `co`.`status`                              as `orderStatus`,
+            `co`.`id`                                  as `orderId`,
             case
                 when `c`.`org_id` = 0 then `c`.`third_card_number`
                 else `c`.`card_number`
@@ -1250,8 +1252,10 @@ WHERE
             `c`.`patient_id`                      as `cardOwner`
         from `card` `c`
         inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
+        left join `coupon_order_virtual` `cor` on `cor`.`card_id` = `c`.`id`
+        left join `coupon_order` `co` on `co`.`id` = `cor`.`order_id` and `co`.status = 1
         where
-            `c`.`status` in (2,3,4)
+           ( `c`.`status` in (2,3,4) or isnull(c.buyer_id) = 0)
             and `cci`.`type` = 5
            and `c`.`patient_id` = #{patientId}
             <if test="couponName !=null and couponName != ''">

@@ -30,5 +30,6 @@ public class PatientDeductionOrderVO implements Serializable {
     private BigDecimal receivableAmount;
     @ApiModelProperty(value = "实收金额")
     private BigDecimal receivedAmount;
-
+    @ApiModelProperty(value = "订单状态(0-已下单；1-已收费；2-已退款)")
+    private Integer orderStatus;
 }

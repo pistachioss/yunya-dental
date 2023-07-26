@@ -16,6 +16,8 @@ import java.time.LocalDate;
 public class PatientDeductionBaseVO implements Serializable {
     @ApiModelProperty(value = "卡券id")
     private Integer cardId;
+    @ApiModelProperty(value = "订单id")
+    private Integer orderId;
     @ApiModelProperty(value = "优惠券id")
     private Integer couponId;
     @ApiModelProperty(value = "优惠券名称")
@@ -34,6 +36,8 @@ public class PatientDeductionBaseVO implements Serializable {
     private String activePatient;
     @ApiModelProperty(value = "使用状态(0-未使用、1-已使用)")
     private Integer useStatus;
+    @ApiModelProperty(value = "是否可以转赠(0-否、1-是)")
+    private Integer changeStatus;
     @ApiModelProperty(value = "产品分类")
     private String productTypeName;
     @ApiModelProperty(value = "销售渠道")

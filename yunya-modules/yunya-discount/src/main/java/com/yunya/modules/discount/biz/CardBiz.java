@@ -1253,7 +1253,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             return errorBo;
         }
         if (Objects.equals(MINI_CARD_REMARK, card.getRemark())) {
-            log.warn("【取消售卖失败】小程序卡券不可删除", card.getCardNumber());
+            log.warn("【取消售卖失败】小程序卡券不可删除:{}", card.getCardNumber());
             throw ClientServiceException.wrap(DiscountError.MINI_CARD_DELETE_ERROR);
         }
         int useCount = cardBenefitMapper.countCardUsed(cardId);

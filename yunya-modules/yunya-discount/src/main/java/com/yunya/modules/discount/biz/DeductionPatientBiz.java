@@ -2,23 +2,34 @@ package com.yunya.modules.discount.biz;
 
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.domain.bo.PatientCardBo;
+import com.yunya.feign.discount.domain.form.DeductionActiveForm;
+import com.yunya.feign.discount.domain.form.DeductionChangeForm;
+import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.discount.domain.query.DeductionOrderQuery;
 import com.yunya.feign.discount.domain.query.DeductionPatientQuery;
 import com.yunya.feign.discount.domain.vo.PatientDeductionBaseVO;
 import com.yunya.feign.discount.domain.vo.PatientDeductionOrderVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.models.discount.Card;
 import com.yunya.models.discount.ProductType;
 import com.yunya.models.discount.SalesChannel;
+import com.yunya.modules.discount.enums.CouponOrderError;
 import com.yunya.modules.discount.enums.CouponTypeEnum;
+import com.yunya.modules.discount.enums.DiscountError;
 import com.yunya.modules.discount.enums.UseWayEnum;
 import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,9 +53,9 @@ public class DeductionPatientBiz {
     @Resource
     private CouponOrderMapper couponOrderMapper;
     @Resource
-    private CouponChangeRecordMapper changeRecordMapper;
+    private CardBenefitMapper cardBenefitMapper;
     @Resource
-    private CouponOrderVirtualMapper virtualMapper;
+    private CouponOrderBiz couponOrderBiz;
     @Resource
     private CouponBillPayMapper billPayMapper;
     @Resource
@@ -90,9 +101,11 @@ public class DeductionPatientBiz {
         ownCardVo.setUseWayName(UseWayEnum.getValue(bo.getUseWay()));
         ownCardVo.setUseDeadline(bo.getUseDeadline() == null ? "永久有效" : bo.getUseDeadline());
         ownCardVo.setPayChannel(TRUE.getCode());
+        ownCardVo.setChangeStatus(1);
         String remark = bo.getRemark();
         if (StringUtils.isNotBlank(remark)) {
             ownCardVo.setPayChannel(Objects.equals(MINI_CARD_REMARK, remark) ? 0 : 1);
+            ownCardVo.setChangeStatus(Objects.equals(MINI_CARD_REMARK, remark) ? 0 : 1);
         }
         if (Objects.nonNull(bo.getBuyerId())) {
             ownCardVo.setPayChannel(2);
@@ -103,5 +116,74 @@ public class DeductionPatientBiz {
     public List<PatientDeductionOrderVO> orderList(Integer patientId, DeductionOrderQuery query) {
         List<PatientDeductionOrderVO> list = couponOrderMapper.listPatientDeductionByParam(patientId, query);
         return null;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void active(DeductionActiveForm form) {
+        OwnCardActiveForm activeForm = new OwnCardActiveForm();
+        activeForm.setCardId(form.getCardId());
+        ResponseResult responseResult = cardBiz.ownActiveCard(form.getPatientId(), activeForm);
+        if (!Objects.equals(0, responseResult.getStatus())) {
+            throw ClientServiceException.wrap(responseResult.getStatus(), responseResult.getMsg());
+        }
+    }
+
+    public void cancelActive(DeductionActiveForm form) {
+        Integer patientId = form.getPatientId();
+        Integer cardId = form.getCardId();
+        Card card = cardMapper.selectByPrimaryKey(cardId);
+        if (card == null) {
+            throw ClientServiceException.wrap(DiscountError.CARD_NOT_EXIST);
+        }
+        if (!patientId.equals(card.getPatientId())) {
+            throw ClientServiceException.wrap(DiscountError.OTHER_CARD_NOT_ALLOW_DELETE);
+        }
+        int useCount = cardBenefitMapper.countCardUsed(cardId);
+        if (useCount > 0) {
+            throw ClientServiceException.wrap(DiscountError.CARD_IS_USED);
+        }
+        cancel(card);
+    }
+
+    private List<Card> listCard(Collection<Integer> cardIds) {
+        Example example = new Example(Card.class);
+        example.createCriteria().andIn("id", cardIds);
+        return cardMapper.selectByExample(example);
+    }
+
+    public void cancel(Card card ) {
+        card.setStatus(1);
+        card.setPatientId(null);
+        card.setActiveOrgId(null);
+        card.setActiveUserId(null);
+        card.setSharer(null);
+        card.setActiveDate(null);
+        cardMapper.updateByPrimaryKey(card);
+    }
+
+    public void change(DeductionChangeForm form) {
+        Integer cardId = form.getCardId();
+        Card card = cardMapper.selectByPrimaryKey(cardId);
+        if (card == null) {
+            throw ClientServiceException.wrap(DiscountError.CARD_NOT_EXIST);
+        }
+        Integer status = card.getStatus();
+        if (Objects.equals(MINI_CARD_REMARK, card.getRemark())) {
+            throw ClientServiceException.wrap(CouponOrderError.CHANGE_ERROR);
+        }
+        if (status >= 2) {
+            throw ClientServiceException.wrap(CouponOrderError.CARD_ACTIVED);
+        }
+        int useCount = cardBenefitMapper.countCardUsed(cardId);
+        if (useCount > 0) {
+            throw ClientServiceException.wrap(DiscountError.CARD_IS_USED);
+        }
+        change(card, form);
+    }
+
+    public void change(Card card,DeductionChangeForm form) {
+        card.setSoldTarget(form.getPatientId().toString());
+        card.setSoldPhoneNumber(form.getMobile());
+        cardMapper.updateByPrimaryKey(card);
     }
 }

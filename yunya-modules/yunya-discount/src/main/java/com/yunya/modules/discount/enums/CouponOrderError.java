@@ -12,6 +12,8 @@ public enum CouponOrderError implements RestError {
     SALE_CHANNEL_NULL(2, "销售渠道不存在"),
     COUPON_ORDER_ERROR(3, "订单异常"),
     COUPON_SOLD_ERROR(4, "下单失败"),
+    CHANGE_ERROR(5, "非云牙系统购买卡券，不允许转赠"),
+    CARD_ACTIVED(6, "已激活卡券，不允许转赠"),
     ;
     private Integer code;
     private String value;
