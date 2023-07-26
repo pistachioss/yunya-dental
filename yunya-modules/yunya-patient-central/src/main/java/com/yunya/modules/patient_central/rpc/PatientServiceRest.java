@@ -437,8 +437,8 @@ public class PatientServiceRest {
   }
 
   @ApiOperation("查询患者转介绍人信息")
-  @GetMapping("/patient/referrer/{patientId}")
-  private PatientOriginBaseVO findPatientReferrerInfo(@PathVariable(value = "patientId") Integer patientId) {
+  @GetMapping("/patient/white/referrer/{patientId}")
+  public PatientReferrerInfoVO findPatientReferrerInfo(@PathVariable(value = "patientId") Integer patientId) {
     return patientBaseInfoBiz.findPatientReferrerInfo(patientId);
   }
 }

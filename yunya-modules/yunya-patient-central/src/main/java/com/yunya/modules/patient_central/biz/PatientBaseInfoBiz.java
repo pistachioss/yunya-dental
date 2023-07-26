@@ -27,10 +27,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.HanyuPinyinHelper;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
@@ -1725,41 +1722,48 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     return mapper.selectPatientIntroducerByPatientId(patientId);
   }
 
-  public PatientOriginBaseVO findPatientReferrerInfo(Integer patientId) {
-    PatientOriginBaseVO result = redisUtils.get(PATIENT_REFERRER + patientId, PatientOriginBaseVO.class);
+  /**
+   * 查询患者的转介绍人信息
+   *
+   * @param patientId
+   * @return
+   */
+  public PatientReferrerInfoVO findPatientReferrerInfo(Integer patientId) {
+    PatientReferrerInfoVO result = redisUtils.get(PATIENT_REFERRER + patientId, PatientReferrerInfoVO.class);
     if (StringHelper.isNull(result)) {
       PatientBaseInfo patient = findPatientInfoById(patientId);
       if (StringHelper.isNotNull(patient)) {
         Integer originType = patient.getOriginType();
-        PatientOrigin patientOrigin =
-                patientOriginMapper.getTypeName(originType);
-        result.setOriginType(originType);
-        if (StringHelper.isNotNull(patientOrigin)) {
-          result.setOriginTypeName(patientOrigin.getName());
-        }
-        Integer referrerId = patient.getOriginId();
-        result.setOriginId(referrerId);
-        if (StringHelper.isNotNull(referrerId)) {
-          switch (originType) {
-            // 查询员工
-            case 1: {
-              SysEmployee referrer = remoteSystemServiceFeign.findSysEmployeeById(referrerId);
-              if (StringHelper.isNotNull(referrer)) {
-                result.setOriginName(referrer.getName());
+        if (NumberUtil.betweenAnd(originType, 1, 2)) {
+          Integer referrerId = patient.getOriginId();
+          if (StringHelper.isNotNull(referrerId)) {
+            result = new PatientReferrerInfoVO();
+            result.setOriginType(originType);
+            result.setOriginId(referrerId);
+            switch (originType) {
+              // 查询员工
+              case 1: {
+                SysEmployee referrer = remoteSystemServiceFeign.findSysEmployeeById(referrerId);
+                if (StringHelper.isNotNull(referrer)) {
+                  result.setOriginName(referrer.getName());
+                  result.setMobile(referrer.getMobilePhone());
+                }
+                break;
               }
-              break;
-            }
-            // 查询患者
-            case 2: {
-              PatientBaseInfo referrer = findPatientInfoById(referrerId);
-              if (StringHelper.isNotNull(referrer)) {
-                result.setOriginName(referrer.getName());
+              // 查询患者
+              case 2: {
+                PatientBaseInfo referrer = findPatientInfoById(referrerId);
+                if (StringHelper.isNotNull(referrer)) {
+                  result.setOriginName(referrer.getName());
+                  result.setMobile(referrer.getMobile());
+                }
+                break;
               }
-              break;
+              default:
+                break;
             }
-            default:
-              break;
           }
+          redisUtils.set(PATIENT_REFERRER + patientId, result);
         }
       }
     }

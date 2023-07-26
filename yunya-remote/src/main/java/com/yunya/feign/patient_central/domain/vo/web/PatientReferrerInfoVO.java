@@ -10,24 +10,17 @@ import java.io.Serializable;
 /**
  * @author: chenlin
  * @date: 2023/7/26 14:14
- * @description: 患者来源基础信息数据模型
+ * @description: 患者的推荐人信息数据模型
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("患者来源基础信息数据模型")
-public class PatientOriginBaseVO implements Serializable {
-    /**
-     * 患者来源类型 患者来源分类ID
-     */
-    @ApiModelProperty("患者来源分类ID")
-    private Integer originType;
+@ApiModel("患者的推荐人信息数据模型")
+public class PatientReferrerInfoVO implements Serializable {
 
-    /**
-     * 患者来源类型名称
-     */
-    @ApiModelProperty("患者来源类型名称")
-    private String originTypeName;
+    /** 转介绍类型：1-员工转介绍，2-患者转介绍 */
+    @ApiModelProperty("转介绍类型：1-员工转介绍，2-患者转介绍")
+    private Integer originType;
 
     /**
      * 患者来源关联ID 患者来源关联ID（活动ID）
@@ -40,4 +33,8 @@ public class PatientOriginBaseVO implements Serializable {
      */
     @ApiModelProperty("来源名称 或 推荐人名称")
     private String originName;
+
+    /** 推荐人手机号 */
+    @ApiModelProperty("推荐人手机号")
+    private String mobile;
 }
