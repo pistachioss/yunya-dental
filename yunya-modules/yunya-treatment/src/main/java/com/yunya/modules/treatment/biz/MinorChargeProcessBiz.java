@@ -36,7 +36,6 @@ import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -166,7 +165,7 @@ public class MinorChargeProcessBiz {
                     BeanUtil.copyProperties(billPayRecord, model);
                     model.setBillPayRecordId(billPayRecord.getId());
                     model.setAcceptorId(originId);
-                    model.setBonus(totalPrincipal.multiply(giftRebateRate.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP)));
+                    model.setReceivedAmount(totalPrincipal);
                     patientFeign.billRebate2MemberAccount(model);
                 } else {
                     log.error("患者转介绍的赠金返点比例为空，无法返点！");
@@ -179,7 +178,7 @@ public class MinorChargeProcessBiz {
                 BeanUtil.copyProperties(billPayRecord, model);
                 model.setBillPayRecordId(billPayRecord.getId());
                 model.setAcceptorId(originId);
-                model.setBonus(FIRST_VISIT_REBATE_AMOUNT);
+                model.setReceivedAmount(FIRST_VISIT_REBATE_AMOUNT);
                 patientFeign.billRebate2MemberAccount(model);
             }
         }

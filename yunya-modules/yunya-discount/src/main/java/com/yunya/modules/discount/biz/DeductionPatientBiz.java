@@ -5,6 +5,7 @@ import com.yunya.feign.discount.domain.bo.PatientCardBo;
 import com.yunya.feign.discount.domain.form.DeductionActiveForm;
 import com.yunya.feign.discount.domain.form.DeductionChangeForm;
 import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
+import com.yunya.feign.discount.domain.query.CouponRefundQuery;
 import com.yunya.feign.discount.domain.query.DeductionOrderQuery;
 import com.yunya.feign.discount.domain.query.DeductionPatientQuery;
 import com.yunya.feign.discount.domain.vo.PatientDeductionBaseVO;
@@ -143,6 +144,10 @@ public class DeductionPatientBiz {
             throw ClientServiceException.wrap(DiscountError.CARD_IS_USED);
         }
         cancel(card);
+    }
+
+    public void refundDetail(CouponRefundQuery query) {
+
     }
 
     private List<Card> listCard(Collection<Integer> cardIds) {

@@ -52,9 +52,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
@@ -155,6 +157,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
 
   @Autowired
   private PatientPrepaymentRelationBiz patientPrepaymentRelationBiz;
+  @Resource
+  private PatientOriginBiz originBiz;
 
   public List<MasertMemberRechargeRecordDetailVo> findMemberRechargeRecordInfo(
       MemberExpendRecordQueryForm form) {
@@ -1929,11 +1933,16 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param model
    */
   public void billRebate2MemberAccount(BillRebate2MemberAccountModel model) {
-    BigDecimal principal = model.getPrincipal();
-    BigDecimal bonus = model.getBonus();
-    if (StringHelper.leZero(principal) && StringHelper.leZero(bonus)) {
+    BigDecimal receivedAmount = model.getReceivedAmount();
+    if (StringHelper.leZero(receivedAmount)) {
       throw new ClientServiceException("账单返点失败，返点金额不能为空", DATA_ERROR);
     }
+      // 患者消费时给其推荐人返点
+    PatientOrigin patientOrigin = originBiz.findPatientOriginById(2);
+    if (Objects.isNull(patientOrigin) || Objects.isNull(patientOrigin.getGiftRebateRate())) {
+        return;
+    }
+      BigDecimal giftBonus = receivedAmount.multiply(patientOrigin.getGiftRebateRate().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
     Integer acceptorId = model.getAcceptorId();
     PatientMemberInfo member = mapper.selectOneByPatientId(acceptorId);
     if (StringHelper.isNull(member)) {
@@ -1941,17 +1950,18 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       openCardModel.setPatientId(acceptorId);
       addMemberCard(openCardModel);
     }
+    member = mapper.selectOneByPatientId(acceptorId);
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     Date now = BaseContextHandler.getCurTime();
     System.out.println("账单返点时间：" + DateUtil.formatTime(now));
     BigDecimal principalAmount = member.getPrincipalAmount();
     BigDecimal bonusAmount = member.getBonusAmount();
-    if (StringHelper.gtZero(principal)) {
-      member.setPrincipalAmount(principalAmount.add(principal));
-    }
-    if (StringHelper.gtZero(bonus)) {
-      member.setBonusAmount(bonusAmount.add(bonus));
+//    if (StringHelper.gtZero(principal)) {
+//      member.setPrincipalAmount(principalAmount.add(principal));
+//    }
+    if (StringHelper.gtZero(giftBonus)) {
+      member.setBonusAmount(bonusAmount.add(giftBonus));
     }
     member.setUptId(userId);
     member.setUpdName(name);
@@ -1979,8 +1989,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     memberRechargeRecord.setUpdName(name);
     memberRechargeRecord.setUpdTime(now);
     memberRechargeRecord.setMemberId(member.getCardNumber());
-    memberRechargeRecord.setRechargePrincipal(principal);
-    memberRechargeRecord.setRechargeBonus(bonus);
+    memberRechargeRecord.setRechargePrincipal(BigDecimal.ZERO);
+    memberRechargeRecord.setRechargeBonus(giftBonus);
     memberRechargeRecord.setCurrentRechargePrincipal(member.getPrincipalAmount());
     memberRechargeRecord.setCurrentRechargeBonus(member.getBonusAmount());
     memberRechargeRecordMapper.insertSelective(memberRechargeRecord);

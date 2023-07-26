@@ -3,6 +3,7 @@ package com.yunya.modules.discount.biz;
 import cn.hutool.core.date.DateTime;
 import com.yunya.feign.discount.domain.model.*;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.model.BillRebate2MemberAccountModel;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -14,6 +15,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.*;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -126,6 +128,10 @@ public class CouponBillBiz {
             // 首次收费时间与账单时间保持一致
             billPay.setUpdTime(date);
             billPayMapper.insertSelective(billPay);
+            // 保存收费明细
+            saveBillPayDetailRecord(billPay, prepaymentAccountModels, memberAccountModels, paymentModels, date);
+//            orderBiz.occur(billPay, 1, date);
+            orderBiz.updateOrder(orderId, totalCharge);
             // 扣除预付款、会员卡余额
             if (CollectionUtils.isNotEmpty(prepaymentAccountModels)) {
                 usePrepaymentAccount(
@@ -138,10 +144,8 @@ public class CouponBillBiz {
                     throw new ClientServiceException(expend.getMsg(), expend.getStatus());
                 }
             }
-            // 保存收费明细
-            saveBillPayDetailRecord(billPay, prepaymentAccountModels, memberAccountModels, paymentModels, date);
-//            orderBiz.occur(billPay, 1, date);
-            orderBiz.updateOrder(orderId, totalCharge);
+            //返点
+            returnGift(billPay);
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
@@ -341,5 +345,20 @@ public class CouponBillBiz {
         example.createCriteria().andEqualTo("orderRecordId", orderId)
                 .andEqualTo("inservice", true);
         return billMapper.selectOneByExample(example);
+    }
+
+    private void returnGift(CouponBillPay billPay) {
+        PatientBaseInfo patientBaseInfo = patientCentralServiceFeign.findPatientInfoById(billPay.getPatientId());
+        if (Objects.nonNull(patientBaseInfo) && Objects.equals(2, patientBaseInfo.getOriginType())) {
+            BillRebate2MemberAccountModel model1 = new BillRebate2MemberAccountModel();
+            model1.setOrderRecordId(billPay.getOrderId());
+            model1.setBillRecordId(billPay.getBillId());
+            model1.setBillPayRecordId(billPay.getId());
+            model1.setOrgId(billPay.getOrgId());
+            model1.setAcceptorId(patientBaseInfo.getOriginId());
+            model1.setReceivedAmount(billPay.getReceivedAmount());
+            patientCentralServiceFeign.billRebate2MemberAccount(model1);
+        }
+
     }
 }

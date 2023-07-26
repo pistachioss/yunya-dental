@@ -45,10 +45,8 @@ public class BillRebate2MemberAccountModel implements Serializable {
     @NotNull(message = "接收者-患者id不能为空")
     private Integer acceptorId;
 
-    /** 本金金额 */
-    @ApiModelProperty(value = "本金金额", required = true)
-    private BigDecimal principal = BigDecimal.ZERO;
+    /** 实收金额 */
+    @ApiModelProperty(value = "实收金额", required = true)
+    private BigDecimal receivedAmount = BigDecimal.ZERO;
 
-    @ApiModelProperty(value = "赠金金额", required = true)
-    private BigDecimal bonus = BigDecimal.ZERO;
 }
