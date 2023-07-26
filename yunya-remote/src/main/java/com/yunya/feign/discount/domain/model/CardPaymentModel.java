@@ -15,19 +15,25 @@ import java.math.BigDecimal;
 @ToString
 public class CardPaymentModel implements Serializable {
 
-  /** 入账方式ID */
-  @ApiModelProperty(value = "入账方式ID", required = true)
-  @NotNull(message = "入账方式ID不能为空！")
-  private Integer accountItemId;
+    /**
+     * 入账方式ID
+     */
+    @ApiModelProperty(value = "入账方式ID", required = true)
+    @NotNull(message = "入账方式ID不能为空！")
+    private Integer accountItemId;
 
-  @ApiModelProperty(value = "入账金额", required = true)
-  @NotNull(message = "入账金额不能为空！")
-  @Min(value = 0, message = "输入金额不能小于0！")
-  private BigDecimal amount;
+    @ApiModelProperty(value = "入账名称", required = true)
+    @NotNull(message = "入账方式Name不能为空！")
+    private String accountItemName;
 
-  /**
-   * 备注
-   */
-  @ApiModelProperty(value = "备注")
-  private String remarks;
+    @ApiModelProperty(value = "入账金额", required = true)
+    @NotNull(message = "入账金额不能为空！")
+    @Min(value = 0, message = "输入金额不能小于0！")
+    private BigDecimal amount;
+
+    /**
+     * 备注
+     */
+    @ApiModelProperty(value = "备注")
+    private String remarks;
 }

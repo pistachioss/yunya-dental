@@ -57,6 +57,12 @@ public class CouponBillPayDetail {
     private Integer accountItemId;
 
     /**
+     * 入账方式明细ID
+     */
+    @Column(name = "account_item_name")
+    private String accountItemName;
+
+    /**
      * 入账金额
      */
     private BigDecimal amount;

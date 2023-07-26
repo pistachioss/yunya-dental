@@ -68,7 +68,7 @@ public class DeductionPatientController {
     }
 
     @ApiOperation(value = "退费")
-    @PostMapping("/patient/deduction/change")
+    @PostMapping("/patient/deduction/refund")
     @CurrentUser
     public ResponseResult<Boolean> refund(@RequestBody DeductionChangeForm form) {
         patientBiz.change(form);

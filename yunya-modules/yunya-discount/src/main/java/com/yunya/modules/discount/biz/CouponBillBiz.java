@@ -1,10 +1,7 @@
 package com.yunya.modules.discount.biz;
 
 import cn.hutool.core.date.DateTime;
-import com.yunya.feign.discount.domain.model.CardMemberModel;
-import com.yunya.feign.discount.domain.model.CardPaymentModel;
-import com.yunya.feign.discount.domain.model.CardPrepaymentModel;
-import com.yunya.feign.discount.domain.model.CouponBillModel;
+import com.yunya.feign.discount.domain.model.*;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
@@ -35,7 +32,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.modules.discount.enums.CouponOrderError.COUPON_ORDER_ERROR;
+import static com.yunya.modules.discount.enums.CouponOrderError.RECEIVED_LACK;
 
 /**
  * @auther: xy
@@ -90,13 +89,23 @@ public class CouponBillBiz {
             Set<CardPaymentModel> paymentModels = model.getPaymentModels();
             Set<CardPrepaymentModel> prepaymentAccountModels = model.getPrepaymentAccountModels();
             Set<CardMemberModel> memberAccountModels = model.getMemberAccountModels();
+            CardInvoiceModel invoiceModel = model.getInvoiceModel();
+            if (invoiceModel.getInvoice()) {
+                if (StringHelper.isBlank(invoiceModel.getInvoiceNumber())) {
+                    throw new ClientServiceException("收费失败，未填写发票编号！", PARAMETERS_IS_ILLEGAL);
+                }
+            }
             BigDecimal totalCharge = calculateTotalCharge(prepaymentAccountModels
                     , memberAccountModels, paymentModels);
             CouponOrder order = couponOrderMapper.selectByPrimaryKey(orderId);
             if (Objects.isNull(order) || order.getStatus() != 0) {
                 throw ClientServiceException.wrap(COUPON_ORDER_ERROR);
             }
-            CouponBill couponBill = generateBillRecord(order, date);
+            BigDecimal receivableAmount = order.getReceivableAmount();
+            if (totalCharge.compareTo(receivableAmount) < 0) {
+                throw ClientServiceException.wrap(RECEIVED_LACK);
+            }
+            CouponBill couponBill = generateBillRecord(order, date, totalCharge,invoiceModel);
             CouponBillPay billPay = new CouponBillPay();
             // 如果当前组织是公司，收费门诊则是开单门诊
             billPay.setOrgId(order.getOrgId());
@@ -196,6 +205,7 @@ public class CouponBillBiz {
                                             (byte) 0,
                                             null, date);
                             billPayDetail.setPatientNum(prepaymentAccountModel.getPrepaymentNum());
+                            billPayDetail.setAccountItemName(prepaymentAccountModel.getAccountItemName());
                             billPayDetailMapper.insertSelective(billPayDetail);
                         }
                     });
@@ -213,6 +223,7 @@ public class CouponBillBiz {
                                             (byte) 1,
                                             null, date);
                             billPayDetail.setPatientNum(memberAccountModel.getMemberNum());
+                            billPayDetail.setAccountItemName(memberAccountModel.getAccountItemName());
                             billPayDetailMapper.insertSelective(billPayDetail);
                         }
                     });
@@ -229,6 +240,7 @@ public class CouponBillBiz {
                                             paymentModel.getAmount(),
                                             (byte) 2,
                                             paymentModel.getRemarks(), date);
+                            billPayDetail.setAccountItemName(paymentModel.getAccountItemName());
                             billPayDetailMapper.insertSelective(billPayDetail);
                         }
                     });
@@ -273,16 +285,20 @@ public class CouponBillBiz {
         return totalAmount;
     }
 
-    public CouponBill generateBillRecord(CouponOrder order, Date date) {
+    public CouponBill generateBillRecord(CouponOrder order, Date date, BigDecimal totalCharge,CardInvoiceModel invoiceModel) {
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         CouponBill couponBill = BeanCopierUtils.generalCopyBean(order, CouponBill.class);
         couponBill.setOrderRecordId(order.getId());
         couponBill.setBillNumber(generateBillNumber(order.getOrgId()));
+        couponBill.setReceivedAmount(totalCharge);
+        couponBill.setDebtAmount(couponBill.getReceivableAmount().subtract(totalCharge));
         couponBill.setPrice(order.getTotalAmount());
         couponBill.setCrtId(loginUserId);
         couponBill.setCrtTime(date);
         couponBill.setUpdId(loginUserId);
         couponBill.setUpdTime(date);
+        couponBill.setInvoice(invoiceModel.getInvoice());
+        couponBill.setInvoiceNumber(invoiceModel.getInvoiceNumber());
         billMapper.insertSelective(couponBill);
         return couponBill;
     }
