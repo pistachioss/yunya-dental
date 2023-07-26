@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -23,7 +24,7 @@ public class CardPaymentModel implements Serializable {
     private Integer accountItemId;
 
     @ApiModelProperty(value = "入账名称", required = true)
-    @NotNull(message = "入账方式Name不能为空！")
+    @NotBlank(message = "入账方式Name不能为空！")
     private String accountItemName;
 
     @ApiModelProperty(value = "入账金额", required = true)

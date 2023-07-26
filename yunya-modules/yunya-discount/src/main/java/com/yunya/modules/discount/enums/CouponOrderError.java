@@ -15,6 +15,7 @@ public enum CouponOrderError implements RestError {
     CHANGE_ERROR(5, "非云牙系统购买卡券，不允许转赠"),
     CARD_ACTIVED(6, "已激活卡券，不允许转赠"),
     RECEIVED_LACK(7, "实付金额不足"),
+    ORDER_BILL(8, "订单已收费"),
     ;
     private Integer code;
     private String value;

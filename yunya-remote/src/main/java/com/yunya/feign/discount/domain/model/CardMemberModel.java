@@ -26,10 +26,6 @@ public class CardMemberModel {
     @NotNull(message = "入账方式ID不能为空！")
     private Integer accountItemId;
 
-    @ApiModelProperty(value = "预付款入账方式name", required = true)
-    @NotNull(message = "预付款入账方式name不能为空！")
-    private String accountItemName;
-
     /**
      * 支付金额
      */

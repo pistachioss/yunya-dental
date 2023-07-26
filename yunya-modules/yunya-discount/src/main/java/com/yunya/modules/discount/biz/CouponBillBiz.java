@@ -13,15 +13,13 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.discount.CouponBill;
-import com.yunya.models.discount.CouponBillPay;
-import com.yunya.models.discount.CouponBillPayDetail;
-import com.yunya.models.discount.CouponOrder;
+import com.yunya.models.discount.*;
 import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -33,8 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
-import static com.yunya.modules.discount.enums.CouponOrderError.COUPON_ORDER_ERROR;
-import static com.yunya.modules.discount.enums.CouponOrderError.RECEIVED_LACK;
+import static com.yunya.modules.discount.enums.CouponOrderError.*;
 
 /**
  * @auther: xy
@@ -76,7 +73,6 @@ public class CouponBillBiz {
 
 
     public void charge(CouponBillModel model) {
-        int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         Integer orderId = model.getOrderId();
         boolean locked = false;
@@ -89,6 +85,10 @@ public class CouponBillBiz {
             Set<CardPaymentModel> paymentModels = model.getPaymentModels();
             Set<CardPrepaymentModel> prepaymentAccountModels = model.getPrepaymentAccountModels();
             Set<CardMemberModel> memberAccountModels = model.getMemberAccountModels();
+            CouponBill bill = getBill(orderId);
+            if (Objects.nonNull(bill)) {
+                throw ClientServiceException.wrap(ORDER_BILL);
+            }
             CardInvoiceModel invoiceModel = model.getInvoiceModel();
             if (invoiceModel.getInvoice()) {
                 if (StringHelper.isBlank(invoiceModel.getInvoiceNumber())) {
@@ -122,6 +122,9 @@ public class CouponBillBiz {
             billPay.setCrtId(loginUserId);
             // 首次收费时间与账单时间保持一致
             billPay.setCrtTime(date);
+            billPay.setUpdId(loginUserId);
+            // 首次收费时间与账单时间保持一致
+            billPay.setUpdTime(date);
             billPayMapper.insertSelective(billPay);
             // 扣除预付款、会员卡余额
             if (CollectionUtils.isNotEmpty(prepaymentAccountModels)) {
@@ -205,7 +208,7 @@ public class CouponBillBiz {
                                             (byte) 0,
                                             null, date);
                             billPayDetail.setPatientNum(prepaymentAccountModel.getPrepaymentNum());
-                            billPayDetail.setAccountItemName(prepaymentAccountModel.getAccountItemName());
+                            billPayDetail.setAccountItemName("预付款");
                             billPayDetailMapper.insertSelective(billPayDetail);
                         }
                     });
@@ -223,7 +226,7 @@ public class CouponBillBiz {
                                             (byte) 1,
                                             null, date);
                             billPayDetail.setPatientNum(memberAccountModel.getMemberNum());
-                            billPayDetail.setAccountItemName(memberAccountModel.getAccountItemName());
+                            billPayDetail.setAccountItemName("会员卡");
                             billPayDetailMapper.insertSelective(billPayDetail);
                         }
                     });
@@ -320,7 +323,7 @@ public class CouponBillBiz {
         couponBillPayDetail.setOrgId(billPay.getOrgId());
         couponBillPayDetail.setPatientId(billPay.getPatientId());
         couponBillPayDetail.setOrderId(billPay.getOrderId());
-        couponBillPayDetail.setBillPayId(billPay.getBillId());
+        couponBillPayDetail.setBillId(billPay.getBillId());
         couponBillPayDetail.setBillPayId(billPay.getId());
         couponBillPayDetail.setAccountItemId(accountItemId);
         couponBillPayDetail.setAmount(amount);
@@ -332,4 +335,10 @@ public class CouponBillBiz {
         return couponBillPayDetail;
     }
 
+    public CouponBill getBill(Integer orderId) {
+        Example example = new Example(CouponBill.class);
+        example.createCriteria().andEqualTo("orderRecordId", orderId)
+                .andEqualTo("inservice", true);
+        return billMapper.selectOneByExample(example);
+    }
 }
