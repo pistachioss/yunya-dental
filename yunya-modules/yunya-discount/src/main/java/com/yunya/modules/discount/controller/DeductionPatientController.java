@@ -2,10 +2,13 @@ package com.yunya.modules.discount.controller;
 
 import com.yunya.feign.discount.domain.form.DeductionActiveForm;
 import com.yunya.feign.discount.domain.form.DeductionChangeForm;
+import com.yunya.feign.discount.domain.form.DeductionRefundForm;
+import com.yunya.feign.discount.domain.query.CouponRefundQuery;
 import com.yunya.feign.discount.domain.query.DeductionOrderQuery;
 import com.yunya.feign.discount.domain.query.DeductionPatientQuery;
 import com.yunya.feign.discount.domain.vo.PatientDeductionBaseVO;
 import com.yunya.feign.discount.domain.vo.PatientDeductionOrderVO;
+import com.yunya.feign.discount.domain.vo.PatientRefundOrderVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -13,7 +16,9 @@ import com.yunya.modules.discount.biz.CardBiz;
 import com.yunya.modules.discount.biz.DeductionPatientBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -32,15 +37,15 @@ public class DeductionPatientController {
     private CardBiz cardBiz;
 
     @ApiOperation(value = "产品列表")
-    @GetMapping("/{patientId}/deduction/goods/list")
-    public ResponseResult<List<PatientDeductionBaseVO>> deductionList(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody DeductionPatientQuery query) {
-        return ResponseUtil.success(patientBiz.deductionList(patientId, query));
+    @PostMapping("/patient/deduction/goods/list")
+    public ResponseResult<List<PatientDeductionBaseVO>> deductionList(@Valid @RequestBody DeductionPatientQuery query) {
+        return ResponseUtil.success(patientBiz.deductionList(query.getPatientId(), query));
     }
 
     @ApiOperation(value = "订单列表")
-    @GetMapping("/{patientId}/deduction/order/list")
-    public ResponseResult<List<PatientDeductionOrderVO>> orderList(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody DeductionOrderQuery query) {
-        return ResponseUtil.success(patientBiz.orderList(patientId, query));
+    @PostMapping("/patient/deduction/order/list")
+    public ResponseResult<List<PatientDeductionOrderVO>> orderList(@Valid @RequestBody DeductionOrderQuery query) {
+        return ResponseUtil.success(patientBiz.orderList(query.getPatientId(), query));
     }
 
     @ApiOperation(value = "激活")
@@ -67,11 +72,16 @@ public class DeductionPatientController {
         return ResponseUtil.success(true);
     }
 
+    @ApiOperation(value = "退费详情")
+    @PostMapping("/deduction/refund/detail")
+    public ResponseResult<List<PatientRefundOrderVO>> refundDetail(@Valid @RequestBody CouponRefundQuery query) {
+        return ResponseUtil.success(null);
+    }
+
     @ApiOperation(value = "退费")
     @PostMapping("/patient/deduction/refund")
     @CurrentUser
-    public ResponseResult<Boolean> refund(@RequestBody DeductionChangeForm form) {
-        patientBiz.change(form);
+    public ResponseResult<Boolean> refund(@RequestBody DeductionRefundForm form) {
         return ResponseUtil.success(true);
     }
 

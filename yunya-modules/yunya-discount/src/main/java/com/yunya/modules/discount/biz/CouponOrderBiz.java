@@ -471,4 +471,14 @@ public class CouponOrderBiz {
         });
         return virtuals;
     }
+
+    public void updateOrder(Integer orderId,BigDecimal totalCharge) {
+        CouponOrder order = getOrder(orderId);
+        if (Objects.nonNull(order) && Objects.equals(0, order.getStatus())) {
+            log.info("订单已收费:{}", orderId);
+            order.setStatus(1);
+            order.setReceivedAmount(totalCharge);
+            couponOrderMapper.updateByPrimaryKeySelective(order);
+        }
+    }
 }

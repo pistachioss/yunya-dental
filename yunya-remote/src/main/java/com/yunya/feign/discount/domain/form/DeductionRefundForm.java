@@ -22,7 +22,7 @@ public class DeductionRefundForm {
     @ApiModelProperty(value = "订单id", required = true)
     @NotNull
     private Integer orderId;
-    @ApiModelProperty(value = "订单id", required = true)
+    @ApiModelProperty(value = "金额", required = true)
     @NotNull
     private BigDecimal amount;
 }

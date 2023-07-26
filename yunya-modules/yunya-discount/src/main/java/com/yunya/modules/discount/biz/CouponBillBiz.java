@@ -140,7 +140,8 @@ public class CouponBillBiz {
             }
             // 保存收费明细
             saveBillPayDetailRecord(billPay, prepaymentAccountModels, memberAccountModels, paymentModels, date);
-            orderBiz.occur(billPay, 1, date);
+//            orderBiz.occur(billPay, 1, date);
+            orderBiz.updateOrder(orderId, totalCharge);
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
@@ -158,7 +159,7 @@ public class CouponBillBiz {
             memberExpendRecordModel.setPatientId(billPay.getPatientId());
             memberExpendRecordModel.setMemberId(memberAccountModel.getMemberNum());
             memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
-//            memberExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
+            memberExpendRecordModel.setTreatmentRecordId(billPay.getBillId());
             memberExpendRecordModel.setOrderRecordId(billPay.getOrderId());
             memberExpendRecordModel.setBillRecordId(billPay.getBillId());
             memberExpendRecordModel.setBillPayRecordId(billPay.getId());
@@ -179,7 +180,7 @@ public class CouponBillBiz {
                     prepaidExpendRecordModel.setPatientId(billPay.getPatientId());
                     prepaidExpendRecordModel.setPrepaidId(prepaymentAccountModel.getPrepaymentNum());
                     prepaidExpendRecordModel.setExpendTotal(prepaymentAccountModel.getAmount());
-//                    prepaidExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
+                    prepaidExpendRecordModel.setTreatmentRecordId(billPay.getBillId());
                     prepaidExpendRecordModel.setOrderRecordId(billPay.getOrderId());
                     prepaidExpendRecordModel.setBillRecordId(billPay.getBillId());
                     prepaidExpendRecordModel.setBillPayRecordId(billPay.getId());

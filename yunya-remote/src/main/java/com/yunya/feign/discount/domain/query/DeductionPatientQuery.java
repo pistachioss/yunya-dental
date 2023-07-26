@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * @author xiangyang
  * @date 2023/7/17
@@ -15,4 +17,7 @@ import lombok.Setter;
 public class DeductionPatientQuery {
     @ApiModelProperty(value = "产品名称")
     private String couponName;
+    @ApiModelProperty(value = "患者id",required = true)
+    @NotNull
+    private Integer patientId;
 }

@@ -2,6 +2,7 @@ package com.yunya.modules.discount.controller;
 
 import com.yunya.feign.discount.domain.form.CouponOrderForm;
 import com.yunya.feign.discount.domain.model.CouponOrderModel;
+import com.yunya.feign.discount.domain.query.CouponOrderQuery;
 import com.yunya.feign.discount.domain.vo.CouponGoodsVO;
 import com.yunya.feign.discount.domain.vo.CouponOrderVO;
 import com.yunya.feign.discount.domain.vo.DeductionCategoryVO;
@@ -61,9 +62,9 @@ public class CouponOrderController {
     }
 
     @ApiOperation(value = "划扣卡订单详情")
-    @GetMapping(value = "/deduction/order/{orderId}")
-    public ResponseResult<CouponOrderVO> detail(@PathVariable(value = "orderId") Integer orderId) {
-        return ResponseUtil.success(couponOrderBiz.detail(orderId));
+    @PostMapping(value = "/deduction/order/detail")
+    public ResponseResult<CouponOrderVO> detail(@RequestBody CouponOrderQuery query) {
+        return ResponseUtil.success(couponOrderBiz.detail(query.getOrderId()));
     }
 
     @ApiOperation(value = "购买按钮跳转")

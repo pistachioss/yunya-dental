@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -22,4 +23,7 @@ public class DeductionOrderQuery {
     private LocalDate soldStartDate;
     @ApiModelProperty(value = "结束日期")
     private LocalDate soldEndDate;
+    @ApiModelProperty(value = "患者id",required = true)
+    @NotNull
+    private Integer patientId;
 }
