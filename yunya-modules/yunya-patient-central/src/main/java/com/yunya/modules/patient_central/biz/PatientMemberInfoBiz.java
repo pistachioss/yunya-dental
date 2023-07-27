@@ -1618,7 +1618,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   }
 
   /**
-   * 预付款付款余额查询
+   * 可用会员卡查询
    *
    * @param id
    * @return PatientPrepaymentBalanceVo
@@ -1627,13 +1627,16 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     List<MemberBaseInfoVo> resultList = new ArrayList<>();
     // 患者本人会员卡
     MemberBaseInfoVo memberBaseInfo = patientMemberInfoMapper.findMemberBaseInfo(id);
-    if (null != memberBaseInfo) {
+    if (null != memberBaseInfo && memberBaseInfo.getInservice() && memberBaseInfo.getMemberTypeId() != 4) {
       resultList.add(memberBaseInfo);
     }
     // 患者作为副卡人可用会员卡
     List<MemberBaseInfoVo> memberBaseInfoVoList =
         patientMemberInfoMapper.selectMemberRelationByMasterPatientId(id);
-    resultList.addAll(memberBaseInfoVoList);
+    List<MemberBaseInfoVo> memberBaseInfoVoList2 = memberBaseInfoVoList.stream().filter(m->{
+      return memberBaseInfo.getInservice() && memberBaseInfo.getMemberTypeId() != 4;
+    }).collect(Collectors.toList());
+    resultList.addAll(memberBaseInfoVoList2);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.removeIf(vo -> null == vo.getId());
     }
