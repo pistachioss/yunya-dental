@@ -125,7 +125,7 @@ public class PatientMemberInfoController {
    * @return ResponseResult
    */
   @CurrentUser
-  @ApiOperation("开卡")
+  @ApiOperation("开卡(累计消费也用)")
   @PostMapping("/openCard")
   @RepeatSubmit
   public ResponseResult addMemberCard(@RequestBody OpenCardModel openCardModel) {

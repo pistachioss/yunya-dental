@@ -359,6 +359,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
       patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMemberInfo.setCrtName(BaseContextHandler.getName());
+      patientMemberInfo.setInservice(true);
       generateCardNumber(patientMemberInfo);
       this.cardLog(patientMemberInfo, "开卡", "");
       remoteRabbitMqServiceFeign.sendMessage(
@@ -393,6 +394,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
       patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMemberInfo.setCrtName(BaseContextHandler.getName());
+      patientMemberInfo.setInservice(true);
       generateCardNumber(patientMemberInfo);
       this.cardLog(patientMemberInfo, "开卡", "");
       remoteRabbitMqServiceFeign.sendMessage(
