@@ -7,7 +7,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-@ApiModel(value = "划扣订单详情")
+@ApiModel(value = "划扣支付详情")
 public class CouponPayDetailVO {
     @ApiModelProperty("门诊id")
     private Integer orgId;

@@ -16,6 +16,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.models.discount.Card;
+import com.yunya.models.discount.CouponOrderVirtual;
 import com.yunya.models.discount.ProductType;
 import com.yunya.models.discount.SalesChannel;
 import com.yunya.modules.discount.enums.CouponOrderError;
@@ -56,24 +57,16 @@ public class DeductionPatientBiz {
     @Resource
     private CardBenefitMapper cardBenefitMapper;
     @Resource
-    private CouponOrderBiz couponOrderBiz;
-    @Resource
-    private CouponBillPayMapper billPayMapper;
-    @Resource
     private CardBiz cardBiz;
-    @Resource
-    private CouponCommonInfoBiz couponBiz;
-    @Resource
-    private DeductionPeriodBiz periodBiz;
-    @Resource
-    private SalesChannelBiz salesChannelBiz;
     @Resource
     private RemoteSystemServiceFeign systemServiceFeign;
     @Resource
     private RemotePatientCentralServiceFeign patientFeign;
+    @Resource
+    private CouponOrderBiz couponOrderBiz;
 
-    public List<PatientDeductionBaseVO> deductionList(Integer patientId, DeductionPatientQuery query) {
-        List<PatientCardBo> list = cardMapper.listPatientDeductionByParam(patientId, query.getCouponName());
+    public List<PatientDeductionBaseVO> deductionList(DeductionPatientQuery query) {
+        List<PatientCardBo> list = cardMapper.listPatientDeductionByParam(query);
         //对象转换
         return list.stream().map(this::patientCardBoConvertVo)
                 .collect(toList());
@@ -86,10 +79,10 @@ public class DeductionPatientBiz {
         ownCardVo.setSaleChannelName(salesChannel == null ? null : salesChannel.getName());
         ownCardVo.setCouponTypeName(CouponTypeEnum.getValue(bo.getCouponType()));
         if (Objects.nonNull(bo.getBuyerId())) {
-            ownCardVo.setBuyerName(systemServiceFeign.findSysUserEmployeeInfoByUserId(bo.getBuyerId()).getName());
+            ownCardVo.setBuyerName(patientFeign.findPatientInfoById(bo.getBuyerId()).getName());
         }
-        if (Objects.nonNull(bo.getBuyerId())) {
-            ownCardVo.setOwnName(systemServiceFeign.findSysUserEmployeeInfoByUserId(Integer.valueOf(bo.getSoldTarget())).getName());
+        if (Objects.nonNull(bo.getBuyerId()) && Objects.nonNull(bo.getSoldTarget())) {
+            ownCardVo.setOwnName(patientFeign.findPatientInfoById(Integer.valueOf(bo.getSoldTarget())).getName());
         }
         ownCardVo.setActiveStatus(bo.getStatus() >= 2 ? 1 : 0);
         if (Objects.nonNull(bo.getCardOwner())) {
@@ -114,9 +107,13 @@ public class DeductionPatientBiz {
         return ownCardVo;
     }
 
-    public List<PatientDeductionOrderVO> orderList(Integer patientId, DeductionOrderQuery query) {
-        List<PatientDeductionOrderVO> list = couponOrderMapper.listPatientDeductionByParam(patientId, query);
-        return null;
+    public List<PatientDeductionOrderVO> orderList(DeductionOrderQuery query) {
+        List<PatientDeductionOrderVO> list = couponOrderMapper.listPatientDeductionByParam(query);
+        list.forEach(t -> {
+            t.setOperateName(systemServiceFeign.findSysUserEmployeeInfoByUserId(Integer.valueOf(t.getOperateName())).getName());
+            t.setOrgName(systemServiceFeign.findOrgInfoByOrgId(Integer.valueOf(t.getOrgName())).getAbbreviation());
+        });
+        return list;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -147,7 +144,10 @@ public class DeductionPatientBiz {
     }
 
     public void refundDetail(CouponRefundQuery query) {
+        List<CouponOrderVirtual> virtuals = couponOrderBiz.listOrderVirtual(query.getOrderId());
+        if (virtuals.size() > 1) {
 
+        }
     }
 
     private List<Card> listCard(Collection<Integer> cardIds) {

@@ -30,7 +30,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
-import static com.yunya.modules.discount.enums.CouponOrderError.*;
+import static com.yunya.modules.discount.enums.CouponOrderError.COUPON_STOCK_LACK;
+import static com.yunya.modules.discount.enums.CouponOrderError.SALE_CHANNEL_NULL;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -54,10 +55,6 @@ public class CouponOrderBiz {
     private CouponOrderVirtualMapper virtualMapper;
     @Resource
     private CouponBillPayMapper billPayMapper;
-    @Resource
-    private CardBiz cardBiz;
-    @Resource
-    private CouponCommonInfoBiz couponBiz;
     @Resource
     private DeductionPeriodBiz periodBiz;
     @Resource
@@ -89,16 +86,17 @@ public class CouponOrderBiz {
             List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now);
             virtualMapper.insertList(virtuals);
             vo = detail(couponOrder.getId());
-        } finally {
+        } catch (Exception e) {
             if (CollectionUtils.isNotEmpty(list)) {
                 revoke(list);
             }
+            throw e;
         }
         return vo;
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public CouponOrderVO edit( CouponOrderForm form) {
+    public CouponOrderVO edit(CouponOrderForm form) {
         log.info("划扣修改下单参数：{}", form);
         int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         List<CouponOrderDetailModel> detail = form.getDetail();
@@ -124,10 +122,11 @@ public class CouponOrderBiz {
                 virtualMapper.insertList(virtuals);
                 vo = detail(order.getId());
             }
-        } finally {
+        } catch (Exception e) {
             if (CollectionUtils.isNotEmpty(list)) {
                 revoke(list);
             }
+            throw e;
         }
         return vo;
     }
@@ -312,7 +311,6 @@ public class CouponOrderBiz {
                 card.setStatus(1);
                 card.setSoldTarget(patientId.toString());
                 card.setSoldPhoneNumber(mobile);
-                card.setPatientId(patientId);
                 card.setSoldType(0);
                 card.setSendText(0);
                 card.setSoldAndPay(1);
@@ -412,7 +410,7 @@ public class CouponOrderBiz {
         return couponOrderMapper.selectByExample(example);
     }
 
-    private List<CouponOrderVirtual> listOrderVirtual(Integer orderId) {
+    public List<CouponOrderVirtual> listOrderVirtual(Integer orderId) {
         Example example = new Example(CouponOrderVirtual.class);
         example.createCriteria().andEqualTo("orderId", orderId)
                 .andEqualTo("inservice", true);
@@ -465,14 +463,14 @@ public class CouponOrderBiz {
     }
 
     private List<CouponOrderVirtual> deleteVirtuals(Integer orderId) {
-        List<CouponOrderVirtual>  virtuals = listOrderVirtual(orderId);
+        List<CouponOrderVirtual> virtuals = listOrderVirtual(orderId);
         virtuals.forEach(t -> {
             virtualMapper.deleteByPrimaryKey(t.getId());
         });
         return virtuals;
     }
 
-    public void updateOrder(Integer orderId,BigDecimal totalCharge) {
+    public void updateOrder(Integer orderId, BigDecimal totalCharge) {
         CouponOrder order = getOrder(orderId);
         if (Objects.nonNull(order) && Objects.equals(0, order.getStatus())) {
             log.info("订单已收费:{}", orderId);

@@ -12,24 +12,26 @@ import java.math.BigDecimal;
  * @date 2023/07/31
  */
 @Data
-@ApiModel(value = "划扣退费详情模型")
+@ApiModel(value = "划扣退费模型")
 public class PatientRefundOrderVO implements Serializable {
-    @ApiModelProperty(value = "卡券id")
-    private Integer orderId;
-    @ApiModelProperty(value = "门诊id")
-    private Integer orgId;
-    @ApiModelProperty(value = "门诊名称")
-    private String orgName;
-    @ApiModelProperty(value = "操作人")
-    private String operateId;
-    @ApiModelProperty(value = "订单号")
-    private String orderNumber;
-    @ApiModelProperty(value = "入账方式")
-    private String accountTypeName;
-    @ApiModelProperty(value = "应收金额")
-    private BigDecimal receivableAmount;
-    @ApiModelProperty(value = "实收金额")
+    @ApiModelProperty("卡券id")
+    private Integer cardId;
+    @ApiModelProperty("礼包id")
+    private Integer couponId;
+    @ApiModelProperty("礼包名称")
+    private String couponName;
+    @ApiModelProperty("原价")
+    private BigDecimal price;
+    @ApiModelProperty("套餐价")
+    private BigDecimal packagePrice;
+    @ApiModelProperty("售卖单价")
+    private BigDecimal saleAmount;
+    @ApiModelProperty("订单实收金额")
     private BigDecimal receivedAmount;
-    @ApiModelProperty(value = "订单状态(0-已下单；1-已收费；2-已退款)")
-    private Integer orderStatus;
+    @ApiModelProperty(value = "数量")
+    private Integer quantity;
+    @ApiModelProperty(value = "操作人")
+    private String executorName;
+    @ApiModelProperty(value = "是否全额退费（0-否，1-是）")
+    private Boolean whole;
 }

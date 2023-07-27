@@ -1255,11 +1255,11 @@ WHERE
         left join `coupon_order_virtual` `cor` on `cor`.`card_id` = `c`.`id`
         left join `coupon_order` `co` on `co`.`id` = `cor`.`order_id` and `co`.status = 1
         where
-           ( `c`.`status` in (2,3,4) or isnull(c.buyer_id) = 0)
-            and `cci`.`type` = 5
-           and `c`.`patient_id` = #{patientId}
+            `cci`.`type` = 5
+           and ((`c`.`status` in (1,2,3,4) and `c`.`sold_target` = #{query.patientId})
+                or (`c`.`status` in (2,3,4) and `c`.`patient_id` = #{query.patientId}))
             <if test="couponName !=null and couponName != ''">
-                and `cci`.`name` like concat('%', #{couponName}, '%')
+                and `cci`.`name` like concat('%', #{query.couponName}, '%')
             </if>
         order by `activeDate` desc
     </select>

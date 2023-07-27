@@ -2,11 +2,8 @@ package com.yunya.modules.discount.mapper;
 
 import com.yunya.feign.discount.domain.bo.*;
 import com.yunya.feign.discount.domain.query.CardIyOr365ActivedQuery;
-import com.yunya.feign.discount.domain.vo.CardActiveDetailVo;
-import com.yunya.feign.discount.domain.vo.CardIyOr365VO;
-import com.yunya.feign.discount.domain.vo.CardWxDetailVO;
-import com.yunya.feign.discount.domain.vo.CardWxVO;
-import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
+import com.yunya.feign.discount.domain.query.DeductionPatientQuery;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
@@ -119,6 +116,6 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
 
     void soldList(@Param("list") List<Card> list);
 
-    List<PatientCardBo> listPatientDeductionByParam(@Param("patientId") Integer patient, @Param("couponName") String couponName);
+    List<PatientCardBo> listPatientDeductionByParam(@Param("query") DeductionPatientQuery query);
 
 }

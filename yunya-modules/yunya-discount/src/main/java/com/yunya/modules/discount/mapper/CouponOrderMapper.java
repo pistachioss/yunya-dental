@@ -12,5 +12,5 @@ import java.util.List;
 public interface CouponOrderMapper extends Mapper<CouponOrder> {
     String selectOrderNumberByOrgId(@Param("orgId") Integer orgId, @Param("date") Date date);
 
-    List<PatientDeductionOrderVO> listPatientDeductionByParam(Integer patientId, DeductionOrderQuery query);
+    List<PatientDeductionOrderVO> listPatientDeductionByParam(@Param("query") DeductionOrderQuery query);
 }

@@ -39,13 +39,13 @@ public class DeductionPatientController {
     @ApiOperation(value = "产品列表")
     @PostMapping("/patient/deduction/goods/list")
     public ResponseResult<List<PatientDeductionBaseVO>> deductionList(@Valid @RequestBody DeductionPatientQuery query) {
-        return ResponseUtil.success(patientBiz.deductionList(query.getPatientId(), query));
+        return ResponseUtil.success(patientBiz.deductionList(query));
     }
 
     @ApiOperation(value = "订单列表")
     @PostMapping("/patient/deduction/order/list")
     public ResponseResult<List<PatientDeductionOrderVO>> orderList(@Valid @RequestBody DeductionOrderQuery query) {
-        return ResponseUtil.success(patientBiz.orderList(query.getPatientId(), query));
+        return ResponseUtil.success(patientBiz.orderList(query));
     }
 
     @ApiOperation(value = "激活")

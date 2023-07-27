@@ -14,14 +14,12 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class PatientDeductionOrderVO implements Serializable {
-    @ApiModelProperty(value = "卡券id")
+    @ApiModelProperty(value = "订单id")
     private Integer orderId;
-    @ApiModelProperty(value = "门诊id")
-    private Integer orgId;
     @ApiModelProperty(value = "门诊名称")
     private String orgName;
     @ApiModelProperty(value = "操作人")
-    private String operateId;
+    private String operateName;
     @ApiModelProperty(value = "订单号")
     private String orderNumber;
     @ApiModelProperty(value = "入账方式")

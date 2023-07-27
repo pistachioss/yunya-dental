@@ -28,6 +28,20 @@
     </select>
     <select id="listPatientDeductionByParam"
             resultType="com.yunya.feign.discount.domain.vo.PatientDeductionOrderVO">
-
+        select co.id        as orderId,
+               co.status    as orderStatus,
+               cb.org_id as orgName,
+               cb.crt_time,
+               cb.crt_id    as operateName,
+               co.order_record_num  as orderNumber,
+               cb.receivable_amount,
+               sum(cd.amount) as receivedAmount,
+               group_concat(cd.account_item_name) as accountTypeName
+        from coupon_bill cb
+                 inner join coupon_order co on cb.order_record_id = co.id
+                 inner join coupon_bill_pay_detail cd on cb.id = cd.bill_id
+        where co.inservice = 1
+            and cb.patient_id = #{query.patientId}
+        group by cb.order_record_id, cb.org_id, cb.crt_id
     </select>
 </mapper>

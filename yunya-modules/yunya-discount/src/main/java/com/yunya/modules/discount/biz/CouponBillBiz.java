@@ -45,13 +45,7 @@ import static com.yunya.modules.discount.enums.CouponOrderError.*;
 public class CouponBillBiz {
 
     @Resource
-    private CardMapper cardMapper;
-    @Resource
-    private CouponCommonInfoMapper couponMapper;
-    @Resource
     private CouponOrderMapper couponOrderMapper;
-    @Resource
-    private CouponOrderDetailMapper orderDetailMapper;
     @Resource
     private CouponBillMapper billMapper;
     @Resource
@@ -60,12 +54,6 @@ public class CouponBillBiz {
     private CouponBillPayDetailMapper billPayDetailMapper;
     @Resource
     private RedisUtils redisUtils;
-    @Resource
-    private CardBiz cardBiz;
-    @Resource
-    private CouponCommonInfoBiz couponBiz;
-    @Resource
-    private DeductionPeriodBiz periodBiz;
     @Resource
     private CouponOrderBiz orderBiz;
     @Resource
