@@ -44,6 +44,14 @@ public class BillRebate2MemberAccountModel implements Serializable {
     @ApiModelProperty(value = "接收者-患者id", required = true)
     @NotNull(message = "接收者-患者id不能为空")
     private Integer acceptorId;
+    
+    /** 返点类型：6-就诊账单返点，7-礼包账单返点 */
+    @ApiModelProperty("返点类型：6-就诊账单返点，7-礼包账单返点")
+    private Integer type = 4;
+
+    /** 返点比例类型：0-不使用比例，直接返整；2-使用患者来源中赠金返点比例 */
+    @ApiModelProperty(value = "返点比例类型：0-不使用比例，直接返整；2-使用患者来源中赠金返点比例", required = true)
+    private Byte rebateRatioType = 2;
 
     /** 实收金额 */
     @ApiModelProperty(value = "实收金额", required = true)

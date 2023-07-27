@@ -22,7 +22,6 @@ import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.BillPayRecordLog;
 import com.yunya.models.treatment.TreatmentRecord;
@@ -157,19 +156,14 @@ public class MinorChargeProcessBiz {
         if (originType == 2) {
             Integer originId = patient.getOriginId();
             // 患者消费时给其推荐人返点
-            PatientOrigin patientOrigin = patientFeign.findPatientOriginById(originType);
             BillRebate2MemberAccountModel model = new BillRebate2MemberAccountModel();
-            if (StringHelper.gtZero(totalPrincipal) && StringHelper.isNotNull(patientOrigin)) {
-                BigDecimal giftRebateRate = patientOrigin.getGiftRebateRate();
-                if (StringHelper.isNotNull(giftRebateRate)) {
-                    BeanUtil.copyProperties(billPayRecord, model);
-                    model.setBillPayRecordId(billPayRecord.getId());
-                    model.setAcceptorId(originId);
-                    model.setReceivedAmount(totalPrincipal);
-                    patientFeign.billRebate2MemberAccount(model);
-                } else {
-                    log.error("患者转介绍的赠金返点比例为空，无法返点！");
-                }
+            if (StringHelper.gtZero(totalPrincipal)) {
+                BeanUtil.copyProperties(billPayRecord, model);
+                model.setBillPayRecordId(billPayRecord.getId());
+                model.setAcceptorId(originId);
+                model.setType(3);
+                model.setReceivedAmount(totalPrincipal);
+                patientFeign.billRebate2MemberAccount(model);
             }
 
             // 给初诊患者的推荐人返点
@@ -178,6 +172,8 @@ public class MinorChargeProcessBiz {
                 BeanUtil.copyProperties(billPayRecord, model);
                 model.setBillPayRecordId(billPayRecord.getId());
                 model.setAcceptorId(originId);
+                model.setType(3);
+                model.setRebateRatioType((byte) 0);
                 model.setReceivedAmount(FIRST_VISIT_REBATE_AMOUNT);
                 patientFeign.billRebate2MemberAccount(model);
             }

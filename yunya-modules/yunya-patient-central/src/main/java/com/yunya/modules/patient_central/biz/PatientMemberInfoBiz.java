@@ -333,7 +333,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    *
    * @param id            操作LogId
    * @param operateType   操作类型
-   * @param operationType Log类型: 1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.账单返点 7.转账转入 8.转账转出
+   * @param operationType Log类型: 1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.就诊账单返点 7.礼包账单返点 8.转账转入 9.转账转出
    */
   public void sendMemberLogMessages(Integer id, Integer operateType, Integer operationType) {
     Map<String, Object> paramMap = new HashMap<String, Object>();
@@ -1937,12 +1937,16 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (StringHelper.leZero(receivedAmount)) {
       throw new ClientServiceException("账单返点失败，返点金额不能为空", DATA_ERROR);
     }
+    BigDecimal rebateRatio = new BigDecimal(100);
+    if (model.getRebateRatioType().intValue() == 1) {
       // 患者消费时给其推荐人返点
-    PatientOrigin patientOrigin = originBiz.findPatientOriginById(2);
-    if (Objects.isNull(patientOrigin) || Objects.isNull(patientOrigin.getGiftRebateRate())) {
+      PatientOrigin patientOrigin = originBiz.findPatientOriginById(2);
+      if (Objects.isNull(patientOrigin) || Objects.isNull(patientOrigin.getGiftRebateRate())) {
         return;
+      }
+      rebateRatio = patientOrigin.getGiftRebateRate();
     }
-      BigDecimal giftBonus = receivedAmount.multiply(patientOrigin.getGiftRebateRate().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+    BigDecimal giftBonus = receivedAmount.multiply(rebateRatio.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
     Integer acceptorId = model.getAcceptorId();
     PatientMemberInfo member = mapper.selectOneByPatientId(acceptorId);
     if (StringHelper.isNull(member)) {
@@ -1954,7 +1958,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     Date now = BaseContextHandler.getCurTime();
-    System.out.println("账单返点时间：" + DateUtil.formatTime(now));
     BigDecimal principalAmount = member.getPrincipalAmount();
     BigDecimal bonusAmount = member.getBonusAmount();
 //    if (StringHelper.gtZero(principal)) {
@@ -1981,7 +1984,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
     BeanUtils.copyProperties(model, memberRechargeRecord);
     memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    memberRechargeRecord.setType(3);
     memberRechargeRecord.setCrtId(userId);
     memberRechargeRecord.setCrtName(name);
     memberRechargeRecord.setCrtTime(now);
@@ -1995,6 +1997,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     memberRechargeRecord.setCurrentRechargeBonus(member.getBonusAmount());
     memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
     // 发送消息 账单退费
-    sendMemberLogMessages(memberRechargeRecord.getId(), 0, 6);
+    sendMemberLogMessages(memberRechargeRecord.getId(), 0, model.getType());
   }
 }

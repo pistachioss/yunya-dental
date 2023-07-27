@@ -102,7 +102,7 @@ public class MemberRechargeRecord {
     private BigDecimal currentRechargeBonus;
 
     /**
-     * 操作类型：0 充值，1 撤销收费，2 订单退费，3 账单返点，4 赠金转出，5 赠金转入
+     * 操作类型：0 充值，1 撤销收费，2 订单退费，6.就诊账单返点 7.礼包账单返点 8.转账转入 9.转账转出
      */
     @Column(name = "type")
     private Integer type;

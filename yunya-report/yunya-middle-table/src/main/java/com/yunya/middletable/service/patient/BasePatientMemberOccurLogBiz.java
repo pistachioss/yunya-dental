@@ -516,6 +516,7 @@ public class BasePatientMemberOccurLogBiz
       case 4:
       case 5:
       case 6:
+      case 7:
         BasePatientMemberOccurLog memberRechargeLog =
             getMemberRechargeRecordInfoLog(id, type, operationType);
         if (StringHelper.isNotNull(memberRechargeLog)) {
@@ -545,8 +546,8 @@ public class BasePatientMemberOccurLogBiz
         }
         break;
         // 转账-转入、转账转出
-      case 7:
       case 8:
+      case 9:
         BasePatientMemberOccurLog memberTransferLog =
                 getMemberTransferRecordInfoLog(id, type, operationType);
         if (StringHelper.isNotNull(memberTransferLog)) {
