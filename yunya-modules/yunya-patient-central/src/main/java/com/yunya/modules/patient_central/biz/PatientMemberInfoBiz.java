@@ -359,6 +359,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
       patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMemberInfo.setCrtName(BaseContextHandler.getName());
+      patientMemberInfo.setInservice(true);
       generateCardNumber(patientMemberInfo);
       this.cardLog(patientMemberInfo, "开卡", "");
       remoteRabbitMqServiceFeign.sendMessage(
@@ -393,6 +394,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
       patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMemberInfo.setCrtName(BaseContextHandler.getName());
+      patientMemberInfo.setInservice(true);
       generateCardNumber(patientMemberInfo);
       this.cardLog(patientMemberInfo, "开卡", "");
       remoteRabbitMqServiceFeign.sendMessage(
@@ -555,7 +557,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   }
 
   /**
-   * 原藤卡激活（存在连带转换亲密付）
+   * 退卡
    *
    * @param openCardModel 原藤卡激活（存在连带转换亲密付）Model
    */
@@ -567,6 +569,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       throw new ClientServiceException("未找到会员卡信息", DATA_NOT_EXIST);
     }
     patientMemberInfo.setInservice(false);
+    patientMemberInfo.setMemberTypeId(4);
     patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
     return ResponseUtil.success();
   }
