@@ -13,10 +13,14 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientKinRelationVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientKinRelation;
+import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import com.yunya.modules.patient_central.biz.PatientKinRelationBiz;
+import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +39,10 @@ public class PatientKinRelationController {
 
   /** 注入对象 */
   private final PatientKinRelationBiz patientKinRelationBiz;
+
+  @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
+
+  @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
 
   public PatientKinRelationController(PatientKinRelationBiz patientKinRelationBiz) {
     this.patientKinRelationBiz = patientKinRelationBiz;
@@ -64,6 +72,30 @@ public class PatientKinRelationController {
   @PostMapping("/add")
   public ResponseResult add(
       @RequestBody @Validated PatientKinRelationModel patientKinRelationModel) {
+    return this.patientKinRelationBiz.add(patientKinRelationModel);
+  }
+
+  /**
+   * 添加患者亲属关系，推荐关系
+   *
+   * @param patientKinRelationModel 患者亲属关系，推荐关系 添加模板
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("添加患者亲属关系，推荐关系")
+  @PostMapping("/add2")
+  public ResponseResult add2(
+      @RequestBody PatientKinRelationModel patientKinRelationModel) {
+    PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
+    patientBaseInfo.setId(patientKinRelationModel.getLinkedPatientId());
+    patientBaseInfo.setOriginId(patientKinRelationModel.getPatientId());
+    patientBaseInfo.setOriginType(2);
+    patientBaseInfo.setInservice(true);
+    patientBaseInfoBiz.addPatientOrigin(patientBaseInfo);
+    patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
+    if (patientKinRelationModel.getKinshipId() == null) {
+      return ResponseUtil.success();
+    }
     return this.patientKinRelationBiz.add(patientKinRelationModel);
   }
 

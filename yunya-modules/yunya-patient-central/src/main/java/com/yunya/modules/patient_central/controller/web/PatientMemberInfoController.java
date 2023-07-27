@@ -161,7 +161,7 @@ public class PatientMemberInfoController {
   }
 
   @CurrentUser
-  @ApiOperation("原藤卡激活（存在连带转换亲密付）")
+  @ApiOperation("退卡")
   @PostMapping("/disableMemberCard")
   @RepeatSubmit
   public ResponseResult disableMemberCard(@RequestBody OpenCardModel openCardModel) {
