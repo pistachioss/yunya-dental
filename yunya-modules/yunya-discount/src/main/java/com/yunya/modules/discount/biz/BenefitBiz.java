@@ -13,9 +13,7 @@ import com.yunya.feign.discount.domain.model.AuthItemBenefitModel;
 import com.yunya.feign.discount.domain.model.MixMatchBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
-import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
-import com.yunya.feign.discount.domain.vo.OrderBenefitVO;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -272,27 +270,24 @@ public class BenefitBiz {
      * @param orderId 订单id
      * @return list
      */
-    public OrderBenefitVO getOrderBenefit(Integer orderId) {
-        OrderBenefitVO vo = new OrderBenefitVO();
-        List<OrderBenefitDetailVo> resultList = Lists.newArrayList();
+    public PatientOrderBenefitVo getOrderBenefit(Integer orderId) {
+        PatientOrderBenefitVo result = new PatientOrderBenefitVo();
         //查询订单优惠汇总信息
         OrderBenefit summary = getOrderBenefitSummary(orderId, null);
         if (summary == null) {
-            return vo;
+            return result;
         }
         Integer benefitType = summary.getBenefitType();
         if (CARD_BENEFIT.equals(benefitType)) {
-            OrderBenefitVO vo1 = new OrderBenefitVO();
-            findSetCardBenefit(summary, vo1);
+            findSetCardBenefit(summary, result);
         }
         if (AUTH_BENEFIT.equals(benefitType)) {
-            findSetAuthBenefit(summary, resultList);
+            findSetAuthBenefit(summary, result);
         }
         if (MIX_MATCH_BENEFIT.equals(benefitType)) {
-            resultList = findSetMixMatchBenefit(summary);
+            findSetMixMatchBenefit(summary, result);
         }
-        vo.setItemBenefit(resultList);
-        return vo;
+        return result;
     }
 
     /**
@@ -300,7 +295,7 @@ public class BenefitBiz {
      *
      * @param summary
      */
-    private List<OrderBenefitDetailVo> findSetMixMatchBenefit(OrderBenefit summary) {
+    private List<OrderBenefitDetailVo> findSetMixMatchBenefit(OrderBenefit summary, PatientOrderBenefitVo result) {
         Map<Integer, OrderBenefitDetailVo> resultMap = new LinkedHashMap<>(16);
         List<CardBenefit> cardBenefits = getOrderBenefitDetail(summary.getOrderId(), CardBenefit.class, cardBenefitMapper, null);
         if (CollectionUtils.isNotEmpty(cardBenefits)) {
@@ -371,14 +366,15 @@ public class BenefitBiz {
      * 查找并设置授权折扣优惠信息
      *
      * @param summary
-     * @param resultList
+     * @param result
      */
-    private void findSetAuthBenefit(OrderBenefit summary, List<OrderBenefitDetailVo> resultList) {
+    private void findSetAuthBenefit(OrderBenefit summary, PatientOrderBenefitVo result) {
+        List<PatientItemBenefitVo> itemList = Lists.newArrayList();
         List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(summary.getOrderId(), AuthDiscountBenefit.class, authDiscountBenefitMapper, null);
         if (CollectionUtils.isNotEmpty(authBenefit)) {
             Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
             listMap.forEach((k, v) -> {
-                OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
+                PatientItemBenefitVo vo = new PatientItemBenefitVo();
                 BigDecimal itemBenefitAmount = v.stream().map(AuthDiscountBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
                 vo.setOrderDetailId(k);
                 vo.setItemBenefitAmount(itemBenefitAmount);
@@ -393,19 +389,20 @@ public class BenefitBiz {
                     return benefitVo;
                 }).collect(toList());
                 vo.setItemBenefitList(itemBenefits);
-                resultList.add(vo);
+                itemList.add(vo);
             });
         }
+        result.setItemList(itemList);
     }
 
     /**
      * 查找并设置使用优惠信息（会员卡+卡券）
      * @param summary
-     * @param vo1
+     * @param orderBenefit
      */
-    private void findSetCardBenefit(OrderBenefit summary, OrderBenefitVO vo1) {
-        List<OrderBenefitDetailVo> resultList = Lists.newArrayList();
-        List<OrderBenefitDetailVo> deductionList = Lists.newArrayList();
+    private void findSetCardBenefit(OrderBenefit summary, PatientOrderBenefitVo orderBenefit) {
+        List<PatientItemBenefitVo> resultList = Lists.newArrayList();
+        List<DeductionItemBenefitVo> deductionList = Lists.newArrayList();
         List<CardBenefit> cardBenefits = getOrderBenefitDetail(summary.getOrderId(), CardBenefit.class, cardBenefitMapper, null);
         if (CollectionUtils.isNotEmpty(cardBenefits)) {
             Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream()
@@ -414,7 +411,7 @@ public class BenefitBiz {
                     .filter(t -> DEDUCTION.equals(t.getCouponType()))
                     .collect(groupingBy( t -> Joiner.on("-").join(t.getOrderId(), t.getCouponId())));
             listMap.forEach((k, v) -> {
-                OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
+                PatientItemBenefitVo vo = new PatientItemBenefitVo();
                 BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
                 BigDecimal supplyWorkTotalLoad = v.stream()
                         .filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
@@ -446,7 +443,7 @@ public class BenefitBiz {
             });
 
             listMap1.forEach((k, v) -> {
-                OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
+                DeductionItemBenefitVo vo = new DeductionItemBenefitVo();
                 BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
                 BigDecimal supplyWorkTotalLoad = v.stream()
                         .filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
@@ -478,6 +475,8 @@ public class BenefitBiz {
                 deductionList.add(vo);
             });
         }
+        orderBenefit.setItemList(resultList);
+        orderBenefit.setDeductionList(deductionList);
     }
 
     @Transactional

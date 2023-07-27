@@ -6,7 +6,6 @@ import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.MixMatchBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
-import com.yunya.feign.discount.domain.vo.OrderBenefitVO;
 import com.yunya.feign.discount.domain.vo.PatientCardBaseVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
@@ -78,7 +77,7 @@ public class BenefitApiController {
 
     @ApiOperation(value = "查询订单优惠明细")
     @GetMapping("/benefit/{orderId}")
-    public OrderBenefitVO getOrderBenefitD(
+    public PatientOrderBenefitVo getOrderBenefitD(
             @PathVariable(value = "orderId") Integer orderId) {
         return benefitBiz.getOrderBenefit(orderId);
     }
