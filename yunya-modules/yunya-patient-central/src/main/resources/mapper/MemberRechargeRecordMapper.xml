@@ -50,11 +50,11 @@
     <!-- 查询充值记录 -->
     <select id="findRechargeTotalAmountByCardNumber" resultType="BigDecimal">
         select (
-            SELECT sum(mrrd.recharge_principal)
+            SELECT ifnull(sum(mrrd.recharge_principal), 0)
             FROM member_recharge_record mrrd
             where mrrd.member_id = #{cardNumber} and type = 0 and crt_time &gt;= '2023-07-24'
         ) - (
-            SELECT sum(mrr.return_principal_amount)
+            SELECT ifnull(sum(mrr.return_principal_amount), 0)
             FROM member_return_record mrr
             where mrr.member_id = #{cardNumber} and crt_time &gt;= '2023-07-24'
         )

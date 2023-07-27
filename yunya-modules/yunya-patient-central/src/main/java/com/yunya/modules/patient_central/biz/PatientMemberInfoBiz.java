@@ -60,6 +60,7 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static com.yunya.feign.wechat.enums.TemplateEnum.MEMBER_OPEN_CARD;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -372,6 +373,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMember.setUpdName(BaseContextHandler.getName());
       patientMember.setUpdTime(new Date());
       patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      patientMember.setInservice(true);
       this.mapper.updateByPrimaryKeySelective(patientMember);
       this.cardLog(patientMember, "变更", "更新");
       remoteRabbitMqServiceFeign.sendMessage(
@@ -411,6 +413,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMember.setUpdName(BaseContextHandler.getName());
       patientMember.setUpdTime(new Date());
       patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      patientMember.setInservice(true);
       this.mapper.updateByPrimaryKeySelective(patientMember);
       this.cardLog(patientMember, "变更", "更新");
       remoteRabbitMqServiceFeign.sendMessage(
@@ -506,11 +509,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public void makeMemberLevelByRecharge(String cardNumber) {
     // TODO: 充值后判断是否升级会员等级，退费后判断是否降级
     BigDecimal sum = memberRechargeRecordMapper.findRechargeTotalAmountByCardNumber(cardNumber);
-    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
+    List<MemberType> memberTypeList_tmp = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
     MemberType tmp = new MemberType();
-    memberTypeList.stream().filter(memberType -> {
+    List<MemberType> memberTypeList = memberTypeList_tmp.stream().filter(memberType -> {
       return memberType.getRechargeMaxAmount().compareTo(BigDecimal.ZERO) > 0 && memberType.getRechargeMaxAmount().compareTo(sum) <= 0;
-    }).sorted(Comparator.comparing(MemberType::getRechargeMaxAmount).reversed());
+    }).sorted(Comparator.comparing(MemberType::getRechargeMaxAmount).reversed()).collect(Collectors.toList());
     if (memberTypeList != null && !memberTypeList.isEmpty()) {
       // 变更等级
       PatientMemberInfo patientMember =

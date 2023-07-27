@@ -28,10 +28,12 @@
     <!-- 根据患者id 查询该患者关联的关系 -->
     <select id="FindMemberBindingRelation2" resultType="Integer">
         select distinct secondary_card_id from patient_member_relation where master_card_id = #{patientId}
-        and secondary_card_id not in
-        <foreach collection="secondaryCardIds" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+        <if test="secondaryCardIds != null and secondaryCardIds.size() > 0">
+            and secondary_card_id not in
+            <foreach collection="secondaryCardIds" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
     </select>
 
     <!-- 根据患者id删除 -->
