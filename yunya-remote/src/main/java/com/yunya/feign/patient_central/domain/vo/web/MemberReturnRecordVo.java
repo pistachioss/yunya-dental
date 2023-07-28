@@ -65,11 +65,11 @@ public class MemberReturnRecordVo implements Serializable {
   private String orgName;
 
   /** 操作人id */
-  @Excel(name = "操作人id")
   @ApiModelProperty("操作人id")
   private Integer operatorId;
 
   /** 操作人员 */
+  @Excel(name = "操作人")
   @ApiModelProperty("操作人员")
   private String operatorName;
 
