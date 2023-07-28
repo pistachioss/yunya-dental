@@ -426,9 +426,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       List<TreeNode> childrens = origin.getChildren();
       if (StringHelper.isEmpty(childrens) && FIX_ORIGIN_TYPES.contains(origin.getOriginType())) {
         // 用父级来源构造子级来源
-        PatientOriginTreeVo children = new PatientOriginTreeVo();
-        BeanUtils.copyProperties(origin, children);
-        origin.setChildren(Arrays.asList(children));
+        childrens.add(origin);
         return true;
       }
       return false;
