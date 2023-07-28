@@ -47,4 +47,7 @@ public class PatientCardOwnerInfoVo implements Serializable {
     /** 是否可使用余额 */
     @ApiModelProperty("是否可使用余额")
     private Boolean isMoney = false;
+
+    @ApiModelProperty("卡主会员是否可使用")
+    private Boolean inservice;
 }
