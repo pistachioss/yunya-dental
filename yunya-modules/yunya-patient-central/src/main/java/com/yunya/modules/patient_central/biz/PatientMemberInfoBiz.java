@@ -1424,6 +1424,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @return ResponseResult
    */
   public ResponseResult expend(MemberExpendRecordModel model) {
+    if (model.getExpendTotal().compareTo(model.getPrincipalAmount().add(model.getBonusAmount())) != 0) {
+      return ResponseUtil.fail(
+          OperationCodeConstants.BALANCE_INSUFFICIENT, "会员卡消费总额不等于消费本金加消费赠金", model);
+    }
     ReentrantLock reentrantLock = new ReentrantLock(true);
     try {
       reentrantLock.lock();
@@ -1437,6 +1441,14 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         if (num.compareTo(model.getExpendTotal()) < 0) {
           return ResponseUtil.fail(
               OperationCodeConstants.BALANCE_INSUFFICIENT, "会员卡余额不足", patientMemberInfo);
+        }
+        if (patientMemberInfo.getPrincipalAmount().compareTo(model.getPrincipalAmount()) < 0) {
+          return ResponseUtil.fail(
+              OperationCodeConstants.BALANCE_INSUFFICIENT, "会员卡本金不足", patientMemberInfo);
+        }
+        if (patientMemberInfo.getBonusAmount().compareTo(model.getBonusAmount()) < 0) {
+          return ResponseUtil.fail(
+              OperationCodeConstants.BALANCE_INSUFFICIENT, "会员卡赠金不足", patientMemberInfo);
         }
         spending(model, patientMemberInfo);
       } else {
@@ -1492,10 +1504,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param patientMemberInfo 会员卡信息
    */
   public void spending(MemberExpendRecordModel model, PatientMemberInfo patientMemberInfo) {
-    // 消费本金
-    BigDecimal costPrincipal;
-    // 消费赠金
-    BigDecimal costBonus;
     // 账户本金
     BigDecimal principalAmount;
     // 账户赠金
@@ -1503,34 +1511,30 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     // 创建消费记录对象
     MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
     BeanUtils.copyProperties(model, memberExpendRecord);
-    // 会员卡余额 小于 消费金额
-    if (patientMemberInfo.getPrincipalAmount().compareTo(model.getExpendTotal()) < 0) {
-      // 小于的情况下 依然先用本金去抵扣消费金额
-      // 获取本金
-      principalAmount = patientMemberInfo.getPrincipalAmount();
-      // 本金-消费总额
-      BigDecimal surplus = patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal());
-      // 本金已用完
-      patientMemberInfo.setPrincipalAmount(new BigDecimal(0));
-      // 获取消费本金
-      memberExpendRecord.setExpendPrincipal(principalAmount);
-      // 获取赠金
-      bonusAmount = patientMemberInfo.getBonusAmount();
-      // 用赠金去抵扣
-      patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(surplus));
-      // 原账户赠金-抵扣后赠金余额 = 用了多少赠金
-      costBonus = bonusAmount.subtract(patientMemberInfo.getBonusAmount());
-      // 获取消费赠金
-      memberExpendRecord.setExpendGift(costBonus);
-    } else {
-      principalAmount = patientMemberInfo.getPrincipalAmount();
-      patientMemberInfo.setPrincipalAmount(
-          patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal()));
-      // 消费金额
-      costPrincipal = principalAmount.subtract(patientMemberInfo.getPrincipalAmount());
-      // 获取消费本金
-      memberExpendRecord.setExpendPrincipal(costPrincipal);
-    }
+    /**
+     * 本金处理
+     */
+    // 获取本金
+    principalAmount = patientMemberInfo.getPrincipalAmount();
+    // 本金-消费本金=新的本金
+    BigDecimal surplus = principalAmount.subtract(model.getPrincipalAmount());
+    // 设置会员卡本金
+    patientMemberInfo.setPrincipalAmount(surplus);
+    // 设置消费本金
+    memberExpendRecord.setExpendPrincipal(model.getPrincipalAmount());
+
+    /**
+     * 赠金处理
+     */
+    // 获取赠金
+    bonusAmount = patientMemberInfo.getBonusAmount();
+    // 赠金-消费赠金=新的赠金
+    BigDecimal costBonus = bonusAmount.subtract(model.getBonusAmount());
+    // 设置会员卡赠金
+    patientMemberInfo.setBonusAmount(costBonus);
+    // 设置消费赠金
+    memberExpendRecord.setExpendGift(model.getBonusAmount());
+
     patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
     // 添加消费记录
     memberExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
