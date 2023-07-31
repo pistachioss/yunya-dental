@@ -16,6 +16,8 @@ public enum CouponOrderError implements RestError {
     CARD_ACTIVED(6, "已激活卡券，不允许转赠"),
     RECEIVED_LACK(7, "实付金额不足"),
     ORDER_BILL(8, "订单已收费"),
+    ORDER_BILL_ERROR(9, "账单退费失败，当前账单未收费"),
+    ORDER_BILL_AMOUNT(10,"账单退费失败，退费总额与退费项目金额总和不相等！"),
     ;
     private Integer code;
     private String value;

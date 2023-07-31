@@ -16,7 +16,7 @@ public class CouponRefundQuery {
     @ApiModelProperty(value = "订单id", required = true)
     @NotNull
     private Integer orderId;
-    @ApiModelProperty(value = "卡券id", required = true)
+    @ApiModelProperty(value = "礼包id", required = true)
     @NotNull
-    private Integer cardId;
+    private Integer couponId;
 }

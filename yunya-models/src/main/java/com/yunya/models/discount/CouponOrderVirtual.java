@@ -3,6 +3,7 @@ package com.yunya.models.discount;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 @Data
 @Table(name = "coupon_order_virtual")
@@ -41,11 +42,17 @@ public class CouponOrderVirtual {
     @Column(name = "patient_id")
     private Integer patientId;
 
+    @Column(name = "coupon_name")
+    private String couponName;
+
     /**
      * 患者姓名
      */
-    @Column(name = "patient_name")
-    private String patientName;
+//    @Column(name = "patient_name")
+//    private String patientName;
+
+    @Column(name = "package_unit_price")
+    private BigDecimal packageUnitPrice;
 
     /**
      * 卡号

@@ -2,7 +2,7 @@ package com.yunya.modules.discount.controller;
 
 import com.yunya.feign.discount.domain.form.DeductionActiveForm;
 import com.yunya.feign.discount.domain.form.DeductionChangeForm;
-import com.yunya.feign.discount.domain.form.DeductionRefundForm;
+import com.yunya.feign.discount.domain.model.DeductionRefundModel;
 import com.yunya.feign.discount.domain.query.CouponRefundQuery;
 import com.yunya.feign.discount.domain.query.DeductionOrderQuery;
 import com.yunya.feign.discount.domain.query.DeductionPatientQuery;
@@ -72,17 +72,18 @@ public class DeductionPatientController {
         return ResponseUtil.success(true);
     }
 
-    @ApiOperation(value = "退费详情")
-    @PostMapping("/deduction/refund/detail")
-    public ResponseResult<List<PatientRefundOrderVO>> refundDetail(@Valid @RequestBody CouponRefundQuery query) {
-        return ResponseUtil.success(null);
+    @ApiOperation(value = "退款信息")
+    @PostMapping("/deduction/refund/info")
+    public ResponseResult<PatientRefundOrderVO> refundDetail(@Valid @RequestBody CouponRefundQuery query) {
+        return ResponseUtil.success(patientBiz.refundDetail(query));
     }
 
     @ApiOperation(value = "退费")
     @PostMapping("/patient/deduction/refund")
     @CurrentUser
-    public ResponseResult<Boolean> refund(@RequestBody DeductionRefundForm form) {
-        return ResponseUtil.success(true);
+    public ResponseResult<Boolean> refund(@RequestBody DeductionRefundModel model) {
+        patientBiz.refund(model);
+        return ResponseUtil.success();
     }
 
 //    @ApiOperation(value = "订单记录")

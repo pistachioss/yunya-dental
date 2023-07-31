@@ -20,6 +20,8 @@ public class PatientDeductionOrderVO implements Serializable {
     private String orgName;
     @ApiModelProperty(value = "操作人")
     private String operateName;
+    @ApiModelProperty(value = "账单日期")
+    private String billDate;
     @ApiModelProperty(value = "订单号")
     private String orderNumber;
     @ApiModelProperty(value = "入账方式")

@@ -83,7 +83,7 @@ public class CouponOrderBiz {
             couponOrderMapper.insertSelective(couponOrder);
             build.forEach(o -> o.setOrderId(couponOrder.getId()));
             orderDetailMapper.insertList(build);
-            List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now);
+            List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now,collect);
             virtualMapper.insertList(virtuals);
             vo = detail(couponOrder.getId());
         } catch (Exception e) {
@@ -118,7 +118,7 @@ public class CouponOrderBiz {
                 couponOrderMapper.updateByPrimaryKeySelective(order);
                 build.forEach(o -> o.setOrderId(order.getId()));
                 orderDetailMapper.insertList(build);
-                List<CouponOrderVirtual> virtuals = orderVirtual(order, list, now);
+                List<CouponOrderVirtual> virtuals = orderVirtual(order, list, now, collect);
                 virtualMapper.insertList(virtuals);
                 vo = detail(order.getId());
             }
@@ -134,7 +134,7 @@ public class CouponOrderBiz {
     public void occur(CouponBillPay billPay, Integer occurType, Date date) {
         int id = Integer.parseInt(BaseContextHandler.getUserID());
         if (Objects.nonNull(billPay)) {
-            List<CouponOrderDetail> couponOrderDetails = listOrderDetail(billPay.getOrderId());
+            List<CouponOrderDetail> couponOrderDetails = listOrderDetail(billPay.getOrderId(), null);
             List<CouponChangeRecord> list = couponOrderDetails.stream().map(t -> {
                 CouponChangeRecord couponChangeRecord = new CouponChangeRecord();
                 couponChangeRecord.setOrgId(billPay.getOrgId());
@@ -230,7 +230,7 @@ public class CouponOrderBiz {
             return couponOrderVO;
         }
         couponOrderVO.setOrderId(orderId);
-        List<CouponOrderDetail> details = listOrderDetail(orderId);
+        List<CouponOrderDetail> details = listOrderDetail(orderId, null);
         List<Integer> couponIds = details.stream().map(CouponOrderDetail::getCouponId).collect(toList());
         Map<Integer, CouponCommonInfo> collect = listCoupon(couponIds);
         List<CouponOrderDetailVO> detailVOS = Lists.newArrayList();
@@ -273,17 +273,20 @@ public class CouponOrderBiz {
         return couponOrderVO;
     }
 
-    private CouponOrder getOrder(Integer orderId) {
+    public CouponOrder getOrder(Integer orderId) {
         Example example = new Example(CouponOrder.class);
         example.createCriteria().andEqualTo("id", orderId)
                 .andEqualTo("inservice", true);
         return couponOrderMapper.selectOneByExample(example);
     }
 
-    private List<CouponOrderDetail> listOrderDetail(Integer orderId) {
+     List<CouponOrderDetail> listOrderDetail(Integer orderId, Integer couponId) {
         Example example = new Example(CouponOrderDetail.class);
-        example.createCriteria().andEqualTo("orderId", orderId)
+        Example.Criteria criteria = example.createCriteria().andEqualTo("orderId", orderId)
                 .andEqualTo("inservice", true);
+        if (Objects.nonNull(couponId)) {
+            criteria.andEqualTo("couponId", couponId);
+        }
         return orderDetailMapper.selectByExample(example);
     }
 
@@ -344,7 +347,7 @@ public class CouponOrderBiz {
     }
 
     private List<CouponOrderVirtual> orderVirtual(CouponOrder couponOrder, List<Card> list
-            , LocalDateTime now) {
+            , LocalDateTime now, Map<Integer, CouponCommonInfo> collect) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         CouponOrderVirtual orderVirtual;
         List<CouponOrderVirtual> list1 = Lists.newArrayList();
@@ -362,6 +365,9 @@ public class CouponOrderBiz {
             orderVirtual.setUpdId(userId);
             orderVirtual.setUpdTime(date);
             orderVirtual.setCrtTime(date);
+            CouponCommonInfo couponCommonInfo = collect.get(card.getCouponId());
+            orderVirtual.setPackageUnitPrice(couponCommonInfo.getSoldAmount());
+            orderVirtual.setCouponName(couponCommonInfo.getName());
             list1.add(orderVirtual);
         }
         return list1;
@@ -410,10 +416,13 @@ public class CouponOrderBiz {
         return couponOrderMapper.selectByExample(example);
     }
 
-    public List<CouponOrderVirtual> listOrderVirtual(Integer orderId) {
+    public List<CouponOrderVirtual> listOrderVirtual(Integer orderId, Integer cardId) {
         Example example = new Example(CouponOrderVirtual.class);
-        example.createCriteria().andEqualTo("orderId", orderId)
+        Example.Criteria criteria = example.createCriteria().andEqualTo("orderId", orderId)
                 .andEqualTo("inservice", true);
+        if (Objects.nonNull(cardId)) {
+            criteria.andEqualTo("cardId", cardId);
+        }
         return virtualMapper.selectByExample(example);
     }
 
@@ -448,7 +457,7 @@ public class CouponOrderBiz {
 //    }
 
     private void removeDetail(Integer orderId) {
-        List<CouponOrderDetail> details = listOrderDetail(orderId);
+        List<CouponOrderDetail> details = listOrderDetail(orderId, null);
         details.forEach(t -> {
             t.setInservice(false);
             orderDetailMapper.updateByPrimaryKeySelective(t);
@@ -456,14 +465,14 @@ public class CouponOrderBiz {
     }
 
     private void deleteDetail(Integer orderId) {
-        List<CouponOrderDetail> details = listOrderDetail(orderId);
+        List<CouponOrderDetail> details = listOrderDetail(orderId, null);
         details.forEach(t -> {
             orderDetailMapper.deleteByPrimaryKey(t.getId());
         });
     }
 
     private List<CouponOrderVirtual> deleteVirtuals(Integer orderId) {
-        List<CouponOrderVirtual> virtuals = listOrderVirtual(orderId);
+        List<CouponOrderVirtual> virtuals = listOrderVirtual(orderId, null);
         virtuals.forEach(t -> {
             virtualMapper.deleteByPrimaryKey(t.getId());
         });

@@ -31,7 +31,7 @@
         select co.id        as orderId,
                co.status    as orderStatus,
                cb.org_id as orgName,
-               cb.crt_time,
+               DATE_FORMAT( cb.crt_time, '%Y-%m-%d' ) as billDate,
                cb.crt_id    as operateName,
                co.order_record_num  as orderNumber,
                cb.receivable_amount,

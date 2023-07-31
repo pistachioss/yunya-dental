@@ -6,7 +6,6 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.BillRebate2MemberAccountModel;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -14,9 +13,15 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.discount.*;
+import com.yunya.models.discount.CouponBill;
+import com.yunya.models.discount.CouponBillPay;
+import com.yunya.models.discount.CouponBillPayDetail;
+import com.yunya.models.discount.CouponOrder;
 import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.modules.discount.mapper.*;
+import com.yunya.modules.discount.mapper.CouponBillMapper;
+import com.yunya.modules.discount.mapper.CouponBillPayDetailMapper;
+import com.yunya.modules.discount.mapper.CouponBillPayMapper;
+import com.yunya.modules.discount.mapper.CouponOrderMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -25,10 +30,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
@@ -56,8 +58,6 @@ public class CouponBillBiz {
     private RedisUtils redisUtils;
     @Resource
     private CouponOrderBiz orderBiz;
-    @Resource
-    private RemoteSystemServiceFeign systemServiceFeign;
     @Resource
     private RemotePatientCentralServiceFeign patientCentralServiceFeign;
 
@@ -151,6 +151,8 @@ public class CouponBillBiz {
             memberExpendRecordModel.setPatientId(billPay.getPatientId());
             memberExpendRecordModel.setMemberId(memberAccountModel.getMemberNum());
             memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
+            memberExpendRecordModel.setPrincipalAmount(memberAccountModel.getPrincipalAmount());
+            memberExpendRecordModel.setBonusAmount(memberAccountModel.getBonusAmount());
             memberExpendRecordModel.setTreatmentRecordId(billPay.getBillId());
             memberExpendRecordModel.setOrderRecordId(billPay.getOrderId());
             memberExpendRecordModel.setBillRecordId(billPay.getBillId());
@@ -172,6 +174,8 @@ public class CouponBillBiz {
                     prepaidExpendRecordModel.setPatientId(billPay.getPatientId());
                     prepaidExpendRecordModel.setPrepaidId(prepaymentAccountModel.getPrepaymentNum());
                     prepaidExpendRecordModel.setExpendTotal(prepaymentAccountModel.getAmount());
+                    prepaidExpendRecordModel.setPrincipalAmount(prepaymentAccountModel.getPrincipalAmount());
+                    prepaidExpendRecordModel.setBonusAmount(prepaymentAccountModel.getBonusAmount());
                     prepaidExpendRecordModel.setTreatmentRecordId(billPay.getBillId());
                     prepaidExpendRecordModel.setOrderRecordId(billPay.getOrderId());
                     prepaidExpendRecordModel.setBillRecordId(billPay.getBillId());
@@ -348,5 +352,12 @@ public class CouponBillBiz {
             patientCentralServiceFeign.billRebate2MemberAccount(model1);
         }
 
+    }
+
+    public List<CouponBillPayDetail> listPayDetail(Integer orderId) {
+        Example example = new Example(CouponBillPayDetail.class);
+        example.createCriteria().andEqualTo("orderId", orderId)
+                .andEqualTo("inservice", true);
+        return billPayDetailMapper.selectByExample(example);
     }
 }
