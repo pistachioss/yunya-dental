@@ -165,23 +165,25 @@ public class TreatTollBiz {
     }
     result.setSwipeItemList(swipeItemList);
     BigDecimal actualTotalAmount = BigDecimal.ZERO;
-    for (OrderDetailChargeVO vo : detailList) {
-      for (PatientItemBenefitVo benefitVo : itemList) {
-        BigDecimal receivableAmount = vo.getPrice().multiply(BigDecimal.valueOf(vo.getQuantity()));
-        BigDecimal actualAmount = receivableAmount;
-        if (vo.getOrderDetailId().equals(benefitVo.getOrderDetailId())) {
-          actualAmount = actualAmount.subtract(benefitVo.getItemBenefitAmount());
-          // 设置折扣率
-          vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
-          // 设置订单明细卡券匹配信息
-          if (StringHelper.gt(receivableAmount, actualAmount)) {
-            List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(benefitVo.getItemBenefitList(), null);
-            vo.setDiscountAppliesCoupons(privilegeInfo);
+    if (StringHelper.isNotEmpty(itemList)) {
+      for (OrderDetailChargeVO vo : detailList) {
+        for (PatientItemBenefitVo benefitVo : itemList) {
+          BigDecimal receivableAmount = vo.getPrice().multiply(BigDecimal.valueOf(vo.getQuantity()));
+          BigDecimal actualAmount = receivableAmount;
+          if (vo.getOrderDetailId().equals(benefitVo.getOrderDetailId())) {
+            actualAmount = actualAmount.subtract(benefitVo.getItemBenefitAmount());
+            // 设置折扣率
+            vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
+            // 设置订单明细卡券匹配信息
+            if (StringHelper.gt(receivableAmount, actualAmount)) {
+              List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(benefitVo.getItemBenefitList(), null);
+              vo.setDiscountAppliesCoupons(privilegeInfo);
+            }
           }
+          vo.setReceivableAmount(receivableAmount);
+          vo.setActualAmount(actualAmount);
+          actualTotalAmount = actualTotalAmount.add(actualAmount);
         }
-        vo.setReceivableAmount(receivableAmount);
-        vo.setActualAmount(actualAmount);
-        actualTotalAmount = actualTotalAmount.add(actualAmount);
       }
     }
     result.setItemList(detailList);

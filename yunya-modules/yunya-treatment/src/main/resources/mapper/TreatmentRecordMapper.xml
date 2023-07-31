@@ -133,7 +133,7 @@
         tr.registered_id AS registeredId,
         ord.id AS orderRecordId,
         ord.total_amount AS originalPrice,
-        odpr.swipeAmount,
+        ord.swipeAmount,
         br.id AS billRecordId,
         br.actual_receivable_amount AS actualReceivableAmount,
         br.debt_amount AS debtAmount,
