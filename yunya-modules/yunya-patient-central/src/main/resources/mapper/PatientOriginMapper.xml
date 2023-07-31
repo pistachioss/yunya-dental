@@ -103,31 +103,31 @@
                 ELSE po.name
             END AS tagName
         FROM patient_base_info pbi
-        INNER JOIN patient_origin po ON pbi.origin_id=po.id
+        LEFT JOIN patient_origin po ON pbi.origin_id=po.id
         <where>
             pbi.origin_id > 0
             <if test="query.dateType==0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(pbi.upd_time, '%Y-%m-%d') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(pbi.upd_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                <if test="query.startDate != null and query.startDate != '' and query.endDate != null and query.endDate != ''">
+                    AND (
+                        DATE_FORMAT(pbi.upd_time, '%Y-%m-%d') BETWEEN #{query.startDate} AND #{query.endDate}
+                        OR DATE_FORMAT(po.upd_time, '%Y-%m-%d') BETWEEN #{query.startDate} AND #{query.endDate}
+                    )
                 </if>
             </if>
             <if test="query.dateType==1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(pbi.upd_time, '%Y-%m') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(pbi.upd_time, '%Y-%m') &lt;= #{query.endDate}
+                <if test="query.startDate != null and query.startDate != '' and query.endDate != null and query.endDate != ''">
+                    AND (
+                        DATE_FORMAT(pbi.upd_time, '%Y-%m') BETWEEN #{query.startDate} AND #{query.endDate}
+                        OR DATE_FORMAT(po.upd_time, '%Y-%m') BETWEEN #{query.startDate} AND #{query.endDate}
+                    )
                 </if>
             </if>
             <if test="query.dateType==2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(pbi.upd_time, '%Y') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(pbi.upd_time, '%Y') &lt;= #{query.endDate}
+                <if test="query.startDate != null and query.startDate != '' and query.endDate != null and query.endDate != ''">
+                    AND (
+                        DATE_FORMAT(pbi.upd_time, '%Y') BETWEEN #{query.startDate} AND #{query.endDate}
+                        OR DATE_FORMAT(po.upd_time, '%Y') BETWEEN #{query.startDate} AND #{query.endDate}
+                    )
                 </if>
             </if>
         </where>

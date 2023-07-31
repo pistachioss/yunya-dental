@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.biz.tag;
 
 import com.google.common.collect.Lists;
+import com.yunya.feign.report.domain.query.PatientFrequencyOfTreatmentQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.domain.vo.PatientCountVO;
@@ -66,7 +67,7 @@ public class PatientTreatmentTagBiz {
      * @param query
      * @return
      */
-    public List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(DateRangeQueryForm query) {
+    public List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(PatientFrequencyOfTreatmentQuery query) {
         List<BasePatientBehaviorTagVO> result = baseTreatmentProcessMapper.selectPatientFrequencyOfTreatment(query);
         result.forEach(vo-> vo.setTagName(FrequencyTreatmentEnum.getName(vo.getTimes())));
         return result;

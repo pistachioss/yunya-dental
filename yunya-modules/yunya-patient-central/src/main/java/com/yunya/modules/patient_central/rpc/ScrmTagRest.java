@@ -2,6 +2,7 @@ package com.yunya.modules.patient_central.rpc;
 
 import com.yunya.feign.patient_central.domain.vo.WxFansBindTagVO;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginTreeVo;
+import com.yunya.feign.report.domain.query.PatientFrequencyOfTreatmentQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.modules.patient_central.biz.PatientOriginBiz;
 import com.yunya.modules.patient_central.biz.ScrmTagBiz;
@@ -64,7 +65,7 @@ public class ScrmTagRest {
     }
 
     @PostMapping("/white/patient/tag/frequency-treatment")
-    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(@RequestBody DateRangeQueryForm query) {
+    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(@RequestBody PatientFrequencyOfTreatmentQuery query) {
         return scrmTagBiz.frequencyOfTreatmentTag(query);
     }
 

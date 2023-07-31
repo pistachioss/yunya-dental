@@ -3,6 +3,7 @@ package com.yunya.feign.report;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.report.domain.query.PatientFrequencyOfTreatmentQuery;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
@@ -57,7 +58,7 @@ public interface RemoteReportServiceFeign {
      * @return
      */
     @PostMapping("/api/patient/frequency-treatment")
-    List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(@RequestBody DateRangeQueryForm query);
+    List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(@RequestBody PatientFrequencyOfTreatmentQuery query);
 
     @RequestMapping(value = "/api/patient/bill/costlist",method = RequestMethod.POST)
     List<PatientCostInfoVO> getCostList();

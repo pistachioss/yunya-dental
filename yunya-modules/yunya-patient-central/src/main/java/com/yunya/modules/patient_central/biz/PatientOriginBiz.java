@@ -84,10 +84,6 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
   @Resource
   private PatientOriginLogMapper patientOriginLogMapper;
 
-  /** 固定患者来源分类：1-员工转介绍，2-患者转介绍，12-未知来源 */
-  private final static List<Integer> FIX_ORIGIN_TYPES = Arrays.asList(1, 2, 12);
-
-
   /**
    * 患者原来添加
    *
@@ -411,7 +407,8 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
    * @return
    */
   public List<BasePatientBehaviorTagVO> findPatientOriginChangeTag(DateRangeQueryForm query) {
-    return mapper.selectPatientOriginChangeTag(query);
+    List<BasePatientBehaviorTagVO> result = mapper.selectPatientOriginChangeTag(query);
+    return result.stream().filter(tag->StringHelper.isNotEmpty(tag.getTagName())).collect(Collectors.toList());
   }
 
   /**
@@ -422,14 +419,24 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
   public List<PatientOriginTreeVo> findPatientOriginTree() {
     List<PatientOriginInfoVo> patientOriginInfoVos = patientOriginMapper.findAll();
     List<PatientOriginTreeVo> originTree = initTree(patientOriginInfoVos);
-    return originTree.stream().filter(origin->{
+    originTree.stream().forEach(origin -> {
       List<TreeNode> childrens = origin.getChildren();
-      if (StringHelper.isEmpty(childrens) && FIX_ORIGIN_TYPES.contains(origin.getOriginType())) {
+      if (StringHelper.isEmpty(childrens)) {
         // 用父级来源构造子级来源
-        childrens.add(origin);
-        return true;
+        PatientOriginTreeVo child = new PatientOriginTreeVo();
+        BeanUtils.copyProperties(origin, child);
+        child.setChildren(null);
+        childrens.add(child);
+      } else {
+        boolean existEqualName = childrens.stream().filter(child -> child.getName().equals(origin.getName())).findAny().isPresent();
+        if (!existEqualName) {
+          PatientOriginTreeVo child = new PatientOriginTreeVo();
+          BeanUtils.copyProperties(origin, child);
+          child.setChildren(null);
+          childrens.add(0, child);
+        }
       }
-      return false;
-    }).collect(Collectors.toList());
+    });
+    return originTree;
   }
 }

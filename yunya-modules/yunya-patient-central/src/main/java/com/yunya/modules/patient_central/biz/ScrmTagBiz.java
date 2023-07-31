@@ -6,6 +6,7 @@ import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.WxFansBindTagVO;
 import com.yunya.feign.patient_central.domain.vo.web.PatientKinRecomVo;
 import com.yunya.feign.report.RemoteReportServiceFeign;
+import com.yunya.feign.report.domain.query.PatientFrequencyOfTreatmentQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.domain.vo.PatientCostInfoVO;
@@ -439,7 +440,7 @@ public class ScrmTagBiz {
      * @param query
      * @return
      */
-    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(DateRangeQueryForm query) {
+    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(PatientFrequencyOfTreatmentQuery query) {
         List<BasePatientBehaviorTagVO> patients = remoteReportServiceFeign.findPatientFrequencyOfTreatment(query);
         Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientBehaviorTagVO::getPatientId).collect(toSet()));
         return patients.stream()

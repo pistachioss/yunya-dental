@@ -1315,5 +1315,8 @@
                 GROUP BY patient_id, registeredDate
             ) btp GROUP BY patient_id
         ) btp ON bp.patient_id=btp.patient_id
+        <if test="!query.isFull">
+            where btp.times > 2
+        </if>
     </select>
 </mapper>
