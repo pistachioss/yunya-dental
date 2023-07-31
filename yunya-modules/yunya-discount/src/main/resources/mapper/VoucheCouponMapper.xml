@@ -57,6 +57,8 @@
         select ci.id,ci.name,vc.is_share from coupon_common_info ci left join package_coupon vc on ci.id = vc.coupon_id where ci.type = 2 and ci.is_inservice = 1 and (vc.activation_deadline is null or vc.activation_deadline >= now())
         union all
         select ci.id,ci.name,vc.is_share from coupon_common_info ci left join special_package_coupon vc on ci.id = vc.coupon_id where ci.type = 3 and ci.is_inservice = 1 and (vc.activation_deadline is null or vc.activation_deadline >= now())
+       union all
+       select ci.id,ci.name,dc.is_share from coupon_common_info ci left join deduction_coupon dc on ci.id = dc.coupon_id where ci.type = 5 and ci.is_inservice = 1 and (dc.activation_deadline is null or dc.activation_deadline >= now())
     </select>
     <select id="findDown" resultType="com.yunya.models.discount.CouponCommonInfo">
       select * from coupon_common_info

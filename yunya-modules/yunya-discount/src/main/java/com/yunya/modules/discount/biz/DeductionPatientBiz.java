@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.domain.bo.PatientCardBo;
 import com.yunya.feign.discount.domain.form.DeductionActiveForm;
+import com.yunya.feign.discount.domain.form.DeductionAllocateForm;
 import com.yunya.feign.discount.domain.form.DeductionChangeForm;
 import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.discount.domain.model.CardMemberRefundModel;
@@ -20,6 +21,7 @@ import com.yunya.feign.discount.domain.vo.PatientRefundOrderVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberBillRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -46,8 +48,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.yunya.framework.common.constant.BusinessConstants.MINI_CARD_REMARK;
-import static com.yunya.modules.discount.enums.CouponOrderError.ORDER_BILL_AMOUNT;
-import static com.yunya.modules.discount.enums.CouponOrderError.ORDER_BILL_ERROR;
+import static com.yunya.modules.discount.enums.CouponOrderError.*;
 import static com.yunya.modules.discount.enums.TrueFalseEnum.TRUE;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
@@ -85,6 +86,8 @@ public class DeductionPatientBiz {
     private CouponRefundDetailMapper refundDetailMapper;
     @Resource
     private CouponRefundPayMapper refundPayMapper;
+    @Resource
+    private CouponCommonInfoBiz couponBiz;
 
     public List<PatientDeductionBaseVO> deductionList(DeductionPatientQuery query) {
         List<PatientCardBo> list = cardMapper.listPatientDeductionByParam(query);
@@ -107,7 +110,10 @@ public class DeductionPatientBiz {
         }
         ownCardVo.setActiveStatus(bo.getStatus() >= 2 ? 1 : 0);
         if (Objects.nonNull(bo.getCardOwner())) {
-            ownCardVo.setActivePatient(patientFeign.findPatientInfoByIds(Lists.newArrayList(bo.getCardOwner())).get(0).getName());
+            PatientBaseInfoVo patientBaseInfoVo = patientFeign.findPatientInfoByIds(Lists.newArrayList(bo.getCardOwner())).get(0);
+            ownCardVo.setActivePatient(patientBaseInfoVo.getName());
+            ownCardVo.setActivePatientMobile(patientBaseInfoVo.getMobile());
+            ownCardVo.setActivePatientId(bo.getCardOwner());
         }
         ownCardVo.setUseStatus(bo.getStatus() >= 3 ? 1 : 0);
         //产品分类
@@ -268,6 +274,8 @@ public class DeductionPatientBiz {
                 memberRefundModel,
                 prepaymentRefundModel,
                 refundPaymentModels, refundTotalAmount);
+        virtual.setInservice(false);
+        couponOrderBiz.refundVirtual(Lists.newArrayList(virtual));
     }
 
     private List<Card> listCard(Collection<Integer> cardIds) {
@@ -404,5 +412,14 @@ public class DeductionPatientBiz {
                         refundPayMapper.insertSelective(refundPay);
                     });
         }
+    }
+
+    public String allocate(DeductionAllocateForm form) {
+        CouponCommonInfo commonInfo = couponBiz.selectById(form.getCouponId());
+        Card card = cardMapper.listRemaining(Lists.newArrayList(form.getCouponId()), Integer.parseInt(BaseContextHandler.getOrgId())).get(0);
+        if (Objects.isNull(card)) {
+            throw ClientServiceException.wrap(COUPON_STOCK_LACK, commonInfo.getName());
+        }
+        return card.getCardNumber();
     }
 }

@@ -32,8 +32,12 @@ public class PatientDeductionBaseVO implements Serializable {
     private String ownName;
     @ApiModelProperty(value = "激活状态(0-未激活、1-已激活)")
     private Integer activeStatus;
+    @ApiModelProperty(value = "激活患者id")
+    private Integer activePatientId;
     @ApiModelProperty(value = "激活患者")
     private String activePatient;
+    @ApiModelProperty(value = "激活患者手机号")
+    private String activePatientMobile;
     @ApiModelProperty(value = "使用状态(0-未使用、1-已使用)")
     private Integer useStatus;
     @ApiModelProperty(value = "是否可以转赠(0-否、1-是)")

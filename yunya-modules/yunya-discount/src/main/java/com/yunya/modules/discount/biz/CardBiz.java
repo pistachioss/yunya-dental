@@ -1018,8 +1018,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             log.info("【锁定成功】准备提交第三方平台卡券激活...");
 
             RestErrorBo errorBo;
+            Example example = new Example(Card.class);
+            example.createCriteria().andEqualTo("cardNumber", cardNumber);
+//				.andNotEqualTo("orgId", ZERO);
+            Card card = mapper.selectOneByExample(example);
             //1. 检查卡券
-            errorBo = checkCardForOtherActive(form);
+            errorBo = checkCardForOtherActive(form,card);
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError());
             }
@@ -1034,7 +1038,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 return ResponseUtil.error(errorBo.getError());
             }
             //4. 第三方平台卡券激活
-            Card activeCard = insertOtherActiveCard(patientId, form, loginUserId);
+            Card activeCard = insertOtherActiveCard(patientId, form, loginUserId, card);
             mqServiceFeign.sendMessage(activeCard.getId(), ADD, BaseCardSingle);
             log.info("【第三方激活发送消息成功】：卡券id[{}]", activeCard.getId());
             cardActivedSendSms(activeCard);
@@ -2437,7 +2441,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param form        参数
      * @param loginUserId 登录人
      */
-    private Card insertOtherActiveCard(Integer patientId, OtherCardActiveForm form, Integer loginUserId) {
+    private Card insertOtherActiveCard(Integer patientId, OtherCardActiveForm form, Integer loginUserId, Card card) {
         Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
         Card insertOtherCard = BeanCopierUtils.generalCopyBean(form, Card.class);
         insertOtherCard.setOrgId(0);
@@ -2448,7 +2452,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         insertOtherCard.setPatientId(patientId);
         insertOtherCard.setStatus(ACTIVATED.getCode());
         insertOtherCard.setSharer(form.getSharerIdStr());
-        insertOtherCard.setCrtId(loginUserId);
         insertOtherCard.setUpdId(loginUserId);
         LocalDateTime now = LocalDateTime.now();
         if (isAiYa(form.getCouponId())) {
@@ -2457,7 +2460,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         } else {
             insertOtherCard.setActiveDate(LocalDateTime.now());
         }
-        mapper.insertSelective(insertOtherCard);
+        if (form.getThirdCardNumber().startsWith("HK")) {
+            insertOtherCard.setCardNumber(null);
+            insertOtherCard.setCardPassword(null);
+            mapper.updateByPrimaryKey(insertOtherCard);
+        } else {
+            insertOtherCard.setCrtId(loginUserId);
+            mapper.insertSelective(insertOtherCard);
+        }
         return insertOtherCard;
     }
     /**
@@ -2659,21 +2669,17 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return errorBo;
     }
 
-    private RestErrorBo checkCardForOtherActive(OtherCardActiveForm form) {
+    private RestErrorBo checkCardForOtherActive(OtherCardActiveForm form,Card card) {
         RestErrorBo errorBo = RestErrorBo.getInstance();
         String cardNumber = form.getThirdCardNumber();
-        Example example = new Example(Card.class);
-        example.createCriteria().andEqualTo("cardNumber", cardNumber);
-//				.andNotEqualTo("orgId", ZERO);
-        Card card = mapper.selectOneByExample(example);
-        if (card != null) {
+        if (card != null && !cardNumber.startsWith("HK")) {
             log.warn("【第三方平台激活失败】自有平台卡券{}不允许在第三方平台激活", cardNumber);
             errorBo.setError(DiscountError.OTHER_ALLOW_ACTIVE_OWN);
             return errorBo;
         }
         List<Card> thirdCards = this.getThirdCard(form);
         if (CollectionUtils.isNotEmpty(thirdCards)) {
-            log.warn("【第三方平台激活失败】第三方平台卡券已激活", cardNumber);
+            log.warn("【第三方平台激活失败】第三方平台卡券已激活:{}", cardNumber);
             errorBo.setError(DiscountError.OTHER_CARD_IS_ACTIVATED);
             return errorBo;
         }

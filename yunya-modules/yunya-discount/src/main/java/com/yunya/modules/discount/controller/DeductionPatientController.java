@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.controller;
 
 import com.yunya.feign.discount.domain.form.DeductionActiveForm;
+import com.yunya.feign.discount.domain.form.DeductionAllocateForm;
 import com.yunya.feign.discount.domain.form.DeductionChangeForm;
 import com.yunya.feign.discount.domain.model.DeductionRefundModel;
 import com.yunya.feign.discount.domain.query.CouponRefundQuery;
@@ -84,6 +85,12 @@ public class DeductionPatientController {
     public ResponseResult<Boolean> refund(@RequestBody DeductionRefundModel model) {
         patientBiz.refund(model);
         return ResponseUtil.success();
+    }
+
+    @ApiOperation(value = "分配卡号")
+    @PostMapping("/patient/deduction/allocate")
+    public ResponseResult<String> allocate(@Valid @RequestBody DeductionAllocateForm form) {
+        return ResponseUtil.success(patientBiz.allocate(form));
     }
 
 //    @ApiOperation(value = "订单记录")

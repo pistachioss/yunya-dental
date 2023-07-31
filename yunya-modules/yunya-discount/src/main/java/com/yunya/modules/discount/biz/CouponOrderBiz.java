@@ -449,12 +449,12 @@ public class CouponOrderBiz {
         }
     }
 
-//    private void removeVirtual(Integer cardId) {
-//        virtuals.forEach(t -> {
-//            t.setInservice(false);
-//            virtualMapper.updateByPrimaryKeySelective(t);
-//        });
-//    }
+    public void refundVirtual(List<CouponOrderVirtual> virtuals) {
+        virtuals.forEach(t -> {
+            t.setInservice(false);
+            virtualMapper.updateByPrimaryKeySelective(t);
+        });
+    }
 
     private void removeDetail(Integer orderId) {
         List<CouponOrderDetail> details = listOrderDetail(orderId, null);
