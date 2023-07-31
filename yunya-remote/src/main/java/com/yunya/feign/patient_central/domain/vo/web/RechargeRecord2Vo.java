@@ -8,7 +8,6 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * 简单介绍:</br> 返回会员卡充值记录模型
@@ -20,8 +19,8 @@ import java.util.Date;
  */
 @Data
 @ToString
-@ApiModel("返回会员卡充值记录模型")
-public class RechargeRecordVo implements Serializable {
+@ApiModel("返回赠金转账记录模型")
+public class RechargeRecord2Vo implements Serializable {
 
     /**
      * 会员充值记录id
@@ -30,25 +29,45 @@ public class RechargeRecordVo implements Serializable {
     private Integer id;
 
     /**
+     * 转出患者
+     */
+    @Excel(name = "转出患者")
+    @ApiModelProperty("转出患者")
+    private String patientName1;
+
+    /**
+     * 卡主
+     */
+    @Excel(name = "卡主")
+    @ApiModelProperty("卡主")
+    private String patientName2;
+
+    /**
      * 操作时间
      */
-    @Excel(name = "操作时间")
-    @ApiModelProperty("操作时间")
+    @Excel(name = "转账时间")
+    @ApiModelProperty("转账时间")
     private String operatingTime;
 
     /**
      * 充值金额
      */
-    @Excel(name = "充值金额")
     @ApiModelProperty("充值金额")
     private BigDecimal rechargePrincipal;
 
     /**
      * 赠送金额
      */
-    @Excel(name = "赠送金额")
-    @ApiModelProperty("赠送金额")
+    @Excel(name = "转账赠金")
+    @ApiModelProperty("转账赠金")
     private BigDecimal rechargeBonus;
+
+    /**
+     * 转入会员卡卡号
+     */
+    @Excel(name = "转入会员卡卡号")
+    @ApiModelProperty("转入会员卡卡号")
+    private String remarks;
 
     /**
      * 入账方式Id
@@ -60,7 +79,6 @@ public class RechargeRecordVo implements Serializable {
     /**
      * 入账方式
      */
-    @Excel(name = "入账方式")
     @ApiModelProperty("入账方式")
     private String payment;
 
@@ -89,25 +107,6 @@ public class RechargeRecordVo implements Serializable {
     @Excel(name = "操作人员")
     @ApiModelProperty("操作人员")
     private String operatorName;
-
-    /**
-     * 备注
-     */
-    @Excel(name = "备注")
-    @ApiModelProperty("备注")
-    private String remarks;
-
-    /**
-     * 转出患者
-     */
-    @ApiModelProperty("转出患者")
-    private String patientName1;
-
-    /**
-     * 卡主
-     */
-    @ApiModelProperty("卡主")
-    private String patientName2;
 
 
 }

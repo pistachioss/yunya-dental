@@ -252,9 +252,17 @@ public class PatientMemberInfoController {
   @CurrentUser
   @ApiOperation("赠金转出记录")
   @PostMapping("/rechargeRecord2")
-  public ResponseResult<PageInfo<RechargeRecordVo>> rechargeRecord2(
+  public ResponseResult<PageInfo<RechargeRecord2Vo>> rechargeRecord2(
           @RequestBody RechargeRecordQueryForm query) {
     return ResponseUtil.success(patientMemberInfoBiz.rechargeRecord2(query));
+  }
+
+  @ApiOperation("赠金转出记录-导出")
+  @PostMapping(value = "/rechargeRecord2/export", name = "导出充值记录")
+  public ResponseResult<T> rechargeRecord2Export(
+      HttpServletResponse response, @RequestBody RechargeRecordQueryForm query) throws IOException {
+    patientMemberInfoBiz.expendExportRechargeRecord2(response, query);
+    return ResponseUtil.success(null);
   }
 
   /**
