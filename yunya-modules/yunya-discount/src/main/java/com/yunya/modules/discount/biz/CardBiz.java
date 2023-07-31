@@ -2043,10 +2043,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         });
         //设置患者会员卡集合
         //会员迭代 去除会员卡券选项
-//        List<PatientMemberCardVo> memberCards = getPatientMemberCards(patientId);
-//        if (CollectionUtils.isNotEmpty(memberCards)) {
-//            vo.setMemberCardVoList(memberCards);
-//        }
+        List<PatientMemberCardVo> memberCards = getPatientMemberCards(patientId);
+        if (CollectionUtils.isNotEmpty(memberCards)) {
+            vo.setMemberCardVoList(memberCards);
+        }
         return vo;
     }
 
@@ -2062,6 +2062,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         form.setBindType(FALSE.getCode());
         //查询患者的会员卡集合
         MemberInfoVo memberInfo = patientFeign.findMemberInfo(form);
+        log.info("选择优惠会员卡信息:{}", memberInfo);
         List<PatientMemberCardVo> memberCardVos = Lists.newArrayList();
         if (memberInfo != null) {
             MasertMemberInfoVo masertMemberInfoVo = memberInfo.getMasertMemberInfoVo();
@@ -2672,6 +2673,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private RestErrorBo checkCardForOtherActive(OtherCardActiveForm form,Card card) {
         RestErrorBo errorBo = RestErrorBo.getInstance();
         String cardNumber = form.getThirdCardNumber();
+        CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(form.getCouponId());
+        if (Objects.isNull(card) && Objects.equals(couponInfo.getType().intValue(), 5)) {
+            log.warn("【第三方平台激活失败】第三方激活划扣类型卡券应通过分配卡号生成：{}", cardNumber);
+            errorBo.setError(DiscountError.HK_OTHER_NUMBER_ERROR);
+            return errorBo;
+        }
         if (card != null && !cardNumber.startsWith("HK")) {
             log.warn("【第三方平台激活失败】自有平台卡券{}不允许在第三方平台激活", cardNumber);
             errorBo.setError(DiscountError.OTHER_ALLOW_ACTIVE_OWN);

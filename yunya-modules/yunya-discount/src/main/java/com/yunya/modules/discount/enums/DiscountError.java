@@ -78,6 +78,7 @@ public enum DiscountError implements RestError {
     XIHU_ALLOW_ACTIVE_WRONG(68, "权益码错误、已使用或不在有效期内，请重新输入"),
     PATIENT_DEDUCTION_NULL(69, "患者没有可使用的划扣券"),
     PATIENT_NOT_OWN_DEDUCTION(70, "患者不能使用该划扣券%s，没有适用项目"),
+    HK_OTHER_NUMBER_ERROR(71, "第三方激活划扣类型卡券应通过分配卡号生成"),
     ;
     private final Integer code;
     private final String value;
