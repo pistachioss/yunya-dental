@@ -39,8 +39,8 @@ public class MemberExpendRecordVo implements Serializable {
     private String consumerName;
 
     /** 户主 */
-    @Excel(name = "户主")
-    @ApiModelProperty("户主")
+    @Excel(name = "卡主")
+    @ApiModelProperty("卡主")
     private String masterCardName;
 
     /** 消费时间 */

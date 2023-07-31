@@ -81,6 +81,7 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
      * @return  List<MemberInfoVo>
      */
     List<SecondaryMemberInfoVo> findMemberInfo(@Param("form") PatientMemberInfoQueryForm form);
+    List<SecondaryMemberInfoVo> findMemberInfo2(@Param("form") PatientMemberInfoQueryForm form);
 
     /**
      * 根据患者id查询已绑定主卡信息

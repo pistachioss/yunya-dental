@@ -241,7 +241,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public ResponseResult addMemberBindingRelation(MemberBindingRelationInfoModel form) {
     if (form.getPatientId().equals(form.getSecondaryCardId())) {
-      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST, "副卡人不能为患者本人！", "");
+      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST, "不能为患者本人！", "");
     }
     PatientMemberRelation isPatientMemberRelation =
         patientMemberRelationMapper.findMemberBindingRelation(form);
@@ -249,11 +249,31 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       return ResponseUtil.fail(
           OperationCodeConstants.SAME_DATA_EXIST, "已存在绑定关系,不能双向绑定！", isPatientMemberRelation);
     }
+    // 查询亲密付是否已存在其他有激活的绑定
+    PatientMemberInfoQueryForm qq = new PatientMemberInfoQueryForm();
+    qq.setPatientId(form.getSecondaryCardId());
+    qq.setBindType(1);
+    List<SecondaryMemberInfoVo> secondaryMemberInfoVos = patientMemberRelationMapper.findMemberInfo2(qq);
+    if (secondaryMemberInfoVos.size() > 0) {
+      return ResponseUtil.fail(
+          OperationCodeConstants.SAME_DATA_EXIST, "该紧密付已存在其他绑定关系！", isPatientMemberRelation);
+    }
+    // 删除该亲密付未激活的绑定
+    patientMemberRelationMapper.deleteOtherMemberRelation(
+        form.getSecondaryCardId(), new ArrayList<>());
+
+    // 是否普通会员
+    PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(form.getSecondaryCardId());
+    if (patientMemberInfo != null && patientMemberInfo.getMemberTypeId() != 4) {
+      return ResponseUtil.fail(
+          OperationCodeConstants.SAME_DATA_EXIST, "非普通会员无法绑定！", isPatientMemberRelation);
+    }
+
     PatientMemberRelation MemberRelation =
         this.patientMemberRelationMapper.findBindingRelation(form);
     if (MemberRelation != null) {
       return ResponseUtil.fail(
-          OperationCodeConstants.SAME_DATA_EXIST, "该副卡人已存在,不能重复绑定！", MemberRelation);
+          OperationCodeConstants.SAME_DATA_EXIST, "该绑定已存在,不能重复绑定！", MemberRelation);
     } else {
       PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
       BeanUtils.copyProperties(form, patientMemberRelation);
@@ -293,11 +313,12 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       PatientBaseInfoVo patientBaseInfoVo =
           patientBaseInfoMapper.selectOneById(form.getSecondaryCardId());
       Map<String, Object> paramMap = new HashMap<>();
-      if (form.getBindType() == 0) {
-        paramMap.put("first", "您好，您的会员卡成功绑定副卡人，将享受您的会员卡折扣权益，副卡人信息如下：");
-      } else {
-        paramMap.put("first", "您好，您的会员卡成功绑定余额共享人，可使用您的会员卡余额，信息如下：");
-      }
+//      if (form.getBindType() == 0) {
+//        paramMap.put("first", "您好，您的会员卡成功绑定副卡人，将享受您的会员卡折扣权益，副卡人信息如下：");
+//      } else {
+//        paramMap.put("first", "您好，您的会员卡成功绑定余额共享人，可使用您的会员卡余额，信息如下：");
+//      }
+      paramMap.put("first", "您好，您的会员卡成功绑定亲密付，可使用您的会员卡折扣权益和会员卡余额，信息如下：");
 
       if (patientBaseInfoVo != null) {
         paramMap.put("keyword1", patientBaseInfoVo.getName());
@@ -379,6 +400,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       remoteRabbitMqServiceFeign.sendMessage(
           patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
     }
+    // 将不是普通会员，需
+    // 删除该亲密付的绑定
+    patientMemberRelationMapper.deleteOtherMemberRelation(
+        openCardModel.getPatientId(), new ArrayList<>());
+
     return ResponseUtil.success();
   }
 
@@ -419,6 +445,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       remoteRabbitMqServiceFeign.sendMessage(
           patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
     }
+    // 将不是普通会员，需
+    // 删除该亲密付的绑定
+    patientMemberRelationMapper.deleteOtherMemberRelation(
+        openCardModel.getPatientId(), new ArrayList<>());
+
     // 充值
     if (openCardModel
         .getRechargePrincipal()
@@ -574,6 +605,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     patientMemberInfo.setInservice(false);
     patientMemberInfo.setMemberTypeId(4);
     patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
+    //
+    // 删除该患者的亲密付绑定
+    patientMemberRelationMapper.deleteOtherMemberRelation(
+        openCardModel.getPatientId(), new ArrayList<>());
+
     return ResponseUtil.success();
   }
 
@@ -1317,7 +1353,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param form 赠金转出记录QueryForm
    * @return PageInfo<RechargeRecordVo>
    */
-  public PageInfo<RechargeRecordVo> rechargeRecord2(RechargeRecordQueryForm form) {
+  public PageInfo<RechargeRecord2Vo> rechargeRecord2(RechargeRecordQueryForm form) {
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
@@ -1338,7 +1374,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         rechargeRecordVo.setPatientName1(patientName1);
       }
     }
-    return new PageInfo<>(resultList);
+    List<RechargeRecord2Vo> tmp = new ArrayList<>();
+    BeanUtils.copyProperties(resultList, tmp);
+    return new PageInfo<>(tmp);
   }
 
   /**
@@ -1637,7 +1675,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     // 患者作为副卡人可用会员卡
     List<MemberBaseInfoVo> memberBaseInfoVoList =
         patientMemberInfoMapper.selectMemberRelationByMasterPatientId(id);
-    List<MemberBaseInfoVo> memberBaseInfoVoList2 = memberBaseInfoVoList.stream().filter(m->{
+    List<MemberBaseInfoVo> memberBaseInfoVoList2 = memberBaseInfoVoList.stream().filter(m -> {
       return memberBaseInfo.getInservice() && memberBaseInfo.getMemberTypeId() != 4;
     }).collect(Collectors.toList());
     resultList.addAll(memberBaseInfoVoList2);
@@ -1880,6 +1918,16 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     ExcelUtil<RechargeRecordVo> excelUtil = new ExcelUtil<>(RechargeRecordVo.class);
     String fileName = "充值记录";
     excelUtil.exportExcel(response, resultList, "充值记录", fileName);
+  }
+
+  public void expendExportRechargeRecord2(
+      HttpServletResponse response, RechargeRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<RechargeRecord2Vo> workloadList = rechargeRecord2(query);
+    List<RechargeRecord2Vo> resultList = workloadList.getList();
+    ExcelUtil<RechargeRecord2Vo> excelUtil = new ExcelUtil<>(RechargeRecord2Vo.class);
+    String fileName = "赠金转账记录";
+    excelUtil.exportExcel(response, resultList, "赠金转账记录", fileName);
   }
 
   /**
