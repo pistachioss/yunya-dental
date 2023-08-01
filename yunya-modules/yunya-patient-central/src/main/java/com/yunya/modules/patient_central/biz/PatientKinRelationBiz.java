@@ -38,10 +38,16 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, PatientKinRelation> {
 
-  /** 注入患者亲属Mapper */
-  @Autowired private PatientKinRelationMapper patientKinRelationMapper;
-  /** 患者基础信息biz */
-  @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
+  /**
+   * 注入患者亲属Mapper
+   */
+  @Autowired
+  private PatientKinRelationMapper patientKinRelationMapper;
+  /**
+   * 患者基础信息biz
+   */
+  @Autowired
+  private PatientBaseInfoBiz patientBaseInfoBiz;
 
   /**
    * 根据患者id 查询患者亲属列表
@@ -82,7 +88,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
       }
     }
     // 过滤掉已删除记录
-    resultList = resultList.stream().filter(vo->vo.getInservice()).collect(Collectors.toList());
+    resultList = resultList.stream().filter(vo -> vo.getInservice()).collect(Collectors.toList());
     // 添加转介绍关系的数据（置顶）
     if (needAddIntro) {
       result.add(intro2PatientKin(patientId, introducer));
@@ -121,7 +127,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
    * @return ResponseResult
    */
   public ResponseResult add(PatientKinRelationModel patientKinRelationModel) {
-    if (patientKinRelationModel.getPatientId().equals(patientKinRelationModel.getLinkedPatientId())){
+    if (patientKinRelationModel.getPatientId().equals(patientKinRelationModel.getLinkedPatientId())) {
       return ResponseUtil.fail(OperationCodeConstants.OPERATION_NOT_ALLOW, "不可添加自己", null);
     }
     PatientKinRelation patientKinRelation = new PatientKinRelation();
@@ -164,7 +170,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
       linkedPatient.setLinkedPatientId(patientKinRelation.getPatientId());
       linkedPatient.setInservice(true);
       PatientKinRelation kinRelation = mapper.selectOne(linkedPatient);
-      if (kinRelation != null){
+      if (kinRelation != null) {
         kinRelation.setKinshipId(patientKinRelation.getKinshipId());
         kinRelation.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         kinRelation.setUpdName(BaseContextHandler.getName());
@@ -189,7 +195,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
    */
   public void tombstone(Integer id) {
     PatientKinRelation patientKinRelation = selectById(id);
-    if (patientKinRelation == null){
+    if (patientKinRelation == null) {
       throw new ClientServiceException("未查询到亲属关系", OperationCodeConstants.RETURN_MOBILE_ISNULL);
     }
     tombstone(patientKinRelation);
@@ -212,9 +218,17 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     mapper.updateByPrimaryKeySelective(entity);
   }
 
+  /**
+   * 查询是否有推荐关系
+   *
+   * @param patientKinRelation
+   * @return
+   */
   public boolean hasRelation(PatientKinRelation patientKinRelation) {
-    PatientKinRelation p = patientKinRelationMapper.selectOne(patientKinRelation);
-    if (p != null) {
+    PatientBaseInfo patientBaseInfo = patientBaseInfoBiz.selectById(patientKinRelation.getLinkedPatientId());
+    if (patientBaseInfo != null &&
+        patientKinRelation.getPatientId().equals(patientBaseInfo.getOriginId()) &&
+        2 == patientBaseInfo.getOriginType()) {
       return true;
     }
     return false;

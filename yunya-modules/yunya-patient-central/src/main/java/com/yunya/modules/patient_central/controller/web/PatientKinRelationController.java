@@ -93,10 +93,11 @@ public class PatientKinRelationController {
     patientBaseInfo.setInservice(true);
     patientBaseInfoBiz.addPatientOrigin(patientBaseInfo);
     patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
-    if (patientKinRelationModel.getKinshipId() == null) {
+    if (patientKinRelationModel.getKinshipId() == null || patientKinRelationModel.getKinshipId().equals(0)) {
       return ResponseUtil.success();
+    } else {
+      return this.patientKinRelationBiz.add(patientKinRelationModel);
     }
-    return this.patientKinRelationBiz.add(patientKinRelationModel);
   }
 
   /**
