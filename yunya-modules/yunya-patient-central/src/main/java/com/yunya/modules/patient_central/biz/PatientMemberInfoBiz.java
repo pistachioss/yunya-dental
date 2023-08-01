@@ -1999,7 +1999,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       throw new ClientServiceException("账单返点失败，返点金额不能为空", DATA_ERROR);
     }
     BigDecimal rebateRatio = new BigDecimal(100);
-    if (model.getRebateRatioType().intValue() == 1) {
+    if (model.getRebateRatioType().intValue() == 2) {
       // 患者消费时给其推荐人返点
       PatientOrigin patientOrigin = originBiz.findPatientOriginById(2);
       if (Objects.isNull(patientOrigin) || Objects.isNull(patientOrigin.getGiftRebateRate())) {
