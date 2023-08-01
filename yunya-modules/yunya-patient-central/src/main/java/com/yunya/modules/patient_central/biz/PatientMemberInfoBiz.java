@@ -1082,7 +1082,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         memberRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         memberRechargeRecord.setUpdName(BaseContextHandler.getName());
         memberRechargeRecord.setRemarks(patientMemberInfo2.getCardNumber());
-        memberRechargeRecord.setType(5);
+        memberRechargeRecord.setType(21);
         memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
         // 发送会员充值消息
         sendMemberLogMessages(memberRechargeRecord.getId(), 0, 1);
@@ -1144,7 +1144,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         memberRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         memberRechargeRecord.setUpdName(BaseContextHandler.getName());
         memberRechargeRecord.setRemarks(model.getMemberId());
-        memberRechargeRecord.setType(4);
+        memberRechargeRecord.setType(20);
         memberRechargeRecord.setMemberId(patientMemberInfo2.getCardNumber());
         memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
         // 发送会员充值消息
@@ -1357,7 +1357,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    List<RechargeRecordVo> resultList = memberRechargeRecordMapper.RechargeRecord(form, 4);
+    List<RechargeRecordVo> resultList = memberRechargeRecordMapper.RechargeRecord(form, 20);
+    List<RechargeRecord2Vo> tmps = new ArrayList<>();
     if (!StringHelper.isEmpty(resultList)) {
       for (RechargeRecordVo rechargeRecordVo : resultList) {
         // 获取门诊简称
@@ -1372,11 +1373,18 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         String patientName1 =
             patientMemberInfoMapper.selectPatientNameByCardNumber2(form.getCardNumber());
         rechargeRecordVo.setPatientName1(patientName1);
+        RechargeRecord2Vo tmp = new RechargeRecord2Vo();
+        tmp.setPatientName1(rechargeRecordVo.getPatientName1());
+        tmp.setPatientName2(rechargeRecordVo.getPatientName2());
+        tmp.setOperatingTime(rechargeRecordVo.getOperatingTime());
+        tmp.setRechargeBonus(rechargeRecordVo.getRechargeBonus());
+        tmp.setRemarks(rechargeRecordVo.getRemarks());
+        tmp.setOrgName(rechargeRecordVo.getOrgName());
+        tmp.setOperatorName(rechargeRecordVo.getOperatorName());
+        tmps.add(tmp);
       }
     }
-    List<RechargeRecord2Vo> tmp = new ArrayList<>();
-    BeanUtils.copyProperties(resultList, tmp);
-    return new PageInfo<>(tmp);
+    return new PageInfo<>(tmps);
   }
 
   /**
