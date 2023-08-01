@@ -104,7 +104,7 @@ public class TollController {
   @RepeatSubmit
   @CurrentUser
   @ApiOperation("确认收费")
-  @PostMapping("/confirm")
+  @PostMapping("/confirm/old")
   public ResponseResult<TollConfirmVO> confirmCharge(@RequestBody @Validated TollModel model) {
     TollConfirmVO tollConfirmVO = tollBiz.confirmCharge(model);
     return ResponseUtil.success(tollConfirmVO);
@@ -210,7 +210,7 @@ public class TollController {
   @RepeatSubmit
   @CurrentUser
   @ApiOperation("确认收费")
-  @PostMapping("/treatConfirm")
+  @PostMapping("/confirm")
   public ResponseResult<TollConfirmVO> confirmCharge(@RequestBody @Validated TreatTollModel model) {
     treatTollBiz.clear(model.getOrderRecordId());
     TollConfirmVO tollConfirmVO = treatTollBiz.confirmCharge(model, (byte) 2);

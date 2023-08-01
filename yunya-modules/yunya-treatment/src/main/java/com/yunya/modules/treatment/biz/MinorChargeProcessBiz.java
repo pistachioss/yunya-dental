@@ -161,7 +161,7 @@ public class MinorChargeProcessBiz {
                 BeanUtil.copyProperties(billPayRecord, model);
                 model.setBillPayRecordId(billPayRecord.getId());
                 model.setAcceptorId(originId);
-                model.setType(3);
+                model.setType(6);
                 model.setReceivedAmount(totalPrincipal);
                 patientFeign.billRebate2MemberAccount(model);
             }
@@ -172,7 +172,7 @@ public class MinorChargeProcessBiz {
                 BeanUtil.copyProperties(billPayRecord, model);
                 model.setBillPayRecordId(billPayRecord.getId());
                 model.setAcceptorId(originId);
-                model.setType(3);
+                model.setType(6);
                 model.setRebateRatioType((byte) 0);
                 model.setReceivedAmount(FIRST_VISIT_REBATE_AMOUNT);
                 patientFeign.billRebate2MemberAccount(model);
