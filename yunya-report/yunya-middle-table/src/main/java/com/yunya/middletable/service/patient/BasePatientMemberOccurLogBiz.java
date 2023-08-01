@@ -890,6 +890,7 @@ public class BasePatientMemberOccurLogBiz
       case 4:
       case 5:
       case 6:
+      case 7:
         BasePatientMemberOccurLog prepaidRechargeRecord =
             getPrepaidRechargeRecord(id, type, operationType);
         if (StringHelper.isNotNull(prepaidRechargeRecord)) {
@@ -921,8 +922,8 @@ public class BasePatientMemberOccurLogBiz
           return prepaidReturnInfo.getCardId();
         }
         break;
-      case 7:
       case 8:
+      case 9:
         BasePatientMemberOccurLog prepaidTransferRecord =
                 getPrepaidTransferRecord(id, type, operationType);
         if (StringHelper.isNotNull(prepaidTransferRecord)) {

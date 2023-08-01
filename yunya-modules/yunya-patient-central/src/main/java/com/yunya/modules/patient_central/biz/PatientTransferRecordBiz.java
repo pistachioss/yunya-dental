@@ -110,7 +110,7 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
         if (i != 1) {
             throw new ClientServiceException("转账失败，请稍后再试！", DATA_ERROR);
         }
-        sendMemberLogMessages(entity.getId(), model.getOperateType(), 0, type + 6);
+        sendMemberLogMessages(entity.getId(), model.getOperateType(), 0, type + 7);
     }
 
     /**
@@ -198,7 +198,7 @@ public class PatientTransferRecordBiz extends BaseBiz<PatientTransferRecordMappe
      * @param id 操作LogId
      * @param type 类型：0-会员卡，1-预付款
      * @param operateType 操作类型: 0-新增，1-修改，2-删除
-     * @param occurType Log类型: 1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.账单返点 7.转账转入 8.转账转出
+     * @param occurType Log类型: 1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.就诊账单返点 7.礼包账单返点 8.转账转入 9.转账转出
      */
     public void sendMemberLogMessages(
             Integer id, Byte type, Integer operateType, Integer occurType) {
