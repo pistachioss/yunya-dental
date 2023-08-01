@@ -58,4 +58,6 @@ public class PatientDeductionBaseVO implements Serializable {
     private Integer payChannel;
     @ApiModelProperty("产品设计图")
     private String couponLogo;
+    @ApiModelProperty("共享人")
+    private String sharer;
 }

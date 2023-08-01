@@ -203,7 +203,7 @@ public class CouponBillBiz {
                                             prepaymentAccountModel.getAccountItemId(),
                                             prepaymentAccountModel.getAmount(),
                                             (byte) 0,
-                                            null, date);
+                                            null, date,prepaymentAccountModel.getPrincipalAmount(),prepaymentAccountModel.getBonusAmount());
                             billPayDetail.setPatientNum(prepaymentAccountModel.getPrepaymentNum());
                             billPayDetail.setAccountItemName("预付款");
                             billPayDetailMapper.insertSelective(billPayDetail);
@@ -221,7 +221,7 @@ public class CouponBillBiz {
                                             memberAccountModel.getAccountItemId(),
                                             memberAccountModel.getAmount(),
                                             (byte) 1,
-                                            null, date);
+                                            null, date,memberAccountModel.getPrincipalAmount(), memberAccountModel.getBonusAmount());
                             billPayDetail.setPatientNum(memberAccountModel.getMemberNum());
                             billPayDetail.setAccountItemName("会员卡");
                             billPayDetailMapper.insertSelective(billPayDetail);
@@ -239,7 +239,7 @@ public class CouponBillBiz {
                                             paymentModel.getAccountItemId(),
                                             paymentModel.getAmount(),
                                             (byte) 2,
-                                            paymentModel.getRemarks(), date);
+                                            paymentModel.getRemarks(), date,null, null);
                             billPayDetail.setAccountItemName(paymentModel.getAccountItemName());
                             billPayDetailMapper.insertSelective(billPayDetail);
                         }
@@ -315,7 +315,7 @@ public class CouponBillBiz {
             Integer accountItemId,
             BigDecimal amount,
             Byte type,
-            String remarks, Date date) {
+            String remarks, Date date, BigDecimal principalAmount, BigDecimal bonusAmount) {
         CouponBillPayDetail couponBillPayDetail = new CouponBillPayDetail();
         couponBillPayDetail.setOrgId(billPay.getOrgId());
         couponBillPayDetail.setPatientId(billPay.getPatientId());
@@ -324,6 +324,11 @@ public class CouponBillBiz {
         couponBillPayDetail.setBillPayId(billPay.getId());
         couponBillPayDetail.setAccountItemId(accountItemId);
         couponBillPayDetail.setAmount(amount);
+        couponBillPayDetail.setPrincipalAmount(principalAmount);
+        couponBillPayDetail.setBonusAmount(bonusAmount);
+        if (Objects.equals(type.intValue(), 2)) {
+            couponBillPayDetail.setPrincipalAmount(couponBillPayDetail.getAmount());
+        }
         couponBillPayDetail.setType(type);
         couponBillPayDetail.setRemark(remarks);
         couponBillPayDetail.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));

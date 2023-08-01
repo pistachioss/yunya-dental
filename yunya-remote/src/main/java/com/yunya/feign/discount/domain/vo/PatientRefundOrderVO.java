@@ -37,4 +37,6 @@ public class PatientRefundOrderVO implements Serializable {
     private DeductionRefundPayVO memberPay;
     @ApiModelProperty(value = "预付款收费")
     private List<DeductionRefundPayVO> prePayment;
+    @ApiModelProperty(value = "其他入账方式收费")
+    private List<DeductionRefundPayVO> payment;
 }

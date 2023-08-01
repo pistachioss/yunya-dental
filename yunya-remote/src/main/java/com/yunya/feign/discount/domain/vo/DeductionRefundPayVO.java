@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @author xiangyang
@@ -15,4 +16,25 @@ import java.io.Serializable;
 public class DeductionRefundPayVO implements Serializable {
     @ApiModelProperty("卡号（会员或预付款）")
     private String number;
+
+    @ApiModelProperty(value = "预付款入账方式ID")
+    private Integer accountItemId;
+
+    /**
+     * 支付金额
+     */
+    @ApiModelProperty(value = "支付金额")
+    private BigDecimal amount;
+
+    /**
+     * 本金金额
+     */
+    @ApiModelProperty(value = "本金金额")
+    private BigDecimal principalAmount;
+
+    /**
+     * 赠金金额
+     */
+    @ApiModelProperty(value = "赠金金额")
+    private BigDecimal bonusAmount;
 }

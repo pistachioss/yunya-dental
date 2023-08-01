@@ -7,9 +7,8 @@ import com.yunya.feign.discount.domain.model.DeductionRefundModel;
 import com.yunya.feign.discount.domain.query.CouponRefundQuery;
 import com.yunya.feign.discount.domain.query.DeductionOrderQuery;
 import com.yunya.feign.discount.domain.query.DeductionPatientQuery;
-import com.yunya.feign.discount.domain.vo.PatientDeductionBaseVO;
-import com.yunya.feign.discount.domain.vo.PatientDeductionOrderVO;
-import com.yunya.feign.discount.domain.vo.PatientRefundOrderVO;
+import com.yunya.feign.discount.domain.query.DeductionRecordQuery;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -89,8 +88,27 @@ public class DeductionPatientController {
 
     @ApiOperation(value = "分配卡号")
     @PostMapping("/patient/deduction/allocate")
+    @CurrentUser
     public ResponseResult<String> allocate(@Valid @RequestBody DeductionAllocateForm form) {
         return ResponseUtil.success(patientBiz.allocate(form));
+    }
+
+    @ApiOperation(value = "退费记录")
+    @PostMapping("/{patientId}/deduction/refund/record")
+    public ResponseResult<List<DeductionRefundRecordVO>> refundList(@Valid @RequestBody DeductionRecordQuery query) {
+        return ResponseUtil.success(patientBiz.refundList(query));
+    }
+
+    @ApiOperation(value = "消耗记录")
+    @PostMapping("/{patientId}/deduction/used/record")
+    public ResponseResult<List<DeductionUsedRecordVO>> usedList(@Valid @RequestBody DeductionRecordQuery query) {
+        return ResponseUtil.success(patientBiz.usedList(query));
+    }
+
+    @ApiOperation(value = "赠予记录")
+    @PostMapping("/{patientId}/deduction/change/record")
+    public ResponseResult<List<DeductionChangeRecordVO>> changeList(@Valid @RequestBody DeductionRecordQuery query) {
+        return ResponseUtil.success(patientBiz.changeList(query));
     }
 
 //    @ApiOperation(value = "订单记录")

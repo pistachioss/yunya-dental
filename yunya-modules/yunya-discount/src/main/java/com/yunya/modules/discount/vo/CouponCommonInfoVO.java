@@ -42,4 +42,6 @@ public class CouponCommonInfoVO {
     private BigDecimal saleAmount;
     @ApiModelProperty("是否分配")
     private Boolean isDistribution = false;
+    @ApiModelProperty("卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券; 5-划扣券）")
+    private Integer type;
 }

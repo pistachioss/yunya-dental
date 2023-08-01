@@ -67,6 +67,13 @@ public class CouponBillPayDetail {
      */
     private BigDecimal amount;
 
+    @Column(name = "principal_amount")
+    private BigDecimal principalAmount;
+
+    @Column(name = "bonus_amount")
+    private BigDecimal bonusAmount;
+
+
     /**
      * 备注
      */

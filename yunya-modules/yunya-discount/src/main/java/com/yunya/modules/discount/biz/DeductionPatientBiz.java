@@ -14,10 +14,8 @@ import com.yunya.feign.discount.domain.model.DeductionRefundModel;
 import com.yunya.feign.discount.domain.query.CouponRefundQuery;
 import com.yunya.feign.discount.domain.query.DeductionOrderQuery;
 import com.yunya.feign.discount.domain.query.DeductionPatientQuery;
-import com.yunya.feign.discount.domain.vo.DeductionRefundPayVO;
-import com.yunya.feign.discount.domain.vo.PatientDeductionBaseVO;
-import com.yunya.feign.discount.domain.vo.PatientDeductionOrderVO;
-import com.yunya.feign.discount.domain.vo.PatientRefundOrderVO;
+import com.yunya.feign.discount.domain.query.DeductionRecordQuery;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberBillRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
@@ -35,6 +33,7 @@ import com.yunya.modules.discount.enums.DiscountError;
 import com.yunya.modules.discount.enums.UseWayEnum;
 import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,16 +41,13 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 
 import static com.yunya.framework.common.constant.BusinessConstants.MINI_CARD_REMARK;
 import static com.yunya.modules.discount.enums.CouponOrderError.*;
 import static com.yunya.modules.discount.enums.TrueFalseEnum.TRUE;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 /**
  * @auther: xy
@@ -102,18 +98,40 @@ public class DeductionPatientBiz {
         SalesChannel salesChannel = salesChannelMapper.selectByPrimaryKey(bo.getSaleChannelId());
         ownCardVo.setSaleChannelName(salesChannel == null ? null : salesChannel.getName());
         ownCardVo.setCouponTypeName(CouponTypeEnum.getValue(bo.getCouponType()));
+        String sharer = bo.getSharer();
+        List<Integer> ids = Lists.newArrayList();
+        List<Integer> collect11 = null;
+        if (StringUtils.isNotBlank(sharer)) {
+            collect11 = Arrays.stream(sharer.split(",")).map(Integer::parseInt).collect(toList());
+            ids.addAll(collect11);
+        }
         if (Objects.nonNull(bo.getBuyerId())) {
-            ownCardVo.setBuyerName(patientFeign.findPatientInfoById(bo.getBuyerId()).getName());
+            ids.add(bo.getBuyerId());
         }
         if (Objects.nonNull(bo.getBuyerId()) && Objects.nonNull(bo.getSoldTarget())) {
-            ownCardVo.setOwnName(patientFeign.findPatientInfoById(Integer.valueOf(bo.getSoldTarget())).getName());
+            ids.add(Integer.valueOf(bo.getSoldTarget()));
         }
         ownCardVo.setActiveStatus(bo.getStatus() >= 2 ? 1 : 0);
         if (Objects.nonNull(bo.getCardOwner())) {
-            PatientBaseInfoVo patientBaseInfoVo = patientFeign.findPatientInfoByIds(Lists.newArrayList(bo.getCardOwner())).get(0);
-            ownCardVo.setActivePatient(patientBaseInfoVo.getName());
-            ownCardVo.setActivePatientMobile(patientBaseInfoVo.getMobile());
+            ids.add(bo.getCardOwner());
+        }
+        List<PatientBaseInfoVo> patientInfos = patientFeign.findPatientInfoByIds(ids);
+        if (CollectionUtils.isNotEmpty(patientInfos)) {
+            Map<Integer, PatientBaseInfoVo> collect = patientInfos.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity(), (o, v) -> o));
+            PatientBaseInfoVo p1 = collect.get(bo.getBuyerId());
+            Integer ownId = Objects.nonNull(bo.getCardOwner()) ? bo.getCardOwner() :Integer.valueOf(bo.getSoldTarget());
+            PatientBaseInfoVo p2 = collect.get(ownId);
+            PatientBaseInfoVo p3 = collect.get(bo.getCardOwner());
+            ownCardVo.setBuyerName(Objects.nonNull(p1) ? p1.getName(): null);
+            ownCardVo.setOwnName(Objects.nonNull(p2) ? p2.getName(): null);
+            ownCardVo.setActivePatient(Objects.nonNull(p3) ? p3.getName(): null);
+            ownCardVo.setActivePatientMobile(Objects.nonNull(p3) ? p3.getMobile(): null);
             ownCardVo.setActivePatientId(bo.getCardOwner());
+            if (CollectionUtils.isNotEmpty(collect11)) {
+                String collect1 = collect11.stream()
+                        .filter(collect::containsKey).map(t -> collect.get(t).getName()).collect(joining());
+                ownCardVo.setSharer(collect1);
+            }
         }
         ownCardVo.setUseStatus(bo.getStatus() >= 3 ? 1 : 0);
         //产品分类
@@ -173,8 +191,7 @@ public class DeductionPatientBiz {
     public PatientRefundOrderVO refundDetail(CouponRefundQuery query) {
         Integer orderId = query.getOrderId();
         PatientRefundOrderVO refundOrderVO = new PatientRefundOrderVO();
-        CouponOrder order = couponOrderBiz.getOrder(orderId);
-        List<CouponOrderDetail> details = couponOrderBiz.listOrderDetail(orderId, null);
+        List<CouponOrderDetail> details = couponOrderBiz.listOrderDetail(orderId, query.getCouponId());
         int totalQuantity = details.stream().map(CouponOrderDetail::getQuantity).reduce(0, Integer::sum);
         CouponOrderDetail detail = details.get(0);
         refundOrderVO.setOrderDetailId(detail.getId());
@@ -182,7 +199,7 @@ public class DeductionPatientBiz {
         refundOrderVO.setPrice(detail.getPrice());
         refundOrderVO.setPackagePrice(detail.getReceivableAmount());
         refundOrderVO.setSaleAmount(detail.getReceivableAmount());
-        refundOrderVO.setReceivedAmount(order.getReceivedAmount());
+        refundOrderVO.setReceivedAmount(refundOrderVO.getSaleAmount());
         refundOrderVO.setQuantity(1);
         refundOrderVO.setExecutorName(systemServiceFeign.findSysUserEmployeeInfoByUserId(detail.getExecutorId()).getName());
         refundOrderVO.setWholeRefund(false);
@@ -194,18 +211,36 @@ public class DeductionPatientBiz {
                 payDetails.stream().collect(groupingBy(CouponBillPayDetail::getType, toList()));
 
         collect.forEach((k, v) -> {
-            if (Objects.equals(k, 0)) {
+            if (Objects.equals(k.intValue(), 0)) {
                 List<DeductionRefundPayVO> collect1 = v.stream().map(t1 -> {
                     DeductionRefundPayVO prePay = new DeductionRefundPayVO();
+                    prePay.setAccountItemId(t1.getAccountItemId());
+                    prePay.setAmount(t1.getAmount());
+                    prePay.setPrincipalAmount(t1.getPrincipalAmount());
+                    prePay.setBonusAmount(t1.getBonusAmount());
                     prePay.setNumber(t1.getPatientNum());
                     return prePay;
                 }).collect(toList());
                 refundOrderVO.setPrePayment(collect1);
             }
-            if (Objects.equals(k, 1)) {
+            if (Objects.equals(k.intValue(), 1)) {
                 DeductionRefundPayVO member = new DeductionRefundPayVO();
-                member.setNumber(v.get(0).getPatientNum());
+                CouponBillPayDetail t1 = v.get(0);
+                member.setAccountItemId(t1.getAccountItemId());
+                member.setAmount(t1.getAmount());
+                member.setPrincipalAmount(t1.getPrincipalAmount());
+                member.setBonusAmount(t1.getBonusAmount());
+                member.setNumber(t1.getPatientNum());
                 refundOrderVO.setMemberPay(member);
+            }
+            if (Objects.equals(k.intValue(), 2)) {
+                List<DeductionRefundPayVO> collect1 = v.stream().map(t1 -> {
+                    DeductionRefundPayVO payment = new DeductionRefundPayVO();
+                    payment.setAccountItemId(t1.getAccountItemId());
+                    payment.setAmount(t1.getAmount());
+                    return payment;
+                }).collect(toList());
+                refundOrderVO.setPayment(collect1);
             }
         });
         return refundOrderVO;
@@ -421,5 +456,17 @@ public class DeductionPatientBiz {
             throw ClientServiceException.wrap(COUPON_STOCK_LACK, commonInfo.getName());
         }
         return card.getCardNumber();
+    }
+
+    public List<DeductionRefundRecordVO> refundList(DeductionRecordQuery query) {
+        return null;
+    }
+
+    public List<DeductionUsedRecordVO> usedList(DeductionRecordQuery query) {
+        return null;
+    }
+
+    public List<DeductionChangeRecordVO> changeList(DeductionRecordQuery query) {
+        return null;
     }
 }

@@ -1160,6 +1160,20 @@ WHERE
                     </if>
                 </foreach>
             </trim>
+            <trim prefix="sold_target = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldTarget != null">
+                        when `id` = #{item.id} then #{item.soldTarget}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sold_phone_number = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldPhoneNumber != null">
+                        when `id` = #{item.id} then #{item.soldPhoneNumber}
+                    </if>
+                </foreach>
+            </trim>
         </trim>
         where `id` in
         <foreach collection="list" item="item" open="(" separator="," close=")">
@@ -1251,10 +1265,11 @@ WHERE
                     (select `is_share` from `deduction_coupon` where `coupon_id` = `c`.`coupon_id`)
                 else null
                 end                                     as `share`,
-            `c`.`patient_id`                      as `cardOwner`
+            `c`.`patient_id`                      as `cardOwner`,
+            `c`.`sharer`                          as `sharer`
         from `card` `c`
         inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
-        left join `coupon_order_virtual` `cor` on `cor`.`card_id` = `c`.`id`
+        left join `coupon_order_virtual` `cor` on `cor`.`card_id` = `c`.`id` and cor.inservice = 1
         left join `coupon_order` `co` on `co`.`id` = `cor`.`order_id` and `co`.status = 1
         where
             `cci`.`type` = 5

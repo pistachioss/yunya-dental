@@ -2189,6 +2189,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             SpecialPackageCoupon specialPackageCoupon = specialPackageMapper.selectOneByExample(example);
             share = specialPackageCoupon.getIsShare();
         }
+        if (DEDUCTION.equals(type)) {
+            example = new Example(DeductionCoupon.class);
+            example.createCriteria().andEqualTo("couponId", couponId);
+            DeductionCoupon deductionCoupon = deductionPackageCouponMapper.selectOneByExample(example);
+            share = deductionCoupon.getIsShare();
+        }
         return share;
     }
 
@@ -2445,6 +2451,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private Card insertOtherActiveCard(Integer patientId, OtherCardActiveForm form, Integer loginUserId, Card card) {
         Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
         Card insertOtherCard = BeanCopierUtils.generalCopyBean(form, Card.class);
+        if (form.getThirdCardNumber().startsWith("HK")) {
+            insertOtherCard = card;
+        }
         insertOtherCard.setOrgId(0);
         insertOtherCard.setThirdCardNumber(form.getThirdCardNumber());
         insertOtherCard.setActiveOrgId(activeOrgId);
@@ -2679,10 +2688,17 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             errorBo.setError(DiscountError.HK_OTHER_NUMBER_ERROR);
             return errorBo;
         }
-        if (card != null && !cardNumber.startsWith("HK")) {
-            log.warn("【第三方平台激活失败】自有平台卡券{}不允许在第三方平台激活", cardNumber);
-            errorBo.setError(DiscountError.OTHER_ALLOW_ACTIVE_OWN);
-            return errorBo;
+        if (card != null) {
+            if (!cardNumber.startsWith("HK")) {
+                log.warn("【第三方平台激活失败】自有平台卡券{}不允许在第三方平台激活", cardNumber);
+                errorBo.setError(DiscountError.OTHER_ALLOW_ACTIVE_OWN);
+                return errorBo;
+            }
+            if (!Objects.equals(card.getCouponId(), form.getCouponId())) {
+                log.warn("【第三方平台激活失败】划扣卡号错误，和选择礼包不匹配：{}", cardNumber);
+                errorBo.setError(DiscountError.HK_NUMBER_ERROR);
+                return errorBo;
+            }
         }
         List<Card> thirdCards = this.getThirdCard(form);
         if (CollectionUtils.isNotEmpty(thirdCards)) {
