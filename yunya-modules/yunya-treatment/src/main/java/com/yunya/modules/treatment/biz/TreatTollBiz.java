@@ -167,9 +167,9 @@ public class TreatTollBiz {
     BigDecimal actualTotalAmount = BigDecimal.ZERO;
     if (StringHelper.isNotEmpty(itemList)) {
       for (OrderDetailChargeVO vo : detailList) {
+        BigDecimal receivableAmount = vo.getPrice().multiply(BigDecimal.valueOf(vo.getQuantity()));
+        BigDecimal actualAmount = receivableAmount;
         for (PatientItemBenefitVo benefitVo : itemList) {
-          BigDecimal receivableAmount = vo.getPrice().multiply(BigDecimal.valueOf(vo.getQuantity()));
-          BigDecimal actualAmount = receivableAmount;
           if (vo.getOrderDetailId().equals(benefitVo.getOrderDetailId())) {
             actualAmount = actualAmount.subtract(benefitVo.getItemBenefitAmount());
             // 设置折扣率
