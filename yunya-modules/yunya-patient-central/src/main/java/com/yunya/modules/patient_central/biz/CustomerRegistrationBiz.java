@@ -23,6 +23,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.patient_central.mapper.*;
@@ -84,6 +85,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     private String domainUrl;
     @Autowired
     private PatientMemberInfoBiz patientMemberInfoBiz;
+    @Autowired
+    private RedisUtils redisUtil;
 
     /**
      * 添加客户登记
@@ -402,7 +405,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         Integer id = model.getId();
         if (!ObjectUtils.isEmpty(id)) {
             baseInfo.setId(id);
-            mapper.updateByPrimaryKeySelective(baseInfo);
+            patientBaseInfoBiz.updateByPrimaryKeySelective(baseInfo);
         } else {
             baseInfo.setCrtId(userId);
             baseInfo.setCrtName(userName);

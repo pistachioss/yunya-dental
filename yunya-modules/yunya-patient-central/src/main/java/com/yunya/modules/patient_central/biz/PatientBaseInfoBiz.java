@@ -184,8 +184,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
     // 患者id不为空表明,是修改操作
     if (StringHelper.isNotNull(patientBaseInfoModel.getId())) {
-      patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
-      redisUtils.delete(PATIENT_BASE_INFO + patientBaseInfoModel.getId());
+      this.updateByPrimaryKeySelective(patientBaseInfo);
       return patientBaseInfoMapper.selectPatienInfoById(patientBaseInfo.getId());
     }
     Integer originType = patientBaseInfo.getOriginType();
@@ -241,6 +240,29 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     remoteRabbitMqServiceFeign.sendMessage(messageModel);
   }
 
+  @Override
+  public int updateSelectiveById(PatientBaseInfo entity) {
+    EntityUtils.setUpdatedInfo(entity);
+    return this.updateByPrimaryKeySelective(entity);
+  }
+
+  public int updateByPrimaryKeySelective(PatientBaseInfo entity) {
+    int count = mapper.updateByPrimaryKeySelective(entity);
+    postCommonProcess(entity);
+    return count;
+  }
+
+  /**
+   * 后置通用处理方法
+   *
+   * @param entity
+   */
+  private void postCommonProcess(PatientBaseInfo entity) {
+    Integer patientId = entity.getId();
+    redisUtils.delete(PATIENT_BASE_INFO + patientId);
+    redisUtils.delete(PATIENT_REFERRER + patientId);
+  }
+
   /**
    * 添加完善患者扩展信息、其他信息
    *
@@ -265,7 +287,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     addPatientOrigin(patientBaseInfo);
 
     // 完善患者基本信息  对补全信息进行更新
-    this.mapper.updateByPrimaryKeySelective(patientBaseInfo);
+    this.updateByPrimaryKeySelective(patientBaseInfo);
+
     Integer patientId = patientBaseInfo.getId();
     // 患者分组
     savePatientGroupRelation(patientId, patientBaseInfoModel.getGroupIds());
@@ -1020,7 +1043,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     PatientBaseInfo pat = new PatientBaseInfo();
     pat.setBirthdayCheck(DateTime.now().toDate());
     pat.setId(patientId);
-    return patientBaseInfoMapper.updateByPrimaryKeySelective(pat);
+    return updateByPrimaryKeySelective(pat);
   }
 
   /**
@@ -1463,9 +1486,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
       // 添加患者来源推荐关系
       addPatientOrigin(patientBaseInfo);
-      patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
-      redisUtils.delete(
-              PATIENT_BASE_INFO + patientExtendInfoModel.getPatientBaseInfoModel().getId());
+      this.updateByPrimaryKeySelective(patientBaseInfo);
+      Integer patientId = patientExtendInfoModel.getPatientBaseInfoModel().getId();
     }
   }
 
@@ -1567,7 +1589,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setUptId(Integer.parseInt(redisUtils.get("userId")));
     patientBaseInfo.setUpdName(redisUtils.get("userName"));
     patientBaseInfo.setUpdTime(new Date());
-    patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
+    this.updateByPrimaryKeySelective(patientBaseInfo);
     redisUtils.delete("takePhotosPatientId");
     redisUtils.delete("userId");
     redisUtils.delete("userName");
