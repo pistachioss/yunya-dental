@@ -20,4 +20,10 @@ public class DeductionPatientQuery {
     @ApiModelProperty(value = "患者id",required = true)
     @NotNull
     private Integer patientId;
+    @ApiModelProperty(value = "页码", required = true)
+    @NotNull
+    private Integer pageNum;
+    @ApiModelProperty(value = "每页数量", required = true)
+    @NotNull
+    private Integer pageSize;
 }

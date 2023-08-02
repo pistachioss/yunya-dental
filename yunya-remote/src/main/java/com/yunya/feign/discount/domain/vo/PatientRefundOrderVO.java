@@ -15,6 +15,8 @@ import java.util.List;
 @Data
 @ApiModel(value = "划扣退费信息模型")
 public class PatientRefundOrderVO implements Serializable {
+    @ApiModelProperty(value = "购买患者")
+    private Integer patientId;
     @ApiModelProperty("订单id")
     private Integer orderDetailId;
     @ApiModelProperty("礼包名称")
@@ -25,8 +27,10 @@ public class PatientRefundOrderVO implements Serializable {
     private BigDecimal packagePrice;
     @ApiModelProperty("售卖单价")
     private BigDecimal saleAmount;
-    @ApiModelProperty("订单实收金额")
+    @ApiModelProperty("卡券实收金额")
     private BigDecimal receivedAmount;
+    @ApiModelProperty("订单实收金额")
+    private BigDecimal totalReceivedAmount;
     @ApiModelProperty(value = "数量")
     private Integer quantity;
     @ApiModelProperty(value = "操作人")

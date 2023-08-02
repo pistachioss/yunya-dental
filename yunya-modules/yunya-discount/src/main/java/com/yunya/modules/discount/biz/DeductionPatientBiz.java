@@ -1,5 +1,8 @@
 package com.yunya.modules.discount.biz;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.domain.bo.PatientCardBo;
@@ -25,6 +28,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.discount.*;
 import com.yunya.modules.discount.enums.CouponOrderError;
@@ -79,17 +83,26 @@ public class DeductionPatientBiz {
     @Resource
     private CouponRefundMapper refundMapper;
     @Resource
-    private CouponRefundDetailMapper refundDetailMapper;
-    @Resource
     private CouponRefundPayMapper refundPayMapper;
     @Resource
     private CouponCommonInfoBiz couponBiz;
+    @Resource
+    private CardChangeMapper cardChangeMapper;
+    @Resource
+    private DeductionPeriodBiz deductionPeriodBiz;
+    @Resource
+    private SpecialPackageCouponItemBiz specialPackageCouponItemBiz;
 
-    public List<PatientDeductionBaseVO> deductionList(DeductionPatientQuery query) {
-        List<PatientCardBo> list = cardMapper.listPatientDeductionByParam(query);
+    public PageInfo<PatientDeductionBaseVO> deductionList(DeductionPatientQuery query) {
+        Page<PatientCardBo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        cardMapper.listPatientDeductionByParam(query);
         //对象转换
-        return list.stream().map(this::patientCardBoConvertVo)
+        List<PatientDeductionBaseVO> collect = page.getResult().stream().map(this::patientCardBoConvertVo)
                 .collect(toList());
+        PageInfo<PatientDeductionBaseVO> pageInfo = new PageInfo<>(collect);
+        pageInfo.setTotal(page.getTotal());
+        pageInfo.setPageNum(page.getPageNum());
+        return pageInfo;
     }
 
     private PatientDeductionBaseVO patientCardBoConvertVo(PatientCardBo bo) {
@@ -152,13 +165,18 @@ public class DeductionPatientBiz {
         return ownCardVo;
     }
 
-    public List<PatientDeductionOrderVO> orderList(DeductionOrderQuery query) {
-        List<PatientDeductionOrderVO> list = couponOrderMapper.listPatientDeductionByParam(query);
-        list.forEach(t -> {
+    public PageInfo<PatientDeductionOrderVO> orderList(DeductionOrderQuery query) {
+        Page<PatientDeductionOrderVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        couponOrderMapper.listPatientDeductionByParam(query);
+        List<PatientDeductionOrderVO> result = page.getResult();
+        result.forEach(t -> {
             t.setOperateName(systemServiceFeign.findSysUserEmployeeInfoByUserId(Integer.valueOf(t.getOperateName())).getName());
             t.setOrgName(systemServiceFeign.findOrgInfoByOrgId(Integer.valueOf(t.getOrgName())).getAbbreviation());
         });
-        return list;
+        PageInfo<PatientDeductionOrderVO> pageInfo = new PageInfo<>(result);
+        pageInfo.setTotal(page.getTotal());
+        pageInfo.setPageNum(page.getPageNum());
+        return pageInfo;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -191,15 +209,18 @@ public class DeductionPatientBiz {
     public PatientRefundOrderVO refundDetail(CouponRefundQuery query) {
         Integer orderId = query.getOrderId();
         PatientRefundOrderVO refundOrderVO = new PatientRefundOrderVO();
+        CouponBill bill = couponBillBiz.getBill(orderId);
         List<CouponOrderDetail> details = couponOrderBiz.listOrderDetail(orderId, query.getCouponId());
         int totalQuantity = details.stream().map(CouponOrderDetail::getQuantity).reduce(0, Integer::sum);
         CouponOrderDetail detail = details.get(0);
+        refundOrderVO.setPatientId(bill.getPatientId());
         refundOrderVO.setOrderDetailId(detail.getId());
         refundOrderVO.setCouponName(detail.getCouponName());
         refundOrderVO.setPrice(detail.getPrice());
         refundOrderVO.setPackagePrice(detail.getReceivableAmount());
         refundOrderVO.setSaleAmount(detail.getReceivableAmount());
         refundOrderVO.setReceivedAmount(refundOrderVO.getSaleAmount());
+        refundOrderVO.setTotalReceivedAmount(bill.getReceivedAmount());
         refundOrderVO.setQuantity(1);
         refundOrderVO.setExecutorName(systemServiceFeign.findSysUserEmployeeInfoByUserId(detail.getExecutorId()).getName());
         refundOrderVO.setWholeRefund(false);
@@ -329,6 +350,7 @@ public class DeductionPatientBiz {
         cardMapper.updateByPrimaryKey(card);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void change(DeductionChangeForm form) {
         Integer cardId = form.getCardId();
         Card card = cardMapper.selectByPrimaryKey(cardId);
@@ -347,6 +369,17 @@ public class DeductionPatientBiz {
             throw ClientServiceException.wrap(DiscountError.CARD_IS_USED);
         }
         change(card, form);
+        saveChange(card, form);
+    }
+
+    private void saveChange(Card card, DeductionChangeForm form) {
+        CardChange cardChange = new CardChange();
+        cardChange.setCardId(card.getId());
+        cardChange.setBuyerId(card.getBuyerId());
+        cardChange.setPreId(Integer.valueOf(card.getSoldTarget()));
+        cardChange.setCurrId(form.getPatientId());
+        cardChange.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        cardChangeMapper.insertSelective(cardChange);
     }
 
     public void change(Card card, DeductionChangeForm form) {
@@ -458,15 +491,42 @@ public class DeductionPatientBiz {
         return card.getCardNumber();
     }
 
-    public List<DeductionRefundRecordVO> refundList(DeductionRecordQuery query) {
-        return null;
+    public PageInfo<DeductionRefundRecordVO> refundList(DeductionRecordQuery query) {
+        Page<DeductionRefundRecordVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        List<DeductionRefundRecordVO> collect = Lists.newArrayList();
+        PageInfo<DeductionRefundRecordVO> pageInfo = new PageInfo<>(collect);
+        pageInfo.setTotal(page.getTotal());
+        pageInfo.setPageNum(page.getPageNum());
+        return pageInfo;
     }
 
-    public List<DeductionUsedRecordVO> usedList(DeductionRecordQuery query) {
-        return null;
+    public PageInfo<DeductionUsedRecordVO> usedList(DeductionRecordQuery query) {
+        Page<DeductionUsedRecordVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        List<DeductionUsedRecordVO> collect = Lists.newArrayList();
+        PageInfo<DeductionUsedRecordVO> pageInfo = new PageInfo<>(collect);
+        pageInfo.setTotal(page.getTotal());
+        pageInfo.setPageNum(page.getPageNum());
+        return pageInfo;
     }
 
-    public List<DeductionChangeRecordVO> changeList(DeductionRecordQuery query) {
-        return null;
+    public PageInfo<DeductionChangeRecordVO> changeList(DeductionRecordQuery query) {
+        Page<DeductionChangeRecordVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        List<DeductionChangeRecordVO> collect = Lists.newArrayList();
+        PageInfo<DeductionChangeRecordVO> pageInfo = new PageInfo<>(collect);
+        pageInfo.setTotal(page.getTotal());
+        pageInfo.setPageNum(page.getPageNum());
+        return pageInfo;
+    }
+
+    public List<DeductionItemPeriodVO> itemList(Integer cardId) {
+        Card card = cardMapper.selectByPrimaryKey(cardId);
+        List<DeductionItemPeriod> periods = deductionPeriodBiz.listByCoupon(Lists.newArrayList(card.getCouponId()), DateUtil.localDateTimeToDate(card.getSoldDate()));
+        if (CollectionUtils.isNotEmpty(periods)) {
+            return BeanCopierUtils.listGeneralCopyBean(periods, DeductionItemPeriodVO.class);
+        }
+        SpecialPackageCouponItem specialPackageCouponItem = new SpecialPackageCouponItem();
+        specialPackageCouponItem.setCouponId(card.getCouponId());
+        List<SpecialPackageCouponItem> couponItems = specialPackageCouponItemBiz.selectList(specialPackageCouponItem);
+        return BeanCopierUtils.listGeneralCopyBean(couponItems, DeductionItemPeriodVO.class);
     }
 }

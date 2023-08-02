@@ -30,4 +30,49 @@
             ,#{item.couponName},#{item.packageUnitPrice},#{item.cardNumber},#{item.soldDate},#{item.crtId},#{item.crtTime},#{item.updId})
         </foreach>
     </insert>
+
+    <select id="refundList" resultType="com.yunya.feign.discount.domain.vo.DeductionRefundRecordVO">
+        select cov.coupon_name,
+               cov.package_unit_price,
+               crd.refund_amount,
+               crd.org_id,
+               crd.crt_id
+        from coupon_refund_detail crd
+                 inner join coupon_order_virtual cov on cov.id = crd.order_virtual_id
+        where inservice = 0
+    </select>
+
+    <select id="usedList" resultType="com.yunya.feign.discount.domain.vo.DeductionUsedRecordVO">
+        select cov.coupon_name,
+               c.card_number,
+               c.sale_channel_id,
+               cov.package_unit_price,
+               cb.item_id,
+               cb.patient_id,
+               b.bill_number,
+               cb.crt_time,
+               cb.org_id,
+               cb.crt_id
+        from card_benefit cb
+                 inner join card c on cb.card_id = c.id
+                 inner join coupon_order_virtual cov on c.id = cov.card_id
+                 inner join coupon_bill b on cov.order_id = b.order_record_id
+        where cb.coupon_type = 5
+          and cb.patient_id = 1
+    </select>
+
+    <select id="changeList" resultType="com.yunya.feign.discount.domain.vo.DeductionChangeRecordVO">
+        select cov.coupon_name,
+               cov.package_unit_price,
+               c.buyer_id,
+               c.sold_target,
+               cc.changeTime,
+               cc.operateId
+        from card c
+                 inner join coupon_order_virtual cov on c.id = cov.card_id
+                 inner join (select card_id, crt_time as changeTime, crt_id as operateId
+                             from card_change
+                             order by id
+                                 limit 1) cc on c.id = cc.card_id
+    </select>
 </mapper>

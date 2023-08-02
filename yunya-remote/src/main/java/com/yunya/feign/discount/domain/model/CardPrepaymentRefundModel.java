@@ -34,10 +34,6 @@ public class CardPrepaymentRefundModel implements Serializable {
     @NotNull(message = "预付款入账方式ID不能为空！")
     private Integer accountItemId;
 
-    @ApiModelProperty(value = "预付款入账方式名称", required = true)
-    @NotNull(message = "预付款入账方式名称不能为空！")
-    private String accountItemName;
-
     @ApiModelProperty(value = "预付款退费本金金额", required = true)
     @NotNull(message = "预付款退费本金不能为空！")
     @Min(value = 0, message = "输入金额不能小于0！")
