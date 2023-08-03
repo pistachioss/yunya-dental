@@ -24,6 +24,9 @@ import com.yunya.feign.patient_central.domain.model.MemberBillRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -31,6 +34,8 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.discount.*;
+import com.yunya.models.tariff.BaseOralTariff;
+import com.yunya.models.tariff.BaseTariff;
 import com.yunya.modules.discount.enums.CouponOrderError;
 import com.yunya.modules.discount.enums.CouponTypeEnum;
 import com.yunya.modules.discount.enums.DiscountError;
@@ -47,8 +52,9 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
-import static com.yunya.framework.common.constant.BusinessConstants.MINI_CARD_REMARK;
+import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.modules.discount.enums.CouponOrderError.*;
 import static com.yunya.modules.discount.enums.TrueFalseEnum.TRUE;
 import static java.util.stream.Collectors.*;
@@ -92,6 +98,10 @@ public class DeductionPatientBiz {
     private DeductionPeriodBiz deductionPeriodBiz;
     @Resource
     private SpecialPackageCouponItemBiz specialPackageCouponItemBiz;
+    @Resource
+    private CouponOrderVirtualMapper virtualMapper;
+    @Resource
+    private RemoteTreatmentServiceFeign treatmentServiceFeign;
 
     public PageInfo<PatientDeductionBaseVO> deductionList(DeductionPatientQuery query) {
         Page<PatientCardBo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
@@ -379,6 +389,7 @@ public class DeductionPatientBiz {
         cardChange.setPreId(Integer.valueOf(card.getSoldTarget()));
         cardChange.setCurrId(form.getPatientId());
         cardChange.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        cardChange.setRemark(form.getRemark());
         cardChangeMapper.insertSelective(cardChange);
     }
 
@@ -493,29 +504,69 @@ public class DeductionPatientBiz {
 
     public PageInfo<DeductionRefundRecordVO> refundList(DeductionRecordQuery query) {
         Page<DeductionRefundRecordVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        List<DeductionRefundRecordVO> collect = Lists.newArrayList();
-        PageInfo<DeductionRefundRecordVO> pageInfo = new PageInfo<>(collect);
-        pageInfo.setTotal(page.getTotal());
-        pageInfo.setPageNum(page.getPageNum());
-        return pageInfo;
+        List<DeductionRefundRecordVO> list = virtualMapper.refundList(query);
+        log.info("退费记录分页类型：{},{}", list,list.getClass());
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<OrganizationInfoDetail> orgInfoInIds = systemServiceFeign.findOrgInfoInIds(list.stream().map(t -> Integer.valueOf(t.getOrgName())).collect(toList()));
+            Map<Integer, String> collect = orgInfoInIds.stream().collect(toMap(OrganizationInfoDetail::getId, OrganizationInfoDetail::getAbbreviation, (o, v) -> v));
+            List<SysUserInfoDetail> users = systemServiceFeign.findSysUserEmployeeInfoByUserIds(list.stream().map(t -> Integer.valueOf(t.getExecutorName())).collect(toList()));
+            Map<Integer, String> collect1 = users.stream().collect(toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getName, (o, v) -> v));
+            list.forEach(t -> {
+                t.setOrgName(collect.get(Integer.valueOf(t.getOrgName())));
+                t.setExecutorName(collect1.get(Integer.valueOf(t.getExecutorName())));
+            });
+        }
+        return new PageInfo<>(list);
     }
 
     public PageInfo<DeductionUsedRecordVO> usedList(DeductionRecordQuery query) {
         Page<DeductionUsedRecordVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        List<DeductionUsedRecordVO> collect = Lists.newArrayList();
-        PageInfo<DeductionUsedRecordVO> pageInfo = new PageInfo<>(collect);
-        pageInfo.setTotal(page.getTotal());
-        pageInfo.setPageNum(page.getPageNum());
-        return pageInfo;
+        List<DeductionUsedRecordVO> list = virtualMapper.usedList(query);
+        log.info("消耗记录分页类型：{},{}", list,list.getClass());
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<SysUserInfoDetail> users = systemServiceFeign.findSysUserEmployeeInfoByUserIds(list.stream().map(t -> Integer.valueOf(t.getExecutorName())).collect(toList()));
+            Map<Integer, String> collect1 = users.stream().collect(toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getName, (o, v) -> v));
+            List<OrganizationInfoDetail> orgInfoInIds = systemServiceFeign.findOrgInfoInIds(list.stream().map(t -> Integer.valueOf(t.getOrgName())).collect(toList()));
+            Map<Integer, String> collect = orgInfoInIds.stream().collect(toMap(OrganizationInfoDetail::getId, OrganizationInfoDetail::getAbbreviation, (o, v) -> v));
+            List<Integer> collect3 = list.stream().flatMap(t -> Stream.of(Integer.valueOf(t.getPatientName()))).collect(toList());
+            List<PatientBaseInfoVo> patientInfoByIds = patientFeign.findPatientInfoByIds(collect3);
+            Map<Integer, String> collect2 = patientInfoByIds.stream().collect(toMap(PatientBaseInfoVo::getId, PatientBaseInfoVo::getName, (o, v) -> v));
+            list.forEach(t -> {
+                Integer orgId = Integer.valueOf(t.getOrgName());
+                Integer itemId = Integer.valueOf(t.getItemName());
+                t.setPatientName(collect2.get(Integer.valueOf(t.getPatientName())));
+                t.setOrgName(collect.get(orgId));
+                t.setExecutorName(collect1.get(Integer.valueOf(t.getExecutorName())));
+                if (ZERO.equals(t.getItemType())) {
+                    BaseTariff tariff = treatmentServiceFeign.findBaseTariffById(itemId);
+                    t.setItemName(tariff.getName());
+                }
+                if (ONE.equals(t.getItemType())) {
+                    BaseOralTariff tariff = treatmentServiceFeign.findBaseOralTariffById(itemId);
+                    t.setItemName(tariff.getName());
+                }
+            });
+        }
+        return new PageInfo<>(list);
     }
 
     public PageInfo<DeductionChangeRecordVO> changeList(DeductionRecordQuery query) {
         Page<DeductionChangeRecordVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        List<DeductionChangeRecordVO> collect = Lists.newArrayList();
-        PageInfo<DeductionChangeRecordVO> pageInfo = new PageInfo<>(collect);
-        pageInfo.setTotal(page.getTotal());
-        pageInfo.setPageNum(page.getPageNum());
-        return pageInfo;
+        List<DeductionChangeRecordVO> list = virtualMapper.changeList(query);
+        log.info("赠与记录分页类型：{},{}", list,list.getClass());
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<SysUserInfoDetail> users = systemServiceFeign.findSysUserEmployeeInfoByUserIds(list.stream().map(t -> Integer.valueOf(t.getExecutorName())).collect(toList()));
+            Map<Integer, String> collect1 = users.stream().collect(toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getName, (o, v) -> v));
+            List<Integer> collect = list.stream().flatMap(t -> Stream.of(Integer.valueOf(t.getPatientName()), Integer.valueOf(t.getOwnName()))).collect(toList());
+            List<PatientBaseInfoVo> patientInfoByIds = patientFeign.findPatientInfoByIds(collect);
+            Map<Integer, String> collect2 = patientInfoByIds.stream().collect(toMap(PatientBaseInfoVo::getId, PatientBaseInfoVo::getName, (o, v) -> v));
+            list.forEach(t -> {
+                t.setPatientName(collect2.get(Integer.valueOf(t.getPatientName())));
+                t.setOwnName(collect2.get(Integer.valueOf(t.getOwnName())));
+                t.setExecutorName(collect1.get(Integer.valueOf(t.getExecutorName())));
+            });
+        }
+        return new PageInfo<>(list);
     }
 
     public List<DeductionItemPeriodVO> itemList(Integer cardId) {
@@ -529,4 +580,5 @@ public class DeductionPatientBiz {
         List<SpecialPackageCouponItem> couponItems = specialPackageCouponItemBiz.selectList(specialPackageCouponItem);
         return BeanCopierUtils.listGeneralCopyBean(couponItems, DeductionItemPeriodVO.class);
     }
+
 }

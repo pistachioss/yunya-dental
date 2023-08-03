@@ -16,14 +16,16 @@ import java.math.BigDecimal;
 public class DeductionUsedRecordVO implements Serializable {
     @ApiModelProperty("礼包名称")
     private String couponName;
-    @ApiModelProperty("礼包名称")
+    @ApiModelProperty("卡号")
     private String cardNumber;
-    @ApiModelProperty("礼包名称")
+    @ApiModelProperty("销售渠道")
     private String saleChannel;
     @ApiModelProperty("售卖单价")
     private BigDecimal saleAmount;
     @ApiModelProperty("项目")
     private String itemName;
+    @ApiModelProperty("项目类型")
+    private Integer itemType;
     @ApiModelProperty("消耗数量")
     private Integer quantity;
     @ApiModelProperty("消耗患者")
@@ -33,7 +35,7 @@ public class DeductionUsedRecordVO implements Serializable {
     @ApiModelProperty("划扣时间")
     private String billDate;
     @ApiModelProperty("诊所")
-    private String orgNam;
+    private String orgName;
     @ApiModelProperty(value = "操作人")
     private String executorName;
     @ApiModelProperty(value = "备注")

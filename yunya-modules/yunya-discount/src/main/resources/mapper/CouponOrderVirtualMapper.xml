@@ -33,46 +33,54 @@
 
     <select id="refundList" resultType="com.yunya.feign.discount.domain.vo.DeductionRefundRecordVO">
         select cov.coupon_name,
-               cov.package_unit_price,
+               cov.package_unit_price   as saleAmount,
                crd.refund_amount,
-               crd.org_id,
-               crd.crt_id
+               group_concat(distinct cfp.account_item_name) as refundType,
+               crd.org_id   as orgName,
+               crd.crt_id   as executorName
         from coupon_refund_detail crd
+                 inner join coupon_refund_pay cfp on cfp.refund_id = crd.refund_id
                  inner join coupon_order_virtual cov on cov.id = crd.order_virtual_id
-        where inservice = 0
+        where cov.inservice = 0
+          and cov.patient_id = #{query.patientId}
     </select>
 
     <select id="usedList" resultType="com.yunya.feign.discount.domain.vo.DeductionUsedRecordVO">
         select cov.coupon_name,
                c.card_number,
-               c.sale_channel_id,
-               cov.package_unit_price,
-               cb.item_id,
-               cb.patient_id,
+               sc.name    as saleChannel,
+               cov.package_unit_price   as saleAmount,
+               cb.item_id   as itemName,
+               cb.item_type  ,
+               count(*)     as quantity,
+               cb.patient_id    as patientName,
                b.bill_number,
-               cb.crt_time,
-               cb.org_id,
-               cb.crt_id
+               cb.crt_time  as billDate,
+               cb.org_id    as orgName,
+               cb.crt_id    as executorName
         from card_benefit cb
                  inner join card c on cb.card_id = c.id
+                 inner join sales_channel sc on sc.id = c.sale_channel_id
                  inner join coupon_order_virtual cov on c.id = cov.card_id
                  inner join coupon_bill b on cov.order_id = b.order_record_id
         where cb.coupon_type = 5
-          and cb.patient_id = 1
+          and cb.patient_id = #{query.patientId}
+            group by cb.card_id,b.bill_number,cb.item_id
     </select>
 
     <select id="changeList" resultType="com.yunya.feign.discount.domain.vo.DeductionChangeRecordVO">
         select cov.coupon_name,
-               cov.package_unit_price,
-               c.buyer_id,
-               c.sold_target,
-               cc.changeTime,
-               cc.operateId
+               cov.package_unit_price   as saleAmount,
+               c.buyer_id   as patientName,
+               c.sold_target    as ownName,
+               cc.crt_time  as `date`,
+               cc.crt_id    as executorName,
+               cc.remark
         from card c
                  inner join coupon_order_virtual cov on c.id = cov.card_id
-                 inner join (select card_id, crt_time as changeTime, crt_id as operateId
-                             from card_change
-                             order by id
-                                 limit 1) cc on c.id = cc.card_id
+                 inner join card_change cc on c.id = cc.card_id and c.sold_target = cc.curr_id
+        where isnull(c.buyer_id) = 0
+            and c.sold_target != c.buyer_id
+            and c.sold_target = #{query.patientId}
     </select>
 </mapper>

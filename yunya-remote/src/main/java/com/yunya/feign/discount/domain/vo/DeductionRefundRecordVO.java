@@ -23,7 +23,7 @@ public class DeductionRefundRecordVO implements Serializable {
     @ApiModelProperty("退费方式")
     private String refundType;
     @ApiModelProperty("诊所")
-    private String orgNam;
+    private String orgName;
     @ApiModelProperty(value = "操作人")
     private String executorName;
     @ApiModelProperty(value = "备注")
