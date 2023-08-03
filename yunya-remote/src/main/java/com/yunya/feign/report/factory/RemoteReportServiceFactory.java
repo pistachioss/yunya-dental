@@ -73,7 +73,7 @@ public class RemoteReportServiceFactory implements RemoteReportServiceFeign {
     }
 
     @Override
-    public PatientCostInfoVO getCashInfo() {
+    public PatientCostInfoVO getCashInfo(Integer patientId) {
         return null;
     }
 }

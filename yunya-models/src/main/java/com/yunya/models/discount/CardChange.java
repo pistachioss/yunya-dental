@@ -27,6 +27,8 @@ public class CardChange implements Serializable {
     @Column(name = "pre_id")
     private Integer preId;
 
+    private String remark;
+
     @Column(name = "curr_id")
     private Integer currId;
 

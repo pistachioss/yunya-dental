@@ -99,7 +99,7 @@ public class ReportServiceRest {
         return baseBillMapper.selectPatientBillItemList();
     }
 
-    @PostMapping(value = "/patient/bill/cashinfo")
+    @PostMapping(value = "/patient/bill/cashinfo/{id}")
     PatientCostInfoVO exportMemberBalanceList(@PathVariable(value = "id") Integer patientId) throws IOException {
         return baseBillBiz.findCashAmountByPatientId(patientId);
     }
