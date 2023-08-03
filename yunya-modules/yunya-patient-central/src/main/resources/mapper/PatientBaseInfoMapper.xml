@@ -66,12 +66,16 @@
 			   cast(IFNULL(pmi.principal_amount + pmi.bonus_amount,0) as decimal(15,2)) memberCardMoneySum,
 			   cast(IFNULL(ppi.prepayment_principal + ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentsMoneySum,
 			   pmi.crt_time as crtTime,
-        	   pmi.inservice
+        	   pmi.inservice,
+               pmr.master_card_id AS masterCardId
         from patient_base_info pbi
         left join (
             select * from patient_prepayments_info where type=1
         ) ppi on pbi.id = ppi.patient_id
         left join patient_member_info pmi      on pbi.id = pmi.patient_id
+        left join (
+            select * from patient_member_relation where secondary_card_id = #{id} order by crt_time desc limit 1
+        ) pmr on pmr.secondary_card_id = pbi.id
         where pbi.id = #{id}
     </select>
 

@@ -2,7 +2,9 @@ package com.yunya.modules.patient_central.controller.app;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.feign.patient_central.domain.query.MemberExpendRecordQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo;
 import com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
@@ -20,6 +22,7 @@ import com.yunya.feign.treatment_other.domain.vo.XRayFilmVO;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.CreditsShop;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
@@ -77,8 +80,15 @@ public class PatientMemberAppController {
     public ResponseResult<PatientPublicInfoVo> findMemberBaseInfo(@PathVariable("patientId") Integer patientId) {
         CreditsShop creditsShop = remoteReportServiceFeign.lastPatientCredits(patientId);
         PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(patientId);
-        if(creditsShop!=null){
-            patientPublicInfoVo.setPoint(creditsShop.getCreditsAccount());
+        if (StringHelper.isNotNull(patientPublicInfoVo)) {
+            Integer masterCardId = patientPublicInfoVo.getMasterCardId();
+            PatientPublicInfoVo masterCardPatient = patientBaseInfoBiz.findPatientPublicInfoById(masterCardId);
+            if (StringHelper.isNotNull(masterCardPatient)) {
+                patientPublicInfoVo.setMasterCardInfo(masterCardPatient);
+            }
+            if (creditsShop != null) {
+                patientPublicInfoVo.setPoint(creditsShop.getCreditsAccount());
+            }
         }
         return ResponseUtil.success(patientPublicInfoVo);
     }
@@ -88,19 +98,18 @@ public class PatientMemberAppController {
     public ResponseResult<MasertMemberDetailVo> findMemberDetailInfo(@PathVariable("patientId") Integer patientId,
                                                                      @PathVariable("unionId") String unionId) {
         MasertMemberDetailVo masertMemberDetailVo = new MasertMemberDetailVo();
+        PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(patientId);
+        CreditsShop creditsShop = remoteReportServiceFeign.lastPatientCredits(patientId);
+        if(creditsShop!=null){
+            patientPublicInfoVo.setPoint(creditsShop.getCreditsAccount());
+        }
+
         //已绑定主卡信息
-        List<PatientCardOwnerInfoVo> patientCardOwnerInfoVos = patientMemberInfoBiz.findPatientCardOwnerInfo(patientId);
+        List<PatientCardOwnerInfoVo> patientCardOwnerInfoVos = patientMemberInfoBiz.findPatientCardOwnerInfo(patientPublicInfoVo.getMasterCardId());
         //患者会员卡关联关系
         PatientMemberRelationQueryForm form = new PatientMemberRelationQueryForm();
         form.setPatientId(patientId);
         MemberRelationVo memberRelationVo = patientMemberInfoBiz.findMemberBindingRelation(form);
-
-        CreditsShop creditsShop = remoteReportServiceFeign.lastPatientCredits(patientId);
-
-        PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(patientId);
-        if(creditsShop!=null){
-            patientPublicInfoVo.setPoint(creditsShop.getCreditsAccount());
-        }
 
 
         masertMemberDetailVo.setMemberRelationVo(memberRelationVo);

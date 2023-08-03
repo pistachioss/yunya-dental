@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -146,4 +145,11 @@ public class PatientPublicInfoVo implements Serializable {
     @ApiModelProperty(value = "会员卡是否激活、是否退卡")
     private Boolean inservice;
 
+    /** 主卡人患者id */
+    @ApiModelProperty("主卡人患者id")
+    private Integer masterCardId;
+
+    /** 主卡人患者信息 */
+    @ApiModelProperty("主卡人患者信息")
+    private PatientPublicInfoVo masterCardInfo;
 }
