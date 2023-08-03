@@ -2070,4 +2070,22 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     // 发送消息 账单退费
     sendMemberLogMessages(memberRechargeRecord.getId(), 0, model.getType());
   }
+
+  /**
+   * 患者个人累计数据统计
+   *
+   * @param patientId
+   * @return
+   */
+  public PatientCumulativeInfoVO findPatientCumulativeInfo(Integer patientId) {
+    PatientCumulativeInfoVO result = mapper.selectPatientCumulativeTotalInfo(patientId);
+    if (StringHelper.isNull(result)) {
+      result = new PatientCumulativeInfoVO();
+    }
+    BigDecimal cumulativeConsumption = remoteReportServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
+    if (StringHelper.isNotNull(cumulativeConsumption)) {
+      result.setCumulativeConsumption(cumulativeConsumption);
+    }
+    return result;
+  }
 }

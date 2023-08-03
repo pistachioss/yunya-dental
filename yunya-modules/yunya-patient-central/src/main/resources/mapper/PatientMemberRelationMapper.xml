@@ -126,7 +126,8 @@
         pmi.card_number cardNumber,
         pmi.inservice,
         pmi.member_type_id memberTypeId,
-        pbi.face_url as faceUrl
+        pbi.face_url as faceUrl,
+        pmi.crt_time AS crtTime
         from patient_member_relation pmr join patient_member_info pmi
         on pmr.master_card_id = pmi.patient_id
         join patient_base_info pbi

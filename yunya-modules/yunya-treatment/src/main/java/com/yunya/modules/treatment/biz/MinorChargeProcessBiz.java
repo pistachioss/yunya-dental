@@ -97,6 +97,9 @@ public class MinorChargeProcessBiz {
             // 发送MQ消息
             chargedMQMiddleTable(billPayRecord, isMqTreatment);
             giftFirstVisitPackage(billPayRecord);
+            if (StringHelper.gtZero(totalCharge)) {
+                patientFeign.autoUpdateMemberType(billPayRecord.getPatientId());
+            }
             completedChargeLog(billPayRecord.getId());
         } catch (Exception e) {
             log.error("MinorChargeProcessBize asyncProcessCharge error: {}", e);

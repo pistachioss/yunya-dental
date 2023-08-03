@@ -110,4 +110,6 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      * @return
      */
     List<PatientDepositAccountVO> selectDepositAccountBillExpendList(@Param("orderRecordId") Integer orderRecordId);
+
+    PatientCumulativeInfoVO selectPatientCumulativeTotalInfo(@Param("patientId") Integer patientId);
 }

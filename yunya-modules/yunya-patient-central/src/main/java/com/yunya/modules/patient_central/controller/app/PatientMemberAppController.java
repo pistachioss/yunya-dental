@@ -105,12 +105,14 @@ public class PatientMemberAppController {
         }
 
         //已绑定主卡信息
-        List<PatientCardOwnerInfoVo> patientCardOwnerInfoVos = patientMemberInfoBiz.findPatientCardOwnerInfo(patientPublicInfoVo.getMasterCardId());
+        List<PatientCardOwnerInfoVo> patientCardOwnerInfoVos = patientMemberInfoBiz.findPatientCardOwnerInfo(patientId);
         //患者会员卡关联关系
         PatientMemberRelationQueryForm form = new PatientMemberRelationQueryForm();
         form.setPatientId(patientId);
         MemberRelationVo memberRelationVo = patientMemberInfoBiz.findMemberBindingRelation(form);
 
+        PatientCumulativeInfoVO cumulativeInfoVO = patientMemberInfoBiz.findPatientCumulativeInfo(patientId);
+        masertMemberDetailVo.setCumulativeInfo(cumulativeInfoVO);
 
         masertMemberDetailVo.setMemberRelationVo(memberRelationVo);
         masertMemberDetailVo.setPatientCardOwnerInfoVos(patientCardOwnerInfoVos);

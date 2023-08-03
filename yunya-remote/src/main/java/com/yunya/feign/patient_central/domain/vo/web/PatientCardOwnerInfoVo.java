@@ -1,10 +1,12 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 简介: 已绑定卡主信息
@@ -50,4 +52,9 @@ public class PatientCardOwnerInfoVo implements Serializable {
 
     @ApiModelProperty("卡主会员是否可使用")
     private Boolean inservice;
+    
+    /** 开卡日期 */
+    @ApiModelProperty("开卡日期")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date crtTime;
 }

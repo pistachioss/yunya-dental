@@ -303,5 +303,23 @@
         LEFT JOIN patient_base_info pbi ON pbi.id = t.patient_id
     </select>
 
+    <select id="selectPatientCumulativeTotalInfo"
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientCumulativeInfoVO">
+        SELECT
+            IFNULL(mer.cardCumulativeConsumption, 0) AS cardCumulativeConsumption,
+            IFNULL(pmi.principal_amount, 0) AS memberPrincipal,
+            IFNULL(pmi.bonus_amount, 0) AS memberBouns,
+            IFNULL(pmi.bonus_amount, 0) AS personBounsCumulative
+        FROM patient_member_info pmi
+        LEFT JOIN (
+            SELECT
+                member_id,
+                SUM(expend_principal + expend_gift) AS cardCumulativeConsumption
+            FROM member_expend_record
+            GROUP BY member_id
+        ) mer ON pmi.card_number=mer.member_id
+        WHERE pmi.patient_id = #{patientId}
+    </select>
+
 
 </mapper>

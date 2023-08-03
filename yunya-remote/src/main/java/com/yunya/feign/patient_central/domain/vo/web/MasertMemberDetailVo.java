@@ -26,6 +26,10 @@ public class MasertMemberDetailVo {
 
     @ApiModelProperty(value = "患者会员信息")
     private PatientPublicInfoVo patientPublicInfoVo;
+
+    /** 患者累计信息 */
+    @ApiModelProperty("患者累计信息")
+    private PatientCumulativeInfoVO cumulativeInfo;
     /**
      *  积分
      */

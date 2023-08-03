@@ -333,7 +333,7 @@ public class TreatTollBiz {
       @Override
       public void afterCommit() {
         minorChargeProcessBiz.asyncProcessCharge(billPayRecord, model, totalCharge, totalPrincipal, isMqTreatment);
-//        minorChargeProcessBiz.asyncPushWxExpendMsg(billPayRecord);
+        minorChargeProcessBiz.asyncPushWxExpendMsg(billPayRecord);
       }
     });
   }
