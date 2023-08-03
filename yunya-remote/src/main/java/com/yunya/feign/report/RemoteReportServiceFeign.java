@@ -65,6 +65,6 @@ public interface RemoteReportServiceFeign {
     @RequestMapping(value = "/api/patient/bill/hasitemlist",method = RequestMethod.POST)
     List<PatientHasBillItemVO> getHasItemList();
 
-    @RequestMapping(value = "/api/patient/bill/cashinfo",method = RequestMethod.POST)
-    PatientCostInfoVO getCashInfo();
+    @RequestMapping(value = "/api/patient/bill/cashinfo/{id}",method = RequestMethod.POST)
+    PatientCostInfoVO getCashInfo(@PathVariable(value = "id") Integer patientId);
 }

@@ -566,9 +566,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    *
    * @param cardNumber 会员卡号
    */
-  public void makeMemberLevelByCashAmount(String cardNumber) {
+  public void makeMemberLevelByCashAmount(Integer patientId) {
     // TODO: 消费后判断是否升级会员等级
-    BigDecimal sum = remoteReportServiceFeign.getCashInfo().getCumulativeConsumption();
+    BigDecimal sum = remoteReportServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
     List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
     MemberType tmp = new MemberType();
     memberTypeList.stream().filter(memberType -> {
@@ -577,7 +577,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (memberTypeList != null && !memberTypeList.isEmpty()) {
       // 变更等级
       PatientMemberInfo patientMember =
-          this.patientMemberInfoMapper.selectOneByCardNumber(cardNumber);
+          this.patientMemberInfoMapper.selectOneByPatientId(patientId);
       patientMember.setMemberTypeId(memberTypeList.get(0).getId());
       patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMember.setUpdName(BaseContextHandler.getName());
