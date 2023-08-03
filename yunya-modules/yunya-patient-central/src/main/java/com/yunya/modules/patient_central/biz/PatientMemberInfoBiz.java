@@ -564,9 +564,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   /**
    * 根据累计现金消费，判断会员等级
    *
-   * @param cardNumber 会员卡号
+   * @param patientId 患者ID
    */
-  public void makeMemberLevelByCashAmount(Integer patientId) {
+  public boolean makeMemberLevelByCashAmount(Integer patientId) {
     // TODO: 消费后判断是否升级会员等级
     BigDecimal sum = remoteReportServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
     List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
@@ -587,7 +587,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       this.cardLog(patientMember, "变更", "更新");
       remoteRabbitMqServiceFeign.sendMessage(
           patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
+      return true;
     }
+    return false;
   }
 
   /**

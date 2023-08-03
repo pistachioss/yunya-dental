@@ -391,4 +391,8 @@ import java.util.List;
   @ApiOperation("根据id获取患者类型")
   @GetMapping("/api/patient/origin/{id}")
   PatientOrigin findPatientOriginById(@PathVariable(value = "id") Integer id);
+
+  @ApiOperation("收费后调用，自动升级会员等级")
+  @GetMapping("/api/member/bill/autoupdate/{id}")
+  boolean autoUpdateMemberType(@PathVariable(value = "id") Integer patientId);
 }

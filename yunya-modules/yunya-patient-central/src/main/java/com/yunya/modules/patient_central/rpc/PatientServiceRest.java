@@ -454,4 +454,10 @@ public class PatientServiceRest {
   public List<PatientDepositAccountVO> findDepositAccountBillExpendList(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
     return patientMemberInfoBiz.findDepositAccountBillExpendList(orderRecordId);
   }
+
+  @ApiOperation("收费后调用，自动升级会员等级")
+  @GetMapping("/member/bill/autoupdate/{id}")
+  public boolean autoUpdateMemberType(@PathVariable(value = "id") Integer patientId) {
+    return patientMemberInfoBiz.makeMemberLevelByCashAmount(patientId);
+  }
 }

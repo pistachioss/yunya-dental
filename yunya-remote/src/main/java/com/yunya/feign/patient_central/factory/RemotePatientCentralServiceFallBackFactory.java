@@ -296,4 +296,9 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public PatientOrigin findPatientOriginById(Integer id) {
         return null;
     }
+
+    @Override
+    public boolean autoUpdateMemberType(Integer patientId) {
+        return false;
+    }
 }
