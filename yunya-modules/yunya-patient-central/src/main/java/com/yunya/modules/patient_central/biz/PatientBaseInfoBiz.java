@@ -55,6 +55,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.RedisConstants.PATIENT_BASE_INFO;
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.MEMBER;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -141,6 +142,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @return PatientPublicInfo
    */
   public PatientPublicInfoVo findPatientPublicInfoById(Integer id) {
+    // 会员卡预查询
+    patientMemberInfoBiz.findMemberBaseInfo(id);
+
     PatientPublicInfoVo patientPublicInfoVo =
             this.patientBaseInfoMapper.findPatientPublicInfoById(id);
     if (patientPublicInfoVo != null && patientPublicInfoVo.getMemberTypeId() != null) {

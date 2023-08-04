@@ -205,16 +205,16 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       // 开卡
       PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
       patientMemberInfo.setPatientId(id);
-      patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      patientMemberInfo.setOrgId(21);
       patientMemberInfo.setMemberTypeId(4);
-      patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      patientMemberInfo.setCrtName(BaseContextHandler.getName());
+      patientMemberInfo.setCrtId(1);
+      patientMemberInfo.setCrtName("admin");
       patientMemberInfo.setInservice(true);
       generateCardNumber(patientMemberInfo);
-      this.cardLog(patientMemberInfo, "开卡", "");
+//      this.cardLog(patientMemberInfo, "开卡", "");
       remoteRabbitMqServiceFeign.sendMessage(
           patientMemberInfo.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
-      remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
+//      remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
     }
     MemberBaseInfoVo memberBaseInfoVO = this.patientMemberInfoMapper.findMemberBaseInfo(id);
     if (memberBaseInfoVO != null) {
@@ -742,12 +742,14 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             String suffix = String.format("%06d", Integer.parseInt(number) + 1);
             // 获取门诊简称
             OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-            if (StringHelper.isNotNull(org)) {
-              // 生成规则：Y + 门诊编号 + 6位递增值（数据库）
-              patientMemberInfo.setCardNumber(MEMBER.getPrefix() + org.getClinicNumber() + suffix);
-              mapper.insertSelective(patientMemberInfo);
-              log.info("==========预付款账号生成结束===========");
+            String cnum = "000";  // 无门诊时，默认值
+            if (StringHelper.isNotNull(org) && StringHelper.isNotNull(org.getClinicNumber())) {
+              cnum = org.getClinicNumber();
             }
+            // 生成规则：Y + 门诊编号 + 6位递增值（数据库）
+            patientMemberInfo.setCardNumber(MEMBER.getPrefix() + cnum + suffix);
+            mapper.insertSelective(patientMemberInfo);
+            log.info("==========预付款账号生成结束===========");
             return null;
           });
     } else {
