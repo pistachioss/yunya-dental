@@ -201,6 +201,21 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public MemberBaseInfoVo findMemberBaseInfo(Integer id) {
     MemberBaseInfoVo memberBaseInfoVO = this.patientMemberInfoMapper.findMemberBaseInfo(id);
+    if (memberBaseInfoVO == null) {
+      // 开卡
+      PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
+      patientMemberInfo.setPatientId(id);
+      patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      patientMemberInfo.setMemberTypeId(4);
+      patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientMemberInfo.setCrtName(BaseContextHandler.getName());
+      patientMemberInfo.setInservice(true);
+      generateCardNumber(patientMemberInfo);
+      this.cardLog(patientMemberInfo, "开卡", "");
+      remoteRabbitMqServiceFeign.sendMessage(
+          patientMemberInfo.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
+      remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
+    }
     if (memberBaseInfoVO != null) {
       if (memberBaseInfoVO.getId() != null) {
         // 获取会员卡名称
