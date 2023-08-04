@@ -175,8 +175,10 @@ public class RedisConstants implements Serializable {
   public static final String QZT_TOKEN =  "qzt:token";
   /** ---------------------------滨江----------------------------------------------- */
   public static final String BJ_TOKEN =  "bj:token";
+  /** 会员授权码 */
+  public static final String MEMBER_AUTH_CODE = "member:auth:code";
 
-  /**
+    /**
    * 设置key中的占位符
    *
    * @param keyPrefix key前缀
@@ -212,6 +214,10 @@ public class RedisConstants implements Serializable {
     }
 
     return sb.toString();
+  }
+
+  public static String buildLockCacheKey(Object[] keys) {
+    return Joiner.on(":").join(keys);
   }
 
   public static String buildLockCacheKey(String lockPrefix, Object suffix)

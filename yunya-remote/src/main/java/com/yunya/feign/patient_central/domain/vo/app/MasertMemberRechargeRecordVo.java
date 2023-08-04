@@ -30,6 +30,10 @@ public class MasertMemberRechargeRecordVo {
      */
     @ApiModelProperty(value = "会员本卡总余额（本金+赠金）")
     private BigDecimal memberCardMoneySum;
+    
+    /** 会员卡赠金 */
+    @ApiModelProperty("会员卡赠金")
+    private BigDecimal memberBouns;
 
     /**
      * 预付款总余额（本金+赠金）

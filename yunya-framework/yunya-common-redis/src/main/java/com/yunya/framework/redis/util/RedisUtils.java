@@ -1,6 +1,8 @@
 package com.yunya.framework.redis.util;
 
 import com.alibaba.fastjson.JSON;
+import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.common.utils.StringHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisStringCommands;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Redis工具类
@@ -515,5 +518,47 @@ public class RedisUtils {
    */
   public long hdelete(String key,Object... hashKeys) {
     return opsForHash.delete(key,hashKeys);
+  }
+
+  /**
+   * 如果key对应缓存不存在，则用给定生成方法生成数据并保存
+   *
+   * @param supplier
+   * @param keys
+   * @return
+   */
+  public <T> T supplyIfAbsent(Supplier<T> supplier, String...keys) {
+    return supplyIfAbsent(supplier, 60, TimeUnit.SECONDS, keys);
+  }
+
+  /**
+   * 如果key对应缓存不存在，则用给定生成方法生成数据并保存
+   *
+   * @param supplier
+   * @param expire
+   * @param keys
+   * @return
+   */
+  public <T> T supplyIfAbsent(Supplier<T> supplier, int expire, String...keys) {
+    return supplyIfAbsent(supplier, expire, TimeUnit.SECONDS, keys);
+  }
+
+  /**
+   * 如果key对应缓存不存在，则用给定生成方法生成数据并保存
+   *
+   * @param supplier
+   * @param expire
+   * @param unit
+   * @param keys
+   * @return
+   */
+  public <T> T supplyIfAbsent(Supplier<T> supplier, int expire, TimeUnit unit, String...keys) {
+    String key = RedisConstants.buildLockCacheKey(keys);
+    T result = (T) get(key);
+    if (StringHelper.isNull(result) || (result instanceof String && StringHelper.isEmpty(String.valueOf(result)))) {
+      result = supplier.get();
+      set(key, result, expire, unit);
+    }
+    return result;
   }
 }

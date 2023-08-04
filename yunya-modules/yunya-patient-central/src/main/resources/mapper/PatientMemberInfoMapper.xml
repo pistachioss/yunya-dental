@@ -46,7 +46,7 @@
     UNION
     (select crt_name consumerName,'--' patientName, 0 type,DATE_FORMAT(crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,(recharge_principal+ifnull(recharge_bonus,0)) rechargePrincipal
     from member_recharge_record
-    where inservice = 1 and type = 0 and DATE_FORMAT(crt_time,'%Y-%m') >
+    where inservice = 1 and type IN (0, 6, 7) and DATE_FORMAT(crt_time,'%Y-%m') >
     DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y-%m')
     and member_id = #{memberId}
     )
@@ -107,7 +107,7 @@
     <select id="findMemberBindingRelation"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo">
       select pmr.id bindId,(select name from patient_base_info  where id = pmr.secondary_card_id )name,pmr.master_card_id masterCardId,
-      pmr.secondary_card_id secondaryCardId,pmr.bind_type bindType,pbi.face_url as faceUrl
+      pmr.secondary_card_id secondaryCardId,pmr.bind_type bindType,pbi.face_url as faceUrl, pbi.mobile AS masterMobile
       from patient_member_relation pmr join patient_base_info pbi on pmr.master_card_id = pbi.id
       where pmr.master_card_id = #{form.patientId} and bind_type = #{form.bindType}
     </select>

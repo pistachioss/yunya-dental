@@ -60,6 +60,7 @@
         <easyexcel-version>2.2.6</easyexcel-version>
         <collections4-version>4.1</collections4-version>
         <wx-sdk-version>4.3.6.B</wx-sdk-version>
+        <zxing-version>3.3.3</zxing-version>
     </properties>
 
     <dependencyManagement>
@@ -245,6 +246,18 @@
                 <groupId>com.github.xiaoymin</groupId>
                 <artifactId>swagger-bootstrap-ui</artifactId>
                 <version>${swagger-ui.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.zxing</groupId>
+                <artifactId>core</artifactId>
+                <version>${zxing-version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.zxing</groupId>
+                <artifactId>javase</artifactId>
+                <version>${zxing-version}</version>
             </dependency>
 
             <dependency>

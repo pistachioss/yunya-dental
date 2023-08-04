@@ -12,7 +12,9 @@ import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.form.MemberAuthorizedCodeVerifyForm;
 import com.yunya.feign.treatment.domain.query.AppMemberRechargePrepaidFrom;
+import com.yunya.feign.treatment.domain.form.MemberAuthorizedCodeForm;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
@@ -34,6 +36,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,18 +107,18 @@ public class PatientMemberAppController {
         if(creditsShop!=null){
             patientPublicInfoVo.setPoint(creditsShop.getCreditsAccount());
         }
-
-        //已绑定主卡信息
-        List<PatientCardOwnerInfoVo> patientCardOwnerInfoVos = patientMemberInfoBiz.findPatientCardOwnerInfo(patientId);
-        //患者会员卡关联关系
-        PatientMemberRelationQueryForm form = new PatientMemberRelationQueryForm();
-        form.setPatientId(patientId);
-        MemberRelationVo memberRelationVo = patientMemberInfoBiz.findMemberBindingRelation(form);
-
         PatientCumulativeInfoVO cumulativeInfoVO = patientMemberInfoBiz.findPatientCumulativeInfo(patientId);
         masertMemberDetailVo.setCumulativeInfo(cumulativeInfoVO);
 
-        masertMemberDetailVo.setMemberRelationVo(memberRelationVo);
+        //已绑定主卡信息
+        List<PatientCardOwnerInfoVo> patientCardOwnerInfoVos = patientMemberInfoBiz.findPatientCardOwnerInfo(patientId);
+        if (StringHelper.isEmpty(patientCardOwnerInfoVos)) {
+            //患者会员卡关联关系
+            PatientMemberRelationQueryForm form = new PatientMemberRelationQueryForm();
+            form.setPatientId(patientId);
+            MemberRelationVo memberRelationVo = patientMemberInfoBiz.findMemberBindingRelation(form);
+            masertMemberDetailVo.setMemberRelationVo(memberRelationVo);
+        }
         masertMemberDetailVo.setPatientCardOwnerInfoVos(patientCardOwnerInfoVos);
         masertMemberDetailVo.setPatientPublicInfoVo(patientPublicInfoVo);
 
@@ -150,6 +154,7 @@ public class PatientMemberAppController {
         masertMemberRechargeRecordVo.setPrelist(prelist);
         masertMemberRechargeRecordVo.setList(list);
         masertMemberRechargeRecordVo.setMemberCardMoneySum(patientPublicInfoVo.getMemberCardMoneySum());
+        masertMemberRechargeRecordVo.setMemberBouns(patientPublicInfoVo.getBonusAmount());
         masertMemberRechargeRecordVo.setPrepaymentsMoneySum(patientPublicInfoVo.getPrepaymentsMoneySum());
 
         return ResponseUtil.success(masertMemberRechargeRecordVo);
@@ -231,5 +236,28 @@ public class PatientMemberAppController {
                 }
         );
         return ResponseUtil.success(new PageInfo<>(appPatientBaseInfoVos));
+    }
+
+    /**
+     * 生成授权码
+     *
+     * @param form
+     * @param servletResponse
+     * @throws IOException
+     */
+    @PostMapping("/patientMember/generateCode")
+    public void generateAuthorizedCode(@RequestBody @Validated MemberAuthorizedCodeForm form, HttpServletResponse servletResponse) throws IOException {
+        patientBaseInfoBiz.generateAuthorizedCode(form, servletResponse);
+    }
+
+    /**
+     * 验证授权码
+     *
+     * @param form
+     * @throws IOException
+     */
+    @PostMapping("/patientMember/verifyCode")
+    public ResponseResult<String> verificationAuthorizedCode(@RequestBody @Validated MemberAuthorizedCodeVerifyForm form) throws IOException {
+        return patientBaseInfoBiz.verificationAuthorizedCode(form);
     }
 }

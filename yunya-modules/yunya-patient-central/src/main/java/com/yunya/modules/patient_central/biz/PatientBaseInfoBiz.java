@@ -22,15 +22,14 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.form.MemberAuthorizedCodeForm;
+import com.yunya.feign.treatment.domain.form.MemberAuthorizedCodeVerifyForm;
 import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.HanyuPinyinHelper;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
@@ -51,11 +50,14 @@ import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.yunya.framework.common.constant.RedisConstants.PATIENT_BASE_INFO;
-import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.MEMBER;
+import static com.yunya.framework.common.constant.OperationCodeConstants.MESSAGE_CODE_ERROR;
+import static com.yunya.framework.common.constant.RedisConstants.*;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -1722,5 +1724,38 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public PatientBaseInfo findPatientIntroducerByPatientId(Integer patientId) {
     return mapper.selectPatientIntroducerByPatientId(patientId);
+  }
+
+  /**
+   * 生成会员卡的授权码
+   *
+   * @param form
+   * @param response
+   * @throws IOException
+   */
+  public void generateAuthorizedCode(MemberAuthorizedCodeForm form, HttpServletResponse response) throws IOException {
+    String authCode = redisUtils.supplyIfAbsent(UUIDUtils::codeGenerator,
+            10, TimeUnit.MINUTES, MEMBER_AUTH_CODE, form.getPatientId().toString());
+    logger.info("generate authorized code：{}", authCode);
+    super.generateAsStream(authCode, response);
+  }
+
+  /**
+   * 验证 会员卡的授权码
+   *
+   * @param form
+   * @return
+   */
+  public ResponseResult verificationAuthorizedCode(MemberAuthorizedCodeVerifyForm form) {
+    String key = buildLockCacheKey(MEMBER_AUTH_CODE, form.getPatientId());
+    if (!redisUtils.hasKey(key)) {
+      return ResponseUtil.fail(MESSAGE_CODE_ERROR, "授权码已失效！", null);
+    }
+    String authCode = redisUtils.get(key);
+    if (!form.getCode().equals(authCode)) {
+      return ResponseUtil.fail(MESSAGE_CODE_ERROR, "无效的授权码！", null);
+    }
+    redisUtils.delete(key);
+    return ResponseUtil.success("验证通过");
   }
 }

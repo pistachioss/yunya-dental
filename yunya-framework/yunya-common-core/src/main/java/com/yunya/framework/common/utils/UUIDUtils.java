@@ -34,4 +34,54 @@ public class UUIDUtils {
     }
     return shortBuffer.toString();
   }
+
+  /**
+   * 4位随机码
+   *
+   * @return
+   */
+  public static String codeGenerator() {
+    return codeGenerator(true, 4);
+  }
+
+  /**
+   * 随机生成指定位的字符，并且每位上字符都不重复
+   * @return 返回短信验证码
+   */
+
+  public static String codeGenerator(int length) {
+    return codeGenerator(true, length);
+  }
+
+  /**
+   * 随机生成六位数，并且每位数都不重复
+   *
+   * @param numberFlag 是否是数字
+   * @param length 长度
+   * @return 返回短信验证码
+   */
+  public static String codeGenerator(boolean numberFlag, int length) {
+    StringBuilder retStr;
+    String strTable = numberFlag ? "1234567890" : "1234567890abcdefghijkmnpqrstuvwxyz";
+    int len = strTable.length();
+    boolean bDone = true;
+    do {
+      retStr = new StringBuilder();
+      int count = 0;
+      for (int i = 0; i < length; i++) {
+        double dblR = Math.random() * len;
+        int intR = (int) Math.floor(dblR);
+        char c = strTable.charAt(intR);
+        if (('0' <= c) && (c <= '9')) {
+          count++;
+        }
+        retStr.append(strTable.charAt(intR));
+      }
+      int firstCount = 2;
+      if (count >= firstCount) {
+        bDone = false;
+      }
+    } while (bDone);
+    return retStr.toString();
+  }
 }

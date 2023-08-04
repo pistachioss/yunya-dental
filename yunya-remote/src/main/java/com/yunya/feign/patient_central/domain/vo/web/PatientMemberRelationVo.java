@@ -43,6 +43,10 @@ public class PatientMemberRelationVo implements Serializable {
      */
     @ApiModelProperty(value = "主卡会员人ID")
     private Integer masterCardId;
+    
+    /** 亲密付患者手机号 */
+    @ApiModelProperty("亲密付患者手机号")
+    private String masterMobile;
 
     /**
      * 副卡会员人ID

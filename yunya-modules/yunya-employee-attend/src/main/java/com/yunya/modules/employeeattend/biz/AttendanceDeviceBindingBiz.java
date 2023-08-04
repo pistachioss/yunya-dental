@@ -19,6 +19,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.UUIDUtils;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.employee_attend.AttendanceDeviceBinding;
 import com.yunya.modules.employeeattend.mapper.AttendanceDeviceBindingMapper;
@@ -280,7 +281,7 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         if (!matcher.matches()) {
             return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"请填写正确的手机号码",null);
         }
-        String  messageCode = this.messageCodeGenerator();
+        String  messageCode = UUIDUtils.codeGenerator(6);
         String key = RedisConstants.ATTENDANCE_DEVICE_BINDING_AUTHORIZATION + mobile;
         if (redisUtils.hasKey(key)) {
             return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
@@ -295,29 +296,5 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         redisUtils.lPush(SMS_SEND_VERIFYCODE_QUEUE + COMPANY_ORGID, smsVerifyCodeModel);
         redisUtils.set(key, messageCode, DEVICE_BINDING_AUTH_EXPIRE);
         return ResponseUtil.success("短信验证码已发送", messageCode);
-    }
-
-    /**
-     * 随机生成六位数，并且每位数都不重复
-     * @return 返回短信验证码
-     */
-    private String messageCodeGenerator() {
-        int[] array = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-        Random rand = new Random();
-        for (int i = 10; i > 1; i--) {
-            int index = rand.nextInt(i);
-            int tmp = array[index];
-            array[index] = array[i - 1];
-            array[i - 1] = tmp;
-        }
-        int result = 0;
-        for (int i = 0; i < 6; i++) {
-            result = result * 10 + array[i];
-        }
-        if (String.valueOf(result).length() == 6) {
-            return String.valueOf(result);
-        } else {
-            return String.valueOf(messageCodeGenerator());
-        }
     }
 }

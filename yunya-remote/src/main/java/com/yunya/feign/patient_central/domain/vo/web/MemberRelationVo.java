@@ -22,6 +22,6 @@ import java.util.List;
 public class MemberRelationVo implements Serializable {
     @ApiModelProperty("副卡人")
     private  List<PatientMemberRelationVo> MemberRelationList;
-    @ApiModelProperty("余额共享人")
+    @ApiModelProperty("亲密付列表（余额共享人）")
     private  List<PatientMemberRelationVo> MemberBalanceRelationList;
 }

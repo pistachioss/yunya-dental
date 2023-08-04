@@ -26,7 +26,6 @@ import com.yunya.modules.system.mapper.SysEmployeeMapper;
 import com.yunya.modules.system.mapper.SysUserMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -471,7 +470,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     if (redisUtils.hasKey(key)) {
       return ResponseUtil.fail(OBJECT_EDIT_FAIL, "消息已发送, 请稍后再试", null);
     }
-    String messageCode = this.messageCodeGenerator(true, 6);
+    String messageCode = UUIDUtils.codeGenerator(6);
     // 设置验证码到缓存
     redisUtils.set(key, messageCode, EXPIRE);
     SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
@@ -514,35 +513,5 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     return ResponseUtil.fail(OBJECT_EDIT_FAIL, "密码重置失败,请确认用户是否存在", null);
   }
 
-  /**
-   * 随机生成六位数，并且每位数都不重复
-   *
-   * @param numberFlag 是否是数字
-   * @param length 长度
-   * @return 返回短信验证码
-   */
-  private String messageCodeGenerator(boolean numberFlag, int length) {
-    StringBuilder retStr;
-    String strTable = numberFlag ? "1234567890" : "1234567890abcdefghijkmnpqrstuvwxyz";
-    int len = strTable.length();
-    boolean bDone = true;
-    do {
-      retStr = new StringBuilder();
-      int count = 0;
-      for (int i = 0; i < length; i++) {
-        double dblR = Math.random() * len;
-        int intR = (int) Math.floor(dblR);
-        char c = strTable.charAt(intR);
-        if (('0' <= c) && (c <= '9')) {
-          count++;
-        }
-        retStr.append(strTable.charAt(intR));
-      }
-      int firstCount = 2;
-      if (count >= firstCount) {
-        bDone = false;
-      }
-    } while (bDone);
-    return retStr.toString();
-  }
+
 }
