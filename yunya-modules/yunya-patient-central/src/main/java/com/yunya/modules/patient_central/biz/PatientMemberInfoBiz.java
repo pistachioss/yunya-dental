@@ -200,8 +200,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @return MemberBaseInfoVo
    */
   public MemberBaseInfoVo findMemberBaseInfo(Integer id) {
-    MemberBaseInfoVo memberBaseInfoVO = this.patientMemberInfoMapper.findMemberBaseInfo(id);
-    if (memberBaseInfoVO == null) {
+    MemberBaseInfoVo memberBaseInfoVO1 = this.patientMemberInfoMapper.findMemberBaseInfo(id);
+    if (memberBaseInfoVO1 == null) {
       // 开卡
       PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
       patientMemberInfo.setPatientId(id);
@@ -216,6 +216,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
           patientMemberInfo.getId(), MEMBER.getType(), 0, MsgCategoryEnum.BasePatientMember);
       remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
     }
+    MemberBaseInfoVo memberBaseInfoVO = this.patientMemberInfoMapper.findMemberBaseInfo(id);
     if (memberBaseInfoVO != null) {
       if (memberBaseInfoVO.getId() != null) {
         // 获取会员卡名称
