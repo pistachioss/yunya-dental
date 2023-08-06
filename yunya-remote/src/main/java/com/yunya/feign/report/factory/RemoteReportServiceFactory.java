@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.RemoteReportServiceFeign;
+import com.yunya.feign.report.domain.query.PatientFrequencyOfTreatmentQuery;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
@@ -58,7 +59,7 @@ public class RemoteReportServiceFactory implements RemoteReportServiceFeign {
     }
 
     @Override
-    public List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(DateRangeQueryForm query) {
+    public List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(PatientFrequencyOfTreatmentQuery query) {
         return null;
     }
 
@@ -69,6 +70,11 @@ public class RemoteReportServiceFactory implements RemoteReportServiceFeign {
 
     @Override
     public List<PatientHasBillItemVO> getHasItemList() {
+        return null;
+    }
+
+    @Override
+    public List<BasePatientBehaviorTagVO> findPatientTreatmentTariffTag(DateRangeQueryForm query) {
         return null;
     }
 }

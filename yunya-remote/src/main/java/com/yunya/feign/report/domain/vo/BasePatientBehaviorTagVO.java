@@ -24,6 +24,10 @@ public class BasePatientBehaviorTagVO implements Serializable {
     @ApiModelProperty("患者id")
     private Integer patientId;
 
+    /** 挂号次数（当天多次只算一次） */
+    @ApiModelProperty("挂号次数（当天多次只算一次）")
+    private Integer times;
+
     /** 行为标签名 */
     @ApiModelProperty("行为标签名")
     private String tagName;

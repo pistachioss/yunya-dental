@@ -1,5 +1,6 @@
 package com.yunya.framework.common.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,9 +10,11 @@ import java.util.List;
  * @author Ace
  * @date 2017/6/12
  */
-public class TreeNode {
+public class TreeNode implements Serializable {
   /** 节点ID */
   protected Integer id;
+  /** 节点名称 */
+  protected String name;
   /** 节点父ID */
   protected Integer parentId;
 
@@ -31,6 +34,14 @@ public class TreeNode {
 
   public void setId(Integer id) {
     this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   public Integer getParentId() {

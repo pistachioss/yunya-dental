@@ -355,4 +355,8 @@ public class CustomerPatientBiz {
         }
         return result;
     }
+
+    public PatientReferrerInfoVO findPatientReferrerInfo(Integer patientId) {
+        return patientBaseInfoBiz.findPatientReferrerInfo(patientId);
+    }
 }

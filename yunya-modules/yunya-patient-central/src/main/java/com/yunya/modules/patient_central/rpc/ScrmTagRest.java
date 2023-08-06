@@ -1,7 +1,10 @@
 package com.yunya.modules.patient_central.rpc;
 
 import com.yunya.feign.patient_central.domain.vo.WxFansBindTagVO;
+import com.yunya.feign.patient_central.domain.vo.web.PatientOriginTreeVo;
+import com.yunya.feign.report.domain.query.PatientFrequencyOfTreatmentQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
+import com.yunya.modules.patient_central.biz.PatientOriginBiz;
 import com.yunya.modules.patient_central.biz.ScrmTagBiz;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -22,6 +26,8 @@ public class ScrmTagRest {
 
     @Resource
     private ScrmTagBiz scrmTagBiz;
+    @Resource
+    private PatientOriginBiz patientOriginBiz;
 
     @PostMapping(value = "/white/patient/tag/age")
     public Map<String, Set<WxFansBindTagVO>> ageTag(@RequestBody TreeMap<Integer, String> ageMap) {
@@ -59,7 +65,7 @@ public class ScrmTagRest {
     }
 
     @PostMapping("/white/patient/tag/frequency-treatment")
-    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(@RequestBody DateRangeQueryForm query) {
+    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(@RequestBody PatientFrequencyOfTreatmentQuery query) {
         return scrmTagBiz.frequencyOfTreatmentTag(query);
     }
 
@@ -91,5 +97,20 @@ public class ScrmTagRest {
     @PostMapping(value = "/white/patient/tag/couponActive")
     public Map<String, Set<WxFansBindTagVO>> couponActiveTag() {
         return scrmTagBiz.couponActiveTag();
+    }
+
+    @PostMapping(value = "/white/patient/tag/treatment-tariff")
+    public Map<String, Set<WxFansBindTagVO>> treatmentTariffTag(@RequestBody DateRangeQueryForm query) {
+        return scrmTagBiz.treatmentTariffTag(query);
+    }
+
+    @PostMapping("/white/patient/tag/origin")
+    public Map<String, Set<WxFansBindTagVO>> patientOriginTag(@RequestBody DateRangeQueryForm query) {
+        return scrmTagBiz.patientOriginTag(query);
+    }
+
+    @GetMapping("/white/patient/origin/tree")
+    public List<PatientOriginTreeVo> findPatientOrignTree() {
+        return patientOriginBiz.findPatientOriginTree();
     }
 }

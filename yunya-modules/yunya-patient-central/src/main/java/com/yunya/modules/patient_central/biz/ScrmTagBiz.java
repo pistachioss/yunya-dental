@@ -6,6 +6,7 @@ import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.WxFansBindTagVO;
 import com.yunya.feign.patient_central.domain.vo.web.PatientKinRecomVo;
 import com.yunya.feign.report.RemoteReportServiceFeign;
+import com.yunya.feign.report.domain.query.PatientFrequencyOfTreatmentQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.domain.vo.PatientCostInfoVO;
@@ -55,6 +56,8 @@ public class ScrmTagBiz {
     private RemoteEmrServiceFeign remoteEmrServiceFeign;
     @Resource
     private RemoteDiscountFeign remoteDiscountFeign;
+    @Resource
+    private PatientOriginBiz patientOriginBiz;
 
     private static final  Map<String, String> location = new HashMap<>();
     static {
@@ -437,8 +440,46 @@ public class ScrmTagBiz {
      * @param query
      * @return
      */
-    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(DateRangeQueryForm query) {
+    public Map<String, Set<WxFansBindTagVO>> frequencyOfTreatmentTag(PatientFrequencyOfTreatmentQuery query) {
         List<BasePatientBehaviorTagVO> patients = remoteReportServiceFeign.findPatientFrequencyOfTreatment(query);
+        Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientBehaviorTagVO::getPatientId).collect(toSet()));
+        return patients.stream()
+                .collect(
+                        groupingBy(
+                                patient->patient.getTagName(),
+                                collectingAndThen(toList(), list -> list.stream().map(t -> {
+                                    WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
+                                    bindTagVO.setPatientId(t.getPatientId());
+                                    bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
+                                    return bindTagVO;
+                                }).collect(toSet()))
+                        ));
+    }
+
+    /**
+     * 根据条件查询患者的特定治疗项目标签
+     *
+     * @param query
+     * @return
+     */
+    public Map<String, Set<WxFansBindTagVO>> treatmentTariffTag(DateRangeQueryForm query) {
+        List<BasePatientBehaviorTagVO> patients = remoteReportServiceFeign.findPatientTreatmentTariffTag(query);
+        Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientBehaviorTagVO::getPatientId).collect(toSet()));
+        return patients.stream()
+                .collect(
+                        groupingBy(
+                                patient->patient.getTagName(),
+                                collectingAndThen(toList(), list -> list.stream().map(t -> {
+                                    WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
+                                    bindTagVO.setPatientId(t.getPatientId());
+                                    bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
+                                    return bindTagVO;
+                                }).collect(toSet()))
+                        ));
+    }
+
+    public Map<String, Set<WxFansBindTagVO>> patientOriginTag(DateRangeQueryForm query) {
+        List<BasePatientBehaviorTagVO> patients = patientOriginBiz.findPatientOriginChangeTag(query);
         Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientBehaviorTagVO::getPatientId).collect(toSet()));
         return patients.stream()
                 .collect(

@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.enums;
 
 import com.yunya.framework.common.utils.NumberUtil;
+import com.yunya.framework.common.utils.StringHelper;
 
 /**
  * @author: chenlin
@@ -32,6 +33,14 @@ public enum FrequencyTreatmentEnum {
             if (NumberUtil.betweenAnd(times, range)) {
                 return valEnum;
             }
+        }
+        return null;
+    }
+
+    public static String getName(Integer range) {
+        FrequencyTreatmentEnum anEnum = getEnum(range);
+        if (StringHelper.isNotNull(anEnum)) {
+            return anEnum.getName();
         }
         return null;
     }
