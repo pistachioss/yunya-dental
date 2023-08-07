@@ -159,6 +159,13 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientPublicInfoVo.setPictureCode(memberType.getPictureCode());
       }
     }
+    if (patientPublicInfoVo != null && patientPublicInfoVo.getMasterCardId() != null) {
+      PatientPublicInfoVo patientPublicInfoVo2 =
+          this.patientBaseInfoMapper.findPatientPublicInfoById(patientPublicInfoVo.getMasterCardId());
+      if (patientPublicInfoVo2 != null) {
+        patientPublicInfoVo.setMasterCardInfo(patientPublicInfoVo2);
+      }
+    }
     return patientPublicInfoVo;
   }
 
