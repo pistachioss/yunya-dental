@@ -1704,7 +1704,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     List<MemberBaseInfoVo> memberBaseInfoVoList =
         patientMemberInfoMapper.selectMemberRelationByMasterPatientId(id);
     List<MemberBaseInfoVo> memberBaseInfoVoList2 = memberBaseInfoVoList.stream().filter(m -> {
-      return memberBaseInfo.getInservice() && memberBaseInfo.getMemberTypeId() != 4;
+      return m.getInservice() && m.getMemberTypeId() != 4;
     }).collect(Collectors.toList());
     resultList.addAll(memberBaseInfoVoList2);
     if (StringHelper.isNotEmpty(resultList)) {
