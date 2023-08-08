@@ -1655,7 +1655,36 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param form 查询患者会员信息form
    * @return List<MemberInfoVo>
    */
+  @Deprecated
   public MemberInfoVo findMemberInfo(PatientMemberInfoQueryForm form) {
+    MemberInfoVo result = new MemberInfoVo();
+    PatientMemberInfo memberInfo = patientMemberIdentityLevel(form.getPatientId());
+    MasertMemberInfoVo master = new MasertMemberInfoVo();
+    MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberInfo.getMemberTypeId());
+    if (StringHelper.isNotNull(memberType)) {
+      master.setMasterMemberCardName(memberType.getName());
+      master.setRate(memberType.getRate());
+      master.setPictureCode(memberType.getPictureCode());
+    }
+    master.setId(memberInfo.getId());
+    master.setMasterCardTypeId(memberInfo.getMemberTypeId());
+    master.setMasterCardId(memberInfo.getPatientId());
+    master.setMasterCardNumber(memberInfo.getCardNumber());
+    master.setPoint(memberInfo.getPoint());
+    master.setCrtTime(memberInfo.getCrtTime());
+
+    result.setMasertMemberInfoVo(master);
+    return result;
+  }
+
+  /**
+   * 查询会员卡绑定信息
+   *
+   * @param form 查询患者会员信息form
+   * @return List<MemberInfoVo>
+   */
+  @Deprecated
+  public MemberInfoVo findMemberInfo0(PatientMemberInfoQueryForm form) {
     MemberInfoVo memberInfoVo = new MemberInfoVo();
     MasertMemberInfoVo masertMemberInfoVo = patientMemberInfoMapper.selectMasertMemberInfo(form);
     if (masertMemberInfoVo != null) {
@@ -1685,6 +1714,44 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
     memberInfoVo.setSecondaryMemberInfoVos(secondaryMemberInfoVos);
     return memberInfoVo;
+  }
+
+  /**
+   * 患者会员身份等级
+   *
+   * @param patientId
+   * @return
+   */
+  public PatientMemberInfo patientMemberIdentityLevel(Integer patientId) {
+    // 会员卡
+    PatientMemberInfo memberInfo = patientMemberInfoMapper.selectOneByPatientId(patientId);
+    if (StringHelper.isNotNull(memberInfo) && memberInfo.getInservice() && memberInfo.getMemberTypeId()!=4) {
+      return memberInfo;
+    }
+    // 亲密付
+    memberInfo = patientMemberInfoMapper.selectPatientBindMemberInfo(patientId);
+    if (StringHelper.isNotNull(memberInfo) && memberInfo.getInservice()) {
+      return memberInfo;
+    }
+    // 推荐人
+    memberInfo = patientMemberInfoMapper.selectPatientReferrerMemberInfo(patientId);
+    if (StringHelper.isNotNull(memberInfo) && memberInfo.getInservice()) {
+      return memberInfo;
+    }
+    // 普通会员
+    if (StringHelper.isNull(memberInfo)) {
+      memberInfo = crtCommonMember(patientId);
+    }
+    return memberInfo;
+  }
+
+  private PatientMemberInfo crtCommonMember(Integer patientId) {
+    PatientMemberInfo member = new PatientMemberInfo();
+    member.setMemberTypeId(4);
+    member.setPatientId(patientId);
+    member.setPrincipalAmount(BigDecimal.ZERO);
+    member.setBonusAmount(BigDecimal.ZERO);
+    return member;
   }
 
   /**

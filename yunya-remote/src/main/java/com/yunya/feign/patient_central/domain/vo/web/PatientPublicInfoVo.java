@@ -145,6 +145,13 @@ public class PatientPublicInfoVo implements Serializable {
     @ApiModelProperty(value = "会员卡是否激活、是否退卡")
     private Boolean inservice;
 
+    /** 是否显示折扣等级 */
+    @ApiModelProperty("是否显示折扣等级")
+    private Boolean isShowDiscountLevel;
+    
+    @ApiModelProperty("会员优惠-身份等级")
+    private String discountLevelName;
+
     /** 主卡人患者id */
     @ApiModelProperty("主卡人患者id")
     private Integer masterCardId;

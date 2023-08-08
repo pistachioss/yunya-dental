@@ -321,5 +321,28 @@
         WHERE pmi.patient_id = #{patientId}
     </select>
 
+    <select id="selectPatientBindMemberInfo" resultType="com.yunya.models.patient_central.PatientMemberInfo">
+        SELECT
+            <include refid="Find_Colum_List"/>
+            ,
+            'true' AS remark
+        FROM patient_member_relation pmr
+        INNER JOIN patient_member_info pmio ON pmio.patient_id = pmr.master_card_id
+        WHERE pmr.bind_type = 1 AND pmr.inservice = 1
+        AND pmr.secondary_card_id = #{patientId}
+        ORDER BY pmr.crt_time DESC
+        LIMIT 1
+    </select>
 
+    <select id="selectPatientReferrerMemberInfo"
+            resultType="com.yunya.models.patient_central.PatientMemberInfo">
+        SELECT
+            <include refid="Find_Colum_List"/>
+            ,
+            'true' AS remark
+        FROM patient_member_info pmio
+        INNER JOIN patient_base_info pbi ON pmio.patient_id=pbi.origin_id
+        WHERE pbi.origin_type=2 AND pbi.inservice = 1
+        AND pbi.id = #{patientId}
+    </select>
 </mapper>

@@ -57,7 +57,7 @@ public class TollController {
    */
   @CurrentUser
   @ApiOperation("匹配订单列表优惠信息")
-  @PostMapping(value = "/privilege/match/old", name = "匹配订单列表优惠信息")
+  @PatchMapping(value = "/privilege/match", name = "匹配订单列表优惠信息")
   @Deprecated
   public ResponseResult<List<OrderDetailChargeVO>> matchOrderTailPrivilegeListOld(
       @RequestBody @Validated OrderPrivilegeQuery query) {
@@ -104,7 +104,8 @@ public class TollController {
   @RepeatSubmit
   @CurrentUser
   @ApiOperation("确认收费")
-  @PostMapping("/confirm/old")
+  @PatchMapping("/confirm")
+  @Deprecated
   public ResponseResult<TollConfirmVO> confirmCharge(@RequestBody @Validated TollModel model) {
     TollConfirmVO tollConfirmVO = tollBiz.confirmCharge(model);
     return ResponseUtil.success(tollConfirmVO);
@@ -139,7 +140,8 @@ public class TollController {
   @RepeatSubmit
   @CurrentUser
   @ApiOperation("收欠费")
-  @PostMapping(value = "/collect/debt", name = "收欠费")
+  @PatchMapping(value = "/collect/debt", name = "收欠费")
+  @Deprecated
   public ResponseResult<TollConfirmVO> collectDebt(@RequestBody @Validated TollDebtModel model) {
     TollConfirmVO tollConfirmVO = tollBiz.collectDebt(model);
     return ResponseUtil.success(tollConfirmVO);
@@ -242,7 +244,7 @@ public class TollController {
   @RepeatSubmit
   @CurrentUser
   @ApiOperation("收欠费")
-  @PostMapping("/collectDebt")
+  @PostMapping("/collect/debt")
   public ResponseResult<TollConfirmVO> collectDebt(@RequestBody @Validated TreatTollModel model) {
     TollConfirmVO tollConfirmVO = treatTollBiz.collectDebt(model);
     return ResponseUtil.success(tollConfirmVO);
