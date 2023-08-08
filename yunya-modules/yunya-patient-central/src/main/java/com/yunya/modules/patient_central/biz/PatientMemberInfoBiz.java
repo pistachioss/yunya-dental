@@ -554,6 +554,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param cardNumber 会员卡号
    */
   public void makeMemberLevelByRecharge(String cardNumber) {
+    // 判断该卡是否可以自动升级
+    PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(cardNumber);
+    if (patientMemberInfo != null || patientMemberInfo.getNonauto()) {
+      return;
+    }
     // TODO: 充值后判断是否升级会员等级，退费后判断是否降级
     BigDecimal sum = memberRechargeRecordMapper.findRechargeTotalAmountByCardNumber(cardNumber);
     List<MemberType> memberTypeList_tmp = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
@@ -583,6 +588,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param patientId 患者ID
    */
   public boolean makeMemberLevelByCashAmount(Integer patientId) {
+    // 判断该卡是否可以自动升级
+    PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(patientId);
+    if (patientMemberInfo == null || patientMemberInfo.getNonauto()) {
+      return false;
+    }
     // TODO: 消费后判断是否升级会员等级
     BigDecimal sum = remoteReportServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
     List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
@@ -965,13 +975,31 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public void changeType(CardTypeForm form) {
     PatientMemberInfo patientMember =
         this.patientMemberInfoMapper.selectOneByCardNumber(form.getCardNumber());
+    // 判断是否提升会员等级
+    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
+    List<MemberType> tmp1 = memberTypeList.stream()
+        .filter(m->m.getId().equals(patientMember.getMemberTypeId()))
+        .collect(Collectors.toList());
+    List<MemberType> tmp2 = memberTypeList.stream()
+        .filter(m->m.getId().equals(form.getMemberTypeId()))
+        .collect(Collectors.toList());
+    if (tmp1.size() == 0 || tmp2.size() == 0) {
+      throw new ClientServiceException("会员等级查询异常", DATA_ERROR);
+    }
+    MemberType patientMemberType = tmp1.get(0);
+    MemberType formMemberType = tmp2.get(0);
+    if (patientMemberType.getTotalAmount().compareTo(formMemberType.getTotalAmount())>=0) {
+      throw new ClientServiceException("会员等级仅可赋予高于当前会员等级身份", DATA_ERROR);
+    }
+
     patientMember.setMemberTypeId(form.getMemberTypeId());
     patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientMember.setUpdName(BaseContextHandler.getName());
     patientMember.setUpdTime(new Date());
+    patientMember.setNonauto(true);
 //    patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     this.mapper.updateByPrimaryKeySelective(patientMember);
-    this.cardLog(patientMember, "变更", "更新");
+    this.cardLog(patientMember, "升级", "更新");
     remoteRabbitMqServiceFeign.sendMessage(
         patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
   }
