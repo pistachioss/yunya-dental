@@ -48,9 +48,4 @@ public class OrderDetailChargeVO extends OrderDetailVO {
   /** 是否有优惠 */
   @ApiModelProperty("是否有优惠")
   private Boolean hasDiscount = false;
-
-  @Override
-  public OrderDetailChargeVO clone() throws CloneNotSupportedException {
-    return (OrderDetailChargeVO) super.clone();
-  }
 }

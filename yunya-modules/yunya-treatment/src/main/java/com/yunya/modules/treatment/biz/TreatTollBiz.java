@@ -5,12 +5,18 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
-import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.feign.discount.domain.vo.DeductionItemBenefitVo;
+import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
+import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
+import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
-import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
+import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
+import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
+import com.yunya.feign.treatment.domain.vo.TreatOrderRecordVO;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -130,7 +136,8 @@ public class TreatTollBiz {
   public void orderDetailMatchDiscount(
           List<OrderDetailChargeVO> detailList,
           PatientOrderBenefitVo privilege, TreatOrderRecordVO result) {
-    Map<Integer, OrderDetailChargeVO> detailMap = detailList.stream().collect(toMap(OrderDetailChargeVO::getOrderDetailId, Function.identity()));
+    Map<Integer, OrderDetailChargeVO> detailMap = detailList.stream().collect(toMap(OrderDetailChargeVO::getOrderDetailId, Function.identity(),
+            (u,v)->{ throw new IllegalStateException(String.format("Duplicate key %s", u));}, LinkedHashMap::new));
     List<OrderDetailChargeVO> swipeItemList = Lists.newArrayList();
     List<PatientItemBenefitVo> itemList = privilege.getItemList();
     List<DeductionItemBenefitVo> deductions = privilege.getDeductionList();
@@ -142,18 +149,14 @@ public class TreatTollBiz {
           int swipeQuantity = deduct.getQuantity();
           int unSwipeQuantity = item.getQuantity() - swipeQuantity;
           OrderDetailChargeVO deductItem = null;
-          if (unSwipeQuantity >= 0) {
+          if (unSwipeQuantity <= 0) {
             // 项目已全部划扣
             deductItem = detailMap.remove(orderDetailId);
           } else {
             // 设置剩余未划扣的项目数量
             item.setQuantity(unSwipeQuantity);
-            try {
-              deductItem = item.clone();
-            } catch (CloneNotSupportedException e) {
-              log.error("matchGeneralDiscountOrderDetailValue error: {}", e);
-              throw new ClientServiceException("划扣项目账单明细错误", DATA_ERROR);
-            }
+            deductItem = new OrderDetailChargeVO();
+            BeanUtil.copyProperties(item, deductItem);
           }
           deductItem.setQuantity(swipeQuantity);
           deductItem.setReceivableAmount(item.getPrice().multiply(BigDecimal.valueOf(swipeQuantity)));
@@ -165,12 +168,13 @@ public class TreatTollBiz {
     }
     result.setSwipeItemList(swipeItemList);
     BigDecimal actualTotalAmount = BigDecimal.ZERO;
-    if (StringHelper.isNotEmpty(itemList)) {
-      for (OrderDetailChargeVO vo : detailList) {
+    if (StringHelper.isNotEmpty(detailMap) && StringHelper.isNotEmpty(itemList)) {
+      for (Map.Entry<Integer, OrderDetailChargeVO> entry : detailMap.entrySet()) {
+        OrderDetailChargeVO vo = entry.getValue();
         BigDecimal receivableAmount = vo.getPrice().multiply(BigDecimal.valueOf(vo.getQuantity()));
         BigDecimal actualAmount = receivableAmount;
         for (PatientItemBenefitVo benefitVo : itemList) {
-          if (vo.getOrderDetailId().equals(benefitVo.getOrderDetailId())) {
+          if (entry.getKey().equals(benefitVo.getOrderDetailId())) {
             actualAmount = actualAmount.subtract(benefitVo.getItemBenefitAmount());
             // 设置折扣率
             vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
@@ -186,7 +190,7 @@ public class TreatTollBiz {
         }
       }
     }
-    result.setItemList(detailList);
+    result.setItemList(new ArrayList<>(detailMap.values()));
   }
 
   /**
