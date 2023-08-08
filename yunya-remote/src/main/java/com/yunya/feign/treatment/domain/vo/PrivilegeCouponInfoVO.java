@@ -29,13 +29,13 @@ public class PrivilegeCouponInfoVO implements Serializable {
   /** 卡券名称 */
   @ApiModelProperty("卡券名称(授权人姓名)")
   private String benefitName;
-  /** 优惠金额or划扣金额 */
-  @ApiModelProperty("优惠金额or划扣金额")
+  /** 优惠金额 */
+  @ApiModelProperty("优惠金额")
   private BigDecimal benefitAmount;
   @ApiModelProperty("会员卡卡号")
   private String cardNumber;
   
-  /** 划扣套餐单价 */
-  @ApiModelProperty("划扣套餐单价")
-  private BigDecimal packageUnitPrice;
+  /** 划扣金额 */
+  @ApiModelProperty("划扣金额")
+  private BigDecimal packageTotalPrice;
 }

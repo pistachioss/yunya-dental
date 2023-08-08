@@ -160,7 +160,9 @@ public class TreatTollBiz {
           }
           deductItem.setQuantity(swipeQuantity);
           deductItem.setReceivableAmount(item.getPrice().multiply(BigDecimal.valueOf(swipeQuantity)));
-          List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(deduct.getItemBenefitList(), deduct.getPackageUnitPrice());
+          deductItem.setDiscountRate(BigDecimal.ZERO);
+          deductItem.setActualAmount(BigDecimal.ZERO);
+          List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(deduct.getItemBenefitList(), item.getPrice().multiply(BigDecimal.valueOf(swipeQuantity)));
           deductItem.setDiscountAppliesCoupons(privilegeInfo);
           swipeItemList.add(deductItem);
         }
@@ -197,9 +199,10 @@ public class TreatTollBiz {
    * 获取订单卡券优惠信息
    *
    * @param benefitList 匹配卡券列表
+   * @param originAmount 原价
    */
   private List<PrivilegeCouponInfoVO> getPrivilegeInfo(
-      List<ItemUseBenefitVo> benefitList, BigDecimal packageUnitPrice) {
+      List<ItemUseBenefitVo> benefitList, BigDecimal originAmount) {
     List<PrivilegeCouponInfoVO> discountAppliesCoupon = Lists.newArrayList();
     if (StringHelper.isNotEmpty(benefitList)) {
       benefitList.forEach(
@@ -208,12 +211,15 @@ public class TreatTollBiz {
           PrivilegeCouponInfoVO couponInfo = new PrivilegeCouponInfoVO();
           couponInfo.setBenefitId(benefitVo.getBenefitId());
           // 99-会员卡，-1-授权折扣
-          int couponType = 0 == benefitType ? 99 : 2==benefitType?-1:benefitVo.getCouponType();
-          couponInfo.setCouponType(couponType);
+          BigDecimal benefitAmount = benefitVo.getBenefitAmount();
+          couponInfo.setCouponType(0 == benefitType ? 99 : 2==benefitType?-1:benefitVo.getCouponType());
           couponInfo.setBenefitName(benefitVo.getBenefitName());
-          couponInfo.setBenefitAmount(benefitVo.getBenefitAmount());
           couponInfo.setCardNumber(benefitVo.getCardNumber());
-          couponInfo.setPackageUnitPrice(packageUnitPrice);
+          if (StringHelper.isNotNull(originAmount)) {
+            couponInfo.setPackageTotalPrice(originAmount.subtract(benefitAmount));
+            benefitAmount = originAmount;
+          }
+          couponInfo.setBenefitAmount(benefitAmount);
           discountAppliesCoupon.add(couponInfo);
         });
     }
