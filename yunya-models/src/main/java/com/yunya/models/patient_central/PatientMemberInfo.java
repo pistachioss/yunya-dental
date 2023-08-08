@@ -88,6 +88,11 @@ public class PatientMemberInfo {
     private Boolean inservice;
 
     /**
+     * 不自动升级
+     */
+    private Boolean nonauto;
+
+    /**
      * 创建人ID
      */
     @Column(name = "crt_id")
@@ -373,6 +378,14 @@ public class PatientMemberInfo {
      */
     public void setInservice(Boolean inservice) {
         this.inservice = inservice;
+    }
+
+    public Boolean getNonauto() {
+        return nonauto;
+    }
+
+    public void setNonauto(Boolean nonauto) {
+        this.nonauto = nonauto;
     }
 
     /**
