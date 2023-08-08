@@ -647,6 +647,7 @@ public class TreatTollBiz {
     form.setExchangeIds(exchangeIds);
     form.setPackageIds(packageIds);
     form.setVoucherIds(voucherIds);
+    form.setDeductionIds(deductionIds);
     return  discountFeign.choiceBenefit(form);
   }
 

@@ -1655,7 +1655,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param form 查询患者会员信息form
    * @return List<MemberInfoVo>
    */
-  @Deprecated
   public MemberInfoVo findMemberInfo(PatientMemberInfoQueryForm form) {
     MemberInfoVo result = new MemberInfoVo();
     PatientMemberInfo memberInfo = patientMemberIdentityLevel(form.getPatientId());
