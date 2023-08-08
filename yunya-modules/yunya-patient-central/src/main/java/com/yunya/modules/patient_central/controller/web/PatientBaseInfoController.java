@@ -16,6 +16,7 @@ import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.SelfRegistrationPatientQuery;
 import com.yunya.feign.patient_central.domain.vo.SelfRegistrationPatientVO;
 import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.treatment.domain.form.MemberAuthorizedCodeVerifyForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
@@ -28,6 +29,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
@@ -283,5 +285,17 @@ public class PatientBaseInfoController {
   @PostMapping("/birthday/check/{patientId}")
   public ResponseResult birthdayCheck(@PathVariable("patientId") Integer patientId) {
     return ResponseUtil.success(this.patientBaseInfoBiz.birthdayCheck(patientId));
+  }
+
+  /**
+   * 验证授权码
+   *
+   * @param form
+   * @throws IOException
+   */
+  @ApiOperation("患者档案-会员卡-亲密付-授权码验证")
+  @PostMapping("/patientMember/verifyCode")
+  public ResponseResult<String> verificationAuthorizedCode(@RequestBody @Validated MemberAuthorizedCodeVerifyForm form) {
+    return patientBaseInfoBiz.verificationAuthorizedCode(form);
   }
 }

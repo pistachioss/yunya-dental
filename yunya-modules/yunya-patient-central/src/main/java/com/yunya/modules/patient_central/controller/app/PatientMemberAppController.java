@@ -12,9 +12,8 @@ import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
-import com.yunya.feign.treatment.domain.form.MemberAuthorizedCodeVerifyForm;
-import com.yunya.feign.treatment.domain.query.AppMemberRechargePrepaidFrom;
 import com.yunya.feign.treatment.domain.form.MemberAuthorizedCodeForm;
+import com.yunya.feign.treatment.domain.query.AppMemberRechargePrepaidFrom;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
@@ -245,19 +244,9 @@ public class PatientMemberAppController {
      * @param servletResponse
      * @throws IOException
      */
+    @ApiOperation("小程序-我的-会员卡授权码-生成授权码")
     @PostMapping("/patientMember/generateCode")
     public void generateAuthorizedCode(@RequestBody @Validated MemberAuthorizedCodeForm form, HttpServletResponse servletResponse) throws IOException {
         patientBaseInfoBiz.generateAuthorizedCode(form, servletResponse);
-    }
-
-    /**
-     * 验证授权码
-     *
-     * @param form
-     * @throws IOException
-     */
-    @PostMapping("/patientMember/verifyCode")
-    public ResponseResult<String> verificationAuthorizedCode(@RequestBody @Validated MemberAuthorizedCodeVerifyForm form) throws IOException {
-        return patientBaseInfoBiz.verificationAuthorizedCode(form);
     }
 }
