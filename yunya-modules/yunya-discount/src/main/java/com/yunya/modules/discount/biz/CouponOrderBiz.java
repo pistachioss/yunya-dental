@@ -397,6 +397,7 @@ public class CouponOrderBiz {
         return CollectionUtils.isNotEmpty(orders) ? orders.get(0).getId() : null;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void delete(Integer orderId) {
         CouponOrder couponOrder = getOrder(orderId);
         if (Objects.nonNull(couponOrder)) {
@@ -449,11 +450,23 @@ public class CouponOrderBiz {
         }
     }
 
-    public void refundVirtual(List<CouponOrderVirtual> virtuals) {
-        virtuals.forEach(t -> {
-            t.setInservice(false);
-            virtualMapper.updateByPrimaryKeySelective(t);
-        });
+    public void refundVirtual(List<CouponOrderDetail> details, CouponOrderDetail detail
+            , List<CouponOrderVirtual> virtuals, CouponOrderVirtual virtual,CouponOrder order) {
+        virtual.setInservice(false);
+        virtualMapper.updateByPrimaryKeySelective(virtual);
+        int totalQuantity = details.stream().map(CouponOrderDetail::getQuantity).reduce(0, Integer::sum);
+        int couponCount = detail.getQuantity();
+        long refundCount = virtuals.stream().filter(t -> !t.getInservice() && Objects.equals(t.getCouponId(), detail.getCouponId()))
+                .count();
+        long count = virtuals.stream().filter(t -> !t.getInservice()).count();
+        if (refundCount >= couponCount) {
+            detail.setInservice(false);
+            orderDetailMapper.updateByPrimaryKeySelective(detail);
+        }
+        if (totalQuantity <= count) {
+            order.setInservice(false);
+            couponOrderMapper.updateByPrimaryKeySelective(order);
+        }
     }
 
     private void removeDetail(Integer orderId) {

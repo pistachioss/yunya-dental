@@ -17,7 +17,11 @@ public enum CouponOrderError implements RestError {
     RECEIVED_LACK(7, "实付金额不足"),
     ORDER_BILL(8, "订单已收费"),
     ORDER_BILL_ERROR(9, "账单退费失败，当前账单未收费"),
-    ORDER_BILL_AMOUNT(10,"账单退费失败，退费总额与退费项目金额总和不相等！"),
+    ORDER_BILL_AMOUNT(10,"账单退费失败，退费总额不能大于项目收费金额！"),
+    ORDER_BILL_REFUND_AMOUNT(11,"账单退费失败，退费总额与退费项目金额总和不相等！"),
+    CARD_CHANGE_ERROR(12, "非艾维门诊线下购买，不允许转赠"),
+    ORDER_HAS_REFUND(13, "账单已退费"),
+    CARD_HAS_REFUND(14, "该卡券已退费"),
     ;
     private Integer code;
     private String value;

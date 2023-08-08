@@ -1,7 +1,6 @@
 package com.yunya.feign.discount.domain.bo;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.math.BigDecimal;
 
@@ -9,8 +8,7 @@ import java.math.BigDecimal;
  * @author xiangyang
  * @date 2020/9/15
  */
-@Getter
-@Setter
+@Data
 public class ItemBenefitUseDetailBo {
     private Integer itemId;
     private Integer type;

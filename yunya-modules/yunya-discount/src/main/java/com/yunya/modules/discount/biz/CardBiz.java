@@ -1,5 +1,6 @@
 package com.yunya.modules.discount.biz;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -1340,7 +1341,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         log.info("订单选择的优惠信息：[{}]", form);
         form.setOrgId(treatmentServiceFeign.findOrderRecordById(form.getOrderId()).getOrgId());
         ResponseResult<List<OrderItemUseBo>> responseResult = choiceBenefitBo(form);
-        log.info("操作人员选择的优惠信息：[{}]", responseResult.getData());
+        log.info("操作人员选择的优惠信息：[{}]", JSON.toJSONString(responseResult.getData()));
         if (!FALSE.equals(responseResult.getStatus())) {
             return ResponseUtil.error(responseResult.getStatus(), responseResult.getMsg());
         }
@@ -1365,6 +1366,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             this.assignedBenefitBos(benefitUseBo, benefitVo, form);
             //设置优惠券的优惠项目明细
             this.assignedCouponItemDetail(benefitUseBo);
+            log.info("优惠信息BO:{}", benefitUseBo);
             //计算订单项目优惠信息
             for (OrderItemUseBo orderItem : orderItemBos) {
                 Integer quantity = orderItem.getQuantity();
@@ -1603,12 +1605,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private void setUpSingleBenefitInfoForOrder(OrderItemUseBo orderItem, Integer orgId, List<PatientUseBenefitBo> benefitBos) {
         for (PatientUseBenefitBo benefitBo : benefitBos) {
             if (checkMixUsed(benefitBo)) {
+                log.info("【单个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}]", orderItem.getOrderDetailId()
+                        , benefitBo.getCardId(), benefitBo.getCouponId());
                 //订单项目id对应的可用的优惠券信息
                 ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
                 Integer couponType = benefitBo.getCouponType();
                 if (MEMBER_CARD.equals(couponType) || benefitUseDetailBo != null) {
-                    log.info("【单个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}]", orderItem.getOrderDetailId()
-                            , benefitBo.getCardId(), benefitBo.getCouponId());
                     //订单项目原价
                     BigDecimal originalPrice = orderItem.getReceivableAmount();
                     //订单项目已优惠金额
@@ -1719,12 +1721,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                                        Integer itemIndex) {
         for (PatientUseBenefitBo benefitBo : benefitBos) {
             if (checkMixUsed(benefitBo)) {
+                log.info("【多个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}], 坐标：[{}]", orderItem.getOrderDetailId()
+                        , benefitBo.getCardId(), benefitBo.getCouponId(), itemIndex);
                 //订单项目id对应的可用的优惠券信息
                 ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
                 Integer couponType = benefitBo.getCouponType();
                 if (benefitUseDetailBo != null || MEMBER_CARD.equals(couponType)) {
-                    log.info("【多个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}], 坐标：[{}]", orderItem.getOrderDetailId()
-                            , benefitBo.getCardId(), benefitBo.getCouponId(), itemIndex);
                     //订单项目原价
                     BigDecimal originalPrice = orderItem.getReceivableAmount().divide(BigDecimal.valueOf(orderItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP);
                     //订单项目index已优惠金额
@@ -1733,7 +1735,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                     BigDecimal receivableAmount = originalPrice.subtract(changeBo.getDiscountedAmount());
                     BigDecimal benefitAmount = BigDecimal.ZERO;
                     if (receivableAmount.compareTo(BigDecimal.valueOf(0)) > 0) {
-                        if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType)) {
+                        if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType) || DEDUCTION.equals(couponType)) {
                             BigDecimal packageUnitPrice = benefitUseDetailBo.getPackageUnitPrice();
                             benefitAmount = receivableAmount.compareTo(packageUnitPrice) > 0 ? benefitAmount = receivableAmount.subtract(packageUnitPrice)
                                     : BigDecimal.valueOf(0);
@@ -3311,7 +3313,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         if (CollectionUtils.isNotEmpty(usableClinic) && usableClinic.contains(orgId)) {
             Integer couponType = useBenefitBo.getCouponType();
             List<ItemBenefitUseDetailBo> benefitUseDetail = useBenefitBo.getBenefitUseDetail();
-            if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType)) {
+            if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType) || DEDUCTION.equals(couponType)) {
                 //查询优惠券使用项目是否匹配订单某个项目明细，并且检查优惠券数量是否大于0
                 Optional<ItemBenefitUseDetailBo> optional = benefitUseDetail.stream().filter(obj -> obj.getItemId().equals(order.getItemId())
                         && obj.getType().equals(order.getType()) && obj.getCount() > 0).findFirst();
@@ -3487,7 +3489,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
         List<PatientPackageVo> deductionVoList = benefitVo.getDeductionVoList();
         List<Integer> deductionIds = form.getDeductionIds();
-        //设置套餐券
+        //设置划扣券
         if (CollectionUtils.isNotEmpty(deductionIds) && CollectionUtils.isNotEmpty(deductionVoList)) {
             Map<Integer, PatientPackageVo> deductionVoMap = deductionVoList.stream().collect(toMap(PatientPackageVo::getCardId, Function.identity()));
             List<PatientUseBenefitBo> deductionUseBos = deductionIds.stream().filter(cardId -> deductionVoMap.get(cardId) != null)

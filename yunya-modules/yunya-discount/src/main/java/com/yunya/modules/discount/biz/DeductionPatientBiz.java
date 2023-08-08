@@ -50,6 +50,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -90,6 +91,8 @@ public class DeductionPatientBiz {
     private CouponRefundMapper refundMapper;
     @Resource
     private CouponRefundPayMapper refundPayMapper;
+    @Resource
+    private CouponRefundDetailMapper refundDetailMapper;
     @Resource
     private CouponCommonInfoBiz couponBiz;
     @Resource
@@ -199,6 +202,7 @@ public class DeductionPatientBiz {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void cancelActive(DeductionActiveForm form) {
         Integer patientId = form.getPatientId();
         Integer cardId = form.getCardId();
@@ -221,21 +225,22 @@ public class DeductionPatientBiz {
         PatientRefundOrderVO refundOrderVO = new PatientRefundOrderVO();
         CouponBill bill = couponBillBiz.getBill(orderId);
         List<CouponOrderDetail> details = couponOrderBiz.listOrderDetail(orderId, query.getCouponId());
-        int totalQuantity = details.stream().map(CouponOrderDetail::getQuantity).reduce(0, Integer::sum);
         CouponOrderDetail detail = details.get(0);
+        Integer quantity = detail.getQuantity();
         refundOrderVO.setPatientId(bill.getPatientId());
         refundOrderVO.setOrderDetailId(detail.getId());
         refundOrderVO.setCouponName(detail.getCouponName());
-        refundOrderVO.setPrice(detail.getPrice());
-        refundOrderVO.setPackagePrice(detail.getReceivableAmount());
-        refundOrderVO.setSaleAmount(detail.getReceivableAmount());
+        refundOrderVO.setPrice(detail.getPrice().divide(BigDecimal.valueOf(quantity), 4, RoundingMode.HALF_UP));
+        refundOrderVO.setPackagePrice(detail.getReceivableAmount().divide(BigDecimal.valueOf(quantity), 4, RoundingMode.HALF_UP));
+        refundOrderVO.setSaleAmount(detail.getReceivableAmount().divide(BigDecimal.valueOf(quantity), 4, RoundingMode.HALF_UP));
         refundOrderVO.setReceivedAmount(refundOrderVO.getSaleAmount());
         refundOrderVO.setTotalReceivedAmount(bill.getReceivedAmount());
         refundOrderVO.setQuantity(1);
         refundOrderVO.setExecutorName(systemServiceFeign.findSysUserEmployeeInfoByUserId(detail.getExecutorId()).getName());
-        refundOrderVO.setWholeRefund(false);
-        if (totalQuantity == 1) {
-            refundOrderVO.setWholeRefund(true);
+        refundOrderVO.setWholeRefund(true);
+        int useCount = cardBenefitMapper.countCardUsed(query.getCardId());
+        if (useCount > 0) {
+            refundOrderVO.setWholeRefund(false);
         }
         List<CouponBillPayDetail> payDetails = couponBillBiz.listPayDetail(orderId);
         Map<Byte, List<CouponBillPayDetail>> collect =
@@ -276,11 +281,19 @@ public class DeductionPatientBiz {
         });
         return refundOrderVO;
     }
-
+    @Transactional(rollbackFor = Exception.class)
     public void refund(DeductionRefundModel model) {
         Integer orderId = model.getOrderId();
         Integer cardId = model.getCardId();
-        CouponOrderVirtual virtual = couponOrderBiz.listOrderVirtual(orderId, cardId).get(0);
+        CouponOrder order = couponOrderBiz.getOrder(orderId);
+        if (Objects.isNull(order) || order.getStatus() == 2) {
+            throw ClientServiceException.wrap(ORDER_HAS_REFUND);
+        }
+        List<CouponOrderVirtual> virtuals = couponOrderBiz.listOrderVirtual(orderId, null);
+        CouponOrderVirtual virtual = virtuals.stream().filter(t -> Objects.equals(t.getCardId(), cardId)).findFirst().orElse(null);
+        if (Objects.isNull(virtual) || !virtual.getInservice()) {
+            throw ClientServiceException.wrap(CARD_HAS_REFUND);
+        }
         List<CouponOrderDetail> details = couponOrderBiz.listOrderDetail(orderId, null);
         CouponOrderDetail detail = details.stream().filter(t -> Objects.equals(t.getId(), model.getOrderDetailId())).findFirst().orElse(null);
         if (Objects.isNull(detail)) {
@@ -296,17 +309,21 @@ public class DeductionPatientBiz {
         List<CardPaymentModel> refundPaymentModels = model.getRefundPaymentModels();
         String refundReason = model.getRefundReason();
         List<String> refundAnnex = model.getRefundAnnex();
-        Integer billRecordId = bill.getId();
         Integer patientId = bill.getPatientId();
         Integer orderRecordId = bill.getOrderRecordId();
         // 计算退费开单总额
         BigDecimal refundOrderDetailAmount = virtual.getPackageUnitPrice();
         // 计算退费总额
         BigDecimal refundTotalAmount = model.getRefundAmount();
-        if (refundOrderDetailAmount.compareTo(refundTotalAmount) != 0) {
+        if (refundOrderDetailAmount.compareTo(refundTotalAmount) < 0) {
             throw ClientServiceException.wrap(ORDER_BILL_AMOUNT);
         }
-        String name = BaseContextHandler.getName();
+        int useCount = cardBenefitMapper.countCardUsed(cardId);
+        if (useCount <= 0) {
+            if (refundOrderDetailAmount.compareTo(refundTotalAmount) != 0) {
+                throw ClientServiceException.wrap(ORDER_BILL_REFUND_AMOUNT);
+            }
+        }
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         // 保存退费记录
         CouponRefund couponRefund = new CouponRefund();
@@ -333,6 +350,7 @@ public class DeductionPatientBiz {
         refundDetail.setRefundAmount(refundTotalAmount);
         refundDetail.setCrtId(userId);
         refundDetail.setUpdId(userId);
+        refundDetailMapper.insertSelective(refundDetail);
         // 保存账单退费付款明细记录
         saveBillRefundPayDetailRecord(
                 orderRecordId,
@@ -341,7 +359,7 @@ public class DeductionPatientBiz {
                 prepaymentRefundModel,
                 refundPaymentModels, refundTotalAmount);
         virtual.setInservice(false);
-        couponOrderBiz.refundVirtual(Lists.newArrayList(virtual));
+        couponOrderBiz.refundVirtual(details, detail, virtuals, virtual, order);
     }
 
     private List<Card> listCard(Collection<Integer> cardIds) {
@@ -367,6 +385,9 @@ public class DeductionPatientBiz {
         if (card == null) {
             throw ClientServiceException.wrap(DiscountError.CARD_NOT_EXIST);
         }
+        if (Objects.isNull(card.getBuyerId())) {
+            throw ClientServiceException.wrap(CARD_CHANGE_ERROR);
+        }
         Integer status = card.getStatus();
         if (Objects.equals(MINI_CARD_REMARK, card.getRemark())) {
             throw ClientServiceException.wrap(CouponOrderError.CHANGE_ERROR);
@@ -378,8 +399,8 @@ public class DeductionPatientBiz {
         if (useCount > 0) {
             throw ClientServiceException.wrap(DiscountError.CARD_IS_USED);
         }
-        change(card, form);
         saveChange(card, form);
+        change(card, form);
     }
 
     private void saveChange(Card card, DeductionChangeForm form) {
@@ -413,12 +434,12 @@ public class DeductionPatientBiz {
             CardMemberRefundModel memberRefundModel,
             List<CardPrepaymentRefundModel> prepaymentRefundModels,
             List<CardPaymentModel> refundPaymentModels, BigDecimal refundTotalAmount) {
-        CouponRefundPay refundPay = new CouponRefundPay();
-        refundPay.setRefundId(refundId);
-        refundPay.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        refundPay.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         // 会员费退费
         if (null != memberRefundModel) {
+            CouponRefundPay refundPay = new CouponRefundPay();
+            refundPay.setRefundId(refundId);
+            refundPay.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            refundPay.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             refundPay.setAccountItemId(memberRefundModel.getAccountItemId());
             refundPay.setAccountItemName("会员卡");
             String memberNum = memberRefundModel.getMemberAccountId();
@@ -434,7 +455,7 @@ public class DeductionPatientBiz {
             refundPay.setRefundPayAmount(principalAmount.add(giftAmount));
             refundPay.setPrincipalAmount(principalAmount);
             refundPay.setGiftAmount(giftAmount);
-            refundPay.setTotalAmount(refundPay.getTotalAmount());
+            refundPay.setTotalAmount(refundTotalAmount);
             refundPayMapper.insertSelective(refundPay);
             // 会员卡退费金额返还
             MemberBillRechargeModel memberModel = new MemberBillRechargeModel();
@@ -449,6 +470,10 @@ public class DeductionPatientBiz {
         // 预付款退费
         if (StringHelper.isNotEmpty(prepaymentRefundModels)) {
             prepaymentRefundModels.forEach(prepaymentRefundModel -> {
+                CouponRefundPay refundPay = new CouponRefundPay();
+                refundPay.setRefundId(refundId);
+                refundPay.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                refundPay.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
                 refundPay.setAccountItemId(prepaymentRefundModel.getAccountItemId());
                 refundPay.setAccountItemName("预付款");
                 String prepaymentNum = prepaymentRefundModel.getPrepaymentAccountId();
@@ -481,6 +506,10 @@ public class DeductionPatientBiz {
         if (StringHelper.isNotEmpty(refundPaymentModels)) {
             refundPaymentModels.forEach(
                     paymentModel -> {
+                        CouponRefundPay refundPay = new CouponRefundPay();
+                        refundPay.setRefundId(refundId);
+                        refundPay.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                        refundPay.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
                         refundPay.setAccountItemId(paymentModel.getAccountItemId());
                         refundPay.setAccountItemName(paymentModel.getAccountItemName());
                         BigDecimal amount = paymentModel.getAmount();

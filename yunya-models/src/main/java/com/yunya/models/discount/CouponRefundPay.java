@@ -12,7 +12,6 @@ public class CouponRefundPay {
      * 主键
      */
     @Id
-    @GeneratedValue(generator = "JDBC", strategy = GenerationType.IDENTITY)
     private Integer id;
 
     /**

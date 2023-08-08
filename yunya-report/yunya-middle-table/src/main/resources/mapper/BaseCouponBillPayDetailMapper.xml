@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.report.BaseCouponBillPayDetailMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseCouponBillPayDetail" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="bill_pay_detail_id" property="billPayDetailId" jdbcType="INTEGER" />
+    <result column="order_id" property="orderId" jdbcType="INTEGER" />
+    <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER" />
+    <result column="account_item_id" property="accountItemId" jdbcType="INTEGER" />
+    <result column="account_item_name" property="accountItemName" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="amount" property="amount" jdbcType="DECIMAL" />
+    <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL" />
+    <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL" />
+    <result column="patient_num" property="patientNum" jdbcType="VARCHAR" />
+  </resultMap>
+</mapper>

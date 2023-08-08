@@ -1,8 +1,7 @@
 package com.yunya.feign.discount.domain.bo;
 
 import com.google.common.collect.Lists;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.List;
 
@@ -10,8 +9,7 @@ import java.util.List;
  * @author xiangyang
  * @date 2020/9/15
  */
-@Getter
-@Setter
+@Data
 public class BenefitUseBo {
     private List<PatientUseBenefitBo> exchangeBenefitBos;
     private List<PatientUseBenefitBo> packageBenefitBos;

@@ -1,8 +1,7 @@
 package com.yunya.feign.discount.domain.bo;
 
 import com.google.common.collect.Lists;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.io.Serializable;
@@ -11,14 +10,13 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author xiangyang
  * @date 2020/9/15
  */
-@Getter
-@Setter
+@Data
 public class PatientUseBenefitBo implements Serializable {
 	private Integer couponId;
 	private Integer couponType;

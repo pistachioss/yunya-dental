@@ -611,6 +611,13 @@ WHERE
                         from special_package_coupon spc
                         where spc.coupon_id = cci.id
                     )
+                when cci.type = 5 then
+                    (
+                        select
+                            dc.useable_clinic
+                        from deduction_coupon dc
+                        where dc.coupon_id = cci.id
+                    )
                 else
                     null
                 end as useClinicIdStr,
@@ -648,6 +655,13 @@ WHERE
                             spc.limit_count
                         from special_package_coupon spc
                         where spc.coupon_id = cci.id
+                    )
+                when cci.type = 5 then
+                    (
+                        select
+                            dc.limit_count
+                        from deduction_coupon dc
+                        where dc.coupon_id = cci.id
                     )
                 else
                     null
@@ -1270,11 +1284,10 @@ WHERE
         from `card` `c`
         inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
         left join `coupon_order_virtual` `cor` on `cor`.`card_id` = `c`.`id` and cor.inservice = 1
-        left join `coupon_order` `co` on `co`.`id` = `cor`.`order_id` and `co`.status = 1
+        left join `coupon_order` `co` on `co`.`id` = `cor`.`order_id` and  `co`.status != 2
         where
             `cci`.`type` = 5
-           and cor.patient_id = #{query.patientId}
-           and ((`c`.`status` in (1,2,3,4) and `c`.`sold_target` = #{query.patientId})
+           and ((`c`.`status` in (1,2,3,4) and `c`.`sold_target` = #{query.patientId} and `cor`.inservice = 1)
                 or (`c`.`status` in (2,3,4) and `c`.`patient_id` = #{query.patientId}))
             <if test="query.couponName !=null and query.couponName != ''">
                 and `cci`.`name` like concat('%', #{query.couponName}, '%')
