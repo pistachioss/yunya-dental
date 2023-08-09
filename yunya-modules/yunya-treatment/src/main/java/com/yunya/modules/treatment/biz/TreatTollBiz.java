@@ -13,10 +13,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
-import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
-import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
-import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
-import com.yunya.feign.treatment.domain.vo.TreatOrderRecordVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -439,7 +436,7 @@ public class TreatTollBiz {
       BillRecord billRecord,
       TreatTollModel model) {
     // 构建明细收费列表
-    Map<Integer, OrderDetailPayRecord> discountMap = findBillDiscountCoupons(model, billRecord);
+    Map<Integer, OrderDetailPayBenefitVO> discountMap = findBillDiscountCoupons(model, billRecord);
     List<OrderDetailPayRecord> orderDetailPayRecords = Lists.newArrayList();
     OrderDetail orderDetail = new OrderDetail();
     Integer orderRecordId = billRecord.getOrderRecordId();
@@ -455,7 +452,7 @@ public class TreatTollBiz {
         BigDecimal couponWorkload = BigDecimal.ZERO;
         BigDecimal swipeWorkload = BigDecimal.ZERO;
         BigDecimal swipeCouponWorkload = BigDecimal.ZERO;
-        OrderDetailPayRecord benefitVO = discountMap.get(orderDetailId);
+        OrderDetailPayBenefitVO benefitVO = discountMap.get(orderDetailId);
         if (StringHelper.isNotNull(benefitVO)) {
           privilegeAmount = benefitVO.getPrivilegeAmount();
           if (privilegeAmount.compareTo(actualAmount) > 0) {
@@ -467,7 +464,9 @@ public class TreatTollBiz {
           }
           // 获取补入工作量
           couponWorkload = benefitVO.getCouponWorkload();
-          swipeWorkload = benefitVO.getSwipeWorkload();
+          // 划扣项目的原价 - 划扣套餐价 = 划扣工作量
+          BigDecimal swipeReceivableAmount = detail.getPrice().multiply(BigDecimal.valueOf(benefitVO.getQuantity()));
+          swipeWorkload = swipeReceivableAmount.subtract(benefitVO.getPackageTotalAmount());
           swipeCouponWorkload = benefitVO.getSwipeCouponWorkload();
         }
 
@@ -521,30 +520,34 @@ public class TreatTollBiz {
    * @param billRecord
    * @return
    */
-  private Map<Integer, OrderDetailPayRecord> findBillDiscountCoupons(TreatTollModel model, BillRecord billRecord) {
+  private Map<Integer, OrderDetailPayBenefitVO> findBillDiscountCoupons(TreatTollModel model, BillRecord billRecord) {
     if (model.getDiscountType() != 0) {
       PatientOrderBenefitVo privilege = findGeneralPrivilege(billRecord.getOrderRecordId(),
               billRecord.getPatientId(), model.getGeneralDiscountModel());
       List<PatientItemBenefitVo> itemList = privilege.getItemList();
       List<DeductionItemBenefitVo> deductionList = privilege.getDeductionList();
-      Map<Integer, OrderDetailPayRecord> result = Maps.newHashMap();
+      Map<Integer, OrderDetailPayBenefitVO> result = Maps.newHashMap();
       if (StringHelper.isNotEmpty(itemList)) {
         itemList.forEach(item->{
           Integer orderDetailId = item.getOrderDetailId();
-          OrderDetailPayRecord orderDetailPayRecord = result.computeIfAbsent(orderDetailId, v -> new OrderDetailPayRecord());
-          orderDetailPayRecord.setOrderDetailId(orderDetailId);
-          orderDetailPayRecord.setPrivilegeAmount(item.getItemBenefitAmount());
-          orderDetailPayRecord.setCouponWorkload(item.getSupplyWorkload());
+          OrderDetailPayBenefitVO vo = result.computeIfAbsent(orderDetailId, v -> new OrderDetailPayBenefitVO());
+          vo.setOrderDetailId(orderDetailId);
+          vo.setPrivilegeAmount(item.getItemBenefitAmount());
+          vo.setCouponWorkload(item.getSupplyWorkload());
         });
       }
       if (StringHelper.isNotEmpty(deductionList)) {
         deductionList.forEach(item->{
           Integer orderDetailId = item.getOrderDetailId();
-          OrderDetailPayRecord orderDetailPayRecord = result.computeIfAbsent(orderDetailId, v -> new OrderDetailPayRecord());
-          orderDetailPayRecord.setOrderDetailId(orderDetailId);
-          orderDetailPayRecord.setPrivilegeAmount(orderDetailPayRecord.getPrivilegeAmount().add(item.getItemBenefitAmount()));
-          orderDetailPayRecord.setSwipeWorkload(BigDecimal.valueOf(item.getQuantity()).multiply(item.getPackageUnitPrice()));
-          orderDetailPayRecord.setSwipeCouponWorkload(item.getSupplyWorkload());
+          OrderDetailPayBenefitVO vo = result.computeIfAbsent(orderDetailId, v -> new OrderDetailPayBenefitVO());
+          vo.setOrderDetailId(orderDetailId);
+          BigDecimal itemBenefitAmount = item.getItemBenefitAmount();
+          BigDecimal privilegeAmount = StringHelper.defaultBigDecimal(vo.getPrivilegeAmount()).add(itemBenefitAmount);
+          vo.setPrivilegeAmount(privilegeAmount);
+          // 划扣套餐价
+          vo.setPackageTotalAmount(itemBenefitAmount);
+          vo.setQuantity(item.getQuantity());
+          vo.setSwipeCouponWorkload(item.getSupplyWorkload());
         });
       }
       return result;

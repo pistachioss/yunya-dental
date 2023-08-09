@@ -38,7 +38,7 @@
         <foreach collection="list" index="index" item="obj" separator=",">
             (#{obj.orgId},#{obj.patientId},#{obj.treatmentRecordId},#{obj.orderRecordId},#{obj.orderDetailId},
             #{obj.billRecordId},#{obj.receivableAmount},#{obj.privilegeAmount},#{obj.actualReceivable},
-            #{obj.receivedAmount},#{obj.couponWorkload},IFNULL(#{obj.swipeWorkload},0),IFNULL(#{obj.swipeCouponWorkload},0),
+            #{obj.receivedAmount},IFNULL(#{obj.couponWorkload}, 0),IFNULL(#{obj.swipeWorkload},0),IFNULL(#{obj.swipeCouponWorkload},0),
             #{obj.crtId},#{obj.crtName},#{obj.updId},#{obj.updName})
         </foreach>
     </insert>
