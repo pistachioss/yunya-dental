@@ -257,7 +257,7 @@ public class PatientMemberAppController {
      * @throws IOException
      */
     @ApiOperation("小程序-我的-会员卡授权码-授权码是否失效")
-    @PostMapping("/patientMember/codeisfailure/{patientId}")
+    @PostMapping("/patientMember/codeIsFailure/{patientId}")
     public ResponseResult<Boolean> patientMemberAutCodeIsFailure(@PathVariable(value = "patientId") Integer patientId) throws IOException {
         return ResponseUtil.success(patientBaseInfoBiz.patientMemberAutCodeIsFailure(patientId));
     }
