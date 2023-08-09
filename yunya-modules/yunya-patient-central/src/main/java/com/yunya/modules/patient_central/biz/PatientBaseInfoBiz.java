@@ -1782,4 +1782,15 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     redisUtils.delete(key);
     return ResponseUtil.success("验证通过");
   }
+
+  /**
+   * 判断患者的会员卡授权码是否失效
+   *
+   * @param patientId
+   * @return
+   */
+  public Boolean patientMemberAutCodeIsFailure(Integer patientId) {
+    String key = buildLockCacheKey(MEMBER_AUTH_CODE, patientId);
+    return !redisUtils.hasKey(key);
+  }
 }

@@ -249,4 +249,16 @@ public class PatientMemberAppController {
     public void generateAuthorizedCode(@RequestBody @Validated MemberAuthorizedCodeForm form, HttpServletResponse servletResponse) throws IOException {
         patientBaseInfoBiz.generateAuthorizedCode(form, servletResponse);
     }
+
+    /**
+     * 授权码是否失效
+     *
+     * @param patientId
+     * @throws IOException
+     */
+    @ApiOperation("小程序-我的-会员卡授权码-授权码是否失效")
+    @PostMapping("/patientMember/codeisfailure/{patientId}")
+    public ResponseResult<Boolean> patientMemberAutCodeIsFailure(@PathVariable(value = "patientId") Integer patientId) throws IOException {
+        return ResponseUtil.success(patientBaseInfoBiz.patientMemberAutCodeIsFailure(patientId));
+    }
 }
