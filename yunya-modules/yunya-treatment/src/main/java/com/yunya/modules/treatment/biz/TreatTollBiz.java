@@ -47,8 +47,7 @@ import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
 import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
-import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK;
+import static com.yunya.framework.common.constant.RedisConstants.*;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -131,7 +130,7 @@ public class TreatTollBiz {
    *
    * @param detailList 订单详情列表
    * @param privilege  优惠项目列表
-   * @param result
+   * @param result 总优惠
    */
   public void orderDetailMatchDiscount(
           List<OrderDetailChargeVO> detailList,
@@ -141,8 +140,9 @@ public class TreatTollBiz {
     List<OrderDetailChargeVO> swipeItemList = Lists.newArrayList();
     List<PatientItemBenefitVo> itemList = privilege.getItemList();
     List<DeductionItemBenefitVo> deductions = privilege.getDeductionList();
+    BigDecimal benefitTotalAmount = BigDecimal.ZERO;
     if (StringHelper.isNotEmpty(deductions)) {
-      deductions.forEach(deduct->{
+      for (DeductionItemBenefitVo deduct : deductions) {
         Integer orderDetailId = deduct.getOrderDetailId();
         OrderDetailChargeVO item = detailMap.get(orderDetailId);
         if (StringHelper.isNotNull(item)) {
@@ -164,12 +164,12 @@ public class TreatTollBiz {
           deductItem.setActualAmount(BigDecimal.ZERO);
           List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(deduct.getItemBenefitList(), item.getPrice().multiply(BigDecimal.valueOf(swipeQuantity)));
           deductItem.setDiscountAppliesCoupons(privilegeInfo);
+          benefitTotalAmount = benefitTotalAmount.add(deductItem.getReceivableAmount());
           swipeItemList.add(deductItem);
         }
-      });
+      }
     }
     result.setSwipeItemList(swipeItemList);
-    BigDecimal actualTotalAmount = BigDecimal.ZERO;
     if (StringHelper.isNotEmpty(detailMap) && StringHelper.isNotEmpty(itemList)) {
       for (Map.Entry<Integer, OrderDetailChargeVO> entry : detailMap.entrySet()) {
         OrderDetailChargeVO vo = entry.getValue();
@@ -188,11 +188,12 @@ public class TreatTollBiz {
           }
           vo.setReceivableAmount(receivableAmount);
           vo.setActualAmount(actualAmount);
-          actualTotalAmount = actualTotalAmount.add(actualAmount);
+          benefitTotalAmount = benefitTotalAmount.add(receivableAmount.subtract(actualAmount));
         }
       }
     }
     result.setItemList(new ArrayList<>(detailMap.values()));
+    result.setBenefitTotalAmount(benefitTotalAmount);
   }
 
   /**
@@ -597,7 +598,16 @@ public class TreatTollBiz {
     BigDecimal privilegeAmount = BigDecimal.ZERO;
     switch (discountType) {
       case 1:
-        privilegeAmount = calculateGeneralPrivilegeAmount(orderRecordId, patientId, generalDiscountModel);
+//        privilegeAmount = calculateGeneralPrivilegeAmount(orderRecordId, patientId, generalDiscountModel);
+        String key = buildLockCacheKey(BILL_BENEFIT_MATCH, orderRecordId);
+        privilegeAmount = redisUtils.get(key, BigDecimal.class);
+        if (StringHelper.isNull(privilegeAmount)) {
+          throw new ClientServiceException("收费失败，优惠信息不存在，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
+        }
+        if (StringHelper.leZero(privilegeAmount)) {
+          throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
+        }
+        redisUtils.delete(key);
         break;
       default:
         break;

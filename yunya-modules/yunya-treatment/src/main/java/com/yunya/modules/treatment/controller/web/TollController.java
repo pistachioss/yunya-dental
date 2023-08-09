@@ -13,6 +13,7 @@ import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.treatment.biz.BillPayShareDetailBiz;
 import com.yunya.modules.treatment.biz.TollBiz;
 import com.yunya.modules.treatment.biz.TreatTollBiz;
@@ -29,6 +30,9 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.yunya.framework.common.constant.RedisConstants.BILL_BENEFIT_MATCH;
+import static com.yunya.framework.common.constant.RedisConstants.buildLockCacheKey;
 
 /**
  * 简介: 收费控制器
@@ -48,6 +52,8 @@ public class TollController {
 
   @Autowired private BillPayShareDetailBiz billPayShareDetailBiz;
   @Autowired private TreatTollBiz treatTollBiz;
+
+  @Autowired private RedisUtils redisUtils;
 
   /**
    * 匹配订单列表优惠信息
@@ -77,6 +83,8 @@ public class TollController {
   public ResponseResult<TreatOrderRecordVO> matchOrderTailPrivilegeList(
       @RequestBody @Validated OrderPrivilegeQuery query) {
     TreatOrderRecordVO resultList = treatTollBiz.matchOrderTailPrivilege(query);
+    String key = buildLockCacheKey(BILL_BENEFIT_MATCH, query.getOrderRecordId());
+    redisUtils.set(key, resultList.getBenefitTotalAmount());
     return ResponseUtil.success(resultList);
   }
 

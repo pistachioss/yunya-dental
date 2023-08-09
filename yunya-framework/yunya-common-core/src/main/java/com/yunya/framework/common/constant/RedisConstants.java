@@ -66,6 +66,8 @@ public class RedisConstants implements Serializable {
   public static final String LOCK_ORDER_PROCESSING_CHARGE = "lock:charge:process";
   /** 收费记录 */
   public static final String LOCK_BILL_PAY_RECORD = "bill_pay_record_";
+  /** 就诊账单匹配优惠总额 */
+  public static final String BILL_BENEFIT_MATCH = "bill:benefit:match";
 
   /** -------------------------------- 系统用户(员工)信息 ------------------------------- */
   public static final String REDIS_KEY_EMPLOYEE_INFO = "sys_user_info_";
