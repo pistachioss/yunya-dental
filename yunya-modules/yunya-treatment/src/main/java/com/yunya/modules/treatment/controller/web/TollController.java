@@ -84,6 +84,8 @@ public class TollController {
       @RequestBody @Validated OrderPrivilegeQuery query) {
     TreatOrderRecordVO resultList = treatTollBiz.matchOrderTailPrivilege(query);
     String key = buildLockCacheKey(BILL_BENEFIT_MATCH, query.getOrderRecordId());
+    // 暂存10分钟
+//    redisUtils.set(key, resultList.getBenefitTotalAmount(), 600);
     redisUtils.set(key, resultList.getBenefitTotalAmount());
     return ResponseUtil.success(resultList);
   }

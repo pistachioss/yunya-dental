@@ -111,12 +111,7 @@ public class TreatTollBiz {
     switch (discountType) {
       case 1:
         // 匹配卡券优惠
-        ResponseResult<PatientOrderBenefitVo> responseResult = findGeneralPrivilege(orderRecordId, null, generalDiscountModel);
-        PatientOrderBenefitVo resultData = responseResult.getData();
-        // 卡券优惠为空
-        if (null == resultData) {
-          throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
-        }
+        PatientOrderBenefitVo resultData = findGeneralPrivilege(orderRecordId, null, generalDiscountModel);
         orderDetailMatchDiscount(detailList, resultData, result);
         break;
       default:
@@ -528,10 +523,10 @@ public class TreatTollBiz {
    */
   private Map<Integer, OrderDetailPayRecord> findBillDiscountCoupons(TreatTollModel model, BillRecord billRecord) {
     if (model.getDiscountType() != 0) {
-      PatientOrderBenefitVo privileges = findGeneralPrivilege(billRecord.getOrderRecordId(),
-              billRecord.getPatientId(), model.getGeneralDiscountModel()).getData();
-      List<PatientItemBenefitVo> itemList = privileges.getItemList();
-      List<DeductionItemBenefitVo> deductionList = privileges.getDeductionList();
+      PatientOrderBenefitVo privilege = findGeneralPrivilege(billRecord.getOrderRecordId(),
+              billRecord.getPatientId(), model.getGeneralDiscountModel());
+      List<PatientItemBenefitVo> itemList = privilege.getItemList();
+      List<DeductionItemBenefitVo> deductionList = privilege.getDeductionList();
       Map<Integer, OrderDetailPayRecord> result = Maps.newHashMap();
       if (StringHelper.isNotEmpty(itemList)) {
         itemList.forEach(item->{
@@ -607,7 +602,6 @@ public class TreatTollBiz {
         if (StringHelper.leZero(privilegeAmount)) {
           throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
         }
-        redisUtils.delete(key);
         break;
       default:
         break;
@@ -625,7 +619,7 @@ public class TreatTollBiz {
   private BigDecimal calculateGeneralPrivilegeAmount(
       Integer orderRecordId, Integer patientId, GeneralDiscountModel generalDiscountModel) {
     BigDecimal privilegeAmount = BigDecimal.ZERO;
-    PatientOrderBenefitVo benefitVo = findGeneralPrivilege(orderRecordId, patientId, generalDiscountModel).getData();
+    PatientOrderBenefitVo benefitVo = findGeneralPrivilege(orderRecordId, patientId, generalDiscountModel);
     if (StringHelper.isNotNull(benefitVo)) {
       privilegeAmount = benefitVo.getBenefitTotalAmount();
       if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
@@ -643,7 +637,7 @@ public class TreatTollBiz {
    * @param generalDiscountModel
    * @return
    */
-  private ResponseResult<PatientOrderBenefitVo> findGeneralPrivilege(Integer orderRecordId, Integer patientId, GeneralDiscountModel generalDiscountModel) {
+  private PatientOrderBenefitVo findGeneralPrivilege(Integer orderRecordId, Integer patientId, GeneralDiscountModel generalDiscountModel) {
     PatientChooseBenefitForm form = new PatientChooseBenefitForm();
     if (StringHelper.isNull(patientId)) {
       OrderRecord order = orderRecordBiz.selectById(orderRecordId);
@@ -668,7 +662,13 @@ public class TreatTollBiz {
     form.setPackageIds(packageIds);
     form.setVoucherIds(voucherIds);
     form.setDeductionIds(deductionIds);
-    return  discountFeign.choiceBenefit(form);
+    ResponseResult<PatientOrderBenefitVo> responseResult = discountFeign.choiceBenefit(form);
+    PatientOrderBenefitVo resultData = responseResult.getData();
+    // 卡券优惠为空
+    if (StringHelper.isNull(resultData)) {
+      throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
+    }
+    return resultData;
   }
 
   /**

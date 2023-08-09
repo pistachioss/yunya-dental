@@ -176,7 +176,7 @@
             IFNULL( pmi.bonus_amount, 0 ) AS DECIMAL ( 15, 2 )) bonusAmount
         FROM
             ( SELECT pmr.master_card_id FROM patient_member_relation pmr WHERE bind_type = 1 AND pmr.secondary_card_id = #{patientId} GROUP BY pmr.master_card_id ) pmr
-            LEFT JOIN patient_member_info pmi ON pmr.master_card_id = pmi.patient_id
+            INNER JOIN patient_member_info pmi ON pmr.master_card_id = pmi.patient_id
             LEFT JOIN patient_base_info pbi ON pmr.master_card_id = pbi.id
     </select>
 
