@@ -19,6 +19,9 @@ public class DeductionRefundModel {
     @ApiModelProperty(value = "卡券id", required = true)
     @NotNull
     private Integer cardId;
+    @ApiModelProperty(value = "礼包id", required = true)
+    @NotNull
+    private Integer couponId;
     @ApiModelProperty(value = "订单id", required = true)
     @NotNull
     private Integer orderId;

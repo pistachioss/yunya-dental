@@ -42,6 +42,16 @@
                  inner join coupon_bill_pay_detail cd on cb.id = cd.bill_id
         where co.inservice = 1
             and cb.patient_id = #{query.patientId}
+            <if test="query.orgList != null and query.orgList.size > 0">
+                and cb.org_id in
+                <foreach collection="query.orgList" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.soldStartDate != null and query.soldEndDate != null">
+                and (`cb`.`crt_time` &gt;= #{query.soldStartDate} and `cb`.`crt_time` &lt; DATE_ADD(#{query.soldStartDate} ,INTERVAL '1'
+                DAY))
+            </if>
         group by cb.order_record_id, cb.org_id, cb.crt_id
     </select>
 </mapper>

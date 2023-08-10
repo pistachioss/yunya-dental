@@ -32,7 +32,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponBill;
 import static com.yunya.modules.discount.enums.CouponOrderError.COUPON_STOCK_LACK;
 import static com.yunya.modules.discount.enums.CouponOrderError.SALE_CHANNEL_NULL;
 import static java.util.stream.Collectors.*;
@@ -91,7 +90,7 @@ public class CouponOrderBiz {
             List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now,collect);
             virtualMapper.insertList(virtuals);
             vo = detail(couponOrder.getId());
-            rabbitMqServiceFeign.sendMessage(couponOrder.getId(), 0, BaseCouponBill);
+//            rabbitMqServiceFeign.sendMessage(couponOrder.getId(), 0, BaseCouponBill);
         } catch (Exception e) {
             if (CollectionUtils.isNotEmpty(list)) {
                 revoke(list);
@@ -127,7 +126,7 @@ public class CouponOrderBiz {
                 List<CouponOrderVirtual> virtuals = orderVirtual(order, list, now, collect);
                 virtualMapper.insertList(virtuals);
                 vo = detail(order.getId());
-                rabbitMqServiceFeign.sendMessage(order.getId(), 0, BaseCouponBill);
+//                rabbitMqServiceFeign.sendMessage(order.getId(), 0, BaseCouponBill);
             }
         } catch (Exception e) {
             if (CollectionUtils.isNotEmpty(list)) {
@@ -424,12 +423,14 @@ public class CouponOrderBiz {
         return couponOrderMapper.selectByExample(example);
     }
 
-    public List<CouponOrderVirtual> listOrderVirtual(Integer orderId, Integer cardId) {
+    public List<CouponOrderVirtual> listOrderVirtual(Integer orderId, Integer cardId, boolean all) {
         Example example = new Example(CouponOrderVirtual.class);
-        Example.Criteria criteria = example.createCriteria().andEqualTo("orderId", orderId)
-                .andEqualTo("inservice", true);
+        Example.Criteria criteria = example.createCriteria().andEqualTo("orderId", orderId);
         if (Objects.nonNull(cardId)) {
             criteria.andEqualTo("cardId", cardId);
+        }
+        if (!all) {
+            criteria.andEqualTo("inservice", true);
         }
         return virtualMapper.selectByExample(example);
     }
@@ -492,7 +493,7 @@ public class CouponOrderBiz {
     }
 
     private List<CouponOrderVirtual> deleteVirtuals(Integer orderId) {
-        List<CouponOrderVirtual> virtuals = listOrderVirtual(orderId, null);
+        List<CouponOrderVirtual> virtuals = listOrderVirtual(orderId, null, false);
         virtuals.forEach(t -> {
             virtualMapper.deleteByPrimaryKey(t.getId());
         });

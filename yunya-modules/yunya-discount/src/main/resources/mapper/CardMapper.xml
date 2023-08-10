@@ -350,6 +350,7 @@ WHERE
              inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
         where
             `c`.`status` in (2,3,4)
+            and `cci`.type != 5
             <!-- 0：自有产品 1：共享产品-->
             <if test="queryType != null and queryType == 0">
                 and `c`.`patient_id` = #{patientId}

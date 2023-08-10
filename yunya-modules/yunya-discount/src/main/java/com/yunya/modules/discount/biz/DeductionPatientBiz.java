@@ -289,7 +289,7 @@ public class DeductionPatientBiz {
         if (Objects.isNull(order) || order.getStatus() == 2) {
             throw ClientServiceException.wrap(ORDER_HAS_REFUND);
         }
-        List<CouponOrderVirtual> virtuals = couponOrderBiz.listOrderVirtual(orderId, null);
+        List<CouponOrderVirtual> virtuals = couponOrderBiz.listOrderVirtual(orderId, null, true);
         CouponOrderVirtual virtual = virtuals.stream().filter(t -> Objects.equals(t.getCardId(), cardId)).findFirst().orElse(null);
         if (Objects.isNull(virtual) || !virtual.getInservice()) {
             throw ClientServiceException.wrap(CARD_HAS_REFUND);
@@ -600,7 +600,7 @@ public class DeductionPatientBiz {
 
     public List<DeductionItemPeriodVO> itemList(Integer cardId) {
         Card card = cardMapper.selectByPrimaryKey(cardId);
-        List<DeductionItemPeriod> periods = deductionPeriodBiz.listByCoupon(Lists.newArrayList(card.getCouponId()), DateUtil.localDateTimeToDate(card.getSoldDate()));
+        List<DeductionItemPeriod> periods = deductionPeriodBiz.listByCoupon(Lists.newArrayList(card.getCouponId()), DateUtil.localDateTimeToDate(Objects.isNull(card.getSoldDate())? card.getActiveDate() : card.getSoldDate()));
         if (CollectionUtils.isNotEmpty(periods)) {
             return BeanCopierUtils.listGeneralCopyBean(periods, DeductionItemPeriodVO.class);
         }

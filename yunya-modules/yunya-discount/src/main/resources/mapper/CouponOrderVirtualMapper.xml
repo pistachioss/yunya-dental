@@ -37,12 +37,15 @@
                crd.refund_amount,
                group_concat(distinct cfp.account_item_name) as refundType,
                crd.org_id   as orgName,
-               crd.crt_id   as executorName
+               crd.crt_id   as executorName,
+               cr.reason    as remark
         from coupon_refund_detail crd
                  inner join coupon_refund_pay cfp on cfp.refund_id = crd.refund_id
                  inner join coupon_order_virtual cov on cov.id = crd.order_virtual_id
+                 inner join coupon_refund cr on crd.refund_id = cr.id
         where cov.inservice = 0
           and cov.patient_id = #{query.patientId}
+        GROUP BY crd.refund_id
     </select>
 
     <select id="usedList" resultType="com.yunya.feign.discount.domain.vo.DeductionUsedRecordVO">
@@ -73,7 +76,7 @@
                cov.package_unit_price   as saleAmount,
                c.buyer_id   as patientName,
                c.sold_target    as ownName,
-               cc.crt_time  as `date`,
+               date_format(cc.crt_time,'%Y-%m-%d %H:%i:%s')  as `date`,
                cc.crt_id    as executorName,
                cc.remark
         from card c
