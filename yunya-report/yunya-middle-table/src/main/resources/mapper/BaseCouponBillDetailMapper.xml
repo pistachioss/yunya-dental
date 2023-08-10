@@ -17,9 +17,6 @@
         <result column="quantity" property="quantity" jdbcType="INTEGER"/>
         <result column="executor_id" property="executorId" jdbcType="INTEGER"/>
         <result column="consulter_id" property="consulterId" jdbcType="INTEGER"/>
-        <result column="item_id" property="itemId" jdbcType="INTEGER"/>
-        <result column="item_type" property="itemType" jdbcType="TINYINT"/>
-        <result column="source_type" property="sourceType" jdbcType="TINYINT"/>
         <result column="sale_channel_id" property="saleChannelId" jdbcType="INTEGER"/>
         <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
         <result column="remark" property="remark" jdbcType="VARCHAR"/>
@@ -27,7 +24,35 @@
 
     <delete id="deleteByBillId">
         delete
-        from base_bill_detail
+        from base_coupon_bill_detail
         where order_id = #{billId}
     </delete>
+
+    <insert id="batchInsertSelective">
+        INSERT INTO base_coupon_bill_detail (
+            order_detail_id,
+            org_id,
+            order_id,
+            coupon_id,
+            `type`,
+            coupon_number,
+            coupon_name,
+            price,
+            receivable_amount,
+            quantity,
+            executor_id,
+            consulter_id,
+            sale_channel_id,
+            received_amount,
+            remark
+        )
+        VALUES
+        <foreach collection="baseBillDetails" item="item" separator=",">
+            (#{item.orderDetailId}, #{item.orgId}, #{item.orderId},
+            #{item.couponId}, #{item.type}, #{item.couponNumber}, #{item.couponName},
+            #{item.price}, #{item.receivableAmount}, #{item.quantity},
+            #{item.executorId}, #{item.consulterId}, #{item.saleChannelId},
+            #{item.receivedAmount},#{item.remark})
+        </foreach>
+    </insert>
 </mapper>

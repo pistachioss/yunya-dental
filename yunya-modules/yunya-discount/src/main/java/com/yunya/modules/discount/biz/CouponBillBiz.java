@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.BillRebate2MemberAccountModel;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -24,6 +25,7 @@ import com.yunya.modules.discount.mapper.CouponBillPayMapper;
 import com.yunya.modules.discount.mapper.CouponOrderMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
@@ -33,6 +35,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponBill;
 import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.modules.discount.enums.CouponOrderError.*;
@@ -60,6 +63,8 @@ public class CouponBillBiz {
     private CouponOrderBiz orderBiz;
     @Resource
     private RemotePatientCentralServiceFeign patientCentralServiceFeign;
+    @Autowired
+    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
 
     public void charge(CouponBillModel model) {
@@ -134,6 +139,7 @@ public class CouponBillBiz {
             }
             //返点
             returnGift(billPay);
+            rabbitMqServiceFeign.sendMessage(order.getId(), 0, BaseCouponBill);
         } finally {
             if (locked) {
                 log.info("【解锁成功】");

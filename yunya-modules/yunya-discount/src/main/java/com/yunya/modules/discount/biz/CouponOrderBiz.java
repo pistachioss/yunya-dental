@@ -8,6 +8,7 @@ import com.yunya.feign.discount.domain.vo.CouponOrderDetailVO;
 import com.yunya.feign.discount.domain.vo.CouponOrderVO;
 import com.yunya.feign.discount.domain.vo.CouponPayDetailVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
@@ -30,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponBill;
 import static com.yunya.modules.discount.enums.CouponOrderError.COUPON_STOCK_LACK;
 import static com.yunya.modules.discount.enums.CouponOrderError.SALE_CHANNEL_NULL;
 import static java.util.stream.Collectors.*;
@@ -63,6 +66,8 @@ public class CouponOrderBiz {
     private RemoteSystemServiceFeign systemServiceFeign;
     @Resource
     private RemotePatientCentralServiceFeign patientFeign;
+    @Autowired
+    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
     @Transactional(rollbackFor = Exception.class)
     public CouponOrderVO soldCard(CouponOrderModel model) {
@@ -86,6 +91,7 @@ public class CouponOrderBiz {
             List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now,collect);
             virtualMapper.insertList(virtuals);
             vo = detail(couponOrder.getId());
+            rabbitMqServiceFeign.sendMessage(couponOrder.getId(), 0, BaseCouponBill);
         } catch (Exception e) {
             if (CollectionUtils.isNotEmpty(list)) {
                 revoke(list);
@@ -121,6 +127,7 @@ public class CouponOrderBiz {
                 List<CouponOrderVirtual> virtuals = orderVirtual(order, list, now, collect);
                 virtualMapper.insertList(virtuals);
                 vo = detail(order.getId());
+                rabbitMqServiceFeign.sendMessage(order.getId(), 0, BaseCouponBill);
             }
         } catch (Exception e) {
             if (CollectionUtils.isNotEmpty(list)) {

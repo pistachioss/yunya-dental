@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.yunya.modules.discount.enums.CouponTypeEnum.DEDUCTION;
@@ -52,7 +53,8 @@ public class DeductionPeriodBiz extends BaseBiz<DeductionItemPeriodMapper, Deduc
             log.info("查询划扣信息，卡券不存在:{}", cardId);
             return Lists.newArrayList();
         }
-        return listByCoupon(Collections.singletonList(card.getCouponId()), DateUtil.localDateTimeToDate(card.getSoldDate()));
+        LocalDateTime date = Objects.isNull(card.getSoldDate()) ? card.getActiveDate(): card.getSoldDate();
+        return listByCoupon(Collections.singletonList(card.getCouponId()), DateUtil.localDateTimeToDate(date));
     }
 
     public List<DeductionItemPeriod> listByCoupon(Collection<Integer> couponIds, Date date) {

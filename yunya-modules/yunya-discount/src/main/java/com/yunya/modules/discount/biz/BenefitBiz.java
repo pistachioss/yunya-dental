@@ -3,6 +3,7 @@ package com.yunya.modules.discount.biz;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.yunya.feign.discount.domain.bo.BillUsedCouponBo;
 import com.yunya.feign.discount.domain.bo.CardUseBo;
 import com.yunya.feign.discount.domain.bo.ItemUseBenefitBo;
@@ -713,6 +714,9 @@ public class BenefitBiz {
         Set<Integer> packageCards = list.stream()
                 .filter(obj -> SPECIAL_PACKAGE.equals(obj.getCouponType()))
                 .map(CardBenefit::getCardId).collect(toSet());
+        Set<Integer> deductionCards = list.stream()
+                .filter(obj -> DEDUCTION.equals(obj.getCouponType()))
+                .map(CardBenefit::getCardId).collect(toSet());
         Map<Integer, CardUseBo> map = Maps.newHashMapWithExpectedSize(list.size());
         if (CollectionUtils.isNotEmpty(exchangeCards)) {
             List<CardUseBo> useList = cardBenefitMapper.getCardUseInfo(exchangeCards, EXCHANGE.getCode());
@@ -723,6 +727,14 @@ public class BenefitBiz {
         }
         if (CollectionUtils.isNotEmpty(packageCards)) {
             List<CardUseBo> useList = cardBenefitMapper.getCardUseInfo(packageCards, SPECIAL_PACKAGE.getCode());
+            Map<Integer, CardUseBo> useBoMap = useList.stream().collect(toMap(CardUseBo::getCardId, Function.identity()));
+            if (!useBoMap.isEmpty()) {
+                map.putAll(useBoMap);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(deductionCards)) {
+            List<CardUseBo> useList = deductionCards.stream().map(t -> cardBenefitMapper.getCardUseInfo(Sets.newHashSet(t), DEDUCTION.getCode()).get(0))
+                    .collect(toList());
             Map<Integer, CardUseBo> useBoMap = useList.stream().collect(toMap(CardUseBo::getCardId, Function.identity()));
             if (!useBoMap.isEmpty()) {
                 map.putAll(useBoMap);

@@ -57,6 +57,13 @@
                     1,
                     0)          as `usable`,
             </if>
+            <if test="couponType != null and couponType == 5">
+                `dc`.`use_way`,
+                ifnull(sum(`dip`.`count`),0) as `total`,
+                if(ifnull(sum(`dip`.`count`), 0) > `temp`.`usecount`,
+                1,
+                0)          as `usable`,
+            </if>
             ifnull(`temp`.`usecount`,0)  as `usecount`
         from `card` `c`
              left join (
@@ -76,10 +83,19 @@
                  inner join `special_package_coupon` `spc` on `spc`.`coupon_id` = `c`.`coupon_id`
                  inner join `special_package_coupon_item` `spci` on `spc`.`coupon_id` = `spci`.`coupon_id`
              </if>
+            <if test="couponType != null and couponType == 5">
+                inner join `deduction_coupon` `dc` on `dc`.`coupon_id` = `c`.`coupon_id`
+                inner join  deduction_item_period dip on dc.coupon_id = dip.coupon_id and dip.type = #{couponType}
+            </if>
         where c.id in
             <foreach collection="cardIds" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
+            <if test="couponType != null and couponType == 5">
+                and dip.crt_time = (select
+                    max(crt_time)
+                from deduction_item_period where crt_time &lt;= ifnull(c.sold_date, c.active_date))
+            </if>
         group by `c`.`id`
     </select>
 

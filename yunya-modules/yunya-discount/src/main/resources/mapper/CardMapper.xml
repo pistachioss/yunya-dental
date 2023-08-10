@@ -708,6 +708,7 @@ WHERE
               where cb.card_id = #{cardId}
                 and cb.is_deleted = 0
               group by cb.coupon_id, cb.card_id, cb.item_id) temp
+        left join `card` `c` on `c`.`id` = `temp`.`card_id`
         right join
                 <if test="couponType != null and couponType == 2">
                     package_coupon_item pci on temp.coupon_id = pci.coupon_id
@@ -719,7 +720,7 @@ WHERE
                 </if>
                 <if test="couponType != null and couponType == 5">
                     deduction_item_period dip on temp.coupon_id = dip.coupon_id
-                    and temp.item_id = dip.item_id
+                        and temp.item_id = dip.item_id and dip.type = #{couponType}
                 </if>
         where
             <if test="couponType != null and couponType == 2">
@@ -738,12 +739,7 @@ WHERE
                 dip.coupon_id = #{couponId}
                 and dip.crt_time = (select
                         max(crt_time)
-                    from deduction_item_period where coupon_id = #{couponId} and crt_time &lt;= (
-                        select crt_time from coupon_order_virtual where card_id = #{cardId} and inservice = 1
-                    ))
-                <if test="type != null and type != ''">
-                    and dip.type = #{type}
-                </if>
+                    from deduction_item_period where coupon_id = #{couponId} and crt_time &lt;= ifnull(c.sold_date, c.active_date))
             </if>
     </select>
 

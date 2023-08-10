@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.middletable.dao.report.BaseCouponRefundDetailMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseCouponRefundDetail" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="refund_detail_id" property="refundDetailId" jdbcType="INTEGER" />
-    <result column="refund_id" property="refundId" jdbcType="INTEGER" />
-    <result column="order_detail_id" property="orderDetailId" jdbcType="INTEGER" />
-    <result column="card_id" property="cardId" jdbcType="INTEGER" />
-    <result column="refund_amount" property="refundAmount" jdbcType="DECIMAL" />
-    <result column="executor_id" property="executorId" jdbcType="INTEGER" />
-    <result column="consulter_id" property="consulterId" jdbcType="INTEGER" />
-    <result column="item_type" property="itemType" jdbcType="TINYINT" />
-    <result column="item_id" property="itemId" jdbcType="INTEGER" />
-    <result column="item_name" property="itemName" jdbcType="VARCHAR" />
-  </resultMap>
+<mapper namespace="com.yunya.middletable.dao.report.BaseCouponRefundDetailMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseCouponRefundDetail">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="refund_detail_id" property="refundDetailId" jdbcType="INTEGER"/>
+        <result column="refund_id" property="refundId" jdbcType="INTEGER"/>
+        <result column="order_detail_id" property="orderDetailId" jdbcType="INTEGER"/>
+        <result column="card_id" property="cardId" jdbcType="INTEGER"/>
+        <result column="refund_amount" property="refundAmount" jdbcType="DECIMAL"/>
+        <result column="executor_id" property="executorId" jdbcType="INTEGER"/>
+        <result column="consulter_id" property="consulterId" jdbcType="INTEGER"/>
+        <result column="item_type" property="itemType" jdbcType="TINYINT"/>
+        <result column="item_id" property="itemId" jdbcType="INTEGER"/>
+        <result column="item_name" property="itemName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <delete id="deleteByRefundId">
+        delete from base_coupon_refund_detail where refund_id = #{refundId}
+    </delete>
 </mapper>
