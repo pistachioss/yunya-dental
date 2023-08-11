@@ -1,8 +1,6 @@
 package com.yunya.framework.redis.util;
 
 import com.alibaba.fastjson.JSON;
-import com.yunya.framework.common.constant.RedisConstants;
-import com.yunya.framework.common.utils.StringHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisStringCommands;
@@ -12,11 +10,13 @@ import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -553,12 +553,23 @@ public class RedisUtils {
    * @return
    */
   public <T> T supplyIfAbsent(Supplier<T> supplier, int expire, TimeUnit unit, String...keys) {
-    String key = RedisConstants.buildLockCacheKey(keys);
+    String key = buildRedisKey(keys);
     T result = (T) get(key);
-    if (StringHelper.isNull(result) || (result instanceof String && StringHelper.isEmpty(String.valueOf(result)))) {
+    if (Objects.isNull(result) || (result instanceof String && StringUtils.isEmpty(String.valueOf(result)))) {
       result = supplier.get();
       set(key, result, expire, unit);
     }
     return result;
+  }
+
+  private String buildRedisKey(String...keys) {
+    StringBuilder builder = new StringBuilder();
+    for (String key : keys) {
+      if (builder.length() > 0) {
+        builder.append(":");
+      }
+      builder.append(key);
+    }
+    return builder.toString();
   }
 }

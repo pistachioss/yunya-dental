@@ -1311,9 +1311,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         try {
             //锁定患者选择的优惠信息
             errorBo = needLockKeys(assembleCardIds(form), loginUserId, RedisConstants.LOCK_CHOICE_CARD, DiscountError.CARD_HAS_CHOICE);
-            if (errorBo.getError() != null) {
-                return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
-            }
+//            if (errorBo.getError() != null) {
+//                return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+//            }
             //获取订单明细
             List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
             if (CollectionUtils.isEmpty(orderDetails)) {

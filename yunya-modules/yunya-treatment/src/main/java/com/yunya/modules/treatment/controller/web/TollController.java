@@ -31,9 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.yunya.framework.common.constant.RedisConstants.BILL_BENEFIT_MATCH;
-import static com.yunya.framework.common.constant.RedisConstants.buildLockCacheKey;
-
 /**
  * 简介: 收费控制器
  *
@@ -83,10 +80,7 @@ public class TollController {
   public ResponseResult<TreatOrderRecordVO> matchOrderTailPrivilegeList(
       @RequestBody @Validated OrderPrivilegeQuery query) {
     TreatOrderRecordVO resultList = treatTollBiz.matchOrderTailPrivilege(query);
-    String key = buildLockCacheKey(BILL_BENEFIT_MATCH, query.getOrderRecordId());
-    // 暂存10分钟
-//    redisUtils.set(key, resultList.getBenefitTotalAmount(), 600);
-    redisUtils.set(key, resultList.getBenefitTotalAmount());
+    treatTollBiz.cacheOrderBenefitTotalAmount(query.getOrderRecordId(), resultList.getBenefitTotalAmount());
     return ResponseUtil.success(resultList);
   }
 

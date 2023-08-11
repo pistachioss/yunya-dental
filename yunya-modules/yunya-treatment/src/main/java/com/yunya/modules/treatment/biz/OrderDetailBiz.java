@@ -82,8 +82,7 @@ import java.util.stream.Collectors;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillDetail;
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
-import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
+import static com.yunya.framework.common.constant.RedisConstants.*;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -412,21 +411,25 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       query.setOrderRecordId(orderRecordId);
       query.setDiscountType((byte) 1);
       query.setGeneralDiscountModel(generalDiscountModel);
-      List<OrderDetailChargeVO> chargeVOS = treatTollBiz.matchOrderTailPrivilege(query).getItemList();
+      TreatOrderRecordVO orderBenefitVO = treatTollBiz.matchOrderTailPrivilege(query);
+      if (StringHelper.isNotNull(orderBenefitVO)) {
+        treatTollBiz.cacheOrderBenefitTotalAmount(orderRecordId, orderBenefitVO.getBenefitTotalAmount());
+        List<OrderDetailChargeVO> chargeVOS = orderBenefitVO.getItemList();
 //      List<OrderDetailChargeVO> chargeVOS = tollBiz.matchOrderTailPrivilege(query);
-      System.out.println("订单自动勾选优惠" + chargeVOS);
-      if (CollectionUtils.isNotEmpty(chargeVOS)) {
-        chargeVOS.stream()
-            .filter(obj -> CollectionUtils.isNotEmpty(obj.getDiscountAppliesCoupons()))
-            .forEach(
-                obj ->
-                    obj.getDiscountAppliesCoupons().stream()
-                        .filter(benefit -> benefit.getCouponType() == 99)
-                        .forEach(
-                            benefit ->
-                                benefit.setCardNumber(
-                                    Lists.newArrayList(maxType.values()).get(0))));
-        return chargeVOS;
+        System.out.println("订单自动勾选优惠" + chargeVOS);
+        if (CollectionUtils.isNotEmpty(chargeVOS)) {
+          chargeVOS.stream()
+                  .filter(obj -> CollectionUtils.isNotEmpty(obj.getDiscountAppliesCoupons()))
+                  .forEach(
+                          obj ->
+                                  obj.getDiscountAppliesCoupons().stream()
+                                          .filter(benefit -> benefit.getCouponType() == 99)
+                                          .forEach(
+                                                  benefit ->
+                                                          benefit.setCardNumber(
+                                                                  Lists.newArrayList(maxType.values()).get(0))));
+          return chargeVOS;
+        }
       }
     }
     return getChargeOrderDetailList(orderRecordId);

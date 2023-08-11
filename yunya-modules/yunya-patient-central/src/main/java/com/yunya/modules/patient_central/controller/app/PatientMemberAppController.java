@@ -85,9 +85,11 @@ public class PatientMemberAppController {
         PatientPublicInfoVo patientPublicInfoVo = patientBaseInfoBiz.findPatientPublicInfoById(patientId);
         if (StringHelper.isNotNull(patientPublicInfoVo)) {
             Integer masterCardId = patientPublicInfoVo.getMasterCardId();
-            PatientPublicInfoVo masterCardPatient = patientBaseInfoBiz.findPatientPublicInfoById(masterCardId);
-            if (StringHelper.isNotNull(masterCardPatient)) {
-                patientPublicInfoVo.setMasterCardInfo(masterCardPatient);
+            if (StringHelper.isNotNull(masterCardId)) {
+                PatientPublicInfoVo masterCardPatient = patientBaseInfoBiz.findPatientPublicInfoById(masterCardId);
+                if (StringHelper.isNotNull(masterCardPatient)) {
+                    patientPublicInfoVo.setMasterCardInfo(masterCardPatient);
+                }
             }
             if (creditsShop != null) {
                 patientPublicInfoVo.setPoint(creditsShop.getCreditsAccount());

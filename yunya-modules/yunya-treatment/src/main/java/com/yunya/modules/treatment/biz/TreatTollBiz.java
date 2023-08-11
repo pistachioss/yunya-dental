@@ -177,10 +177,10 @@ public class TreatTollBiz {
               List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(benefitVo.getItemBenefitList(), null);
               vo.setDiscountAppliesCoupons(privilegeInfo);
             }
+            benefitTotalAmount = benefitTotalAmount.add(receivableAmount.subtract(actualAmount));
           }
           vo.setReceivableAmount(receivableAmount);
           vo.setActualAmount(actualAmount);
-          benefitTotalAmount = benefitTotalAmount.add(receivableAmount.subtract(actualAmount));
         }
       }
     }
@@ -580,6 +580,26 @@ public class TreatTollBiz {
   }
 
   /**
+   * 缓存or获取订单对应的使用优惠总额
+   *
+   * @param orderRecordId 订单id
+   * @param benefitTotalAmount 非空为存储，否则为获取
+   * @return
+   */
+  public BigDecimal cacheOrderBenefitTotalAmount(Integer orderRecordId, BigDecimal benefitTotalAmount) {
+    String key = buildLockCacheKey(BILL_BENEFIT_MATCH, orderRecordId);
+    if (StringHelper.isNotNull(benefitTotalAmount)) {
+      // 暂存10分钟
+//    redisUtils.set(key, resultList.getBenefitTotalAmount(), 600);
+      redisUtils.set(key, benefitTotalAmount);
+    } else {
+      // 获取缓存中的订单优惠总额
+      benefitTotalAmount = redisUtils.get(key, BigDecimal.class);
+    }
+    return benefitTotalAmount;
+  }
+
+  /**
    * 计算优惠总额
    *
    * @param discountType 折扣类型
@@ -597,8 +617,7 @@ public class TreatTollBiz {
     switch (discountType) {
       case 1:
 //        privilegeAmount = calculateGeneralPrivilegeAmount(orderRecordId, patientId, generalDiscountModel);
-        String key = buildLockCacheKey(BILL_BENEFIT_MATCH, orderRecordId);
-        privilegeAmount = redisUtils.get(key, BigDecimal.class);
+        privilegeAmount = cacheOrderBenefitTotalAmount(orderRecordId, null);
         if (StringHelper.isNull(privilegeAmount)) {
           throw new ClientServiceException("收费失败，优惠信息不存在，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
         }
