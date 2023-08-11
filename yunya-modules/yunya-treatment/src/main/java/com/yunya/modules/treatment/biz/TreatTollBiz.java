@@ -465,7 +465,7 @@ public class TreatTollBiz {
           // 获取补入工作量
           couponWorkload = benefitVO.getCouponWorkload();
           // 划扣项目的原价 - 划扣套餐价 = 划扣工作量
-          BigDecimal swipeReceivableAmount = detail.getPrice().multiply(BigDecimal.valueOf(benefitVO.getQuantity()));
+          BigDecimal swipeReceivableAmount = detail.getPrice().multiply(BigDecimal.valueOf(benefitVO.getSwipeQuantity()));
           swipeWorkload = swipeReceivableAmount.subtract(benefitVO.getPackageTotalAmount());
           swipeCouponWorkload = benefitVO.getSwipeCouponWorkload();
         }
@@ -546,7 +546,7 @@ public class TreatTollBiz {
           vo.setPrivilegeAmount(privilegeAmount);
           // 划扣套餐价
           vo.setPackageTotalAmount(itemBenefitAmount);
-          vo.setQuantity(item.getQuantity());
+          vo.setSwipeQuantity(item.getQuantity());
           vo.setSwipeCouponWorkload(item.getSupplyWorkload());
         });
       }
