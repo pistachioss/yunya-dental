@@ -563,4 +563,12 @@
             and date_format(privilege_date, '%Y-%m') &lt;=  #{query.endDate}
         </if>
     </select>
+
+    <select id="selectOneByOrderRecordId" resultType="com.yunya.models.treatment.BillRecord">
+        SELECT * FROM bill_record
+        <where>
+            inservice = true
+            AND order_record_id = #{orderRecordId}
+        </where>
+    </select>
 </mapper>

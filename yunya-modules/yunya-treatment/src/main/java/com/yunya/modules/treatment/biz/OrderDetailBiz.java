@@ -403,32 +403,35 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   }
 
   private List<OrderDetailChargeVO> buildMember(Integer orderRecordId, Integer patientId) {
-    Map<Integer, String> maxType = getPatientMemberCards(patientId);
-    if (StringHelper.isNotEmpty(maxType)) {
-      OrderPrivilegeQuery query = new OrderPrivilegeQuery();
-      GeneralDiscountModel generalDiscountModel = new GeneralDiscountModel();
-      generalDiscountModel.setMemberTypeId(Lists.newArrayList(maxType.keySet()).get(0));
-      query.setOrderRecordId(orderRecordId);
-      query.setDiscountType((byte) 1);
-      query.setGeneralDiscountModel(generalDiscountModel);
-      TreatOrderRecordVO orderBenefitVO = treatTollBiz.matchOrderTailPrivilege(query);
-      if (StringHelper.isNotNull(orderBenefitVO)) {
-        treatTollBiz.cacheOrderBenefitTotalAmount(orderRecordId, orderBenefitVO.getBenefitTotalAmount());
-        List<OrderDetailChargeVO> chargeVOS = orderBenefitVO.getItemList();
+    BillRecord bill = billRecordBiz.selectOneByOrderRecordId(orderRecordId);
+    if (StringHelper.isNotNull(bill) && StringHelper.gtZero(bill.getDebtAmount())) {
+      Map<Integer, String> maxType = getPatientMemberCards(patientId);
+      if (StringHelper.isNotEmpty(maxType)) {
+        OrderPrivilegeQuery query = new OrderPrivilegeQuery();
+        GeneralDiscountModel generalDiscountModel = new GeneralDiscountModel();
+        generalDiscountModel.setMemberTypeId(Lists.newArrayList(maxType.keySet()).get(0));
+        query.setOrderRecordId(orderRecordId);
+        query.setDiscountType((byte) 1);
+        query.setGeneralDiscountModel(generalDiscountModel);
+        TreatOrderRecordVO orderBenefitVO = treatTollBiz.matchOrderTailPrivilege(query);
+        if (StringHelper.isNotNull(orderBenefitVO)) {
+          treatTollBiz.cacheOrderBenefitTotalAmount(orderRecordId, orderBenefitVO.getBenefitTotalAmount());
+          List<OrderDetailChargeVO> chargeVOS = orderBenefitVO.getItemList();
 //      List<OrderDetailChargeVO> chargeVOS = tollBiz.matchOrderTailPrivilege(query);
-        System.out.println("订单自动勾选优惠" + chargeVOS);
-        if (CollectionUtils.isNotEmpty(chargeVOS)) {
-          chargeVOS.stream()
-                  .filter(obj -> CollectionUtils.isNotEmpty(obj.getDiscountAppliesCoupons()))
-                  .forEach(
-                          obj ->
-                                  obj.getDiscountAppliesCoupons().stream()
-                                          .filter(benefit -> benefit.getCouponType() == 99)
-                                          .forEach(
-                                                  benefit ->
-                                                          benefit.setCardNumber(
-                                                                  Lists.newArrayList(maxType.values()).get(0))));
-          return chargeVOS;
+          System.out.println("订单自动勾选优惠" + chargeVOS);
+          if (CollectionUtils.isNotEmpty(chargeVOS)) {
+            chargeVOS.stream()
+                    .filter(obj -> CollectionUtils.isNotEmpty(obj.getDiscountAppliesCoupons()))
+                    .forEach(
+                            obj ->
+                                    obj.getDiscountAppliesCoupons().stream()
+                                            .filter(benefit -> benefit.getCouponType() == 99)
+                                            .forEach(
+                                                    benefit ->
+                                                            benefit.setCardNumber(
+                                                                    Lists.newArrayList(maxType.values()).get(0))));
+            return chargeVOS;
+          }
         }
       }
     }

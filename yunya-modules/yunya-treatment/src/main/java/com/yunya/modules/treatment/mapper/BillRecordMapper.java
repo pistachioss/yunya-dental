@@ -195,4 +195,6 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
    * @param query
    */
   List<BillRecord> selectRemoveBillAdjustDiscountOrderIds(@Param("query") CategoryIncomeQuery query);
+
+  BillRecord selectOneByOrderRecordId(@Param("orderRecordId") Integer orderRecordId);
 }
