@@ -9,7 +9,6 @@ import com.yunya.feign.patient_central.domain.query.MemberReturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
-import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -96,6 +95,18 @@ public class PatientMemberInfoController {
   @PostMapping("/addMemberBindingRelation")
   public ResponseResult addMemberBindingRelation(@RequestBody MemberBindingRelationInfoModel form) {
     return patientMemberInfoBiz.addMemberBindingRelation(form);
+  }
+
+  /**
+   * 添加会员卡关联关系/共享值关联关系（患者自己操作）
+   *
+   * @param form 会员卡关联关系
+   * @return ResponseResult
+   */
+  @ApiOperation("添加会员卡关联关系/共享值关联关系")
+  @PostMapping("/white/addMemberBindingRelation")
+  public ResponseResult addMemberBindingRelation4Open(@RequestBody MemberBindingRelationInfoModel form) {
+    return patientMemberInfoBiz.addMemberBindingRelation4Open(form, null, null, null);
   }
 
   /**

@@ -256,97 +256,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @return ResponseResult
    */
   public ResponseResult addMemberBindingRelation(MemberBindingRelationInfoModel form) {
-    if (form.getPatientId().equals(form.getSecondaryCardId())) {
-      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST, "不能为患者本人！", "");
-    }
-    PatientMemberRelation isPatientMemberRelation =
-        patientMemberRelationMapper.findMemberBindingRelation(form);
-    if (isPatientMemberRelation != null) {
-      return ResponseUtil.fail(
-          OperationCodeConstants.SAME_DATA_EXIST, "已存在绑定关系,不能双向绑定！", isPatientMemberRelation);
-    }
-    // 查询亲密付是否已存在其他有激活的绑定
-    PatientMemberInfoQueryForm qq = new PatientMemberInfoQueryForm();
-    qq.setPatientId(form.getSecondaryCardId());
-    qq.setBindType(1);
-    List<SecondaryMemberInfoVo> secondaryMemberInfoVos = patientMemberRelationMapper.findMemberInfo2(qq);
-    if (secondaryMemberInfoVos.size() > 0) {
-      return ResponseUtil.fail(
-          OperationCodeConstants.SAME_DATA_EXIST, "该紧密付已存在其他绑定关系！", isPatientMemberRelation);
-    }
-    // 删除该亲密付未激活的绑定
-    patientMemberRelationMapper.deleteOtherMemberRelation(
-        form.getSecondaryCardId(), new ArrayList<>());
-
-    // 是否普通会员
-    PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(form.getSecondaryCardId());
-    if (patientMemberInfo != null && patientMemberInfo.getMemberTypeId() != 4) {
-      return ResponseUtil.fail(
-          OperationCodeConstants.SAME_DATA_EXIST, "非普通会员无法绑定！", isPatientMemberRelation);
-    }
-
-    PatientMemberRelation MemberRelation =
-        this.patientMemberRelationMapper.findBindingRelation(form);
-    if (MemberRelation != null) {
-      return ResponseUtil.fail(
-          OperationCodeConstants.SAME_DATA_EXIST, "该绑定已存在,不能重复绑定！", MemberRelation);
-    } else {
-      PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
-      BeanUtils.copyProperties(form, patientMemberRelation);
-      // type为0 添加会员卡权限绑定
-      if (form.getBindType() == 0) {
-        patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientMemberRelation.setCrtName(BaseContextHandler.getName());
-        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
-        // 发送消息
-        remoteRabbitMqServiceFeign.sendMessage(
-            patientMemberRelation.getId(), 0, 0, MsgCategoryEnum.BasePatientMemberRelation);
-      }
-      // type为1 添加会员卡共享值 双项绑定
-      if (form.getBindType() == 1) {
-        patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientMemberRelation.setCrtName(BaseContextHandler.getName());
-        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
-        // 添加会员双向关联
-        remoteRabbitMqServiceFeign.sendMessage(
-            patientMemberRelation.getId(), 0, 0, MsgCategoryEnum.BasePatientMemberRelation);
-        int masterCardI = patientMemberRelation.getMasterCardId();
-        patientMemberRelation.setMasterCardId(patientMemberRelation.getSecondaryCardId());
-        patientMemberRelation.setSecondaryCardId(masterCardI);
-        patientMemberRelation.setId(null);
-        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
-        // 添加会员双向关联
-        sendMemberRelationMessages(patientMemberRelation.getId(), 0);
-      }
-
-      // 发送微信推送消息
-      WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
-      wxTemplateMsgModel.setPatientId(form.getMasterCardId());
-      wxTemplateMsgModel.setTemplateEnum(TemplateEnum.BIND_SUCCESS);
-
-      PatientBaseInfoVo patientBaseInfoVo =
-          patientBaseInfoMapper.selectOneById(form.getSecondaryCardId());
-      Map<String, Object> paramMap = new HashMap<>();
-//      if (form.getBindType() == 0) {
-//        paramMap.put("first", "您好，您的会员卡成功绑定副卡人，将享受您的会员卡折扣权益，副卡人信息如下：");
-//      } else {
-//        paramMap.put("first", "您好，您的会员卡成功绑定余额共享人，可使用您的会员卡余额，信息如下：");
-//      }
-      paramMap.put("first", "您好，您的会员卡成功绑定亲密付，可使用您的会员卡折扣权益和会员卡余额，信息如下：");
-
-      if (patientBaseInfoVo != null) {
-        paramMap.put("keyword1", patientBaseInfoVo.getName());
-        paramMap.put("keyword2", patientBaseInfoVo.getMobile());
-      } else {
-        throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
-      }
-      wxTemplateMsgModel.setParamMap(paramMap);
-      remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
-
-      return ResponseUtil.success();
-    }
+    Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+    Integer optId = Integer.parseInt(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    return addMemberBindingRelation4Open(form, orgId, optId, name);
   }
 
   /**
@@ -2199,5 +2112,99 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       result.setCumulativeConsumption(cumulativeConsumption);
     }
     return result;
+  }
+
+  public ResponseResult addMemberBindingRelation4Open(MemberBindingRelationInfoModel form, Integer orgId, Integer optId, String name) {
+    if (form.getPatientId().equals(form.getSecondaryCardId())) {
+      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST, "不能为患者本人！", "");
+    }
+    PatientMemberRelation isPatientMemberRelation =
+            patientMemberRelationMapper.findMemberBindingRelation(form);
+    if (isPatientMemberRelation != null) {
+      return ResponseUtil.fail(
+              OperationCodeConstants.SAME_DATA_EXIST, "已存在绑定关系,不能双向绑定！", isPatientMemberRelation);
+    }
+    // 查询亲密付是否已存在其他有激活的绑定
+    PatientMemberInfoQueryForm qq = new PatientMemberInfoQueryForm();
+    qq.setPatientId(form.getSecondaryCardId());
+    qq.setBindType(1);
+    List<SecondaryMemberInfoVo> secondaryMemberInfoVos = patientMemberRelationMapper.findMemberInfo2(qq);
+    if (secondaryMemberInfoVos.size() > 0) {
+      return ResponseUtil.fail(
+              OperationCodeConstants.SAME_DATA_EXIST, "该紧密付已存在其他绑定关系！", isPatientMemberRelation);
+    }
+    // 删除该亲密付未激活的绑定
+    patientMemberRelationMapper.deleteOtherMemberRelation(
+            form.getSecondaryCardId(), new ArrayList<>());
+
+    // 是否普通会员
+    PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(form.getSecondaryCardId());
+    if (patientMemberInfo != null && patientMemberInfo.getMemberTypeId() != 4) {
+      return ResponseUtil.fail(
+              OperationCodeConstants.SAME_DATA_EXIST, "非普通会员无法绑定！", isPatientMemberRelation);
+    }
+
+    PatientMemberRelation MemberRelation =
+            this.patientMemberRelationMapper.findBindingRelation(form);
+    if (MemberRelation != null) {
+      return ResponseUtil.fail(
+              OperationCodeConstants.SAME_DATA_EXIST, "该绑定已存在,不能重复绑定！", MemberRelation);
+    } else {
+      PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
+      BeanUtils.copyProperties(form, patientMemberRelation);
+      // type为0 添加会员卡权限绑定
+      if (form.getBindType() == 0) {
+        patientMemberRelation.setOrgId(orgId);
+        patientMemberRelation.setCrtId(optId);
+        patientMemberRelation.setCrtName(name);
+        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
+        // 发送消息
+        remoteRabbitMqServiceFeign.sendMessage(
+                patientMemberRelation.getId(), 0, 0, MsgCategoryEnum.BasePatientMemberRelation);
+      }
+      // type为1 添加会员卡共享值 双项绑定
+      if (form.getBindType() == 1) {
+        patientMemberRelation.setOrgId(orgId);
+        patientMemberRelation.setCrtId(optId);
+        patientMemberRelation.setCrtName(name);
+        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
+        // 添加会员双向关联
+        remoteRabbitMqServiceFeign.sendMessage(
+                patientMemberRelation.getId(), 0, 0, MsgCategoryEnum.BasePatientMemberRelation);
+        int masterCardI = patientMemberRelation.getMasterCardId();
+        patientMemberRelation.setMasterCardId(patientMemberRelation.getSecondaryCardId());
+        patientMemberRelation.setSecondaryCardId(masterCardI);
+        patientMemberRelation.setId(null);
+        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
+        // 添加会员双向关联
+        sendMemberRelationMessages(patientMemberRelation.getId(), 0);
+      }
+
+      // 发送微信推送消息
+      WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+      wxTemplateMsgModel.setPatientId(form.getMasterCardId());
+      wxTemplateMsgModel.setTemplateEnum(TemplateEnum.BIND_SUCCESS);
+
+      PatientBaseInfoVo patientBaseInfoVo =
+              patientBaseInfoMapper.selectOneById(form.getSecondaryCardId());
+      Map<String, Object> paramMap = new HashMap<>();
+//      if (form.getBindType() == 0) {
+//        paramMap.put("first", "您好，您的会员卡成功绑定副卡人，将享受您的会员卡折扣权益，副卡人信息如下：");
+//      } else {
+//        paramMap.put("first", "您好，您的会员卡成功绑定余额共享人，可使用您的会员卡余额，信息如下：");
+//      }
+      paramMap.put("first", "您好，您的会员卡成功绑定亲密付，可使用您的会员卡折扣权益和会员卡余额，信息如下：");
+
+      if (patientBaseInfoVo != null) {
+        paramMap.put("keyword1", patientBaseInfoVo.getName());
+        paramMap.put("keyword2", patientBaseInfoVo.getMobile());
+      } else {
+        throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+      }
+      wxTemplateMsgModel.setParamMap(paramMap);
+      remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
+
+      return ResponseUtil.success();
+    }
   }
 }
