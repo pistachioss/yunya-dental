@@ -469,7 +469,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public void makeMemberLevelByRecharge(String cardNumber) {
     // 判断该卡是否可以自动升级
     PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(cardNumber);
-    if (patientMemberInfo != null || patientMemberInfo.getNonauto()) {
+    if (patientMemberInfo == null || patientMemberInfo.getNonauto()) {
       return;
     }
     // TODO: 充值后判断是否升级会员等级，退费后判断是否降级
@@ -479,11 +479,15 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     List<MemberType> memberTypeList = memberTypeList_tmp.stream().filter(memberType -> {
       return memberType.getRechargeMaxAmount().compareTo(BigDecimal.ZERO) > 0 && memberType.getRechargeMaxAmount().compareTo(sum) <= 0;
     }).sorted(Comparator.comparing(MemberType::getRechargeMaxAmount).reversed()).collect(Collectors.toList());
-    if (memberTypeList != null && !memberTypeList.isEmpty()) {
-      // 变更等级
-      PatientMemberInfo patientMember =
-          this.patientMemberInfoMapper.selectOneByCardNumber(cardNumber);
-      patientMember.setMemberTypeId(memberTypeList.get(0).getId());
+    Integer newTypeId = 4;
+    if (memberTypeList != null && memberTypeList.size() > 0) {
+      newTypeId = memberTypeList.get(0).getId();
+    }
+    // 变更等级
+    PatientMemberInfo patientMember =
+            this.patientMemberInfoMapper.selectOneByCardNumber(cardNumber);
+    if (!newTypeId.equals(patientMember.getMemberTypeId())){
+      patientMember.setMemberTypeId(newTypeId);
       patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMember.setUpdName(BaseContextHandler.getName());
       patientMember.setUpdTime(new Date());
@@ -491,7 +495,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       this.mapper.updateByPrimaryKeySelective(patientMember);
       this.cardLog(patientMember, "变更", "更新");
       remoteRabbitMqServiceFeign.sendMessage(
-          patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
+              patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
     }
   }
 
