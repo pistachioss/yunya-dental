@@ -218,7 +218,7 @@ public class TollController {
   @ApiOperation("确认收费")
   @PostMapping("/confirm")
   public ResponseResult<TollConfirmVO> confirmCharge(@RequestBody @Validated TreatTollModel model) {
-    treatTollBiz.clear(model.getOrderRecordId());
+//    treatTollBiz.clear(model.getOrderRecordId());
     TollConfirmVO tollConfirmVO = treatTollBiz.confirmCharge(model, (byte) 2);
     return ResponseUtil.success(tollConfirmVO);
   }
@@ -234,7 +234,7 @@ public class TollController {
   @ApiOperation("挂账")
   @PostMapping("/credit")
   public ResponseResult<TollConfirmVO> chargeOnCredit(@RequestBody @Validated TreatTollModel model) {
-    treatTollBiz.clear(model.getOrderRecordId());
+//    treatTollBiz.clear(model.getOrderRecordId());
     TollConfirmVO tollConfirmVO = treatTollBiz.chargeOnCredit(model);
     return ResponseUtil.success(tollConfirmVO);
   }
