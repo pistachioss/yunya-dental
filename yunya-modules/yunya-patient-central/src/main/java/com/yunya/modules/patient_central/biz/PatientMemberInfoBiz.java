@@ -973,6 +973,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param form 会员卡类型修改Form
    */
   public void changeType(CardTypeForm form) {
+    // 预检查是否有会员卡
+    this.findMemberBaseInfo(form.getPatientId());
+
     PatientMemberInfo patientMember =
         this.patientMemberInfoMapper.selectOneByCardNumber(form.getCardNumber());
     // 判断是否提升会员等级
