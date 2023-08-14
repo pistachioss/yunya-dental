@@ -5,6 +5,7 @@ import com.yunya.feign.ivy_mini.domain.vo.WxAccessTokenVo;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya365.mini.config.WxMiniProperties;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import java.security.*;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
+import static com.yunya.framework.common.constant.CommonConstants.EX_USER_PASS_INVALID_CODE;
 import static com.yunya.framework.common.constant.RedisConstants.*;
 import static com.yunya.framework.common.constant.WxMiniAuthConstant.*;
 import static com.yunya.framework.common.constant.WxMiniUri.*;
@@ -41,20 +43,39 @@ public class WxApi {
     @Resource
     private RedisUtils redisUtils;
 
+    /** 最大重试次数 */
+    private static final int MAX_RETRY_TIMES = 5;
+    /** 初始重试次数 */
+    private static final int FIRST_RETRY_TIMES = 1;
+
     public <T> T getWxResult(String url, Class<T> clazz) {
-        return this.getWxResult(url).toJavaObject(clazz);
+        return this.getWxResult(url, MAX_RETRY_TIMES).toJavaObject(clazz);
     }
 
-    public JSONObject getWxResult(String url) {
+    public JSONObject getWxResult(String url, Integer retryTimes) {
         log.info("微信get请求，url：{}", url);
         String resultStr = restTemplate.getForObject(url, String.class);
-        return getRequestRes(resultStr);
+        JSONObject result = getRequestRes(resultStr, --retryTimes);
+        retryTimes = result.getInteger("retry");
+        if (StringHelper.isNotNull(retryTimes)) {
+           return getWxResult(url, retryTimes);
+        }
+        return result;
     }
 
     public JSONObject wxPostObject(String url, Object obj) {
+        return wxPostObject(url, obj, MAX_RETRY_TIMES);
+    }
+
+    public JSONObject wxPostObject(String url, Object obj, Integer retryTimes) {
         log.info("微信片post请求，url：{}", url);
         String resultStr = restTemplate.postForObject(url, obj, String.class);
-        return getRequestRes(resultStr);
+        JSONObject result = getRequestRes(resultStr, --retryTimes);
+        retryTimes = result.getInteger("retry");
+        if (StringHelper.isNotNull(retryTimes)) {
+            return wxPostObject(url, obj, retryTimes);
+        }
+        return result;
     }
 
     public void refreshToken(){
@@ -133,10 +154,17 @@ public class WxApi {
         return params;
     }
 
-    private JSONObject getRequestRes(String resultStr) {
+    private JSONObject getRequestRes(String resultStr, Integer retryTimes) {
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
         Integer errCode = jsonObject.getInteger("errcode");
         if (errCode != null && errCode != 0) {
+            if (retryTimes>0 && errCode==EX_USER_PASS_INVALID_CODE) {
+                log.info("微信api调用token失效，刷新token");
+                refreshToken();
+                jsonObject = new JSONObject();
+                jsonObject.put("retry", retryTimes);
+                return jsonObject;
+            }
             log.error("微信api调用失败：{}", jsonObject);
             throw ClientServiceException.wrap(errCode, WX_SERVER_ERROR.getMessage());
         }
