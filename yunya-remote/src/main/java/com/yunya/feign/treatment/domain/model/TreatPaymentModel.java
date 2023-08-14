@@ -18,9 +18,9 @@ import java.math.BigDecimal;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("其他入账方式信息参数模型")
 @Data
 @ToString
+@ApiModel("退费其他入账方式信息参数模型")
 public class TreatPaymentModel implements Serializable {
   
   /** 会员卡或预付款卡号 */
