@@ -393,6 +393,11 @@ public class CouponOrderBiz {
             card.setPayDate(null);
             card.setSellerUserId(null);
             card.setBuyerId(null);
+            card.setActiveOrgId(null);
+            card.setActiveUserId(null);
+            card.setSoldTarget(null);
+            card.setSoldPhoneNumber(null);
+            card.setActiveDate(null);
             cardMapper.updateByPrimaryKey(card);
         }
     }

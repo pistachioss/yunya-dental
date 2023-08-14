@@ -1284,7 +1284,8 @@ WHERE
         left join `coupon_order` `co` on `co`.`id` = `cor`.`order_id` and  `co`.status != 2
         where
             `cci`.`type` = 5
-           and ((`c`.`status` in (1,2,3,4) and `c`.`sold_target` = #{query.patientId} and `cor`.inservice = 1)
+           and ((`c`.`status` in (1,2,3,4) and `c`.`sold_target` = #{query.patientId}
+                    and `co`.`status` = 1 and `cor`.inservice = 1)
                 or (`c`.`status` in (2,3,4) and `c`.`patient_id` = #{query.patientId}))
             <if test="query.couponName !=null and query.couponName != ''">
                 and `cci`.`name` like concat('%', #{query.couponName}, '%')

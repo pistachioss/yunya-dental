@@ -524,11 +524,11 @@ public class DeductionPatientBiz {
 
     public String allocate(DeductionAllocateForm form) {
         CouponCommonInfo commonInfo = couponBiz.selectById(form.getCouponId());
-        Card card = cardMapper.listRemaining(Lists.newArrayList(form.getCouponId()), Integer.parseInt(BaseContextHandler.getOrgId())).get(0);
-        if (Objects.isNull(card)) {
+        List<Card> cards = cardMapper.listRemaining(Lists.newArrayList(form.getCouponId()), Integer.parseInt(BaseContextHandler.getOrgId()));
+        if (CollectionUtils.isEmpty(cards)) {
             throw ClientServiceException.wrap(COUPON_STOCK_LACK, commonInfo.getName());
         }
-        return card.getCardNumber();
+        return cards.get(0).getCardNumber();
     }
 
     public PageInfo<DeductionRefundRecordVO> refundList(DeductionRecordQuery query) {
