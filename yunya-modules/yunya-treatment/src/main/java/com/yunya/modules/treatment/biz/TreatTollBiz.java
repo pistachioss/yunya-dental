@@ -358,7 +358,7 @@ public class TreatTollBiz {
     Integer billRecordId = billRecord.getId();
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
-    Date dateTime = billRecord.getCrtTime();
+    Date dateTime = BaseContextHandler.getCurTime();
     BillPayRecord billPayRecord = new BillPayRecord();
     // 如果当前组织是公司，收费门诊则是开单门诊
     billPayRecord.setOrgId(COMPANY_ORGID.equals(orgId) ? billRecord.getOrgId() : orgId);
@@ -422,7 +422,7 @@ public class TreatTollBiz {
     treatmentRecord.setStatus(BusinessConstants.TREATMENT_PROCESS_FINISH_STATUS);
     treatmentRecord.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
     treatmentRecord.setUpdName(BaseContextHandler.getName());
-    treatmentRecord.setUpdTime(DateUtil.now());
+    treatmentRecord.setUpdTime(BaseContextHandler.getCurTime());
     treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
   }
 
@@ -1005,7 +1005,7 @@ public class TreatTollBiz {
     log.info("开始生成就诊账单编号===>");
     Integer orgId = orderRecord.getOrgId();
     if (StringHelper.isNotNull(orgId)) {
-      Date now = DateUtil.now();
+      Date now = BaseContextHandler.getCurTime();
       return redisUtils.lockedFunc("", k->{
          Byte discountType = model.getDiscountType();
          BillRecord billRecord = new BillRecord();
