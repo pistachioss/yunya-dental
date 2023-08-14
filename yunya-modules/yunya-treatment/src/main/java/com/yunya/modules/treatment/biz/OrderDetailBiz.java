@@ -404,7 +404,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
   private List<OrderDetailChargeVO> buildMember(Integer orderRecordId, Integer patientId) {
     BillRecord bill = billRecordBiz.selectOneByOrderRecordId(orderRecordId);
-    if (StringHelper.isNotNull(bill) && StringHelper.gtZero(bill.getDebtAmount())) {
+    if (StringHelper.isNull(bill) || StringHelper.gtZero(bill.getDebtAmount())) {
       Map<Integer, String> maxType = getPatientMemberCards(patientId);
       if (StringHelper.isNotEmpty(maxType)) {
         OrderPrivilegeQuery query = new OrderPrivilegeQuery();
