@@ -80,7 +80,7 @@ public class TollController {
   public ResponseResult<TreatOrderRecordVO> matchOrderTailPrivilegeList(
       @RequestBody @Validated OrderPrivilegeQuery query) {
     TreatOrderRecordVO resultList = treatTollBiz.matchOrderTailPrivilege(query);
-    treatTollBiz.cacheOrderBenefitTotalAmount(query.getOrderRecordId(), resultList.getBenefitTotalAmount());
+    treatTollBiz.cacheOrderBenefitTotalAmount(query.getOrderRecordId(), resultList);
     return ResponseUtil.success(resultList);
   }
 

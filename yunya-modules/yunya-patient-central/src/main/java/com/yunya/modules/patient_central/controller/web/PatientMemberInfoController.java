@@ -98,6 +98,18 @@ public class PatientMemberInfoController {
   }
 
   /**
+   * 添加会员卡关联关系/共享值关联关系绑定前验证（患者自己操作）
+   *
+   * @param form 会员卡关联关系
+   * @return ResponseResult
+   */
+  @ApiOperation("添加会员卡关联关系or共享值关联关系绑定前验证")
+  @PostMapping("/white/bindingRelation/check")
+  public ResponseResult checkBindingRelation(@RequestBody MemberBindingRelationInfoModel form) {
+    return patientMemberInfoBiz.checkBindingRelation(form);
+  }
+
+  /**
    * 添加会员卡关联关系/共享值关联关系（患者自己操作）
    *
    * @param form 会员卡关联关系

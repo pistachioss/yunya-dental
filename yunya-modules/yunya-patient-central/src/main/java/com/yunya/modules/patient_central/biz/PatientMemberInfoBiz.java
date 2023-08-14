@@ -2121,6 +2121,42 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     return result;
   }
 
+  public ResponseResult checkBindingRelation(MemberBindingRelationInfoModel form) {
+    if (form.getPatientId().equals(form.getSecondaryCardId())) {
+      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST, "不能为患者本人！", "");
+    }
+    PatientMemberRelation isPatientMemberRelation =
+            patientMemberRelationMapper.findMemberBindingRelation(form);
+    if (isPatientMemberRelation != null) {
+      return ResponseUtil.fail(
+              OperationCodeConstants.SAME_DATA_EXIST, "已存在绑定关系,不能双向绑定！", isPatientMemberRelation);
+    }
+    // 查询亲密付是否已存在其他有激活的绑定
+    PatientMemberInfoQueryForm qq = new PatientMemberInfoQueryForm();
+    qq.setPatientId(form.getSecondaryCardId());
+    qq.setBindType(1);
+    List<SecondaryMemberInfoVo> secondaryMemberInfoVos = patientMemberRelationMapper.findMemberInfo2(qq);
+    if (secondaryMemberInfoVos.size() > 0) {
+      return ResponseUtil.fail(
+              OperationCodeConstants.SAME_DATA_EXIST, "该紧密付已存在其他绑定关系！", isPatientMemberRelation);
+    }
+
+    // 是否普通会员
+    PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(form.getSecondaryCardId());
+    if (patientMemberInfo != null && patientMemberInfo.getMemberTypeId() != 4) {
+      return ResponseUtil.fail(
+              OperationCodeConstants.SAME_DATA_EXIST, "非普通会员无法绑定！", isPatientMemberRelation);
+    }
+
+    PatientMemberRelation MemberRelation =
+            this.patientMemberRelationMapper.findBindingRelation(form);
+    if (MemberRelation != null) {
+      return ResponseUtil.fail(
+              OperationCodeConstants.SAME_DATA_EXIST, "该绑定已存在,不能重复绑定！", MemberRelation);
+    }
+    return ResponseUtil.success("ok");
+  }
+
   public ResponseResult addMemberBindingRelation4Open(MemberBindingRelationInfoModel form, Integer orgId, Integer optId, String name) {
     if (form.getPatientId().equals(form.getSecondaryCardId())) {
       return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST, "不能为患者本人！", "");

@@ -156,6 +156,7 @@ public class TreatTollBiz {
           deductItem.setActualAmount(BigDecimal.ZERO);
           List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(deduct.getItemBenefitList(), item.getPrice().multiply(BigDecimal.valueOf(swipeQuantity)));
           deductItem.setDiscountAppliesCoupons(privilegeInfo);
+          deductItem.setCouponWorkload(deduct.getSupplyWorkload());
           benefitTotalAmount = benefitTotalAmount.add(deductItem.getReceivableAmount());
           swipeItemList.add(deductItem);
         }
@@ -169,6 +170,7 @@ public class TreatTollBiz {
         BigDecimal actualAmount = receivableAmount;
         for (PatientItemBenefitVo benefitVo : itemList) {
           if (entry.getKey().equals(benefitVo.getOrderDetailId())) {
+            vo.setCouponWorkload(benefitVo.getSupplyWorkload());
             actualAmount = actualAmount.subtract(benefitVo.getItemBenefitAmount());
             // 设置折扣率
             vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
@@ -436,7 +438,8 @@ public class TreatTollBiz {
       BillRecord billRecord,
       TreatTollModel model) {
     // 构建明细收费列表
-    Map<Integer, OrderDetailPayBenefitVO> discountMap = findBillDiscountCoupons(model, billRecord);
+//    Map<Integer, OrderDetailPayBenefitVO> discountMap = findBillDiscountCoupons(model, billRecord);
+    Map<Integer, OrderDetailPayBenefitVO> discountMap = cacheOrderBenefitTotalAmount(billRecord.getOrderRecordId()).getDiscountMap();
     List<OrderDetailPayRecord> orderDetailPayRecords = Lists.newArrayList();
     OrderDetail orderDetail = new OrderDetail();
     Integer orderRecordId = billRecord.getOrderRecordId();
@@ -579,24 +582,62 @@ public class TreatTollBiz {
     return totalCharge;
   }
 
+  public TreatOrderBenefitVO cacheOrderBenefitTotalAmount(Integer orderRecordId) {
+    return cacheOrderBenefitTotalAmount(orderRecordId, null);
+  }
+
   /**
    * 缓存or获取订单对应的使用优惠总额
    *
    * @param orderRecordId 订单id
-   * @param benefitTotalAmount 非空为存储，否则为获取
+   * @param order 非空为存储，否则为获取
    * @return
    */
-  public BigDecimal cacheOrderBenefitTotalAmount(Integer orderRecordId, BigDecimal benefitTotalAmount) {
+  public TreatOrderBenefitVO cacheOrderBenefitTotalAmount(Integer orderRecordId, TreatOrderRecordVO order) {
     String key = buildLockCacheKey(BILL_BENEFIT_MATCH, orderRecordId);
-    if (StringHelper.isNotNull(benefitTotalAmount)) {
+    if (StringHelper.isNotNull(order)) {
       // 暂存10分钟
-//    redisUtils.set(key, resultList.getBenefitTotalAmount(), 600);
-      redisUtils.set(key, benefitTotalAmount);
+      TreatOrderBenefitVO result = orderConvertBenefit(order);
+//    redisUtils.set(key, result, 600);
+      redisUtils.set(key, result);
+      return result;
     } else {
       // 获取缓存中的订单优惠总额
-      benefitTotalAmount = redisUtils.get(key, BigDecimal.class);
+      return redisUtils.get(key, TreatOrderBenefitVO.class);
     }
-    return benefitTotalAmount;
+  }
+
+  private TreatOrderBenefitVO orderConvertBenefit(TreatOrderRecordVO order) {
+    TreatOrderBenefitVO result = new TreatOrderBenefitVO();
+    List<OrderDetailChargeVO> itemList = order.getItemList();
+    List<OrderDetailChargeVO> deductionList = order.getSwipeItemList();
+    Map<Integer, OrderDetailPayBenefitVO> discountMap = Maps.newHashMap();
+    if (StringHelper.isNotEmpty(itemList)) {
+      itemList.forEach(item->{
+        Integer orderDetailId = item.getOrderDetailId();
+        OrderDetailPayBenefitVO vo = discountMap.computeIfAbsent(orderDetailId, v -> new OrderDetailPayBenefitVO());
+        vo.setOrderDetailId(orderDetailId);
+        vo.setPrivilegeAmount(vo.getPrivilegeAmount().add(item.getPrivilegeAmount()));
+        vo.setCouponWorkload(vo.getCouponWorkload().add(item.getCouponWorkload()));
+      });
+    }
+    if (StringHelper.isNotEmpty(deductionList)) {
+      deductionList.forEach(item->{
+        Integer orderDetailId = item.getOrderDetailId();
+        OrderDetailPayBenefitVO vo = discountMap.computeIfAbsent(orderDetailId, v -> new OrderDetailPayBenefitVO());
+        vo.setOrderDetailId(orderDetailId);
+        BigDecimal itemBenefitAmount = item.getPrivilegeAmount();
+        BigDecimal privilegeAmount = StringHelper.defaultBigDecimal(vo.getPrivilegeAmount()).add(itemBenefitAmount);
+        vo.setPrivilegeAmount(vo.getPrivilegeAmount().add(privilegeAmount));
+        // 划扣套餐价
+        vo.setPackageTotalAmount(vo.getPackageTotalAmount().add(itemBenefitAmount));
+        vo.setSwipeQuantity(vo.getSwipeQuantity() + item.getQuantity());
+        vo.setSwipeCouponWorkload(vo.getSwipeCouponWorkload().add(item.getCouponWorkload()));
+      });
+    }
+    result.setBenefitTotalAmount(order.getBenefitTotalAmount());
+    result.setDiscountMap(discountMap);
+    return result;
   }
 
   /**
@@ -617,7 +658,7 @@ public class TreatTollBiz {
     switch (discountType) {
       case 1:
 //        privilegeAmount = calculateGeneralPrivilegeAmount(orderRecordId, patientId, generalDiscountModel);
-        privilegeAmount = cacheOrderBenefitTotalAmount(orderRecordId, null);
+        privilegeAmount = cacheOrderBenefitTotalAmount(orderRecordId).getBenefitTotalAmount();
         if (StringHelper.isNull(privilegeAmount)) {
           throw new ClientServiceException("收费失败，优惠信息不存在，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
         }

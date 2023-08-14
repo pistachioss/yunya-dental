@@ -45,6 +45,9 @@ public class OrderDetailChargeVO extends OrderDetailVO {
   /** 优惠适用卡券列表 */
   private List<PrivilegeCouponInfoVO> discountAppliesCoupons = Lists.newArrayList();
 
+  /** 补入工作量 */
+  @ApiModelProperty("补入工作量")
+  private BigDecimal couponWorkload;
   /** 是否有优惠 */
   @ApiModelProperty("是否有优惠")
   private Boolean hasDiscount = false;

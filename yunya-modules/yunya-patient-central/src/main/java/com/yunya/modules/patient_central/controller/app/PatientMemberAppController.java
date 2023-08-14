@@ -113,7 +113,7 @@ public class PatientMemberAppController {
 
         //已绑定主卡信息
         List<PatientCardOwnerInfoVo> patientCardOwnerInfoVos = patientMemberInfoBiz.findPatientCardOwnerInfo(patientId);
-        if (StringHelper.isEmpty(patientCardOwnerInfoVos)) {
+        if (StringHelper.isNotEmpty(patientCardOwnerInfoVos)) {
             //患者会员卡关联关系
             PatientMemberRelationQueryForm form = new PatientMemberRelationQueryForm();
             form.setPatientId(patientId);
