@@ -969,7 +969,7 @@ public class TreatTollBiz {
     // 计算收欠费入账总额
     BigDecimal[] totalAmount = calculateTotalCharge(model);
     BigDecimal totalCharge = totalAmount[0];
-    checkTotalChargeAndDebtAmount(totalCharge, actualReceivableAmount, model.getOutstandingAmount());
+    checkTotalChargeAndDebtAmount(totalCharge, billRecord.getDebtAmount(), model.getOutstandingAmount());
     billRecord.setReceivedAmount(billRecord.getReceivedAmount().add(totalCharge));
     billRecord.setDebtAmount(actualReceivableAmount.subtract(totalCharge));
     InvoiceModel invoiceModel = model.getInvoiceModel();
@@ -1148,7 +1148,7 @@ public class TreatTollBiz {
       BigDecimal receivedAmount = record.getReceivedAmount();
       BigDecimal actualReceivableAmount = record.getActualReceivableAmount();
       if (StringHelper.leZero(actualReceivableAmount)
-              || !StringHelper.eqZero(receivedAmount)) {
+              || StringHelper.eq(receivedAmount, actualReceivableAmount)) {
         throw new ClientServiceException("收欠费失败，无需收欠费", PARAMETERS_IS_ILLEGAL);
       }
       // todo 校验发票

@@ -134,6 +134,19 @@ public class PatientMemberInfoController {
     return ResponseUtil.success();
   }
 
+  /**
+   * 删除会员卡关联关系（对外开放）
+   *
+   * @param cardRelationForm 会员卡关系删除
+   * @return ResponseResult
+   */
+  @ApiOperation("删除会员卡关联关系（对外开放）")
+  @DeleteMapping("/white/delete")
+  public ResponseResult deleteOpenById(@RequestBody CardRelationForm cardRelationForm) {
+    patientMemberInfoBiz.deleteRelationById(cardRelationForm);
+    return ResponseUtil.success();
+  }
+
   @ApiOperation("保留该卡，删除其他会员卡关联关系")
   @DeleteMapping("/delete2")
   public ResponseResult delete2ById(@RequestBody CardRelationForm cardRelationForm) {
