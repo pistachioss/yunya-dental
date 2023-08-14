@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment.domain.vo;
 
+import com.google.common.collect.Maps;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -22,9 +23,9 @@ public class TreatOrderBenefitVO implements Serializable {
 
     /** 总优惠 */
     @ApiModelProperty("总优惠")
-    private BigDecimal benefitTotalAmount;
+    private BigDecimal benefitTotalAmount = BigDecimal.ZERO;
     
     /** 优惠项目明细列表 */
     @ApiModelProperty("优惠项目明细列表")
-    private Map<Integer, OrderDetailPayBenefitVO> discountMap;
+    private Map<Integer, OrderDetailPayBenefitVO> discountMap = Maps.newHashMap();
 }

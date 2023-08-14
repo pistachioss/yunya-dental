@@ -603,7 +603,11 @@ public class TreatTollBiz {
       return result;
     } else {
       // 获取缓存中的订单优惠总额
-      return redisUtils.get(key, TreatOrderBenefitVO.class);
+      TreatOrderBenefitVO result = redisUtils.get(key, TreatOrderBenefitVO.class);
+      if (StringHelper.isNull(result)) {
+        result = new TreatOrderBenefitVO();
+      }
+      return result;
     }
   }
 
@@ -611,7 +615,7 @@ public class TreatTollBiz {
     TreatOrderBenefitVO result = new TreatOrderBenefitVO();
     List<OrderDetailChargeVO> itemList = order.getItemList();
     List<OrderDetailChargeVO> deductionList = order.getSwipeItemList();
-    Map<Integer, OrderDetailPayBenefitVO> discountMap = Maps.newHashMap();
+    Map<Integer, OrderDetailPayBenefitVO> discountMap = result.getDiscountMap();
     if (StringHelper.isNotEmpty(itemList)) {
       itemList.forEach(item->{
         Integer orderDetailId = item.getOrderDetailId();

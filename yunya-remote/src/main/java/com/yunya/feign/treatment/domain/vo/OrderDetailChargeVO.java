@@ -26,7 +26,7 @@ public class OrderDetailChargeVO extends OrderDetailVO {
   private String billingItemEnglishName;
   /** 优惠金额 */
   @ApiModelProperty("优惠金额")
-  private BigDecimal privilegeAmount;
+  private BigDecimal privilegeAmount = BigDecimal.ZERO;
   /** 折扣率 */
   @ApiModelProperty("折扣率：应收/原价*100%")
   private BigDecimal discountRate = BigDecimal.ZERO;
@@ -47,7 +47,7 @@ public class OrderDetailChargeVO extends OrderDetailVO {
 
   /** 补入工作量 */
   @ApiModelProperty("补入工作量")
-  private BigDecimal couponWorkload;
+  private BigDecimal couponWorkload = BigDecimal.ZERO;
   /** 是否有优惠 */
   @ApiModelProperty("是否有优惠")
   private Boolean hasDiscount = false;

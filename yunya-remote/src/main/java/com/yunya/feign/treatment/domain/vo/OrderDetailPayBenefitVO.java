@@ -25,7 +25,7 @@ public class OrderDetailPayBenefitVO implements Serializable {
 
     /** 优惠金额 */
     @ApiModelProperty("优惠金额")
-    private BigDecimal privilegeAmount;
+    private BigDecimal privilegeAmount = BigDecimal.ZERO;
     
     /** 划扣数量 */
     @ApiModelProperty("划扣数量")
