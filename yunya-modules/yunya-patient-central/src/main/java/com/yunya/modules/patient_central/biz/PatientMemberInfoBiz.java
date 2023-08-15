@@ -508,7 +508,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public boolean makeMemberLevelByCashAmount(Integer patientId) {
     // 判断该卡是否可以自动升级
     PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(patientId);
-    if (patientMemberInfo == null || patientMemberInfo.getNonauto()) {
+    if (patientMemberInfo == null || patientMemberInfo.getNonauto() || !patientMemberInfo.getInservice()) {
       return false;
     }
     // TODO: 消费后判断是否升级会员等级
