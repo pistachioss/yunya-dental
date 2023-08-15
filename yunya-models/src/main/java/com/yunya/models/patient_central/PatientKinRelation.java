@@ -46,6 +46,11 @@ public class PatientKinRelation {
     private Boolean inservice;
 
     /**
+     * 关系区分: 0 亲属关系；1 推荐关系；
+     */
+    private Byte type;
+
+    /**
      * 创建人ID
      */
     @Column(name = "crt_id")
@@ -205,6 +210,14 @@ public class PatientKinRelation {
      */
     public void setInservice(Boolean inservice) {
         this.inservice = inservice;
+    }
+
+    public Byte getType() {
+        return type;
+    }
+
+    public void setType(Byte type) {
+        this.type = type;
     }
 
     /**

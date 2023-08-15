@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.*;
  * @description:
  * @since: 1.0.0
  */
-@Api(value = "亲属关系", description = "亲属关系（增删查改）")
+@Api(value = "亲属关系,推荐关系", description = "亲属关系,推荐关系（增删查改）")
 @RestController
 @RequestMapping("kin")
 public class PatientKinRelationController {
@@ -59,6 +59,12 @@ public class PatientKinRelationController {
   public ResponseResult<PageInfo<PatientKinRelationVo>> findList(
       @RequestBody PatientKinRelationQueryForm patientKinRelationQueryForm) {
     return ResponseUtil.success(this.patientKinRelationBiz.findList(patientKinRelationQueryForm));
+  }
+  @ApiOperation("查询患者的推荐人列表（可分页)")
+  @PostMapping("/findList2")
+  public ResponseResult<PageInfo<PatientKinRelationVo>> findList2(
+          @RequestBody PatientKinRelationQueryForm patientKinRelationQueryForm) {
+    return ResponseUtil.success(this.patientKinRelationBiz.findList2(patientKinRelationQueryForm));
   }
 
   /**
@@ -131,13 +137,13 @@ public class PatientKinRelationController {
   /**
    * 查询患者是否有关联关系
    *
-   * @param patientKinRelation 患者亲属关系模板
+   * @param patientKinRelation 患者推荐关系模板
    * @return ResponseResult
    */
   @CurrentUser
-  @ApiOperation("查询患者是否有关联关系")
+  @ApiOperation("查询患者是否有推荐关系(非患者推荐)")
   @PostMapping("/hasRelation")
-  public ResponseResult hasRelation( @RequestBody PatientKinRelation patientKinRelation) {
+  public ResponseResult hasRelation( @RequestBody PatientKinRelationModel patientKinRelation) {
     return ResponseUtil.success(this.patientKinRelationBiz.hasRelation(patientKinRelation));
   }
 }

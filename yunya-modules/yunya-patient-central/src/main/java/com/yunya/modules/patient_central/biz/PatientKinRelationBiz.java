@@ -38,16 +38,10 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, PatientKinRelation> {
 
-  /**
-   * 注入患者亲属Mapper
-   */
-  @Autowired
-  private PatientKinRelationMapper patientKinRelationMapper;
-  /**
-   * 患者基础信息biz
-   */
-  @Autowired
-  private PatientBaseInfoBiz patientBaseInfoBiz;
+  /** 注入患者亲属Mapper */
+  @Autowired private PatientKinRelationMapper patientKinRelationMapper;
+  /** 患者基础信息biz */
+  @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
 
   /**
    * 根据患者id 查询患者亲属列表
@@ -57,10 +51,21 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
    */
   public PageInfo<PatientKinRelationVo> findList(PatientKinRelationQueryForm query) {
     Integer patientId = query.getPatientId();
-    List<PatientKinRelationVo> resultList = patientKinRelationMapper.selectListByPatientId(patientId);
-    // 转介绍人
-    PatientBaseInfo introducer = patientBaseInfoBiz.findPatientIntroducerByPatientId(patientId);
-    resultList = mergeIntroducer(patientId, introducer, resultList);
+    Byte type = query.getType() == null ? 0 : query.getType();
+    List<PatientKinRelationVo> resultList =
+        patientKinRelationMapper.selectListByPatientId(patientId, type);
+    if (type == 0) {
+      // 转介绍人
+      PatientBaseInfo introducer = patientBaseInfoBiz.findPatientIntroducerByPatientId(patientId);
+      resultList = mergeIntroducer(patientId, introducer, resultList);
+    }
+    return PageUtl.doPage(query, resultList);
+  }
+
+  public PageInfo<PatientKinRelationVo> findList2(PatientKinRelationQueryForm query) {
+    Integer patientId = query.getPatientId();
+    List<PatientKinRelationVo> resultList =
+        patientKinRelationMapper.selectOneReByPatientId(patientId, (byte) 1);
     return PageUtl.doPage(query, resultList);
   }
 
@@ -71,7 +76,8 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
    * @param introducer
    * @param resultList
    */
-  private List<PatientKinRelationVo> mergeIntroducer(Integer patientId, PatientBaseInfo introducer, List<PatientKinRelationVo> resultList) {
+  private List<PatientKinRelationVo> mergeIntroducer(
+      Integer patientId, PatientBaseInfo introducer, List<PatientKinRelationVo> resultList) {
     List<PatientKinRelationVo> result = new ArrayList<>();
     // 是否需要添加到亲属关系列表：
     // 1、必须存在转介绍患者，
@@ -127,7 +133,9 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
    * @return ResponseResult
    */
   public ResponseResult add(PatientKinRelationModel patientKinRelationModel) {
-    if (patientKinRelationModel.getPatientId().equals(patientKinRelationModel.getLinkedPatientId())) {
+    if (patientKinRelationModel
+        .getPatientId()
+        .equals(patientKinRelationModel.getLinkedPatientId())) {
       return ResponseUtil.fail(OperationCodeConstants.OPERATION_NOT_ALLOW, "不可添加自己", null);
     }
     PatientKinRelation patientKinRelation = new PatientKinRelation();
@@ -137,16 +145,28 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     if (patientKinRelationvo != null) {
       return ResponseUtil.fail(OperationCodeConstants.DATA_EXIST, "患者关系已存在", patientKinRelationvo);
     }
+    if (patientKinRelation.getType() == (byte) 1) {
+      // 被推荐人只能有一个推荐人
+      List<PatientKinRelationVo> patientKinRelationVos =
+          patientKinRelationMapper.selectOneReByPatientId(
+              patientKinRelationModel.getLinkedPatientId(), (byte) 1);
+      if (patientKinRelationVos != null && patientKinRelationVos.size() >= 1) {
+        return ResponseUtil.fail(
+            OperationCodeConstants.DATA_EXIST, "当前患者已被其他患者绑定，不可重复绑定", patientKinRelationVos);
+      }
+    }
     if (patientKinRelationModel.getId() == null) {
       patientKinRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientKinRelation.setCrtName(BaseContextHandler.getName());
       patientKinRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       mapper.insertSelective(patientKinRelation);
-      PatientKinRelation linkedPatient = new PatientKinRelation();
-      BeanUtils.copyProperties(patientKinRelation, linkedPatient);
-      linkedPatient.setPatientId(patientKinRelation.getLinkedPatientId());
-      linkedPatient.setLinkedPatientId(patientKinRelation.getPatientId());
-      mapper.insertSelective(linkedPatient);
+      if (patientKinRelation.getType() == (byte) 0) {
+        PatientKinRelation linkedPatient = new PatientKinRelation();
+        BeanUtils.copyProperties(patientKinRelation, linkedPatient);
+        linkedPatient.setPatientId(patientKinRelation.getLinkedPatientId());
+        linkedPatient.setLinkedPatientId(patientKinRelation.getPatientId());
+        mapper.insertSelective(linkedPatient);
+      }
     }
     return ResponseUtil.success();
   }
@@ -219,18 +239,37 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
   }
 
   /**
-   * 查询是否有推荐关系
+   * 查询是否有推荐患者关系
    *
-   * @param patientKinRelation
+   * @param patientKinRelationModel
    * @return
    */
-  public boolean hasRelation(PatientKinRelation patientKinRelation) {
-    PatientBaseInfo patientBaseInfo = patientBaseInfoBiz.selectById(patientKinRelation.getLinkedPatientId());
-    if (patientBaseInfo != null &&
-        patientKinRelation.getPatientId().equals(patientBaseInfo.getOriginId()) &&
-        2 == patientBaseInfo.getOriginType()) {
+  public boolean hasRelation(PatientKinRelationModel patientKinRelationModel) {
+    PatientKinRelation patientKinRelation = new PatientKinRelation();
+    BeanUtils.copyProperties(patientKinRelationModel, patientKinRelation);
+    PatientKinRelation patientKinRelationvo =
+        patientKinRelationMapper.findPatientKinRelation(patientKinRelation);
+    if (patientKinRelationvo != null) {
       return true;
     }
     return false;
+  }
+
+  /**
+   * 初诊患者根据患者来源添加推荐关系
+   * @param patientId
+   * @return
+   */
+  public ResponseResult add3(Integer patientId) {
+    PatientBaseInfo patientBaseInfo = patientBaseInfoBiz.findPatientInfoById(patientId);
+    if (patientBaseInfo.getOriginType() == 2) {
+      PatientKinRelationModel patientKinRelationModel = new PatientKinRelationModel();
+      patientKinRelationModel.setPatientId(patientBaseInfo.getOriginId());
+      patientKinRelationModel.setLinkedPatientId(patientId);
+      patientKinRelationModel.setKinshipId(-1);
+      patientKinRelationModel.setType((byte)1);
+      return add(patientKinRelationModel);
+    }
+    return ResponseUtil.fail(OperationCodeConstants.OPERATION_NOT_ALLOW, "初诊患者的患者来源非患者转介绍", null);
   }
 }

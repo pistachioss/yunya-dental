@@ -61,5 +61,11 @@ public class PatientKinRelationModel implements Serializable {
     @ApiModelProperty(value = "备注")
     private String remarks;
 
+    /**
+     * 关系区分: 0 亲属关系；1 推荐关系；
+     */
+    @ApiModelProperty(value = "关系区分: 0 亲属关系；1 推荐关系")
+    private Byte type;
+
 
 }

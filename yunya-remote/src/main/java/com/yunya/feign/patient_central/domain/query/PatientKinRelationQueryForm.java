@@ -27,4 +27,10 @@ public class PatientKinRelationQueryForm extends PageQuery implements Serializab
     @NotNull(message = "患者ID不能为空！")
     @ApiModelProperty(value = "患者id",required = true)
     private Integer patientId;
+
+    /**
+     * 关系区分: 0 亲属关系；1 推荐关系；
+     */
+    @ApiModelProperty(value = "关系区分: 0 亲属关系；1 推荐关系")
+    private Byte type;
 }
