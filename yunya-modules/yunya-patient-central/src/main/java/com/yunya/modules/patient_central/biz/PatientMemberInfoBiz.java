@@ -1684,15 +1684,15 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     // 推荐关系人
     memberInfo = patientMemberInfoMapper.selectPatientReferrerMemberInfo(patientId);
     if (StringHelper.isNotNull(memberInfo) && memberInfo.getInservice()) {
-      // 次一级信息
-      MemberType memberType = new MemberType();
-      memberType.setInservice(true);
-      memberType.setNextLevelId(memberInfo.getMemberTypeId());
-      List<MemberType> memberTypes = remoteSystemServiceFeign.findMemberTypeList(memberType);
-      if (StringHelper.isNotEmpty(memberTypes)) {
-        memberInfo.setMemberTypeId(memberTypes.get(0).getId());
+      Integer memberTypeId = memberInfo.getMemberTypeId();
+      if (memberTypeId != 4) {
+        // 推荐关系人的会员卡的次一级会员类型
+        MemberType memberType = remoteSystemServiceFeign.findSecondaryMemberTypeById(memberTypeId);
+        if (memberType.getId() != 4) {
+          memberInfo.setMemberTypeId(memberType.getId());
+          return memberInfo;
+        }
       }
-      return memberInfo;
     }
     // 普通会员
     if (StringHelper.isNull(memberInfo)) {

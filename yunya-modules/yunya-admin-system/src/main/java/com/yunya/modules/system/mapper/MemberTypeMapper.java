@@ -32,4 +32,12 @@ public interface MemberTypeMapper extends Mapper<MemberType> {
    * @return 返回会员卡集合
    */
   List<MemberType> findMemberTypeByIds(@Param("ids") List<Integer> ids);
+
+  /**
+   * 根据id查询次一级会员类型信息
+   *
+   * @param id
+   * @return
+   */
+  MemberType selectSecondaryMemberTypeById(@Param("id") Integer id);
 }

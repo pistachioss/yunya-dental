@@ -19,7 +19,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,5 +143,15 @@ public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
       return mapper.findMemberTypeByIds(ids);
     }
     return new ArrayList<>();
+  }
+
+  /**
+   * 根据id查询次一级会员类型信息
+   *
+   * @param id
+   * @return
+   */
+  public MemberType findSecondaryMemberTypeById(Integer id) {
+    return mapper.selectSecondaryMemberTypeById(id);
   }
 }

@@ -488,4 +488,13 @@ public interface RemoteSystemServiceFeign {
 
   @GetMapping("/bj/company/list")
   List<Company> certBjCompanys();
+
+  /**
+   * 根据会员类型id查询次一级的会员类型信息
+   *
+   * @param id
+   * @return
+   */
+  @GetMapping("/api/memberType/secondary/{id}")
+  MemberType findSecondaryMemberTypeById(@PathVariable(value = "id") Integer id);
 }

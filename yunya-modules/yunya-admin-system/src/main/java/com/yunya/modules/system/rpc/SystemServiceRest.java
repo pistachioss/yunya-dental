@@ -619,4 +619,15 @@ public class SystemServiceRest {
   public List<DictionaryItem> findDictItemByTypeName(@PathVariable(value = "typeName") String typeName) {
     return dictionaryItemBiz.findDictItemByTypeName(typeName);
   }
+
+  /**
+   * 根据会员类型id查询次一级的会员类型信息
+   *
+   * @param id
+   * @return
+   */
+  @GetMapping("/api/memberType/secondary/{id}")
+  public MemberType findSecondaryMemberTypeById(@PathVariable(value = "id") Integer id) {
+    return memberTypeBiz.findSecondaryMemberTypeById(id);
+  }
 }

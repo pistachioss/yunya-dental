@@ -116,4 +116,27 @@
             </foreach>
         </where>
     </select>
+
+    <select id="selectSecondaryMemberTypeById" resultMap="BaseResultMap">
+        SELECT
+            mt.id,
+            mt.name,
+            mt.renewal_amount,
+            mt.age_limit,
+            mt.rate,
+            mt.type,
+            mt.icon,
+            mt.picture_code,
+            mt.description,
+            mt.inservice,
+            mt.crt_id,
+            mt.crt_name,
+            mt.crt_time,
+            mt.upd_id,
+            mt.upd_name,
+            mt.upd_time
+        FROM member_type mt, member_type mt2
+        WHERE mt.id = mt2.next_level_id
+        AND mt2.id = #{id}
+    </select>
 </mapper>
