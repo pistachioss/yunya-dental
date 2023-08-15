@@ -136,6 +136,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
   private String servePrort;
+  @Autowired private PatientKinRelationBiz patientKinRelationBiz;
 
   /**
    * 通过患者id查询患者共用属性
@@ -219,7 +220,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (StringHelper.isNotNull(patientBaseInfoModel.getId())) {
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
       redisUtils.delete(PATIENT_BASE_INFO + patientBaseInfoModel.getId());
-      return patientBaseInfoMapper.selectPatienInfoById(patientBaseInfo.getId());
+      return patientBaseInfoMapper.selectPatientInfoById(patientBaseInfo.getId());
     }
     Integer originType = patientBaseInfo.getOriginType();
     if (null != originType) {
@@ -234,9 +235,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientBaseInfo.setCrtName(BaseContextHandler.getName());
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    mapper.insertPatientInfo(patientBaseInfo);
+    insertPatientInfo(patientBaseInfo);
     PatientBaseInfoVo patientBaseInfoVo =
-            this.patientBaseInfoMapper.selectPatienInfoById(patientBaseInfo.getId());
+            this.patientBaseInfoMapper.selectPatientInfoById(patientBaseInfo.getId());
     if (patientBaseInfoVo.getOriginId() != null) {
       PatientOriginLog patientOriginLog = new PatientOriginLog();
       patientOriginLog.setPatientId(patientBaseInfoVo.getId());
@@ -262,6 +263,23 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientMemberInfoBiz.addPatientPrepaymentsInfo(patientBaseInfo);
     sendMessages(patientBaseInfo.getId(), 0);
     return patientBaseInfoVo;
+  }
+
+  /**
+   * 添加患者时，如果患者来源为患者转介绍，则需将患者与介绍人绑定为推荐关系
+   *
+   * @param patientBaseInfo
+   */
+  private void referreAddKinRelation(PatientBaseInfo patientBaseInfo) {
+    if (patientBaseInfo.getOriginType() == 2) {
+      PatientKinRelationModel model = new PatientKinRelationModel();
+      model.setPatientId(patientBaseInfo.getOriginId());
+      model.setLinkedPatientId(patientBaseInfo.getId());
+      model.setOrgId(patientBaseInfo.getOrgId());
+      model.setKinshipId(-1);
+      model.setType((byte) 1);
+      patientKinRelationBiz.add(model);
+    }
   }
 
   /**
@@ -1792,5 +1810,21 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public Boolean patientMemberAutCodeIsFailure(Integer patientId) {
     String key = buildLockCacheKey(MEMBER_AUTH_CODE, patientId);
     return !redisUtils.hasKey(key);
+  }
+
+  public void insertPatientInfo(PatientBaseInfo patientBaseInfo) {
+    mapper.insertPatientInfo(patientBaseInfo);
+    referreAddKinRelation(patientBaseInfo);
+  }
+
+  @Override
+  public int insertSelective(PatientBaseInfo patientBaseInfo) {
+    int count = mapper.insertSelective(patientBaseInfo);
+    referreAddKinRelation(patientBaseInfo);
+    return count;
+  }
+
+  public PatientBaseInfoVo findPatientBaseInfoById(Integer patientId) {
+    return mapper.selectPatientInfoById(patientId);
   }
 }

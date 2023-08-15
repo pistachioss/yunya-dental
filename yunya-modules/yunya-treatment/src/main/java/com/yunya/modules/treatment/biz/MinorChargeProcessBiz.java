@@ -424,9 +424,9 @@ public class MinorChargeProcessBiz {
     @Async("asyncExecutor")
     public void asyncPostProcess(BillPayRecord billPayRecord, TreatTollModel model) {
         // 患者初诊，对其患者转介绍人（患者来源）进行推荐关系的绑定
-        TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
-        if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit()==0) {
-            patientFeign.addKinByPatient(billPayRecord.getPatientId());
-        }
+//        TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
+//        if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit()==0) {
+//            patientFeign.addKinByPatient(billPayRecord.getPatientId());
+//        }
     }
 }

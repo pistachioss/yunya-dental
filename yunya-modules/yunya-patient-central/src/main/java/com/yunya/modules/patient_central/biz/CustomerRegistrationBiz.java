@@ -17,7 +17,6 @@ import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
-import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
@@ -54,7 +53,7 @@ import static com.yunya.framework.common.enums.FileSourceTypeEnum.PATIENT_SIGNAT
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, PatientBaseInfo> {
+public class CustomerRegistrationBiz {
 
     /** 注入患者Biz */
     @Autowired private PatientBaseInfoBiz  patientBaseInfoBiz;
@@ -102,8 +101,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         patientBaseInfo.setInservice(true);
         patientBaseInfo.setCrtId(1);
         patientBaseInfo.setCrtName("客户登记");
-        mapper.insertPatientInfo(patientBaseInfo);
-        PatientBaseInfoVo patientBaseInfoVo = mapper.selectPatienInfoById(patientBaseInfo.getId());
+        patientBaseInfoBiz.insertPatientInfo(patientBaseInfo);
+        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoBiz.findPatientBaseInfoById(patientBaseInfo.getId());
         if (patientBaseInfoVo.getOriginId() != null) {
             addPatientOriginLog(patientBaseInfo, null);
         }
@@ -231,7 +230,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         addPatientExpInfoByAdult(model, userId, userName, patientId);
         addPatientExtInfo(model, userId, userName, patientId);
         addPatientToothInfo(model, userId, patientId);
-        PatientBaseInfoVo patientBaseInfoVo = mapper.selectPatienInfoById(patientId);
+        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoBiz.findPatientBaseInfoById(patientId);
         if (!ObjectUtils.isEmpty(patientBaseInfoVo.getOriginId())) {
             addPatientOriginLog(patientBaseInfo, model.getId());
         }
@@ -402,13 +401,13 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         Integer id = model.getId();
         if (!ObjectUtils.isEmpty(id)) {
             baseInfo.setId(id);
-            mapper.updateByPrimaryKeySelective(baseInfo);
+            patientBaseInfoBiz.updateSelectiveById(baseInfo);
         } else {
             baseInfo.setCrtId(userId);
             baseInfo.setCrtName(userName);
             baseInfo.setCrtTime(now);
             baseInfo.setOrgId(model.getOrgId());
-            mapper.insertSelective(baseInfo);
+            patientBaseInfoBiz.insertSelective(baseInfo);
         }
         return baseInfo;
     }
@@ -443,7 +442,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         addPatientExtInfo(model, userId, userName, patientId);
         addPatientChildInfo(model, userId, patientId);
 
-        PatientBaseInfoVo patientBaseInfoVo = mapper.selectPatienInfoById(patientId);
+        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoBiz.findPatientBaseInfoById(patientId);
         if (patientBaseInfoVo.getOriginId() != null) {
             addPatientOriginLog(patientBaseInfo, model.getId());
         }
@@ -616,7 +615,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      */
     public PatientRegistrationVO findPatientRegistrationById(Integer patientId) {
         PatientRegistrationVO patientVO = new PatientRegistrationVO();
-        PatientBaseInfo baseInfo = mapper.selectByPrimaryKey(patientId);
+        PatientBaseInfo baseInfo = patientBaseInfoBiz.selectById(patientId);
         if (!ObjectUtils.isEmpty(baseInfo)) {
             putAdultRegistration(patientVO, baseInfo);
             putChildrenRegistration(patientVO, baseInfo);
@@ -739,7 +738,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             } else if (originType.intValue() == 2) {
                 Integer recPatientId = vo.getOriginId();
                 vo.setPatientId(recPatientId);
-                PatientBaseInfo recPatient = mapper.selectByPrimaryKey(vo.getOriginId());
+                PatientBaseInfo recPatient = patientBaseInfoBiz.selectById(vo.getOriginId());
                 if (!ObjectUtils.isEmpty(recPatient)) {
                     vo.setRecPatientName(recPatient.getName());
                 }

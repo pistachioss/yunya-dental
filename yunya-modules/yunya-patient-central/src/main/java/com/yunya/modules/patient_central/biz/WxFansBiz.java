@@ -28,8 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -245,7 +243,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public WxPatientVo getWxPatientInfo(Integer patientId) {
         //患者基础信息
-        PatientBaseInfoVo baseInfoVo = baseInfoMapper.selectPatienInfoById(patientId);
+        PatientBaseInfoVo baseInfoVo = baseInfoMapper.selectPatientInfoById(patientId);
         //患者的基础扩展信息
         PatientExpInfo expInfo = this.getPatientExpInfo(patientId);
         //患者疾病扩展信息

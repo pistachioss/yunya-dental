@@ -97,7 +97,7 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @param patientId 患者id
    * @return PatientBaseInfoVo
    */
-  PatientBaseInfoVo selectPatienInfoById(
+  PatientBaseInfoVo selectPatientInfoById(
       @Param("patientId") Integer patientId);
 
   /**

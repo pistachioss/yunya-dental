@@ -168,7 +168,7 @@
     </select>
 
     <!-- 根据患者姓名、手机号、门诊号 查询患者信息 -->
-    <select id="selectPatienInfoById"
+    <select id="selectPatientInfoById"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
