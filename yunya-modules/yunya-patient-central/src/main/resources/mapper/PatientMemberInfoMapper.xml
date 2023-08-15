@@ -348,6 +348,5 @@
         ) pmio
         LEFT JOIN patient_base_info pbi ON pmio.patient_id = pbi.id
         WHERE pbi.inservice = 1
-          AND pbi.id = #{patientId}
     </select>
 </mapper>
