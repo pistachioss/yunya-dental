@@ -395,4 +395,8 @@ import java.util.List;
   @ApiOperation("收费后调用，自动升级会员等级")
   @GetMapping("/api/member/bill/autoupdate/{id}")
   boolean autoUpdateMemberType(@PathVariable(value = "id") Integer patientId);
+
+  @ApiOperation("初诊患者根据患者来源添加推荐关系")
+  @PostMapping("/api/kinrelation/add/{id}")
+  boolean addKinByPatient(@PathVariable(value = "id") Integer patientId);
 }

@@ -301,4 +301,9 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public boolean autoUpdateMemberType(Integer patientId) {
         return false;
     }
+
+    @Override
+    public boolean addKinByPatient(Integer patientId) {
+        return false;
+    }
 }

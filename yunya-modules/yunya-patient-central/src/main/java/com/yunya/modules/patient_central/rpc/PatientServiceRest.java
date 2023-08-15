@@ -64,6 +64,8 @@ public class PatientServiceRest {
   @Autowired private WxFansBiz wxFansBiz;
   @Autowired private PatientOriginBiz patientOriginBiz;
 
+  @Autowired private PatientKinRelationBiz patientKinRelationBiz;
+
   @ApiOperation("同步老数据UnionId")
   @RequestMapping(value = "/syncUnionId", method = RequestMethod.POST)
   public Integer syncUnionId(@RequestBody @Validated SyncUnionIdForm form) {
@@ -460,5 +462,12 @@ public class PatientServiceRest {
   @CurrentUser
   public boolean autoUpdateMemberType(@PathVariable(value = "id") Integer patientId) {
     return patientMemberInfoBiz.makeMemberLevelByCashAmount(patientId);
+  }
+
+  @ApiOperation("初诊患者根据患者来源添加推荐关系")
+  @PostMapping("/kinrelation/add/{id}")
+  @CurrentUser
+  public ResponseResult addKinByPatient(@PathVariable(value = "id") Integer patientId) {
+    return patientKinRelationBiz.add3(patientId);
   }
 }
