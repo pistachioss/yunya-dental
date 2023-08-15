@@ -531,6 +531,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       this.cardLog(patientMember, "变更", "更新");
       remoteRabbitMqServiceFeign.sendMessage(
           patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
+      // 将不是普通会员，需
+      // 删除该亲密付的绑定
+      patientMemberRelationMapper.deleteOtherMemberRelation(patientId, new ArrayList<>());
       return true;
     }
     return false;
