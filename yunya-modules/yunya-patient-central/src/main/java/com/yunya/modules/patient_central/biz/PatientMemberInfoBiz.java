@@ -52,7 +52,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -158,8 +157,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
 
   @Autowired
   private PatientPrepaymentRelationBiz patientPrepaymentRelationBiz;
-  @Resource
+  @Autowired
   private PatientOriginBiz originBiz;
+  @Autowired
+  private PatientKinRelationBiz patientKinRelationBiz;
 
   public List<MasertMemberRechargeRecordDetailVo> findMemberRechargeRecordInfo(
       MemberExpendRecordQueryForm form) {
@@ -1675,14 +1676,22 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (StringHelper.isNotNull(memberInfo) && memberInfo.getInservice() && memberInfo.getMemberTypeId()!=4) {
       return memberInfo;
     }
-    // 亲密付
+    // 亲密付主卡人
     memberInfo = patientMemberInfoMapper.selectPatientBindMemberInfo(patientId);
     if (StringHelper.isNotNull(memberInfo) && memberInfo.getInservice()) {
       return memberInfo;
     }
-    // 推荐人
+    // 推荐关系人
     memberInfo = patientMemberInfoMapper.selectPatientReferrerMemberInfo(patientId);
     if (StringHelper.isNotNull(memberInfo) && memberInfo.getInservice()) {
+      // 次一级信息
+      MemberType memberType = new MemberType();
+      memberType.setInservice(true);
+      memberType.setNextLevelId(memberInfo.getMemberTypeId());
+      List<MemberType> memberTypes = remoteSystemServiceFeign.findMemberTypeList(memberType);
+      if (StringHelper.isNotEmpty(memberTypes)) {
+        memberInfo.setMemberTypeId(memberTypes.get(0).getId());
+      }
       return memberInfo;
     }
     // 普通会员
@@ -2041,16 +2050,37 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       throw new ClientServiceException("账单返点失败，返点金额不能为空", DATA_ERROR);
     }
     BigDecimal rebateRatio = new BigDecimal(100);
+    Integer patientId = model.getPatientId();
+    Integer acceptorId = null;
     if (model.getRebateRatioType().intValue() == 2) {
-      // 患者消费时给其推荐人返点
+      // 患者消费时给亲密付主卡人或推荐关系人返点
+      PatientMemberInfo memberInfo = patientMemberInfoMapper.selectPatientBindMemberInfo(patientId);
+      if (StringHelper.isNotNull(memberInfo)) {
+        acceptorId = memberInfo.getPatientId();
+      } else {
+        PatientKinRelationVo referrer = patientKinRelationBiz.findPatientKinReferrer(patientId);
+        if (StringHelper.isNotNull(referrer)) {
+          acceptorId = referrer.getPatientId();
+        }
+      }
+
       PatientOrigin patientOrigin = originBiz.findPatientOriginById(2);
       if (Objects.isNull(patientOrigin) || Objects.isNull(patientOrigin.getGiftRebateRate())) {
         return;
       }
       rebateRatio = patientOrigin.getGiftRebateRate();
+    } else {
+      PatientKinRelationVo referrer = patientKinRelationBiz.findPatientKinReferrer(patientId);
+      if (StringHelper.isNotNull(referrer)) {
+        acceptorId = referrer.getPatientId();
+      }
+    }
+
+    if (acceptorId == null) {
+      log.info("患者：{}，暂无亲密付主卡人或推荐关系人", patientId);
+      return;
     }
     BigDecimal giftBonus = receivedAmount.multiply(rebateRatio.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
-    Integer acceptorId = model.getAcceptorId();
     PatientMemberInfo member = mapper.selectOneByPatientId(acceptorId);
     if (StringHelper.isNull(member)) {
       OpenCardModel openCardModel = new OpenCardModel();

@@ -19,6 +19,10 @@ import java.math.BigDecimal;
 @ToString
 @ApiModel("账单返点添加模型")
 public class BillRebate2MemberAccountModel implements Serializable {
+    
+    /** 发起人的患者id */
+    @ApiModelProperty(value = "发起人的患者id", required = true)
+    private Integer patientId;
 
     /** 订单记录id */
     @ApiModelProperty(value = "订单记录id", required = true)
@@ -40,11 +44,6 @@ public class BillRebate2MemberAccountModel implements Serializable {
     @NotNull(message = "门诊id不能为空")
     private Integer orgId;
 
-    /** 接收者-患者id */
-    @ApiModelProperty(value = "接收者-患者id", required = true)
-    @NotNull(message = "接收者-患者id不能为空")
-    private Integer acceptorId;
-    
     /** 返点类型：6-就诊账单返点，7-礼包账单返点 */
     @ApiModelProperty("返点类型：6-就诊账单返点，7-礼包账单返点")
     private Integer type = 7;

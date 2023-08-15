@@ -399,4 +399,8 @@ import java.util.List;
   @ApiOperation("初诊患者根据患者来源添加推荐关系")
   @PostMapping("/api/kinrelation/add/{id}")
   boolean addKinByPatient(@PathVariable(value = "id") Integer patientId);
+
+  @ApiOperation("根据患者id查询推荐关系对应的患者")
+  @GetMapping("/api/kinrelation/{patientId}")
+  PatientKinRelationVo findPatientKinReferrerById(@PathVariable(value = "patientId") Integer patientId);
 }

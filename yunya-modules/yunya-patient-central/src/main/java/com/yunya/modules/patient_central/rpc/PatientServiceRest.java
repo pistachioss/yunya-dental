@@ -470,4 +470,10 @@ public class PatientServiceRest {
   public ResponseResult addKinByPatient(@PathVariable(value = "id") Integer patientId) {
     return patientKinRelationBiz.add3(patientId);
   }
+
+  @ApiOperation("根据患者id查询推荐关系对应的患者")
+  @GetMapping("/kinrelation/{patientId}")
+  public PatientKinRelationVo findPatientKinReferrerById(@PathVariable(value = "patientId") Integer patientId) {
+    return patientKinRelationBiz.findPatientKinReferrer(patientId);
+  }
 }

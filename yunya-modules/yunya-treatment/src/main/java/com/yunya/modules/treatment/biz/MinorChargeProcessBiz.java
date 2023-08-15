@@ -64,6 +64,15 @@ public class MinorChargeProcessBiz {
     @Autowired private OrderDetailBiz orderDetailBiz;
     @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
 
+    /**
+     * 异步处理次要收费流程
+     *
+     * @param billPayRecord
+     * @param model
+     * @param totalCharge
+     * @param totalPrincipal
+     * @param isMqTreatment
+     */
     @Async("asyncExecutor")
     protected void asyncProcessCharge(BillPayRecord billPayRecord, TreatTollModel model, BigDecimal totalCharge, BigDecimal totalPrincipal, Boolean isMqTreatment) {
         Integer orderRecordId = billPayRecord.getOrderRecordId();
@@ -148,38 +157,31 @@ public class MinorChargeProcessBiz {
     }
 
     /**
-     * 给患者的推荐人（患者转介绍）返点
+     * 给患者的亲密付主卡人或推荐人（患者转介绍）返点
      *
      * @param billPayRecord
      * @param totalPrincipal 消费本金总额
      */
     private void expendRebateReferees(BillPayRecord billPayRecord, BigDecimal totalPrincipal) {
-        PatientBaseInfo patient = patientFeign.findPatientInfoById(billPayRecord.getPatientId());
-        Integer originType = patient.getOriginType();
-        if (originType == 2) {
-            Integer originId = patient.getOriginId();
-            // 患者消费时给其推荐人返点
-            BillRebate2MemberAccountModel model = new BillRebate2MemberAccountModel();
-            if (StringHelper.gtZero(totalPrincipal)) {
-                BeanUtil.copyProperties(billPayRecord, model);
-                model.setBillPayRecordId(billPayRecord.getId());
-                model.setAcceptorId(originId);
-                model.setType(6);
-                model.setReceivedAmount(totalPrincipal);
-                patientFeign.billRebate2MemberAccount(model);
-            }
+        // 患者消费时给其推荐人（推荐关系）返点
+        BillRebate2MemberAccountModel model = new BillRebate2MemberAccountModel();
+        if (StringHelper.gtZero(totalPrincipal)) {
+            BeanUtil.copyProperties(billPayRecord, model);
+            model.setBillPayRecordId(billPayRecord.getId());
+            model.setType(6);
+            model.setReceivedAmount(totalPrincipal);
+            patientFeign.billRebate2MemberAccount(model);
+        }
 
-            // 给初诊患者的推荐人返点
-            TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
-            if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit()==0) {
-                BeanUtil.copyProperties(billPayRecord, model);
-                model.setBillPayRecordId(billPayRecord.getId());
-                model.setAcceptorId(originId);
-                model.setType(6);
-                model.setRebateRatioType((byte) 0);
-                model.setReceivedAmount(FIRST_VISIT_REBATE_AMOUNT);
-                patientFeign.billRebate2MemberAccount(model);
-            }
+        // 给初诊患者的推荐人返点
+        TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
+        if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit()==0 && StringHelper.gtZero(totalPrincipal)) {
+            BeanUtil.copyProperties(billPayRecord, model);
+            model.setBillPayRecordId(billPayRecord.getId());
+            model.setType(6);
+            model.setRebateRatioType((byte) 0);
+            model.setReceivedAmount(FIRST_VISIT_REBATE_AMOUNT);
+            patientFeign.billRebate2MemberAccount(model);
         }
     }
 
@@ -410,6 +412,21 @@ public class MinorChargeProcessBiz {
                         break;
                 }
             }
+        }
+    }
+
+    /**
+     * 后置处理
+     *
+     * @param billPayRecord
+     * @param model
+     */
+    @Async("asyncExecutor")
+    public void asyncPostProcess(BillPayRecord billPayRecord, TreatTollModel model) {
+        // 患者初诊，对其患者转介绍人（患者来源）进行推荐关系的绑定
+        TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
+        if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit()==0) {
+            patientFeign.addKinByPatient(billPayRecord.getPatientId());
         }
     }
 }

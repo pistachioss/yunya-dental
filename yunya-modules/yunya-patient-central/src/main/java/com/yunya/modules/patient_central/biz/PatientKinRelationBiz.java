@@ -272,4 +272,12 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     }
     return ResponseUtil.fail(OperationCodeConstants.OPERATION_NOT_ALLOW, "初诊患者的患者来源非患者转介绍", null);
   }
+
+  public PatientKinRelationVo findPatientKinReferrer(Integer patientId) {
+    List<PatientKinRelationVo> resultList = patientKinRelationMapper.selectOneReByPatientId(patientId, (byte) 1);
+    if (StringHelper.isNotEmpty(resultList)) {
+      return resultList.get(0);
+    }
+    return null;
+  }
 }

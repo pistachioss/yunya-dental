@@ -338,6 +338,9 @@ public class TreatTollBiz {
       @Override
       public void afterCommit() {
         minorChargeProcessBiz.asyncProcessCharge(billPayRecord, model, totalCharge, totalPrincipal, isMqTreatment);
+        if (isMqTreatment) {
+          minorChargeProcessBiz.asyncPostProcess(billPayRecord, model);
+        }
         minorChargeProcessBiz.asyncPushWxExpendMsg(billPayRecord);
       }
     });
@@ -965,13 +968,13 @@ public class TreatTollBiz {
     // 校验收欠费参数合法性
     BillRecord billRecord =
         checkCollectDebtParams(model);
-    BigDecimal actualReceivableAmount = billRecord.getActualReceivableAmount();
     // 计算收欠费入账总额
     BigDecimal[] totalAmount = calculateTotalCharge(model);
     BigDecimal totalCharge = totalAmount[0];
-    checkTotalChargeAndDebtAmount(totalCharge, billRecord.getDebtAmount(), model.getOutstandingAmount());
+    BigDecimal debtAmount = billRecord.getDebtAmount();
+    checkTotalChargeAndDebtAmount(totalCharge, debtAmount, model.getOutstandingAmount());
     billRecord.setReceivedAmount(billRecord.getReceivedAmount().add(totalCharge));
-    billRecord.setDebtAmount(actualReceivableAmount.subtract(totalCharge));
+    billRecord.setDebtAmount(debtAmount.subtract(totalCharge));
     InvoiceModel invoiceModel = model.getInvoiceModel();
     if (StringHelper.isNotNull(invoiceModel)) {
       billRecord.setInvoice(invoiceModel.getInvoice());
@@ -982,7 +985,7 @@ public class TreatTollBiz {
     billRecord.setUpdTime(DateUtil.now());
     billRecordBiz.updateSelectiveById(billRecord);
     // 保存收费记录及其入账方式明细
-    BillPayRecord billPayRecord = generalBillPayRecordWithDetail(billRecord, totalCharge, actualReceivableAmount, model);
+    BillPayRecord billPayRecord = generalBillPayRecordWithDetail(billRecord, totalCharge, debtAmount, model);
 
     asyncProcessCharge(billPayRecord, model, totalCharge, totalAmount[1], false);
     recordChargeLog(billPayRecord, model, totalCharge, totalAmount[1], (byte) 3);
