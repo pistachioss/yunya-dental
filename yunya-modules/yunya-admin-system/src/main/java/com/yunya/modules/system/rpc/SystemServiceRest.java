@@ -626,7 +626,7 @@ public class SystemServiceRest {
    * @param id
    * @return
    */
-  @GetMapping("/api/memberType/secondary/{id}")
+  @GetMapping("/memberType/secondary/{id}")
   public MemberType findSecondaryMemberTypeById(@PathVariable(value = "id") Integer id) {
     return memberTypeBiz.findSecondaryMemberTypeById(id);
   }
