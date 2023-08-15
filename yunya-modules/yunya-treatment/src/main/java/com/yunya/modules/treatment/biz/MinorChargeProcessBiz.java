@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
@@ -107,6 +108,7 @@ public class MinorChargeProcessBiz {
             chargedMQMiddleTable(billPayRecord, isMqTreatment);
             giftFirstVisitPackage(billPayRecord);
             if (StringHelper.gtZero(totalCharge)) {
+                TimeUnit.SECONDS.sleep(3);
                 patientFeign.autoUpdateMemberType(billPayRecord.getPatientId());
             }
             completedChargeLog(billPayRecord.getId());
@@ -157,31 +159,36 @@ public class MinorChargeProcessBiz {
     }
 
     /**
-     * 给患者的亲密付主卡人或推荐人（患者转介绍）返点
+     * 给患者的亲密付主卡人或推荐关系人返点
      *
      * @param billPayRecord
      * @param totalPrincipal 消费本金总额
      */
     private void expendRebateReferees(BillPayRecord billPayRecord, BigDecimal totalPrincipal) {
-        // 患者消费时给其推荐人（推荐关系）返点
-        BillRebate2MemberAccountModel model = new BillRebate2MemberAccountModel();
-        if (StringHelper.gtZero(totalPrincipal)) {
-            BeanUtil.copyProperties(billPayRecord, model);
-            model.setBillPayRecordId(billPayRecord.getId());
-            model.setType(6);
-            model.setReceivedAmount(totalPrincipal);
-            patientFeign.billRebate2MemberAccount(model);
-        }
+        BillPayRecordLog query = new BillPayRecordLog();
+        query.setBillPayRecordId(billPayRecord.getId());
+        int count = billPayRecordLogMapper.selectCount(query);
+        if (count > 0) {
+            // 患者消费时给其推荐人（推荐关系）返点
+            BillRebate2MemberAccountModel model = new BillRebate2MemberAccountModel();
+            if (StringHelper.gtZero(totalPrincipal)) {
+                BeanUtil.copyProperties(billPayRecord, model);
+                model.setBillPayRecordId(billPayRecord.getId());
+                model.setType(6);
+                model.setReceivedAmount(totalPrincipal);
+                patientFeign.billRebate2MemberAccount(model);
+            }
 
-        // 给初诊患者的推荐人返点
-        TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
-        if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit()==0 && StringHelper.gtZero(totalPrincipal)) {
-            BeanUtil.copyProperties(billPayRecord, model);
-            model.setBillPayRecordId(billPayRecord.getId());
-            model.setType(6);
-            model.setRebateRatioType((byte) 0);
-            model.setReceivedAmount(FIRST_VISIT_REBATE_AMOUNT);
-            patientFeign.billRebate2MemberAccount(model);
+            // 给初诊患者的推荐人返点
+            TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
+            if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit() == 0 && StringHelper.gtZero(totalPrincipal)) {
+                BeanUtil.copyProperties(billPayRecord, model);
+                model.setBillPayRecordId(billPayRecord.getId());
+                model.setType(6);
+                model.setRebateRatioType((byte) 0);
+                model.setReceivedAmount(FIRST_VISIT_REBATE_AMOUNT);
+                patientFeign.billRebate2MemberAccount(model);
+            }
         }
     }
 

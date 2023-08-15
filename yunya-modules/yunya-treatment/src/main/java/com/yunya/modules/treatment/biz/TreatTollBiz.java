@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -1259,5 +1260,11 @@ public class TreatTollBiz {
     OrderDetailPayRecord orderPay = new OrderDetailPayRecord();
     orderPay.setOrderRecordId(orderId);
     orderDetailPayRecordBiz.delete(orderPay);
+  }
+
+  public List<BillPayRecordLog> findTreatTollLog(Integer orderRecordId) {
+    Example example = new Example(BillPayRecordLog.class);
+    example.createCriteria().andEqualTo("orderRecordId", orderRecordId);
+    return billPayRecordLogMapper.selectByExample(example);
   }
 }

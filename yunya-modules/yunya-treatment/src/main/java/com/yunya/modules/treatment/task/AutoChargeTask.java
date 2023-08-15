@@ -3,18 +3,18 @@ package com.yunya.modules.treatment.task;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.models.treatment.BillPayRecordLog;
 import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.TreatmentRecord;
-import com.yunya.modules.treatment.biz.BillRecordBiz;
-import com.yunya.modules.treatment.biz.OrderRecordBiz;
-import com.yunya.modules.treatment.biz.TollBiz;
-import com.yunya.modules.treatment.biz.TreatmentRecordBiz;
+import com.yunya.modules.treatment.biz.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -51,6 +51,8 @@ public class AutoChargeTask {
   @Resource private TollBiz tollBiz;
   /** 账单业务层 */
   @Resource private BillRecordBiz billRecordBiz;
+
+  @Resource private TreatTollBiz TreatTollBiz;
   /** 中间表 */
   @Resource private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
@@ -130,5 +132,38 @@ public class AutoChargeTask {
     billRecord.setCrtId(BusinessConstants.ADMIN_ID);
     billRecord.setCrtName(BusinessConstants.ADMIN_NAME);
     return billRecord;
+  }
+
+
+  /**
+   * 定时任务：每天凌晨1点自动处理昨天的就诊收费日志
+   *
+   * @throws InterruptedException
+   */
+//  @Scheduled(cron = "0 30 01 * * ?")
+  public void autoProcessTreatTollLog() {
+    Date yesterday = DateUtil.yesterday();
+    log.info("开始处理：{}的就诊账单收费日志", yesterday);
+    Example example = new Example(BillRecord.class);
+    example.createCriteria().andEqualTo("crt_time", yesterday);
+    List<BillRecord> bills = billRecordBiz.selectByExample(example);
+    if (StringHelper.isEmpty(bills)) {
+      log.info("日期：{}， 暂无账单", yesterday);
+    }
+    for (BillRecord bill : bills) {
+      BigDecimal debtAmount = bill.getDebtAmount();
+      if (StringHelper.leZero(debtAmount)) {
+        List<BillPayRecordLog> tollLogs = TreatTollBiz.findTreatTollLog(bill.getOrderRecordId());
+        if (StringHelper.isNotEmpty(tollLogs)) {
+          tollLogs.forEach(tollLog->{
+            Byte status = tollLog.getStatus();
+            if (status == 2) {
+
+            }
+          });
+        }
+      }
+    }
+    log.info("{}的就诊账单收费日志处理完毕", yesterday);
   }
 }
