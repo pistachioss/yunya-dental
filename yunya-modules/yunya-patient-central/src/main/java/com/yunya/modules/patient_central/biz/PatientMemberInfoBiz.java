@@ -508,16 +508,16 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public boolean makeMemberLevelByCashAmount(Integer patientId) {
     // 判断该卡是否可以自动升级
     PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(patientId);
-    if (patientMemberInfo == null || patientMemberInfo.getNonauto()) {
+    if (patientMemberInfo == null || patientMemberInfo.getNonauto() || !patientMemberInfo.getInservice()) {
       return false;
     }
     // TODO: 消费后判断是否升级会员等级
     BigDecimal sum = remoteReportServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
-    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
+    List<MemberType> memberTypeList_tmp = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
     MemberType tmp = new MemberType();
-    memberTypeList.stream().filter(memberType -> {
+    List<MemberType> memberTypeList = memberTypeList_tmp.stream().filter(memberType -> {
       return memberType.getTotalAmount().compareTo(BigDecimal.ZERO) > 0 && memberType.getTotalAmount().compareTo(sum) <= 0;
-    }).sorted(Comparator.comparing(MemberType::getTotalAmount).reversed());
+    }).sorted(Comparator.comparing(MemberType::getTotalAmount).reversed()).collect(Collectors.toList());
     if (memberTypeList != null && !memberTypeList.isEmpty()) {
       // 变更等级
       PatientMemberInfo patientMember =
