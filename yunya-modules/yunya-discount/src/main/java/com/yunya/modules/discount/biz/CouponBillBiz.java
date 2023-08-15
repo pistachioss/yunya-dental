@@ -18,7 +18,6 @@ import com.yunya.models.discount.CouponBill;
 import com.yunya.models.discount.CouponBillPay;
 import com.yunya.models.discount.CouponBillPayDetail;
 import com.yunya.models.discount.CouponOrder;
-import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.discount.mapper.CouponBillMapper;
 import com.yunya.modules.discount.mapper.CouponBillPayDetailMapper;
 import com.yunya.modules.discount.mapper.CouponBillPayMapper;
@@ -350,18 +349,14 @@ public class CouponBillBiz {
     }
 
     private void returnGift(CouponBillPay billPay) {
-        PatientBaseInfo patientBaseInfo = patientCentralServiceFeign.findPatientInfoById(billPay.getPatientId());
-        if (Objects.nonNull(patientBaseInfo) && Objects.equals(2, patientBaseInfo.getOriginType())) {
-            BillRebate2MemberAccountModel model1 = new BillRebate2MemberAccountModel();
-            model1.setOrderRecordId(billPay.getOrderId());
-            model1.setBillRecordId(billPay.getBillId());
-            model1.setBillPayRecordId(billPay.getId());
-            model1.setOrgId(billPay.getOrgId());
-            model1.setAcceptorId(patientBaseInfo.getOriginId());
-            model1.setReceivedAmount(billPay.getReceivedAmount());
-            patientCentralServiceFeign.billRebate2MemberAccount(model1);
-        }
-
+        BillRebate2MemberAccountModel model1 = new BillRebate2MemberAccountModel();
+        model1.setOrderRecordId(billPay.getOrderId());
+        model1.setBillRecordId(billPay.getBillId());
+        model1.setBillPayRecordId(billPay.getId());
+        model1.setOrgId(billPay.getOrgId());
+        model1.setPatientId(billPay.getPatientId());
+        model1.setReceivedAmount(billPay.getReceivedAmount());
+        patientCentralServiceFeign.billRebate2MemberAccount(model1);
     }
 
     public List<CouponBillPayDetail> listPayDetail(Integer orderId) {
