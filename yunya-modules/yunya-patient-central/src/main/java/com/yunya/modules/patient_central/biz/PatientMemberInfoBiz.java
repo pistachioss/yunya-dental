@@ -1698,10 +1698,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       }
     }
     // 普通会员
-    if (StringHelper.isNull(memberInfo)) {
-      memberInfo = crtCommonMember(patientId);
-    }
-    return memberInfo;
+    return crtCommonMember(patientId);
   }
 
   private PatientMemberInfo crtCommonMember(Integer patientId) {
