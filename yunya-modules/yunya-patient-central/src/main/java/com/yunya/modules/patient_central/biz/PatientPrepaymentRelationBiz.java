@@ -628,6 +628,8 @@ public class PatientPrepaymentRelationBiz
     patientPrepaymentsInfo.setPrepaymentBonus(bonusAmount.subtract(model.getBonusAmount()));
     patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
     // 添加消费记录
+    prepaidExpendRecord.setExpendPrincipal(model.getPrincipalAmount());
+    prepaidExpendRecord.setExpendGift(model.getBonusAmount());
     prepaidExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     prepaidExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     prepaidExpendRecord.setCrtName(BaseContextHandler.getName());
