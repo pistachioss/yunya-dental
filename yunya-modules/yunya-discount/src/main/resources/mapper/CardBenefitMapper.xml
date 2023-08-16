@@ -85,7 +85,7 @@
              </if>
             <if test="couponType != null and couponType == 5">
                 inner join `deduction_coupon` `dc` on `dc`.`coupon_id` = `c`.`coupon_id`
-                inner join  deduction_item_period dip on dc.coupon_id = dip.coupon_id and dip.type = #{couponType}
+                inner join  deduction_item_period dip on dc.coupon_id = dip.coupon_id
             </if>
         where c.id in
             <foreach collection="cardIds" item="item" open="(" separator="," close=")">
@@ -94,7 +94,7 @@
             <if test="couponType != null and couponType == 5">
                 and dip.crt_time = (select
                     max(crt_time)
-                from deduction_item_period where crt_time &lt;= ifnull(c.sold_date, c.active_date))
+                from deduction_item_period where crt_time &lt;= ifnull(c.sold_date, c.active_date) and coupon_id = c.coupon_id)
             </if>
         group by `c`.`id`
     </select>

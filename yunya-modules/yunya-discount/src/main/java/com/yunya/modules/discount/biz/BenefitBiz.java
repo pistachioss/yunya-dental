@@ -760,7 +760,8 @@ public class BenefitBiz {
             if (VOUCHER.equals(obj.getCouponType()) || DISCOUNT.equals(obj.getCouponType())) {
                 card.setStatus(USE_ALL.getCode());
             }
-            if (EXCHANGE.equals(obj.getCouponType()) || SPECIAL_PACKAGE.equals(obj.getCouponType())) {
+            if (EXCHANGE.equals(obj.getCouponType()) || SPECIAL_PACKAGE.equals(obj.getCouponType())
+                    || DEDUCTION.equals(obj.getCouponType())) {
                 card.setStatus(ONE_TIME_USE.equals(cardUseBo.getUseWay()) ?
                         USE_ALL.getCode() : ZERO.equals(cardUseBo.getUsable()) ?
                         USE_ALL.getCode() : PARTIAL_USE.getCode());
