@@ -23,6 +23,7 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberBillRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -55,6 +56,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponRefund;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.modules.discount.enums.CouponOrderError.*;
 import static com.yunya.modules.discount.enums.TrueFalseEnum.TRUE;
@@ -105,6 +107,8 @@ public class DeductionPatientBiz {
     private CouponOrderVirtualMapper virtualMapper;
     @Resource
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
+    @Resource
+    private RemoteRabbitMqServiceFeign mqServiceFeign;
 
     public PageInfo<PatientDeductionBaseVO> deductionList(DeductionPatientQuery query) {
         Page<PatientCardBo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
@@ -360,6 +364,7 @@ public class DeductionPatientBiz {
                 refundPaymentModels, refundTotalAmount);
         virtual.setInservice(false);
         couponOrderBiz.refundVirtual(details, detail, virtuals, virtual, order);
+        mqServiceFeign.sendMessage(couponRefund.getId(), 0, BaseCouponRefund);
     }
 
     private List<Card> listCard(Collection<Integer> cardIds) {

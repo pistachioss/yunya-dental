@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponBill;
 import static com.yunya.modules.discount.enums.CouponOrderError.COUPON_STOCK_LACK;
 import static com.yunya.modules.discount.enums.CouponOrderError.SALE_CHANNEL_NULL;
 import static java.util.stream.Collectors.*;
@@ -66,7 +67,7 @@ public class CouponOrderBiz {
     @Resource
     private RemotePatientCentralServiceFeign patientFeign;
     @Autowired
-    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+    private RemoteRabbitMqServiceFeign mqServiceFeign;
 
     @Transactional(rollbackFor = Exception.class)
     public CouponOrderVO soldCard(CouponOrderModel model) {
@@ -87,10 +88,10 @@ public class CouponOrderBiz {
             couponOrderMapper.insertSelective(couponOrder);
             build.forEach(o -> o.setOrderId(couponOrder.getId()));
             orderDetailMapper.insertList(build);
-            List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now,collect);
+            List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now, collect);
             virtualMapper.insertList(virtuals);
             vo = detail(couponOrder.getId());
-//            rabbitMqServiceFeign.sendMessage(couponOrder.getId(), 0, BaseCouponBill);
+            mqServiceFeign.sendMessage(couponOrder.getId(), 0, BaseCouponBill);
         } catch (Exception e) {
             if (CollectionUtils.isNotEmpty(list)) {
                 revoke(list);
@@ -126,7 +127,7 @@ public class CouponOrderBiz {
                 List<CouponOrderVirtual> virtuals = orderVirtual(order, list, now, collect);
                 virtualMapper.insertList(virtuals);
                 vo = detail(order.getId());
-//                rabbitMqServiceFeign.sendMessage(order.getId(), 0, BaseCouponBill);
+                mqServiceFeign.sendMessage(order.getId(), 0, BaseCouponBill);
             }
         } catch (Exception e) {
             if (CollectionUtils.isNotEmpty(list)) {
@@ -286,7 +287,7 @@ public class CouponOrderBiz {
         return couponOrderMapper.selectOneByExample(example);
     }
 
-     List<CouponOrderDetail> listOrderDetail(Integer orderId, Integer couponId) {
+    List<CouponOrderDetail> listOrderDetail(Integer orderId, Integer couponId) {
         Example example = new Example(CouponOrderDetail.class);
         Example.Criteria criteria = example.createCriteria().andEqualTo("orderId", orderId)
                 .andEqualTo("inservice", true);
@@ -416,6 +417,7 @@ public class CouponOrderBiz {
             removeDetail(orderId);
             couponOrder.setInservice(false);
             couponOrderMapper.updateByPrimaryKeySelective(couponOrder);
+            mqServiceFeign.sendMessage(couponOrder.getId(), 2, BaseCouponBill);
         }
     }
 
@@ -464,7 +466,7 @@ public class CouponOrderBiz {
     }
 
     public void refundVirtual(List<CouponOrderDetail> details, CouponOrderDetail detail
-            , List<CouponOrderVirtual> virtuals, CouponOrderVirtual virtual,CouponOrder order) {
+            , List<CouponOrderVirtual> virtuals, CouponOrderVirtual virtual, CouponOrder order) {
         virtual.setInservice(false);
         virtualMapper.updateByPrimaryKeySelective(virtual);
         int totalQuantity = details.stream().map(CouponOrderDetail::getQuantity).reduce(0, Integer::sum);

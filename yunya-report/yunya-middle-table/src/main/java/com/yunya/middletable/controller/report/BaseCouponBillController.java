@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since: 1.0.0
  */
 @RestController
-@RequestMapping("coupon_bill")
+@RequestMapping("couponbill")
 public class BaseCouponBillController {
 
     @Autowired

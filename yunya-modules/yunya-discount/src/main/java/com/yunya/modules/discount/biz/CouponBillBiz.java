@@ -34,6 +34,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponPayBill;
 import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.modules.discount.enums.CouponOrderError.*;
@@ -137,7 +138,7 @@ public class CouponBillBiz {
             }
             //返点
             returnGift(billPay);
-//            rabbitMqServiceFeign.sendMessage(order.getId(), 0, BaseCouponBill);
+            rabbitMqServiceFeign.sendMessage(billPay.getId(), 0, BaseCouponPayBill);
         } finally {
             if (locked) {
                 log.info("【解锁成功】");

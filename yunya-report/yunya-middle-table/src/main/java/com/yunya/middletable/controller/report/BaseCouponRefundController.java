@@ -26,7 +26,7 @@ import javax.annotation.Resource;
  */
 @Api(tags = "couponrefund")
 @RestController
-@RequestMapping("refund")
+@RequestMapping("couponrefund")
 public class BaseCouponRefundController {
 
     @Resource

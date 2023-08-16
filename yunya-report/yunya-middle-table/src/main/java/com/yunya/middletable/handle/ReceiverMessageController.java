@@ -69,6 +69,12 @@ public class ReceiverMessageController {
   @Autowired private BasePatientOriginLogBiz basePatientOriginLogBiz;
 
   @Autowired private TreatPlanDetailBiz treatPlanDetailBiz;
+  @Resource
+  private BaseCouponBillBiz baseCouponBillBiz;
+  @Resource
+  private BaseCouponBillPayBiz baseCouponBillPayBiz;
+  @Resource
+  private BaseCouponRefundBiz baseCouponRefundBiz;
 
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
@@ -158,9 +164,18 @@ public class ReceiverMessageController {
         case TreatPlanDetail:
           treatPlanDetailBiz.operate(messageModel);
           break;
-        default:
-          log.info("消息中没有对应的枚举类型[{}]！", messageModel.getMsgCategoryEnum());
+      case BaseCouponBill:
+          baseCouponBillBiz.operateBill(messageModel);
           break;
+      case BaseCouponPayBill:
+          baseCouponBillPayBiz.operateBillPay(messageModel);
+          break;
+      case BaseCouponRefund:
+          baseCouponRefundBiz.operateRefund(messageModel);
+          break;
+    default:
+      log.info("消息中没有对应的枚举类型[{}]！", messageModel.getMsgCategoryEnum());
+      break;
       }
     } catch (Exception e) {
       log.warn("【消费异常】:", e);

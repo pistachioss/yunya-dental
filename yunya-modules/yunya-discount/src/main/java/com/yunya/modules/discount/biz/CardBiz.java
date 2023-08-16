@@ -2877,7 +2877,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private List<SpecialPackageCouponItem> getPackageItemInfo(PatientBenefitBo benefitBo, Integer itemType) {
         Integer couponType = benefitBo.getCouponType();
         Integer couponId = benefitBo.getCouponId();
-        if (EXCHANGE.equals(couponType)) {
+        if (SPECIAL_PACKAGE.equals(couponType)) {
             Example example = new Example(SpecialPackageCouponItem.class);
             example.createCriteria().andEqualTo("couponId", couponId);
             List<SpecialPackageCouponItem> specialPackageCouponItems = specialPackageCouponItemMapper.selectByExample(example);
