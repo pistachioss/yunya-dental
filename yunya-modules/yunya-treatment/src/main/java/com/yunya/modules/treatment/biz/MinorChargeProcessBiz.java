@@ -87,13 +87,13 @@ public class MinorChargeProcessBiz {
             billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, payments, billPayRecord);
             // 调用保存优惠明细接口
             savePrivilegeDetail(discountType, billPayRecord.getPatientId(), orderRecordId, model);
-            // 调用会员卡消费接口
+            // 调用预付款消费接口
             if (StringHelper.isNotEmpty(prepaymentAccounts)) {
                 usePrepaymentAccount(
                         prepaymentAccounts,
                         billPayRecord);
             }
-            // 调用预付款消费接口
+            // 调用会员卡消费接口
             if (StringHelper.isNotEmpty(memberAccounts)) {
                 ResponseResult expend =
                         useMemberAccount(
@@ -170,25 +170,25 @@ public class MinorChargeProcessBiz {
         query.setBillPayRecordId(billPayRecord.getId());
         int count = billPayRecordLogMapper.selectCount(query);
         if (count > 0) {
-            // 患者消费时给其推荐人（推荐关系）返点
-            BillRebate2MemberAccountModel model = new BillRebate2MemberAccountModel();
             if (StringHelper.gtZero(totalPrincipal)) {
+                // 患者消费时给其推荐人（推荐关系）返点
+                BillRebate2MemberAccountModel model = new BillRebate2MemberAccountModel();
                 BeanUtil.copyProperties(billPayRecord, model);
                 model.setBillPayRecordId(billPayRecord.getId());
                 model.setType(6);
                 model.setReceivedAmount(totalPrincipal);
                 patientFeign.billRebate2MemberAccount(model);
-            }
 
-            // 给初诊患者的推荐人返点
-            TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
-            if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit() == 0 && StringHelper.gtZero(totalPrincipal)) {
-                BeanUtil.copyProperties(billPayRecord, model);
-                model.setBillPayRecordId(billPayRecord.getId());
-                model.setType(6);
-                model.setRebateRatioType((byte) 0);
-                model.setReceivedAmount(FIRST_VISIT_REBATE_AMOUNT);
-                patientFeign.billRebate2MemberAccount(model);
+                // 给初诊患者的推荐人返点
+                TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
+                if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit()==0) {
+                    BeanUtil.copyProperties(billPayRecord, model);
+                    model.setBillPayRecordId(billPayRecord.getId());
+                    model.setType(6);
+                    model.setRebateRatioType((byte) 0);
+                    model.setReceivedAmount(FIRST_VISIT_REBATE_AMOUNT);
+                    patientFeign.billRebate2MemberAccount(model);
+                }
             }
         }
     }
@@ -283,7 +283,7 @@ public class MinorChargeProcessBiz {
                     prepaidExpendRecordModel.setOrderRecordId(billPayRecord.getOrderRecordId());
                     prepaidExpendRecordModel.setBillRecordId(billPayRecord.getBillRecordId());
                     prepaidExpendRecordModel.setBillPayRecordId(billPayRecord.getId());
-                    prepaidExpendRecordModel.setPrincipalAmount(prepaidExpendRecordModel.getPrincipalAmount());
+                    prepaidExpendRecordModel.setPrincipalAmount(prepaymentAccountModel.getPrincipalAmount());
                     prepaidExpendRecordModel.setBonusAmount(prepaymentAccountModel.getBonusAmount());
                     ResponseResult result = patientFeign.expend(prepaidExpendRecordModel);
                     if (!result.getStatus().equals(0)) {
