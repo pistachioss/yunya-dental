@@ -94,7 +94,7 @@
         select
             mt.id,
             mt.name,
-            mt.old_name AS oldName,
+            mt.old_name,
             mt.renewal_amount,
             mt.age_limit,
             mt.rate,
@@ -122,7 +122,7 @@
         SELECT
             mt.id,
             mt.name,
-            mt.old_name AS oldName,
+            mt.old_name,
             mt.renewal_amount,
             mt.age_limit,
             mt.rate,
