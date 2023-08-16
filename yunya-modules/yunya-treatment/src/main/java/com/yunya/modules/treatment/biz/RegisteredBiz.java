@@ -457,7 +457,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
                 if (StringHelper.isNotEmpty(collect1)) {
                   MemberType memberType = collect1.get(0);
                   patientEntity.setMemberIcon(memberType.getIcon());
-                  patientEntity.setMemberCardName(memberType.getName());
+                  patientEntity.setMemberCardName(patientTotalInfoVo.getInservice()?memberType.getName():memberType.getOldName());
                 }
               }
             }
