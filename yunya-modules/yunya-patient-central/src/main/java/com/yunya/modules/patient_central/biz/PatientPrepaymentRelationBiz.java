@@ -615,41 +615,17 @@ public class PatientPrepaymentRelationBiz
    */
   public void spending(
       PrepaidExpendRecordModel model, PatientPrepaymentsInfo patientPrepaymentsInfo) {
-    // 消费本金
-    BigDecimal expendePrincipal = null;
-    // 消费赠金
-    BigDecimal expendeBonus = null;
     // 账户本金
     BigDecimal principalAmount = patientPrepaymentsInfo.getPrepaymentPrincipal();
     // 账户赠金
-    BigDecimal bonusAmount = null;
-
+    BigDecimal bonusAmount = patientPrepaymentsInfo.getPrepaymentBonus();
+    if (StringHelper.gt(model.getExpendTotal(), principalAmount.add(bonusAmount))) {
+      throw new ClientServiceException("预付款账户余额不足", OperationCodeConstants.OPERATION_NOT_ALLOW);
+    }
     PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord(); // 创建消费记录对象
     BeanUtils.copyProperties(model, prepaidExpendRecord);
-    // 会员卡本金余额 小于 消费金额
-    if (principalAmount.compareTo(model.getExpendTotal()) < 0) {
-      // 小于的情况下 依然先用本金去抵扣消费金额
-      // 本金-消费总额
-      BigDecimal surplus = principalAmount.subtract(model.getExpendTotal());
-      // 本金已用完
-      patientPrepaymentsInfo.setPrepaymentPrincipal(new BigDecimal(0));
-      // 获取消费本金
-      prepaidExpendRecord.setExpendPrincipal(principalAmount);
-      // 获取赠金
-      bonusAmount = patientPrepaymentsInfo.getPrepaymentBonus();
-      // 用赠金去抵扣
-      patientPrepaymentsInfo.setPrepaymentBonus(
-          patientPrepaymentsInfo.getPrepaymentBonus().add(surplus));
-      // 原账户赠金-抵扣后赠金余额 = 用了多少赠金
-      expendeBonus = bonusAmount.subtract(patientPrepaymentsInfo.getPrepaymentBonus());
-      // 获取消费赠金
-      prepaidExpendRecord.setExpendGift(expendeBonus);
-    } else {
-      patientPrepaymentsInfo.setPrepaymentPrincipal(
-          principalAmount.subtract(model.getExpendTotal()));
-      // 获取消费本金
-      prepaidExpendRecord.setExpendPrincipal(model.getExpendTotal());
-    }
+    patientPrepaymentsInfo.setPrepaymentPrincipal(principalAmount.subtract(model.getPrincipalAmount()));
+    patientPrepaymentsInfo.setPrepaymentBonus(bonusAmount.subtract(model.getBonusAmount()));
     patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
     // 添加消费记录
     prepaidExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
