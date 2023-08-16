@@ -410,7 +410,7 @@ public class BenefitBiz {
                     .filter(t -> !DEDUCTION.equals(t.getCouponType())).collect(groupingBy(CardBenefit::getOrderDetailId));
             Map<String, List<CardBenefit>> listMap1 = cardBenefits.stream()
                     .filter(t -> DEDUCTION.equals(t.getCouponType()))
-                    .collect(groupingBy( t -> Joiner.on("-").join(t.getOrderId(), t.getCouponId())));
+                    .collect(groupingBy( t -> Joiner.on("-").join(t.getOrderDetailId(), t.getCouponId())));
             listMap.forEach((k, v) -> {
                 PatientItemBenefitVo vo = new PatientItemBenefitVo();
                 BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -449,9 +449,10 @@ public class BenefitBiz {
                 BigDecimal supplyWorkTotalLoad = v.stream()
                         .filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
                         .map(CardBenefit::getSupplyWorkload).reduce(BigDecimal.ZERO, BigDecimal::add);
-                Integer orderId = Integer.valueOf(k.split("-")[0]);
-                log.info("查询账单划扣优惠明细，开单明细id：{}，计算补入工作量：{}", orderId, supplyWorkTotalLoad);
-                vo.setOrderDetailId(orderId);
+                Integer orderDetailId = Integer.valueOf(k.split("-")[0]);
+                log.info("查询账单划扣优惠明细，开单明细id：{}，计算补入工作量：{}", orderDetailId, supplyWorkTotalLoad);
+                vo.setOrderDetailId(orderDetailId);
+                vo.setQuantity(v.size());
                 vo.setItemBenefitAmount(itemBenefitAmount);
                 //按照优惠提交顺序排序
                 v.sort(Comparator.comparing(CardBenefit::getSort));
