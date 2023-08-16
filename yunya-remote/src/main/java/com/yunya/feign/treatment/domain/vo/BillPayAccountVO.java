@@ -53,7 +53,7 @@ public class BillPayAccountVO implements Serializable {
     @ApiModelProperty("可退赠金")
     private BigDecimal bonus;
 
-    /** 实收占比 */
-    @ApiModelProperty("实收占比")
-    private BigDecimal receivedRatio;
+    /** 实收合计 */
+    @ApiModelProperty("实收合计")
+    private BigDecimal receivedAmount;
 }

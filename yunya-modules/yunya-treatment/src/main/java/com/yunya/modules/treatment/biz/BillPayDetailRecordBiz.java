@@ -492,26 +492,6 @@ public class BillPayDetailRecordBiz
       accountVO.setBonus(accountVO.getBonus().add(totalBonus));
       return Arrays.asList(accountVO);
     }
-
-    computeReceivedRatio(totalPrincipal, totalBonus, result);
     return result;
-  }
-
-  /**
-   * 计算各个入账方式的实收占比
-   *
-   * @param totalPrincipal
-   * @param totalBonus
-   * @param result
-   */
-  private void computeReceivedRatio(BigDecimal totalPrincipal, BigDecimal totalBonus, List<BillPayAccountVO> result) {
-    BigDecimal totalReceivedAmount = totalPrincipal.add(totalBonus);
-    if (StringHelper.gtZero(totalReceivedAmount)) {
-      result.forEach(vo->{
-        BigDecimal accountReceivedAmount = vo.getPrincipal().add(vo.getBonus());
-        BigDecimal ratio = accountReceivedAmount.divide(totalReceivedAmount, 4, RoundingMode.DOWN);
-        vo.setReceivedRatio(StringHelper.defaultBigDecimal(ratio));
-      });
-    }
   }
 }

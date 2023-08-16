@@ -20,26 +20,27 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanUtil;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.BillPayRecordLog;
+import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.mapper.BillPayRecordLogMapper;
+import com.yunya.modules.treatment.mapper.BillRecordMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -65,6 +66,10 @@ public class MinorChargeProcessBiz {
     @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
     @Autowired private OrderDetailBiz orderDetailBiz;
     @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
+    @Autowired private BillRecordMapper billRecordMapper;
+
+    @Value("${sysconfig.memberSystemReleaseDate}")
+    private String releaseDate;
 
     /**
      * 异步处理次要收费流程
@@ -166,10 +171,11 @@ public class MinorChargeProcessBiz {
      * @param totalPrincipal 消费本金总额
      */
     private void expendRebateReferees(BillPayRecord billPayRecord, BigDecimal totalPrincipal) {
-        BillPayRecordLog query = new BillPayRecordLog();
-        query.setBillPayRecordId(billPayRecord.getId());
-        int count = billPayRecordLogMapper.selectCount(query);
-        if (count > 0) {
+////        BillPayRecordLog query = new BillPayRecordLog();
+////        query.setBillPayRecordId(billPayRecord.getId());
+////        int count = billPayRecordLogMapper.selectCount(query);
+//        if (count > 0) {
+        if (isNewMemberSystem(billPayRecord)) {
             if (StringHelper.gtZero(totalPrincipal)) {
                 // 患者消费时给其推荐人（推荐关系）返点
                 BillRebate2MemberAccountModel model = new BillRebate2MemberAccountModel();
@@ -181,7 +187,7 @@ public class MinorChargeProcessBiz {
 
                 // 给初诊患者的推荐人返点
                 TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
-                if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit()==0) {
+                if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit() == 0) {
                     BeanUtil.copyProperties(billPayRecord, model);
                     model.setBillPayRecordId(billPayRecord.getId());
                     model.setType(6);
@@ -193,6 +199,18 @@ public class MinorChargeProcessBiz {
         }
     }
 
+    /**
+     * 判断账单日期是否在新会员体系发布之后
+     *
+     * @param billPayRecord
+     * @return
+     */
+    private boolean isNewMemberSystem(BillPayRecord billPayRecord) {
+        Integer billRecordId = billPayRecord.getBillRecordId();
+        BillRecord billRecord = billRecordMapper.selectByPrimaryKey(billRecordId);
+        Date date = DateUtil.parse2Date(releaseDate);
+        return billRecord.getCrtTime().after(date);
+    }
 
     /**
      * 收费后同步中间表

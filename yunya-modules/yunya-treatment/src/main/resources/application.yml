@@ -6,6 +6,8 @@ logging:
 sysconfig:
   #1914 执行人与咨询师需要可以是同一人
   executorAndconsulterCanSame: false
+  # 新会员体系发布日期
+  memberSystemReleaseDate: 2023-08-01
 
 spring:
   application:
