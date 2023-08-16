@@ -339,9 +339,6 @@ public class TreatTollBiz {
       @Override
       public void afterCommit() {
         minorChargeProcessBiz.asyncProcessCharge(billPayRecord, model, totalCharge, totalPrincipal, isMqTreatment);
-        if (isMqTreatment) {
-          minorChargeProcessBiz.asyncPostProcess(billPayRecord, model);
-        }
         minorChargeProcessBiz.asyncPushWxExpendMsg(billPayRecord);
       }
     });

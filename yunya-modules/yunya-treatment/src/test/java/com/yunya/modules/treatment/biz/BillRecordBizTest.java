@@ -14,6 +14,7 @@ import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.treatment.domain.model.CouponDiscountInfoModel;
+import com.yunya.feign.treatment.domain.model.TreatTollModel;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
@@ -172,5 +173,17 @@ public class BillRecordBizTest {
         }
       }
     }
+  }
+
+  @Autowired private MinorChargeProcessBiz minorChargeProcessBiz;
+  @Test
+  public void testSavePrivilegeDetail() {
+    BaseContextHandler.setOrgId("63");
+    Byte discountType = 1;
+    Integer patientId = 419;
+    Integer orderRecordId = 624711;
+    String param = "{\"discountType\":1,\"generalDiscountModel\":{\"couponDiscountInfoModels\":[{\"couponCommonInfoId\":40045,\"couponType\":5}],\"memberTypeId\":1},\"invoiceModel\":{\"invoice\":false},\"memberAccountModels\":[],\"orderRecordId\":624711,\"outstandingAmount\":0,\"paymentModels\":[],\"prepaymentAccountModels\":[]}";
+    TreatTollModel model = JSONObject.parseObject(param, TreatTollModel.class);
+    minorChargeProcessBiz.savePrivilegeDetail(discountType, patientId, orderRecordId, model);
   }
 }

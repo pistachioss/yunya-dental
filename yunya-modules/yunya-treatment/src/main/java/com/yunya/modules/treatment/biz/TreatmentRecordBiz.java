@@ -471,7 +471,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
             if (null != memberType) {
               vo.setMemberIcon(String.valueOf(memberType.getIcon()));
-              vo.setMemberCardName(memberType.getName());
+              vo.setMemberCardName(patientData.getInservice()?memberType.getName():memberType.getOldName());
             }
           }
         }

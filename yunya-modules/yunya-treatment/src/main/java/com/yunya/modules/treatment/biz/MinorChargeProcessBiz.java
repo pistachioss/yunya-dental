@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
@@ -335,7 +336,7 @@ public class MinorChargeProcessBiz {
      * @param orderRecordId 订单记录ID
      * @param model 收费添加模型
      */
-    private void savePrivilegeDetail(
+    public void savePrivilegeDetail(
             Byte discountType,
             Integer patientId,
             Integer orderRecordId,
@@ -377,7 +378,11 @@ public class MinorChargeProcessBiz {
         benefitModel.setPackageIds(packageIds);
         benefitModel.setVoucherIds(voucherIds);
         benefitModel.setDeductionIds(deductionIds);
-        discountFeign.saveCardBenefit(benefitModel);
+        System.out.println(JSON.toJSON(benefitModel));
+        ResponseResult responseResult = discountFeign.saveCardBenefit(benefitModel);
+        if (responseResult.getStatus() > 0) {
+            throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
+        }
     }
 
 
@@ -420,20 +425,5 @@ public class MinorChargeProcessBiz {
                 }
             }
         }
-    }
-
-    /**
-     * 后置处理
-     *
-     * @param billPayRecord
-     * @param model
-     */
-    @Async("asyncExecutor")
-    public void asyncPostProcess(BillPayRecord billPayRecord, TreatTollModel model) {
-        // 患者初诊，对其患者转介绍人（患者来源）进行推荐关系的绑定
-//        TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
-//        if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit()==0) {
-//            patientFeign.addKinByPatient(billPayRecord.getPatientId());
-//        }
     }
 }

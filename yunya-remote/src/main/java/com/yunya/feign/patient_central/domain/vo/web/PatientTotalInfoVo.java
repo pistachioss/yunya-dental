@@ -89,4 +89,7 @@ public class PatientTotalInfoVo implements Serializable {
   /******************* 会员卡 ******************/
   /** 会员卡ID */
   private Integer memberTypeId;
+
+  /** 会员卡是否激活 */
+  private Boolean inservice;
 }
