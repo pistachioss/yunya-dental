@@ -726,7 +726,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
           throw new ClientServiceException("账单退费失败，存在无效的入账方式", OPERATION_NOT_ALLOW);
         }
         BigDecimal principalAmount = payment.getPrincipal();
-        BigDecimal giftAmount = payment.getAmount().subtract(payment.getPrincipal());
+        BigDecimal giftAmount = payment.getAmount().subtract(principalAmount);
         if (StringHelper.gt(principalAmount, account.getPrincipal()) || StringHelper.gt(giftAmount, account.getBonus())) {
           throw new ClientServiceException("账单退费失败，入账方式："+account.getAccountItemName()+"的退费金额超出上限", PARAMETERS_IS_ILLEGAL);
         }

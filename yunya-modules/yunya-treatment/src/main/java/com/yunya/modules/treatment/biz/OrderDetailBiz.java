@@ -415,7 +415,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         query.setGeneralDiscountModel(generalDiscountModel);
         TreatOrderRecordVO orderBenefitVO = treatTollBiz.matchOrderTailPrivilege(query);
         if (StringHelper.isNotNull(orderBenefitVO)) {
-          treatTollBiz.cacheOrderBenefitTotalAmount(orderRecordId, orderBenefitVO);
+          treatTollBiz.cacheOrderBenefitInfo(orderRecordId, orderBenefitVO);
           List<OrderDetailChargeVO> chargeVOS = orderBenefitVO.getItemList();
 //      List<OrderDetailChargeVO> chargeVOS = tollBiz.matchOrderTailPrivilege(query);
           System.out.println("订单自动勾选优惠" + chargeVOS);
