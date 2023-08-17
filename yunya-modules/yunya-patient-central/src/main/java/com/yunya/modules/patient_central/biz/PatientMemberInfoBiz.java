@@ -210,7 +210,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMemberInfo.setMemberTypeId(4);
       patientMemberInfo.setCrtId(1);
       patientMemberInfo.setCrtName("admin");
-      patientMemberInfo.setInservice(true);
+      patientMemberInfo.setInservice(false);
       generateCardNumber(patientMemberInfo);
 //      this.cardLog(patientMemberInfo, "开卡", "");
       remoteRabbitMqServiceFeign.sendMessage(
@@ -311,7 +311,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
       patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMemberInfo.setCrtName(BaseContextHandler.getName());
-      patientMemberInfo.setInservice(true);
+      patientMemberInfo.setInservice(openCardModel.getMemberTypeId()!=4);// 普通会员，则标记为未激活
       generateCardNumber(patientMemberInfo);
       this.cardLog(patientMemberInfo, "开卡", "");
       remoteRabbitMqServiceFeign.sendMessage(
