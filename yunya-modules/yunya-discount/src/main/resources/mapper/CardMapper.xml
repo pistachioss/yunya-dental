@@ -1285,7 +1285,7 @@ WHERE
             `cci`.`type` = 5
            and ((`c`.`status` in (1,2,3,4) and `c`.`sold_target` = #{query.patientId}
                     and `co`.`status` = 1 and `cor`.inservice = 1)
-                or (`c`.`status` in (2,3,4) and `c`.`patient_id` = #{query.patientId}))
+                or (`c`.`status` in (2,3,4) and `c`.`patient_id` = #{query.patientId} and ISNULL(`cor`.card_id) = 1))
             <if test="query.couponName !=null and query.couponName != ''">
                 and `cci`.`name` like concat('%', #{query.couponName}, '%')
             </if>

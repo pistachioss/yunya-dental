@@ -58,7 +58,7 @@
                count(*)     as quantity,
                cb.patient_id    as patientName,
                b.bill_number,
-               cb.crt_time  as billDate,
+               date_format(cb.crt_time,'%Y-%m-%d %H:%i:%s')  as `billDate`,
                cb.org_id    as orgName,
                cb.crt_id    as executorName
         from card_benefit cb
