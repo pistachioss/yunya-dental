@@ -13,5 +13,7 @@ public class DeductionItemBenefitVo extends PatientItemBenefitVo{
     private Integer quantity;
     @ApiModelProperty("套餐单价")
     private BigDecimal packageUnitPrice;
+    @ApiModelProperty(value = "划扣金额")
+    private BigDecimal deductionAmount;
 
 }

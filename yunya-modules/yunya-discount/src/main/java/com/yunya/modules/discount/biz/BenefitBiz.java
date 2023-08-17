@@ -454,6 +454,11 @@ public class BenefitBiz {
                 vo.setOrderDetailId(orderDetailId);
                 vo.setQuantity(v.size());
                 vo.setItemBenefitAmount(itemBenefitAmount);
+                BigDecimal totalDeduct = v.stream().map(t -> {
+                    List<DeductionItemPeriod> list = periodBiz.list(t.getCardId());
+                    return list.stream().map(DeductionItemPeriod::getSaleAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                }).reduce(BigDecimal.ZERO, BigDecimal::add);
+                vo.setDeductionAmount(totalDeduct);
                 //按照优惠提交顺序排序
                 v.sort(Comparator.comparing(CardBenefit::getSort));
                 List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {

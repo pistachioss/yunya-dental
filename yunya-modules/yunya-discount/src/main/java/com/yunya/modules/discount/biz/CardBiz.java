@@ -1520,6 +1520,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                         vo1.setItemBenefitList(itemUseBenefitVos);
                         vo1.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
                         vo1.setQuantity(v.size());
+                        BigDecimal totalDeduct = v.stream().map(t -> {
+                            List<DeductionItemPeriod> list = periodBiz.list(t.getBenefitId());
+                            return list.stream().map(DeductionItemPeriod::getSaleAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                        }).reduce(BigDecimal.ZERO, BigDecimal::add);
+                        vo1.setDeductionAmount(totalDeduct);
                         deductionList.add(vo1);
                     });
                 }
