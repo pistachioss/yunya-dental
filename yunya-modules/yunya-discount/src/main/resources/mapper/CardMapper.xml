@@ -393,7 +393,7 @@ WHERE
                   `cci`.id         as `couponId`,
                   `cci`.`name`     as `couponName`,
                   `cci`.`type`     as `couponType`,
-                  `c`.`sold_date`  as `soldDate`,
+                  ifnull(`c`.`sold_date`, `c`.active_date)  as `soldDate`,
                   case
                       when `cci`.`type` = 0 then
                           (select `mixed_use_type` from `vouche_coupon` where `coupon_id` = `c`.`coupon_id`)
@@ -510,11 +510,7 @@ WHERE
                                             where `dip`.`coupon_id` = `cci`.`id`
                                             and crt_time = (select max(crt_time)
                                                             from deduction_item_period
-                                                            where `coupon_id` = `cci`.`id` and crt_time &lt;=(
-                                                                select crt_time
-                                                                from coupon_order_virtual
-                                                                where card_id = `c`.`id` and inservice = 1
-                                                                ))
+                                                            where `coupon_id` = `cci`.`id` and crt_time &lt;= ifnull(c.sold_date, c.active_date))
                                             group by `dip`.`coupon_id`)
                                    )
                            from `card_benefit` `bd`
