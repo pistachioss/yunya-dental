@@ -1346,7 +1346,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             return ResponseUtil.error(responseResult.getStatus(), responseResult.getMsg());
         }
         PatientOrderBenefitVo result = transformBenefitInfo(responseResult.getData());
-        log.info("优惠信息：[{}]", result);
+        log.info("优惠信息：[{}]", JSON.toJSONString(result));
         return ResponseUtil.success(result);
     }
 
@@ -1522,7 +1522,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                         vo1.setQuantity(v.size());
                         BigDecimal totalDeduct = v.stream().map(t -> {
                             List<DeductionItemPeriod> list = periodBiz.list(t.getBenefitId());
-                            return list.stream().map(DeductionItemPeriod::getSaleAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                            return list.stream().filter(t1 -> Objects.equals(t1.getItemId(),vo.getItemId()) && Objects.equals(t1.getType(),vo.getType()))
+                                    .map(DeductionItemPeriod::getPackageUnitPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
                         }).reduce(BigDecimal.ZERO, BigDecimal::add);
                         vo1.setDeductionAmount(totalDeduct);
                         deductionList.add(vo1);
