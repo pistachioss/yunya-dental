@@ -44,10 +44,7 @@ import org.springframework.util.ObjectUtils;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -713,22 +710,23 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BigDecimal totalAmount = BigDecimal.ZERO;
     if (StringHelper.isNotEmpty(refundPaymentModels)) {
       List<BillPayAccountVO> refundable = billPayDetailRecordBiz.findBillRefundableAccountItemList(orderRecordId);
-      if (StringHelper.isEmpty(refundable)) {
-        throw new ClientServiceException("账单退费失败，账单暂无可退费用", OPERATION_NOT_ALLOW);
-      }
-      Map<String, BillPayAccountVO> refundableMap = refundable.stream().collect(toMap(
+      Map<String, BillPayAccountVO> refundableMap = Optional.ofNullable(refundable).orElseGet(ArrayList::new).stream().collect(toMap(
               vo->StringHelper.joinWith(",", vo.getAccountItemId(),StringHelper.defaultString(vo.getCardNumber())), Function.identity()));
       for (TreatPaymentModel payment : refundPaymentModels) {
         Integer accountItemId = payment.getAccountItemId();
-        String key = StringHelper.joinWith(",", accountItemId, StringHelper.defaultString(payment.getCardNumber()));
-        BillPayAccountVO account = refundableMap.get(key);
-        if (StringHelper.isNull(account)) {
-          throw new ClientServiceException("账单退费失败，存在无效的入账方式", OPERATION_NOT_ALLOW);
+        PatientDepositAccountTypeEnum typeEnum = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+        if (StringHelper.isNull(typeEnum)) {
+          payment.setPrincipal(payment.getAmount());
         }
         BigDecimal principalAmount = payment.getPrincipal();
         BigDecimal giftAmount = payment.getAmount().subtract(principalAmount);
-        if (StringHelper.gt(principalAmount, account.getPrincipal()) || StringHelper.gt(giftAmount, account.getBonus())) {
-          throw new ClientServiceException("账单退费失败，入账方式："+account.getAccountItemName()+"的退费金额超出上限", PARAMETERS_IS_ILLEGAL);
+
+        String key = StringHelper.joinWith(",", accountItemId, StringHelper.defaultString(payment.getCardNumber()));
+        BillPayAccountVO account = refundableMap.get(key);
+        if (StringHelper.isNotNull(account)) {
+          if (StringHelper.gt(principalAmount, account.getPrincipal()) || StringHelper.gt(giftAmount, account.getBonus())) {
+            throw new ClientServiceException("账单退费失败，入账方式："+account.getAccountItemName()+"的退费金额超出上限", PARAMETERS_IS_ILLEGAL);
+          }
         }
         totalAmount = totalAmount.add(StringHelper.defaultBigDecimal(principalAmount))
                 .add(StringHelper.defaultBigDecimal(giftAmount));

@@ -38,7 +38,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillPay;
@@ -46,7 +49,6 @@ import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_BILL_PAY_RECORD;
-import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.MEMBER;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -446,9 +448,9 @@ public class BillPayDetailRecordBiz
     List<PatientDepositAccountVO> patientDepositAccounts = remotePatientCentralServiceFeign.findDepositAccountBillPayExpendList(orderRecordId);
     Map<String, PatientDepositAccountVO> accountMap = patientDepositAccounts.stream().collect(toMap(PatientDepositAccountVO::getCardNumber, Function.identity()));
 
-    int memberIndex = -1;
-    BigDecimal totalPrincipal = BigDecimal.ZERO;
-    BigDecimal totalBonus = BigDecimal.ZERO;
+//    int memberIndex = -1;
+//    BigDecimal totalPrincipal = BigDecimal.ZERO;
+//    BigDecimal totalBonus = BigDecimal.ZERO;
     for (int i=0; i<details.size(); i++) {
       BillPayDetailRecordVO detail = details.get(i);
       String belonger = null;
@@ -466,8 +468,8 @@ public class BillPayDetailRecordBiz
         bonus = depositAccount.getBonus().subtract(detail.getRefundBonus());
         principalRatio = principal.divide(principal.add(bonus), 4, RoundingMode.DOWN);
       }
-      totalPrincipal = totalPrincipal.add(principal);
-      totalBonus = totalBonus.add(bonus);
+//      totalPrincipal = totalPrincipal.add(principal);
+//      totalBonus = totalBonus.add(bonus);
 
       Integer accountItemId = detail.getAccountItemId();
       AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
@@ -481,17 +483,17 @@ public class BillPayDetailRecordBiz
               .bonus(bonus)
               .principalRatio(principalRatio)
               .build());
-      if (MEMBER.equals(detail.getType())) {
-        memberIndex = i;
-      }
+//      if (MEMBER.equals(detail.getType())) {
+//        memberIndex = i;
+//      }
     }
-    if (memberIndex > -1) {
-      // 存在会员卡入账时，将其他入账方式合到会员卡入账中
-      BillPayAccountVO accountVO = result.get(memberIndex);
-      accountVO.setPrincipal(accountVO.getPrincipal().add(totalPrincipal));
-      accountVO.setBonus(accountVO.getBonus().add(totalBonus));
-      return Arrays.asList(accountVO);
-    }
+//    if (memberIndex > -1) {
+//      // 存在会员卡入账时，将其他入账方式合到会员卡入账中
+//      BillPayAccountVO accountVO = result.get(memberIndex);
+//      accountVO.setPrincipal(accountVO.getPrincipal().add(totalPrincipal));
+//      accountVO.setBonus(accountVO.getBonus().add(totalBonus));
+//      return Arrays.asList(accountVO);
+//    }
     return result;
   }
 }

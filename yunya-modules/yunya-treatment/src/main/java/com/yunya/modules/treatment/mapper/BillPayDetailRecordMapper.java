@@ -100,7 +100,7 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
   List<BillPayDetailRecordVO> selectBillPayDetailList(@Param("query") BillPayShareDetailQuery query);
 
   /**
-   * 根据订单记录id查询可退入账方式列表
+   * 根据订单记录id查询会员卡和预付款的可退入账方式列表
    *
    * @param orderRecordId
    * @return
