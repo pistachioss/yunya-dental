@@ -617,7 +617,11 @@ public class DeductionPatientBiz {
         Card card = cardMapper.selectByPrimaryKey(cardId);
         List<DeductionItemPeriod> periods = deductionPeriodBiz.listByCoupon(Lists.newArrayList(card.getCouponId()), DateUtil.localDateTimeToDate(Objects.isNull(card.getSoldDate())? card.getActiveDate() : card.getSoldDate()));
         if (CollectionUtils.isNotEmpty(periods)) {
-            return BeanCopierUtils.listGeneralCopyBean(periods, DeductionItemPeriodVO.class);
+            return  periods.stream().map(v -> {
+                DeductionItemPeriodVO deductionItemPeriodVO = BeanCopierUtils.generalCopyBean(v, DeductionItemPeriodVO.class);
+                deductionItemPeriodVO.setPrice(v.getUnitPrice());
+                return deductionItemPeriodVO;
+            }).collect(toList());
         }
         SpecialPackageCouponItem specialPackageCouponItem = new SpecialPackageCouponItem();
         specialPackageCouponItem.setCouponId(card.getCouponId());

@@ -58,9 +58,9 @@ public class DeductionItemPeriodVO {
     private BigDecimal workloadLoad;
 
     @ApiModelProperty(value = "单价")
-    private BigDecimal unitPrice;
-
-    @ApiModelProperty(value = "原价")
     private BigDecimal price;
+
+//    @ApiModelProperty(value = "原价")
+//    private BigDecimal price;
 
 }
