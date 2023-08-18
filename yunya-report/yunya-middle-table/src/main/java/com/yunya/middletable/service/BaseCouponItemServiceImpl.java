@@ -166,6 +166,16 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 				return item;
 			}).collect(toList());
 		}
+        if (DEDUCTION_COUPON.equals(couponType)) {
+            List<SpecialPackageCouponItem> packageItems = listCouponItems(couponId, SpecialPackageCouponItem.class,
+                    specialPackageCouponItemMapper);
+            baseCouponItems = packageItems.stream().map(obj -> {
+                BaseCouponItem item = BeanCopierUtils.generalCopyBean(obj, BaseCouponItem.class, getCouponConvert());
+                item.setQuantity(obj.getCount());
+                item.setSaleUnitPrice(obj.getPackageUnitPrice());
+                return item;
+            }).collect(toList());
+        }
 		return baseCouponItems;
 	}
 

@@ -300,7 +300,7 @@
                             from `base_benefit` `bb`
                             where `bb`.`card_id` = #{cardId}
                               and `bb`.`choice_benefit_type` = 0
-                              and `bb`.`coupon_type` in (2, 3)
+                              and `bb`.`coupon_type` in (2, 3, 5)
                             group by `bb`.`item_id`, `bb`.`item_type`) `temp`
                            on `bci`.`item_id` = `temp`.`item_id`
                                and `temp`.`item_type` = `bci`.`type`
