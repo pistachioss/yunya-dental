@@ -893,6 +893,23 @@
         group by bb.patient_id
     </select>
 
+    <!-- 根据患者ID查询患者累计现金退费（新版会员） -->
+    <select id="selectPatientCashRefundById" resultType="com.yunya.feign.report.domain.vo.PatientCostInfoVO">
+        select
+        bb.patient_id AS patientId,
+        sum(bbpd.principal_amount) as cumulativeConsumption
+        from base_refund_pay_detail bbpd
+        left join base_refund bb on bbpd.refund_id = bb.refund_id
+        <where>
+            AND bbpd.account_item_id in (1, 2, 3, 4, 5, 6)
+            AND bb.patient_id in
+            <foreach collection="patientIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+        group by bb.patient_id
+    </select>
+
     <!-- 根据患者ID查询患者消费信息 -->
     <select id="selectPatientCostInfoById" resultType="com.yunya.feign.report.domain.vo.PatientCostInfoVO">
         select

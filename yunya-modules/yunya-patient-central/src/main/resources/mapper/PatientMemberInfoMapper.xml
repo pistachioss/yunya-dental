@@ -96,9 +96,9 @@
     <!-- 根据患者id查询会员基本信息(会员卡界面基本信息（非全部信息）) -->
     <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo">
      select pmio.org_id orgId, pmio.patient_id patientId, pmio.id,pmio.card_number cardNumber,pmio.member_type_id memberTypeId,pmio.crt_time crtTime,pbio.name name,
-				CAST((pmio.principal_amount+pmio.bonus_amount) AS decimal(15,2)) memberCardMoneySum,
-				CAST(IFNULL(pmio.principal_amount,0) AS decimal(15,2)) principalAmount,
-				CAST(IFNULL(pmio.bonus_amount,0) AS decimal(15,2)) bonusAmount,
+				CAST((pmio.principal_amount+pmio.bonus_amount) AS decimal(15,4)) memberCardMoneySum,
+				CAST(IFNULL(pmio.principal_amount,0) AS decimal(15,4)) principalAmount,
+				CAST(IFNULL(pmio.bonus_amount,0) AS decimal(15,4)) bonusAmount,
                 pmio.inservice
       from patient_member_info pmio join  patient_base_info pbio on pmio.patient_id = pbio.id
       where pmio.patient_id =#{id}
@@ -170,11 +170,11 @@
             pmi.card_number AS cardNumber,
             pmi.inservice,
             CAST(
-            IFNULL( pmi.principal_amount + pmi.bonus_amount, 0 ) AS DECIMAL ( 15, 2 )) memberCardMoneySum,
+            IFNULL( pmi.principal_amount + pmi.bonus_amount, 0 ) AS DECIMAL ( 15, 4 )) memberCardMoneySum,
             CAST(
-            IFNULL( pmi.principal_amount, 0 ) AS DECIMAL ( 15, 2 )) principalAmount,
+            IFNULL( pmi.principal_amount, 0 ) AS DECIMAL ( 15, 4 )) principalAmount,
             CAST(
-            IFNULL( pmi.bonus_amount, 0 ) AS DECIMAL ( 15, 2 )) bonusAmount
+            IFNULL( pmi.bonus_amount, 0 ) AS DECIMAL ( 15, 4 )) bonusAmount
         FROM
             ( SELECT pmr.master_card_id FROM patient_member_relation pmr WHERE bind_type = 1 AND pmr.secondary_card_id = #{patientId} GROUP BY pmr.master_card_id ) pmr
             INNER JOIN patient_member_info pmi ON pmr.master_card_id = pmi.patient_id
