@@ -28,6 +28,10 @@ public class PatientOriginConsumptionQuery extends PageQuery implements Serializ
     @ApiModelProperty(value = "患者来源分类列表")
     private List<Integer> originTypes;
 
+    /** 患者来源id列表 */
+    @ApiModelProperty(value = "患者来源id列表")
+    private List<Integer> originIds;
+
     /** 条件类型：0.年月日 1.年月 2.年 */
     @ApiModelProperty(value = "条件类型：0.年月日 1.年月 2.年",required = true)
     @NotNull(message = "日期类型不能为空")
