@@ -920,6 +920,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientMember.setUpdName(BaseContextHandler.getName());
     patientMember.setUpdTime(new Date());
+    patientMember.setInservice(true);
     patientMember.setNonauto(true);
 //    patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     this.mapper.updateByPrimaryKeySelective(patientMember);
