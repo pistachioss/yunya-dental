@@ -72,17 +72,15 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillDetail;
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -142,6 +140,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private SysConfig sysConfig;
   @Autowired private BillPayShareDetailMapper billPayShareDetailMapper;
   @Autowired private TreatTollBiz treatTollBiz;
+  
+  /** 重试次数 */
+  private static final int RETRY_TIMES = 5;
 
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
@@ -793,29 +794,19 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           }
         }
       }
-      Integer orderRecordId = billPrintInfoVO.getOrderRecordId();
-      List<PatientItemBenefitVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId).getItemList();
+      Map<Integer, List<PatientItemBenefitVo>> itemBenefitMap = findItemBenefitMapWithRetry(billPrintInfoVO, RETRY_TIMES);
       billPrintInfoVO
           .getBillDetail()
           .forEach(
               billDetailPrintInfoVO -> {
-                List<PatientItemBenefitVo> collect =
-                    orderBenefitD.stream()
-                        .filter(
-                            orderBenefitDetailVo ->
-                                orderBenefitDetailVo
-                                    .getOrderDetailId()
-                                    .equals(billDetailPrintInfoVO.getOrderDetailId()))
-                        .collect(Collectors.toList());
-                if (StringHelper.isNotEmpty(collect)) {
-                  PatientItemBenefitVo orderBenefitDetailVo = collect.get(0);
+                List<PatientItemBenefitVo> itemBenefit = itemBenefitMap.get(billDetailPrintInfoVO.getOrderDetailId());
+                if (StringHelper.isNotEmpty(itemBenefit)) {
+                  PatientItemBenefitVo orderBenefitDetailVo = itemBenefit.get(0);
                   List<ItemUseBenefitVo> itemBenefitList =
                       orderBenefitDetailVo.getItemBenefitList();
                   List<Integer> couponTypes = new ArrayList<>();
                   itemBenefitList.forEach(
-                      itemUseBenefitVo -> {
-                        couponTypes.add(itemUseBenefitVo.getCouponType());
-                      });
+                      itemUseBenefitVo -> couponTypes.add(itemUseBenefitVo.getCouponType()));
                   billDetailPrintInfoVO.setCouponTypes(couponTypes);
                 }
               });
@@ -843,6 +834,29 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       billPrintInfoVO.setBillPayTypeList(mapList);
     }
     return billPrintInfoVO;
+  }
+
+  /**
+   * 查询非划扣项目的优惠明细（重试）
+   *
+   * @param billPrintInfoVO
+   * @return
+   */
+  private Map<Integer, List<PatientItemBenefitVo>> findItemBenefitMapWithRetry(BillPrintInfoVO billPrintInfoVO, int times) {
+    if (StringHelper.gtZero(billPrintInfoVO.getTotalPrivilegeAmount())) {
+      Integer orderRecordId = billPrintInfoVO.getOrderRecordId();
+      List<PatientItemBenefitVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId).getItemList();
+      if (StringHelper.isEmpty(orderBenefitD) && times>0) {
+        try {
+          TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+          log.error("findItemBenefitMapWithRetry error:", e);
+          throw new ClientServiceException("查询账单优惠信息错误", DATA_ERROR);
+        }
+        return findItemBenefitMapWithRetry(billPrintInfoVO, --times);
+      }
+    }
+    return Maps.newHashMap();
   }
 
   /**

@@ -88,10 +88,10 @@ public class MinorChargeProcessBiz {
         Set<PaymentModel> payments = model.getPaymentModels();
         Byte discountType = model.getDiscountType();
         try {
-            // 保存订单项目收费分摊明细
-            billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, payments, billPayRecord);
             // 调用保存优惠明细接口
             savePrivilegeDetail(discountType, billPayRecord.getPatientId(), orderRecordId, model);
+            // 保存订单项目收费分摊明细
+            billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, payments, billPayRecord);
             // 调用预付款消费接口
             if (StringHelper.isNotEmpty(prepaymentAccounts)) {
                 usePrepaymentAccount(
