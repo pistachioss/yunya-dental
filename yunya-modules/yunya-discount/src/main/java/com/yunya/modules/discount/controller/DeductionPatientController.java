@@ -7,6 +7,7 @@ import com.yunya.feign.discount.domain.form.DeductionChangeForm;
 import com.yunya.feign.discount.domain.model.DeductionRefundModel;
 import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.feign.treatment.domain.vo.BillPayAccountVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -14,9 +15,7 @@ import com.yunya.modules.discount.biz.CardBiz;
 import com.yunya.modules.discount.biz.DeductionPatientBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -121,4 +120,11 @@ public class DeductionPatientController {
 //    public ResponseResult<Set<DeductionCategoryVO>> category() {
 //        return ResponseUtil.success(couponGoodsBiz.category());
 //    }
+
+    @ApiOperation("获取划扣账单可退费入账方式列表")
+    @GetMapping("/deduction/refund/{orderId}")
+    public ResponseResult<List<CouponRefundAccountVO>> refundAccount(@PathVariable(value = "orderId") Integer orderId) {
+        List<CouponRefundAccountVO> result = patientBiz.refundAccount(orderId);
+        return ResponseUtil.success(result);
+    }
 }
