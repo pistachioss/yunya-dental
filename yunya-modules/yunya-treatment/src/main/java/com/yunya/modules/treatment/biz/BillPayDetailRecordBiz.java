@@ -472,9 +472,15 @@ public class BillPayDetailRecordBiz
 //      totalBonus = totalBonus.add(bonus);
 
       Integer accountItemId = detail.getAccountItemId();
-      AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
+      String accountItemName = "其他";
+      if (PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId)!=null) {
+        AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
+        if (StringHelper.isNotNull(accountItem)) {
+          accountItemName = accountItem.getName();
+        }
+      }
       result.add(BillPayAccountVO.builder()
-              .accountItemName(StringHelper.defaultObj(accountItem, accountItem.getName()))
+              .accountItemName(accountItemName)
               .accountItemId(accountItemId)
               .cardNumber(cardNumber)
               .belonger(belonger)
