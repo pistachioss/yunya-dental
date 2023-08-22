@@ -700,7 +700,7 @@ public class TreatTollBiz {
     }
     Byte status = orderRecord.getStatus();
     // 检查收费订单状态
-//    checkOrderRecordStatus(status);
+    checkOrderRecordStatus(status);
     String resultRecordId = redisUtils.get(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
     if (StringHelper.isNotBlank(resultRecordId)) {
       throw new ClientServiceException("收费失败，当前账单已解锁！请联系开单人员提交账单！", PARAMETERS_IS_ILLEGAL);
