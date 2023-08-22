@@ -174,6 +174,7 @@
                 when `bc`.`coupon_type` = 2 then '兑换券'
                 when `bc`.`coupon_type` = 3 then '套餐券'
                 when `bc`.`coupon_type` = 4 then '充值卡'
+                when `bc`.`coupon_type` = 5 then '划扣卡'
                 else null
                 end as `couponTypeName`,
             `bd`.`sale_channel_id`,

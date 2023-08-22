@@ -1493,23 +1493,25 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             List<PatientItemBenefitVo> itemList = Lists.newArrayList();
             List<DeductionItemBenefitVo> deductionList = Lists.newArrayList();
             for (OrderItemUseBo orderItemBo : orderItemBos) {
+                BigDecimal receivableAmount = orderItemBo.getReceivableAmount();
                 List<ItemUseBenefitBo> itemUseBenefitBos = orderItemBo.getItemUseBenefitBos();
                 if (CollectionUtils.isEmpty(itemUseBenefitBos)) {
                     continue;
                 }
-                BigDecimal benefitAmount = orderItemBo.getBenefitAmount() == null ? BigDecimal.ZERO : orderItemBo.getBenefitAmount();
+//                BigDecimal benefitAmount = orderItemBo.getBenefitAmount() == null ? BigDecimal.ZERO : orderItemBo.getBenefitAmount();
                 PatientItemBenefitVo vo = new PatientItemBenefitVo();
                 vo.setOrderDetailId(orderItemBo.getOrderDetailId());
                 vo.setType(orderItemBo.getType());
                 vo.setItemId(orderItemBo.getItemId());
-                vo.setBenefitDiscountRate(orderItemBo.getBenefitDiscountRate());
-                vo.setItemBenefitAmount(benefitAmount);
                 List<ItemUseBenefitBo> collect = orderItemBo.getItemUseBenefitBos().stream().filter(t -> !DEDUCTION.equals(t.getCouponType())).collect(toList());
                 List<ItemUseBenefitBo> collect1 = orderItemBo.getItemUseBenefitBos().stream().filter(t -> DEDUCTION.equals(t.getCouponType())).collect(toList());
                 if (CollectionUtils.isNotEmpty(collect)) {
                     List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(collect, ItemUseBenefitVo.class);
                     vo.setItemBenefitList(itemUseBenefitVos);
                     vo.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
+                    BigDecimal benefitAmount = itemUseBenefitVos.stream().map(ItemUseBenefitVo::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    vo.setBenefitDiscountRate(benefitAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
+                    vo.setItemBenefitAmount(benefitAmount);
                     itemList.add(vo);
                 }
                 if (CollectionUtils.isNotEmpty(collect1)) {
@@ -1526,8 +1528,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                                     .map(DeductionItemPeriod::getPackageUnitPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
                         }).reduce(BigDecimal.ZERO, BigDecimal::add);
                         vo1.setDeductionAmount(totalDeduct);
+                        BigDecimal benefitAmount = itemUseBenefitVos.stream().map(ItemUseBenefitVo::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                        vo1.setBenefitDiscountRate(benefitAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
+                        vo1.setItemBenefitAmount(benefitAmount);
                         deductionList.add(vo1);
                     });
+
                 }
             }
             result.setDeductionList(deductionList);
