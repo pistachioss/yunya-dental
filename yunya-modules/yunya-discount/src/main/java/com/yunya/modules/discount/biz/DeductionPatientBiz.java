@@ -29,7 +29,6 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
-import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -37,7 +36,6 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.discount.*;
-import com.yunya.models.system.AccountItem;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.modules.discount.enums.CouponOrderError;
@@ -114,7 +112,7 @@ public class DeductionPatientBiz {
     @Resource
     private RemoteRabbitMqServiceFeign mqServiceFeign;
     @Resource
-    private RemotePatientCentralServiceFeign patientCentralServiceFeign;
+    private CouponBillPayDetailMapper couponBillPayDetailMapper;
 
     public PageInfo<PatientDeductionBaseVO> deductionList(DeductionPatientQuery query) {
         Page<PatientCardBo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
@@ -637,43 +635,22 @@ public class DeductionPatientBiz {
 
     public List<CouponRefundAccountVO> refundAccount(Integer orderId) {
         List<CouponRefundAccountVO> result = new ArrayList<>();
-        List<BillPayDetailRecordVO> details = null;
+        List<CouponRefundAccountVO> details = couponBillPayDetailMapper.listPayAccount(orderId);
         List<PatientDepositAccountVO> patientDepositAccounts = patientFeign.findDepositAccountBillPayExpendList(orderId);
         Map<String, PatientDepositAccountVO> accountMap = patientDepositAccounts.stream().collect(toMap(PatientDepositAccountVO::getCardNumber, Function.identity()));
-
         for (int i = 0; i < details.size(); i++) {
-            BillPayDetailRecordVO detail = details.get(i);
+            CouponRefundAccountVO detail = details.get(i);
             String belonger = null;
-            String cardNumber = null;
             BigDecimal balance = null;
-            BigDecimal principal = detail.getAmount();
-            BigDecimal bonus = BigDecimal.ZERO;
-            BigDecimal principalRatio = null;
-            PatientDepositAccountVO depositAccount = accountMap.get(detail.getRemark());
+            PatientDepositAccountVO depositAccount = accountMap.get(detail.getCardNumber());
             if (StringHelper.isNotNull(depositAccount)) {
-                cardNumber = depositAccount.getCardNumber();
                 belonger = depositAccount.getPatientName();
                 balance = depositAccount.getBalance();
-                principal = depositAccount.getPrincipal().subtract(detail.getRefundPrincipal());
-                bonus = depositAccount.getBonus().subtract(detail.getRefundBonus());
-                principalRatio = principal.divide(principal.add(bonus), 4, RoundingMode.DOWN);
             }
-//      totalPrincipal = totalPrincipal.add(principal);
-//      totalBonus = totalBonus.add(bonus);
-
-            Integer accountItemId = detail.getAccountItemId();
-            AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
-            result.add(CouponRefundAccountVO.builder()
-                    .accountItemName(accountItem.getName())
-                    .accountItemId(accountItemId)
-                    .cardNumber(cardNumber)
-                    .belonger(belonger)
-                    .balance(balance)
-                    .principal(principal)
-                    .bonus(bonus)
-                    .build());
-            return result;
+            detail.setBelonger(belonger);
+            detail.setBalance(balance);
+            result.add(detail);
         }
-        return null;
+        return result;
     }
 }
