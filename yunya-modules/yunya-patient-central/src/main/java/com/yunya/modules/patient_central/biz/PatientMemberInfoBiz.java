@@ -470,23 +470,19 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public void makeMemberLevelByRecharge(String cardNumber) {
     // 判断该卡是否可以自动升级
     PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(cardNumber);
-    if (patientMemberInfo == null || patientMemberInfo.getNonauto()) {
+    //  || patientMemberInfo.getNonauto()
+    if (patientMemberInfo == null) {
       return;
     }
-    // TODO: 充值后判断是否升级会员等级，退费后判断是否降级
-    BigDecimal sum = memberRechargeRecordMapper.findRechargeTotalAmountByCardNumber(cardNumber);
-    List<MemberType> memberTypeList_tmp = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
-    MemberType tmp = new MemberType();
-    List<MemberType> memberTypeList = memberTypeList_tmp.stream().filter(memberType -> {
-      return memberType.getRechargeMaxAmount().compareTo(BigDecimal.ZERO) > 0 && memberType.getRechargeMaxAmount().compareTo(sum) <= 0;
-    }).sorted(Comparator.comparing(MemberType::getRechargeMaxAmount).reversed()).collect(Collectors.toList());
-    Integer newTypeId = 4;
-    if (memberTypeList != null && memberTypeList.size() > 0) {
-      newTypeId = memberTypeList.get(0).getId();
-    }
+    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
+    // 充值等级
+    Integer rechargeTypeId = calcRechargelevel(memberTypeList, cardNumber);
+    // 消费等级
+    Integer cashTypeId = calcTotalCashlevel(memberTypeList, patientMemberInfo.getPatientId());
     // 变更等级
     PatientMemberInfo patientMember =
             this.patientMemberInfoMapper.selectOneByCardNumber(cardNumber);
+    Integer newTypeId = calcMaxMemberLevel(memberTypeList, rechargeTypeId, cashTypeId, patientMember.getMinTypeId());
     if (!newTypeId.equals(patientMember.getMemberTypeId())){
       patientMember.setMemberTypeId(newTypeId);
       patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
@@ -508,21 +504,22 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public boolean makeMemberLevelByCashAmount(Integer patientId) {
     // 判断该卡是否可以自动升级
     PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(patientId);
-    if (patientMemberInfo == null || patientMemberInfo.getNonauto() || patientMemberInfo.getMemberTypeId() == 4 || !patientMemberInfo.getInservice()) {
+    //  || patientMemberInfo.getNonauto()
+    if (patientMemberInfo == null || patientMemberInfo.getMemberTypeId() == 4 || !patientMemberInfo.getInservice()) {
       return false;
     }
-    // TODO: 消费后判断是否升级会员等级
-    BigDecimal sum = remoteReportServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
-    List<MemberType> memberTypeList_tmp = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
-    MemberType tmp = new MemberType();
-    List<MemberType> memberTypeList = memberTypeList_tmp.stream().filter(memberType -> {
-      return memberType.getTotalAmount().compareTo(BigDecimal.ZERO) > 0 && memberType.getTotalAmount().compareTo(sum) <= 0;
-    }).sorted(Comparator.comparing(MemberType::getTotalAmount).reversed()).collect(Collectors.toList());
-    if (memberTypeList != null && !memberTypeList.isEmpty()) {
+    List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
+    // 充值等级
+    Integer rechargeTypeId = calcRechargelevel(memberTypeList, patientMemberInfo.getCardNumber());
+    // 消费等级
+    Integer cashTypeId = calcTotalCashlevel(memberTypeList, patientId);
+    // 变更等级
+    Integer newTypeId = calcMaxMemberLevel(memberTypeList, rechargeTypeId, cashTypeId, patientMemberInfo.getMinTypeId());
+    if (!newTypeId.equals(patientMemberInfo.getMemberTypeId())) {
       // 变更等级
       PatientMemberInfo patientMember =
           this.patientMemberInfoMapper.selectOneByPatientId(patientId);
-      patientMember.setMemberTypeId(memberTypeList.get(0).getId());
+      patientMember.setMemberTypeId(newTypeId);
       patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMember.setUpdName(BaseContextHandler.getName());
       patientMember.setUpdTime(new Date());
@@ -537,6 +534,72 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       return true;
     }
     return false;
+  }
+
+  public Integer calcMaxMemberLevel(List<MemberType> memberTypeList_tmp, Integer rechargeTypeId, Integer cashTypeId, Integer minTypeId) {
+    Integer maxTypeId = 4;
+    if (minTypeId.compareTo(0) > 0) {
+      maxTypeId = minTypeId;
+    }
+    BigDecimal a, b, c;
+    a = b = c = BigDecimal.ZERO;
+    for(int i=0;i<memberTypeList_tmp.size();i++) {
+      if (memberTypeList_tmp.get(i).getId().equals(maxTypeId)) {
+        a = memberTypeList_tmp.get(i).getRechargeMaxAmount();
+      }
+      if (memberTypeList_tmp.get(i).getId().equals(rechargeTypeId)) {
+        b = memberTypeList_tmp.get(i).getRechargeMaxAmount();
+      }
+      if (memberTypeList_tmp.get(i).getId().equals(cashTypeId)) {
+        c = memberTypeList_tmp.get(i).getRechargeMaxAmount();
+      }
+    }
+    if (b.compareTo(a)>0) {
+      maxTypeId = rechargeTypeId;
+      a = b;
+    }
+    if (c.compareTo(a) > 0) {
+      maxTypeId = cashTypeId;
+    }
+    return maxTypeId;
+  }
+
+  public Integer calcRechargelevel(List<MemberType> memberTypeList_tmp, String cardNumber) {
+    // TODO: 充值后判断是否升级会员等级，退费后判断是否降级
+    BigDecimal sum = memberRechargeRecordMapper.findRechargeTotalAmountByCardNumber(cardNumber);
+    MemberType tmp = new MemberType();
+    List<MemberType> memberTypeList = memberTypeList_tmp.stream()
+            .filter(memberType -> {
+              return memberType.getRechargeMaxAmount().compareTo(BigDecimal.ZERO) > 0 &&
+                      memberType.getRechargeMaxAmount().compareTo(sum) <= 0;
+            })
+            .sorted(Comparator.comparing(MemberType::getRechargeMaxAmount).reversed())
+            .collect(Collectors.toList());
+    Integer newTypeId = 4;
+    if (memberTypeList != null && memberTypeList.size() > 0) {
+      newTypeId = memberTypeList.get(0).getId();
+    }
+    return newTypeId;
+  }
+
+  public Integer calcTotalCashlevel(List<MemberType> memberTypeList_tmp, Integer patientId) {
+    // TODO: 消费后判断是否升级会员等级，退费后判断是否降级
+    Integer newTypeId = 4;
+    BigDecimal sum = remoteReportServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
+    if (sum == null) {
+      return newTypeId;
+    }
+    MemberType tmp = new MemberType();
+    List<MemberType> memberTypeList = memberTypeList_tmp.stream()
+            .filter(memberType -> {
+              return memberType.getTotalAmount().compareTo(BigDecimal.ZERO) > 0 && memberType.getTotalAmount().compareTo(sum) <= 0;
+            })
+            .sorted(Comparator.comparing(MemberType::getTotalAmount).reversed())
+            .collect(Collectors.toList());
+    if (memberTypeList != null && memberTypeList.size() > 0) {
+      newTypeId = memberTypeList.get(0).getId();
+    }
+    return newTypeId;
   }
 
   /**
@@ -596,6 +659,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             patientMemberInfo2.setPatientId(r);
             patientMemberInfo2.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
             patientMemberInfo2.setMemberTypeId(finalNextLevelId);
+            patientMemberInfo2.setMinTypeId(finalNextLevelId);
             patientMemberInfo2.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
             patientMemberInfo2.setCrtName(BaseContextHandler.getName());
             generateCardNumber(patientMemberInfo2);
@@ -608,10 +672,12 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             PatientMemberInfo patientMember =
                 this.patientMemberInfoMapper.selectOneByCardNumber(patientMemberInfo1.getCardNumber());
             patientMember.setMemberTypeId(finalNextLevelId);
+            patientMember.setMinTypeId(finalNextLevelId);
             patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
             patientMember.setUpdName(BaseContextHandler.getName());
             patientMember.setUpdTime(new Date());
             patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+            patientMember.setInservice(true);
             this.mapper.updateByPrimaryKeySelective(patientMember);
             this.cardLog(patientMember, "变更", "更新");
             remoteRabbitMqServiceFeign.sendMessage(
@@ -917,6 +983,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
 
     patientMember.setMemberTypeId(form.getMemberTypeId());
+    patientMember.setMinTypeId(form.getMemberTypeId());
     patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientMember.setUpdName(BaseContextHandler.getName());
     patientMember.setUpdTime(new Date());

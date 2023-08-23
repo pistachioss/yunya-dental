@@ -93,6 +93,12 @@ public class PatientMemberInfo {
     private Boolean nonauto;
 
     /**
+     * 可降级的最低等级会员ID
+     */
+    @Column(name = "min_type_id")
+    private Integer minTypeId;
+
+    /**
      * 创建人ID
      */
     @Column(name = "crt_id")
@@ -386,6 +392,14 @@ public class PatientMemberInfo {
 
     public void setNonauto(Boolean nonauto) {
         this.nonauto = nonauto;
+    }
+
+    public Integer getMinTypeId() {
+        return minTypeId;
+    }
+
+    public void setMinTypeId(Integer minTypeId) {
+        this.minTypeId = minTypeId;
     }
 
     /**

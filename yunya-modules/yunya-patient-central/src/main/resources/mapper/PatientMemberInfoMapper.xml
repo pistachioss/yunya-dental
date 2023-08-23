@@ -26,12 +26,13 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
         <result column="nonauto" property="nonauto" jdbcType="BIT"/>
+        <result column="min_type_id" property="minTypeId" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="Find_Colum_List">
       pmio.id id,pmio.org_id orgId,pmio.patient_id patientId,pmio.member_type_id memberTypeId,pmio.master_card masterCard,pmio.card_number cardNumber,
       pmio.status status,pmio.principal_amount principalAmount,pmio.bonus_amount bonusAmount,pmio.point point,pmio.last_expired_time lastExpiredTime,
-      pmio.next_expired_time nextExpiredTime,pmio.remarks remarks,pmio.inservice inservice, pmio.nonauto nonauto
+      pmio.next_expired_time nextExpiredTime,pmio.remarks remarks,pmio.inservice inservice, pmio.nonauto nonauto, pmio.min_type_id minTypeId
     </sql>
     <select id="findMemberRechargeRecordInfo" resultType="com.yunya.feign.patient_central.domain.vo.app.MasertMemberRechargeRecordDetailVo">
     (select mer.crt_name consumerName,pbi.name as patientName,1 type ,DATE_FORMAT(mer.crt_time,'%Y-%m-%d %H:%i:%s') operatingTime,
