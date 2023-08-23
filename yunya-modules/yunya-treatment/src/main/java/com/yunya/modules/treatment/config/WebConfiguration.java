@@ -51,4 +51,27 @@ public class WebConfiguration implements WebMvcConfigurer {
   CurrentUserInfoRestInterceptor getUserAuthRestInterceptor() {
     return new CurrentUserInfoRestInterceptor();
   }
+
+
+//  @Autowired
+//  private MyWebService myWebService;
+//
+//  @Autowired
+//  private Bus bus;
+
+  /**
+   * 发布服务
+   * @return
+   */
+//  @Bean
+//  public Endpoint userServiceEndpoint() {
+//    //这里指定的端口不能跟应用的端口冲突, 单独指定
+//    String path = "http://127.0.0.1:9090/user";
+//
+//    EndpointImpl userEndpoint = new EndpointImpl(bus, myWebService);
+//    userEndpoint.publish(path);
+//
+//    System.out.println("webservice服务发布成功，在线的wsdl：" + path + "?wsdl");
+//    return userEndpoint;
+//  }
 }
