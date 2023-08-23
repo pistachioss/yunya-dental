@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -104,6 +105,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   /** 账单收费记录 */
   @Autowired private BillPayRecordBiz billPayRecordBiz;
   @Autowired private TreatTollBiz treatTollBiz;
+  @Autowired  private RemotePatientCentralServiceFeign patientFeign;
 
   /**
    * 生成账单编号
@@ -339,7 +341,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    *
    * @param model 退费参数
    */
-  public void billRefund(TreatBillRefundModel model) {
+  public void billRefund(TreatBillRefundModel model) throws InterruptedException {
     // 检查就诊是否收费
     BillRecord billRecord = checkBillRecord(model);
     List<RefundOrderDetailModel> refundOrderDetailModels = model.getRefundOrderDetailModels();
@@ -367,6 +369,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     // 保存账单退费异常处理记录及其明细
     saveBillExceptionHandleWithDetail(billRefundRecord, billRecord.getId());
     rabbitMqServiceFeign.sendMessage(billRefundRecord.getId(), 0, BaseRefund);
+    if (StringHelper.gtZero(refundTotalAmount)) {
+      TimeUnit.SECONDS.sleep(3);
+      patientFeign.autoUpdateMemberType(billRecord.getPatientId());
+    }
   }
 
   /**

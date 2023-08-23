@@ -88,7 +88,7 @@ public class BillRecordController {
   @CurrentUser
   @ApiOperation("账单退费")
   @PostMapping(value = "/treat/refund", name = "账单退费")
-  public ResponseResult billRefund(@RequestBody @Validated TreatBillRefundModel model) {
+  public ResponseResult billRefund(@RequestBody @Validated TreatBillRefundModel model) throws InterruptedException {
     billRecordBiz.billRefund(model);
     return ResponseUtil.success(null);
   }
