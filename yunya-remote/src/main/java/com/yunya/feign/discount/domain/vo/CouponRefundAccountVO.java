@@ -2,13 +2,12 @@ package com.yunya.feign.discount.domain.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-@Builder
+
 @Data
 @ToString
 @ApiModel("划扣收费入账方式数据模型")
@@ -42,7 +41,7 @@ public class CouponRefundAccountVO implements Serializable {
     @ApiModelProperty("可退赠金")
     private BigDecimal bonus;
 
-    /** 实收合计 */
-    @ApiModelProperty("实收合计")
-    private BigDecimal receivedAmount;
+//    /** 实收合计 */
+//    @ApiModelProperty("实收合计")
+//    private BigDecimal receivedAmount;
 }

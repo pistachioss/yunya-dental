@@ -1,24 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.discount.mapper.CouponBillPayDetailMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.discount.CouponBillPayDetail" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
-    <result column="bill_id" property="billId" jdbcType="INTEGER" />
-    <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER" />
-    <result column="type" property="type" jdbcType="TINYINT" />
-    <result column="account_item_id" property="accountItemId" jdbcType="INTEGER" />
-    <result column="amount" property="amount" jdbcType="DECIMAL" />
-    <result column="remark" property="remark" jdbcType="VARCHAR" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.discount.mapper.CouponBillPayDetailMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.discount.CouponBillPayDetail">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="order_id" property="orderId" jdbcType="INTEGER"/>
+        <result column="bill_id" property="billId" jdbcType="INTEGER"/>
+        <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER"/>
+        <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="account_item_id" property="accountItemId" jdbcType="INTEGER"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="listPayAccount" resultType="com.yunya.feign.discount.domain.vo.CouponRefundAccountVO">
+        select t1.account_item_id,
+               t1.account_item_name,
+               t1.patient_num   as cardNumber,
+               ifnull(sum(t1.principal_amount), 0)                                   as totalPrincipal,
+               ifnull(sum(t1.bonus_amount), 0)                                       as totalBonus,
+               (ifnull(sum(t1.principal_amount), 0) - ifnull(t4.refundPrincipal, 0)) as principal,
+               (ifnull(sum(t1.bonus_amount), 0) - ifnull(t4.refundBonus, 0))         as bonus
+        from coupon_bill_pay_detail t1
+                 left join (select t2.order_id,
+                                   t2.id,
+                                   t3.patient_number,
+                                   t3.account_item_id,
+                                   ifnull(t3.patient_number, t3.account_item_id) as patient_num,
+                                   ifnull(sum(t3.principal_amount), 0)           as refundPrincipal,
+                                   ifnull(sum(t3.gift_amount), 0)                as refundBonus
+                            from coupon_refund t2
+                                     inner join coupon_refund_pay t3 on t2.id = t3.refund_id
+                            where t2.order_id = #{orderId}
+                            group by t2.order_id, t3.account_item_id, t3.patient_number) t4
+                           on t4.order_id = t1.order_id and t1.account_item_id = t4.account_item_id and
+                              t4.patient_num = ifnull(t1.patient_num, t1.account_item_id)
+        where t1.order_id = #{orderId}
+        group by t1.order_id, t1.account_item_id, t1.patient_num
+    </select>
 </mapper>
