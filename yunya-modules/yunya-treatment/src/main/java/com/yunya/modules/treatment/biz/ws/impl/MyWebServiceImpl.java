@@ -1,9 +1,10 @@
 package com.yunya.modules.treatment.biz.ws.impl;
 
-import com.yunya.feign.treatment.domain.vo.OrderBill4AppVO;
-import com.yunya.framework.common.utils.StringHelper;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
+import com.yunya.modules.treatment.biz.BillRecordBiz;
 import com.yunya.modules.treatment.biz.ws.MyWebService;
-import com.yunya.modules.treatment.mapper.BillRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,19 +20,12 @@ public class MyWebServiceImpl implements MyWebService {
 //    private RemotePatientCentralServiceFeign patientFeign;
 
     @Autowired
-    private BillRecordMapper billRecordBiz;
+    private BillRecordBiz billRecordBiz;
 
     @Override
-    public String findPatientInfoById(Integer id) {
-        System.out.println(">>>>>>>>获取到请求参数：" + id);
-//        PatientBaseInfo patient = patientFeign.findPatientInfoById(patientId);
-//        if (StringHelper.isNotNull(patient)) {
-//            return patient.getName();
-//        }
-        OrderBill4AppVO result = billRecordBiz.findOrderAndBill4App(id);
-        if (StringHelper.isNotNull(result)) {
-            return result.getBillNumber();
-        }
-        return StringHelper.EMPTY;
+    public PageInfo<BillRestReceivableAmountVO> findPatientInfoById(BillOfReceivableQuery query) {
+        System.out.println(">>>>>>>>获取到请求参数：" + query);
+        PageInfo<BillRestReceivableAmountVO> result = billRecordBiz.findDebtList(query);
+        return result;
     }
 }
