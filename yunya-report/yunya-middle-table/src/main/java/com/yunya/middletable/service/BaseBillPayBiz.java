@@ -265,7 +265,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
             }
             baseBillPayDetailMapper.insertSelective(baseBillPayDetail);
           });
-      baseBillBiz.autoUpdateMemberType(billPayDetailRecords.get(0).getOrderRecordId());
     }
   }
 

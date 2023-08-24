@@ -574,16 +574,4 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   public void updateBaseBill(BaseBill baseBill) {
     mapper.updateByPrimaryKeySelective(baseBill);
   }
-
-  /**
-   * 会员根据就诊账单消费（特定入账方式）进行自动升级
-   *
-   * @param billid
-   */
-  public void autoUpdateMemberType(Integer billid) {
-    BaseBill baseBill = mapper.selectByPrimaryKey(billid);
-    if (StringHelper.isNotNull(baseBill)) {
-      patientFeign.autoUpdateMemberType(baseBill.getPatientId());
-    }
-  }
 }

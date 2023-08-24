@@ -66,7 +66,7 @@ public class MinorChargeProcessBiz {
     @Autowired private OrderDetailBiz orderDetailBiz;
     @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
     @Autowired private BillRecordMapper billRecordMapper;
-
+    @Autowired private BillRecordBiz billRecordBiz;
     @Value("${sysconfig.memberSystemReleaseDate}")
     private String releaseDate;
 
@@ -117,6 +117,7 @@ public class MinorChargeProcessBiz {
             log.error("MinorChargeProcessBize asyncProcessCharge error: {}", e);
             errorChargeLog(billPayRecord.getId(), ExceptionUtils.getFullStackTrace(e));
         }
+        billRecordBiz.autoUpdateMemberType(totalCharge, billPayRecord.getPatientId());
     }
 
     /**
@@ -133,7 +134,6 @@ public class MinorChargeProcessBiz {
         entity.setErrMsg(message);
         billPayRecordLogMapper.updateByExampleSelective(entity, example);
     }
-
 
     /**
      * 收费完成记录，更新状态

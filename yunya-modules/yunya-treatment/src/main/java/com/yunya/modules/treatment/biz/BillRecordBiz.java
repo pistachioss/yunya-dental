@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -369,6 +370,25 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     // 保存账单退费异常处理记录及其明细
     saveBillExceptionHandleWithDetail(billRefundRecord, billRecord.getId());
     rabbitMqServiceFeign.sendMessage(billRefundRecord.getId(), 0, BaseRefund);
+    autoUpdateMemberType(refundTotalAmount, billRecord.getPatientId());
+  }
+
+
+  /**
+   * 会员根据就诊账单消费（特定入账方式）进行自动升级
+   *
+   * @param totalCharge
+   * @param patientId
+   */
+  public void autoUpdateMemberType(BigDecimal totalCharge, Integer patientId) {
+    if (StringHelper.gtZero(totalCharge)) {
+      try {
+        TimeUnit.SECONDS.sleep(5);
+        patientFeign.autoUpdateMemberType(patientId);
+      } catch (Exception e) {
+        throw new ClientServiceException(e);
+      }
+    }
   }
 
   /**
