@@ -45,14 +45,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseRefund;
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.NORMAL_PREPAYMENT;
 import static java.util.stream.Collectors.toMap;
 
@@ -369,10 +369,6 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     // 保存账单退费异常处理记录及其明细
     saveBillExceptionHandleWithDetail(billRefundRecord, billRecord.getId());
     rabbitMqServiceFeign.sendMessage(billRefundRecord.getId(), 0, BaseRefund);
-    if (StringHelper.gtZero(refundTotalAmount)) {
-      TimeUnit.SECONDS.sleep(3);
-      patientFeign.autoUpdateMemberType(billRecord.getPatientId());
-    }
   }
 
   /**

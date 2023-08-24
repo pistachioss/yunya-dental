@@ -58,6 +58,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   @Autowired private OrderDetailMapper orderDetailMapper;
 
   @Autowired private BaseRefundPayDetailMapper refundPayDetailMapper;
+  @Autowired private BaseBillBiz baseBillBiz;
   @Resource(name = "billCreditsCallbackImpl")
   private BillCreditsCallback billCreditsCallback;
 
@@ -76,7 +77,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
         mapper.deleteByPrimaryKey(dataId);
         if (null != refund) {
           mapper.insertSelective(refund);
-          saveBaseRefundDetail(dataId);
+          saveBaseRefundDetail(refund);
           // 回滚积分记录
           billCreditsCallback.refundCredits(dataId,refund.getBillId());
         }
@@ -87,10 +88,10 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
           if (null == result) {
             mapper.deleteByPrimaryKey(dataId);
             mapper.insertSelective(refund);
-            saveBaseRefundDetail(dataId);
+            saveBaseRefundDetail(refund);
           } else {
             mapper.updateByPrimaryKeySelective(refund);
-            updateBaseRefundDetail(dataId);
+            updateBaseRefundDetail(result);
           }
           // 回滚积分记录
           billCreditsCallback.refundCredits(dataId,refund.getBillId());
@@ -105,7 +106,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
           deleteByRefundId(dataId);
         } else {
           mapper.insertSelective(refund);
-          saveBaseRefundDetail(dataId);
+          saveBaseRefundDetail(refund);
         }
         // 回滚积分记录
         billCreditsCallback.refundCredits(dataId,refund.getBillId());
@@ -183,9 +184,10 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   /**
    * 根据退费记录ID保存退费明细
    *
-   * @param refundId 退费记录ID
+   * @param refund 退费记录
    */
-  private void saveBaseRefundDetail(Integer refundId) {
+  private void saveBaseRefundDetail(BaseRefund refund) {
+    Integer refundId = refund.getRefundId();
     BillRefundOrderDetail refundOrderDetail = new BillRefundOrderDetail();
     refundOrderDetail.setBillRefundRecordId(refundId);
     List<BillRefundOrderDetail> refundOrderDetails =
@@ -205,7 +207,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
           });
     }
 
-    saveBaseRefundPayDetail(refundId);
+    saveBaseRefundPayDetail(refundId, refund.getBillId());
   }
 
   private void putBillDetailInfo(BaseRefundDetail refundDetail) {
@@ -220,7 +222,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     }
   }
 
-  private void saveBaseRefundPayDetail(Integer refundId) {
+  private void saveBaseRefundPayDetail(Integer refundId, Integer billId) {
     BillRefundPayDetailRecord billRefundPayDetailRecord = new BillRefundPayDetailRecord();
     billRefundPayDetailRecord.setBillRefundRecordId(refundId);
     List<BillRefundPayDetailRecord> refundPayDetails =
@@ -238,15 +240,17 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
                 refundPayDetail.setPrincipalAmount(detail.getPrincipalAmount());
                 refundPayDetailMapper.insertSelective(refundPayDetail);
               });
+      baseBillBiz.autoUpdateMemberType(billId);
     }
   }
 
   /**
    * 更新中间表退费明细
    *
-   * @param refundId 退费记录ID
+   * @param refund 退费记录
    */
-  private void updateBaseRefundDetail(Integer refundId) {
+  private void updateBaseRefundDetail(BaseRefund refund) {
+    Integer refundId = refund.getRefundId();
     BillRefundOrderDetail refundOrderDetail = new BillRefundOrderDetail();
     refundOrderDetail.setBillRefundRecordId(refundId);
     List<BillRefundOrderDetail> refundOrderDetails =
@@ -275,7 +279,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
         }
       }
     }
-    saveBaseRefundPayDetail(refundId);
+    saveBaseRefundPayDetail(refundId, refund.getBillId());
   }
 
   /**
@@ -298,7 +302,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
                 BaseRefund baseRefund = generateBaseRefund(refundRecordId);
                 if (null != baseRefund) {
                   mapper.insertSelective(baseRefund);
-                  saveBaseRefundDetail(refundRecordId);
+                  saveBaseRefundDetail(baseRefund);
                 } else {
                   refundDetailMapper.deleteByRefundId(refundRecordId);
                 }

@@ -72,6 +72,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   private ExecutorService importExcelThreadPool;
   @Resource(name = "billCreditsCallbackImpl")
   private BillCreditsCallback billCreditsCallback;
+  @Resource
+  private BaseBillBiz baseBillBiz;
   //
   private Map<Integer,BillCreditsCallback> chain = new ConcurrentHashMap<>();
 
@@ -263,6 +265,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
             }
             baseBillPayDetailMapper.insertSelective(baseBillPayDetail);
           });
+      baseBillBiz.autoUpdateMemberType(billPayDetailRecords.get(0).getOrderRecordId());
     }
   }
 

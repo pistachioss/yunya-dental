@@ -1,12 +1,12 @@
 package com.yunya.middletable.service;
 
 import com.google.common.collect.Lists;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
 import com.yunya.middletable.dao.report.BasePatientOriginLogMapper;
@@ -79,8 +79,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   @Resource(name = "billCreditsCallbackImpl")
   private BillCreditsCallback baseBillPayCallback;
-  @Autowired
-  private RedisUtils redisUtils;
+  @Resource
+  private RemotePatientCentralServiceFeign patientFeign;
 
   /**
    * 更新开单明细
@@ -573,5 +573,17 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   public void updateBaseBill(BaseBill baseBill) {
     mapper.updateByPrimaryKeySelective(baseBill);
+  }
+
+  /**
+   * 会员根据就诊账单消费（特定入账方式）进行自动升级
+   *
+   * @param billid
+   */
+  public void autoUpdateMemberType(Integer billid) {
+    BaseBill baseBill = mapper.selectByPrimaryKey(billid);
+    if (StringHelper.isNotNull(baseBill)) {
+      patientFeign.autoUpdateMemberType(baseBill.getPatientId());
+    }
   }
 }
