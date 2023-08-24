@@ -32,7 +32,6 @@ import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.*;
 import org.joda.time.DateTime;
@@ -45,7 +44,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -81,8 +79,6 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private OrderDetailBiz orderDetailBiz;
   /** 账单支付明细 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
-  /** 账单明细收费记录 */
-  @Autowired private OrderDetailPayRecordMapper orderDetailPayRecordMapper;
   /** 账单异常处理记录 */
   @Autowired private BillExceptionHandleRecordMapper billExceptionHandleRecordMapper;
   /** 账单异常处理详情记录 */
@@ -101,12 +97,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
   /** 账单 */
   @Autowired private OrderRecordMapper orderRecordMapper;
-  /** 缓存 */
-  @Autowired private RedisUtils redisUtils;
   /** 账单收费记录 */
   @Autowired private BillPayRecordBiz billPayRecordBiz;
   @Autowired private TreatTollBiz treatTollBiz;
-  @Autowired  private RemotePatientCentralServiceFeign patientFeign;
+  @Autowired private MinorChargeProcessBiz minorChargeProcessBiz;
 
   /**
    * 生成账单编号
@@ -370,25 +364,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     // 保存账单退费异常处理记录及其明细
     saveBillExceptionHandleWithDetail(billRefundRecord, billRecord.getId());
     rabbitMqServiceFeign.sendMessage(billRefundRecord.getId(), 0, BaseRefund);
-    autoUpdateMemberType(refundTotalAmount, billRecord.getPatientId());
-  }
-
-
-  /**
-   * 会员根据就诊账单消费（特定入账方式）进行自动升级
-   *
-   * @param totalCharge
-   * @param patientId
-   */
-  public void autoUpdateMemberType(BigDecimal totalCharge, Integer patientId) {
-    if (StringHelper.gtZero(totalCharge)) {
-      try {
-        TimeUnit.SECONDS.sleep(5);
-        patientFeign.autoUpdateMemberType(patientId);
-      } catch (Exception e) {
-        throw new ClientServiceException(e);
-      }
-    }
+    minorChargeProcessBiz.autoUpdateMemberType(refundTotalAmount, billRecord.getPatientId());
   }
 
   /**

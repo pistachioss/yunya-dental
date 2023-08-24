@@ -1,5 +1,6 @@
 package com.yunya.middletable.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.domain.query.StatisticsEmployeeQueryForm;
@@ -71,6 +72,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     Integer dataId = (Integer) paramMap.get("id");
     BaseRefund refund = generateBaseRefund(dataId);
     Integer operateType = msg.getOperateType();
+    log.info("退费记录：{}", JSONObject.toJSONString(refund));
     switch (operateType) {
       case 0:
         mapper.deleteByPrimaryKey(dataId);
