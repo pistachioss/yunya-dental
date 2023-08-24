@@ -2467,6 +2467,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         Card insertOtherCard = BeanCopierUtils.generalCopyBean(form, Card.class);
         if (form.getThirdCardNumber().startsWith("HK")) {
             insertOtherCard = card;
+            insertOtherCard.setSaleChannelId(form.getSaleChannelId());
+            insertOtherCard.setSoldTarget(form.getSoldTarget());
+            insertOtherCard.setSoldPhoneNumber(form.getSoldPhoneNumber());
+            insertOtherCard.setSharer(form.getSharerIdStr());
         }
         insertOtherCard.setOrgId(0);
         insertOtherCard.setThirdCardNumber(form.getThirdCardNumber());
@@ -2487,7 +2491,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         if (form.getThirdCardNumber().startsWith("HK")) {
             insertOtherCard.setCardNumber(null);
             insertOtherCard.setCardPassword(null);
-            mapper.updateByPrimaryKey(insertOtherCard);
+            mapper.updateByPrimaryKeySelective(insertOtherCard);
         } else {
             insertOtherCard.setCrtId(loginUserId);
             mapper.insertSelective(insertOtherCard);
