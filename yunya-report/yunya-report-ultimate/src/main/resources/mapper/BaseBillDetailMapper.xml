@@ -4899,7 +4899,7 @@
         <if test="groupByOrgId">
             bb.org_id AS orgId,
         </if>
-        SUM(bbps.received_amount + bbps.free_amount) AS workload
+        CONVERT(SUM(bbps.received_amount + bbps.free_amount), DECIMAL (19, 2)) AS workload
         FROM base_bill_pay_share bbps
         LEFT JOIN base_bill bb ON bb.bill_id = bbps.bill_id
         <where>
