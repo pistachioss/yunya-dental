@@ -2,9 +2,10 @@ package com.yunya.modules.treatment.config;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.endpoint.Client;
-import org.apache.cxf.endpoint.ClientImpl;
 import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
 import org.apache.cxf.service.model.*;
@@ -14,6 +15,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_ERROR;
 
 /**
  * WebService - 工具类
@@ -48,39 +51,41 @@ public class WebServiceUtils {
 //        System.out.println(objects[0].toString());
     }
 
-    private static Map<String, Endpoint> factoryMap = new HashMap<>();
     private static Map<String, Client> clientMap = new HashMap<>();
 
     /**
-     *
      * @param wsdlUrl  wsdl的地址：http://localhost:8001/demo/HelloServiceDemoUrl?wsdl
+     * @param methodName
+     */
+    public static Client initClient(String wsdlUrl, String methodName) {
+        wsdlUrl = StringHelper.defaultString(wsdlUrl, url);
+        // 创建动态客户端
+        JaxWsDynamicClientFactory factory = JaxWsDynamicClientFactory.newInstance();
+        // 创建客户端连接
+        Client client = factory.createClient(wsdlUrl);
+        clientMap.put(methodName, client);
+        log.info("webservice动态客户端：{} 初始化完成", wsdlUrl);
+        return client;
+    }
+
+    /**
+     * 调用webservice暴露的服务和方法
+     *
      * @param methodName 调用的方法名称 selectOrderInfo
-     * @param targetNamespace 命名空间 http://service.limp.com/
+     * @param targetNamespace 目标命名空间 http://service.limp.com/
      * @param webServiceName  暴露webservice的服务名称
      * @param paramList 参数集合
      * @throws Exception
      */
-    public  static String dynamicCallWebServiceByCXF(String wsdlUrl, String methodName, String targetNamespace,
-                                                     String webServiceName, List<Object> paramList)throws Exception{
-        //临时增加缓存，增加创建速度
-        if(!factoryMap.containsKey(methodName)){
-            // 创建动态客户端
-            JaxWsDynamicClientFactory factory = JaxWsDynamicClientFactory.newInstance();
-            // 创建客户端连接
-            Client client = factory.createClient(wsdlUrl);
-            ClientImpl clientImpl = (ClientImpl) client;
-            Endpoint endpoint = clientImpl.getEndpoint();
-            factoryMap.put(methodName,endpoint);
-            clientMap.put(methodName,client);
-            System.out.println("初始化");
-        }
+    public  static String callWebService(String wsdlUrl, String methodName, String targetNamespace,
+                                         String webServiceName, List<Object> paramList) throws Exception{
         //从缓存中换取 endpoint、client
-        Endpoint endpoint=factoryMap.get(methodName);
-        Client client=clientMap.get(methodName);
+        Client client = clientMap.computeIfAbsent(methodName, name->initClient(wsdlUrl, name));
+        Endpoint endpoint = client.getEndpoint();
         // Make use of CXF service model to introspect the existing WSDL
         ServiceInfo serviceInfo = endpoint.getService().getServiceInfos().get(0);
         // 创建QName来指定NameSpace和要调用的service
-        String localPart=webServiceName+"SoapBinding";
+        String localPart = webServiceName + "SoapBinding";
         QName bindingName = new QName(targetNamespace, localPart);
         BindingInfo binding = serviceInfo.getBinding(bindingName);
 
@@ -101,36 +106,34 @@ public class WebServiceUtils {
 
         /***********************以下是初始化参数，组装参数；处理返回结果的过程******************************************/
         Object[] parameters = new Object[parts.size()];
-        for(int m=0;m<parts.size();m++){
-            MessagePartInfo  part=parts.get(m);
-            // 取得对象实例
+        for(int m=0; m<parts.size(); m++){
+            MessagePartInfo part = parts.get(m);
+            // 取得webservice服务方法入参Class对象
             Class<?> partClass = part.getTypeClass();//OrderInfo.class;
-            System.out.println(partClass.getCanonicalName()); // GetAgentDetails
+            System.out.println("入参类型：" + partClass.getCanonicalName()); // GetAgentDetails
             //实例化对象
             Object initDomain=null;
             //普通参数的形参，不需要fastJson转换直接赋值即可
-            if("java.lang.String".equalsIgnoreCase(partClass.getCanonicalName())
-                    ||"int".equalsIgnoreCase(partClass.getCanonicalName())){
-                initDomain=paramList.get(m).toString();
-            }
-            //如果是数组
-            else if(partClass.getCanonicalName().indexOf("[]")>-1){
+            if ("java.lang.String".equalsIgnoreCase(partClass.getCanonicalName())
+                    ||"int".equalsIgnoreCase(partClass.getCanonicalName())) {
+                initDomain = paramList.get(m).toString();
+            } else if (partClass.getCanonicalName().indexOf("[]")>-1){
                 //转换数组
-                initDomain= JSON.parseArray(paramList.get(m).toString(),partClass.getComponentType());
-            }else{
-                initDomain=JSON.parseObject(paramList.get(m).toString(),partClass);
+                initDomain = JSON.parseArray(paramList.get(m).toString(), partClass.getComponentType());
+            } else {
+                initDomain = JSON.parseObject(paramList.get(m).toString(), partClass);
             }
-            parameters[m]=initDomain;
-
+            parameters[m] = initDomain;
         }
+
         //定义返回结果集
-        Object[] result=null;
+        Object[] result = null;
         //普通参数情况 || 对象参数情况  1个参数 ||ArryList集合
         try {
-            result = client.invoke(opName,parameters);
-        }catch (Exception ex){
-            ex.printStackTrace();
-            return "参数异常"+ex.getMessage();
+            result = client.invoke(opName, parameters);
+        } catch (Exception e) {
+            log.error("invoke webservice:{} method:{} error:{}", url, methodName, e);
+            throw new ClientServiceException("invoke webservice error", DATA_ERROR);
         }
         //返回调用结果
         if(result.length>0){
@@ -144,7 +147,7 @@ public class WebServiceUtils {
         JSONObject query = JSONObject.parseObject(str);
         List<Object> params = new ArrayList<>();
         params.add(query);
-        String result = dynamicCallWebServiceByCXF(url, methodName, namespace, webserviceName, params);
+        String result = callWebService(url, methodName, namespace, webserviceName, params);
         System.out.println("webservice结果：");
         System.out.println(result);
     }
