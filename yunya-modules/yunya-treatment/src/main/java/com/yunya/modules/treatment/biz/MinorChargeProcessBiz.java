@@ -41,7 +41,6 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
@@ -113,12 +112,12 @@ public class MinorChargeProcessBiz {
             // 发送MQ消息
             chargedMQMiddleTable(billPayRecord, isMqTreatment);
             giftFirstVisitPackage(billPayRecord);
+            autoUpdateMemberType(totalCharge, billPayRecord.getPatientId());
             completedChargeLog(billPayRecord.getId());
         } catch (Exception e) {
             log.error("MinorChargeProcessBize asyncProcessCharge error: {}", e);
             errorChargeLog(billPayRecord.getId(), ExceptionUtils.getFullStackTrace(e));
         }
-        autoUpdateMemberType(totalCharge, billPayRecord.getPatientId());
     }
 
     /**
@@ -130,12 +129,7 @@ public class MinorChargeProcessBiz {
     @Async("asyncExecutor")
     public void autoUpdateMemberType(BigDecimal totalCharge, Integer patientId) {
         if (StringHelper.gtZero(totalCharge)) {
-            try {
-                TimeUnit.SECONDS.sleep(5);
-                patientFeign.autoUpdateMemberType(patientId);
-            } catch (Exception e) {
-                throw new ClientServiceException(e);
-            }
+            patientFeign.autoUpdateMemberType(patientId);
         }
     }
 

@@ -38,6 +38,8 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletResponse;
@@ -336,6 +338,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    *
    * @param model 退费参数
    */
+  @Transactional
   public void billRefund(TreatBillRefundModel model) throws InterruptedException {
     // 检查就诊是否收费
     BillRecord billRecord = checkBillRecord(model);
@@ -364,7 +367,16 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     // 保存账单退费异常处理记录及其明细
     saveBillExceptionHandleWithDetail(billRefundRecord, billRecord.getId());
     rabbitMqServiceFeign.sendMessage(billRefundRecord.getId(), 0, BaseRefund);
-    minorChargeProcessBiz.autoUpdateMemberType(refundTotalAmount, billRecord.getPatientId());
+    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+      /**
+       * 事务提交后回调该方法
+       */
+      @Override
+      public void afterCommit() {
+        minorChargeProcessBiz.autoUpdateMemberType(refundTotalAmount, billRecord.getPatientId());
+      }
+    });
+
   }
 
   /**
