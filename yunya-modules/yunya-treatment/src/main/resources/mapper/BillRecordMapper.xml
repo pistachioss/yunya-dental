@@ -571,4 +571,39 @@
             AND order_record_id = #{orderRecordId}
         </where>
     </select>
+
+    <!-- 根据患者ID查询患者累计现金消费（新版会员） -->
+    <select id="selectPatientCashById" resultType="com.yunya.feign.treatment.domain.vo.PatientCostInfoVO">
+        select
+        bb.patient_id AS patientId,
+        sum(bbpd.amount) as cumulativeConsumption
+        from bill_pay_detail_record bbpd
+        left join bill_record bb on bbpd.bill_record_id = bb.id
+        <where>
+            AND bbpd.account_item_id in (1, 2, 3, 4, 5, 6)
+            AND bb.patient_id in
+            <foreach collection="patientIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+        group by bb.patient_id
+    </select>
+
+
+    <!-- 根据患者ID查询患者累计现金退费（新版会员） -->
+    <select id="selectPatientCashRefundById" resultType="com.yunya.feign.treatment.domain.vo.PatientCostInfoVO">
+        select
+        bb.patient_id AS patientId,
+        sum(bbpd.principal_amount) as cumulativeConsumption
+        from bill_refund_pay_detail_record bbpd
+        left join bill_refund_record bb on bbpd.bill_refund_record_id = bb.id
+        <where>
+            AND bbpd.account_item_id in (1, 2, 3, 4, 5, 6)
+            AND bb.patient_id in
+            <foreach collection="patientIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+        group by bb.patient_id
+    </select>
 </mapper>

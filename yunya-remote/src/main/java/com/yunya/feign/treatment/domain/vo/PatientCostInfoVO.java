@@ -1,5 +1,6 @@
-package com.yunya.feign.report.domain.vo;
+package com.yunya.feign.treatment.domain.vo;
 
+import com.yunya.feign.report.domain.vo.PatientVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

@@ -35,6 +35,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -687,5 +688,10 @@ public class TreatmentServiceRest {
   @GetMapping("/treatment/trajectory/{patientId}")
   public List<PatientEventVO> findPatientTreatmentTrajectory(@PathVariable(value = "patientId") Integer patientId) {
     return treatmentRecordBiz.findPatientTreatmentTrajectory(patientId);
+  }
+
+  @PostMapping(value = "/bill/cashinfo/{patientId}")
+  PatientCostInfoVO exportMemberBalanceList(@PathVariable(value = "patientId") Integer patientId) throws IOException {
+    return billRecordBiz.findCashAmountByPatientId(patientId);
   }
 }

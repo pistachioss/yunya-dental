@@ -139,11 +139,4 @@ public class PatientBaseInfoController {
     PatientTreatInfoVo result = patientBaseInfoBiz.findPatientLastTreatmentInfo(patientId);
     return ResponseUtil.success(result);
   }
-
-  @ApiOperation("查询患者累计现金消费（新版会员）")
-  @PostMapping(value = "/cashinfo/{id}", name = "查询患者累计现金消费（新版会员）")
-  public ResponseResult<PatientCostInfoVO> exportMemberBalanceList(@PathVariable(value = "id") Integer patientId) throws IOException {
-    PatientCostInfoVO ret = baseBillBiz.findCashAmountByPatientId(patientId);
-    return ResponseUtil.success(ret);
-  }
 }

@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.report.factory.RemoteReportServiceFactory;
+import com.yunya.feign.treatment.domain.vo.PatientCostInfoVO;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.report.CreditsShop;
@@ -64,7 +65,4 @@ public interface RemoteReportServiceFeign {
 
     @RequestMapping(value = "/api/patient/bill/hasitemlist",method = RequestMethod.POST)
     List<PatientHasBillItemVO> getHasItemList();
-
-    @RequestMapping(value = "/api/patient/bill/cashinfo/{id}",method = RequestMethod.POST)
-    PatientCostInfoVO getCashInfo(@PathVariable(value = "id") Integer patientId);
 }

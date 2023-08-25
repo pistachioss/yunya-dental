@@ -1065,4 +1065,24 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   public void insertBillRecord(BillRecord billRecord) {
     mapper.insertSelective(billRecord);
   }
+
+
+  public PatientCostInfoVO findCashAmountByPatientId(Integer patientId) {
+    ArrayList<Integer> list = new ArrayList<>();
+    list.add(patientId);
+    List<PatientCostInfoVO> patientCostInfoVOList = mapper.selectPatientCashById(list);
+    List<PatientCostInfoVO> patientCostRefundInfoVOList = mapper.selectPatientCashRefundById(list);
+    PatientCostInfoVO ret = new PatientCostInfoVO();
+    if (patientCostInfoVOList.size() > 0) {
+      ret = patientCostInfoVOList.get(0);
+    }
+    if (patientCostRefundInfoVOList.size() > 0) {
+      if (ret.getPatientId() == null) {
+        ret = patientCostRefundInfoVOList.get(0);
+      } else {
+        ret.setCumulativeConsumption(ret.getCumulativeConsumption().subtract(patientCostRefundInfoVOList.get(0).getCumulativeConsumption()));
+      }
+    }
+    return ret;
+  }
 }

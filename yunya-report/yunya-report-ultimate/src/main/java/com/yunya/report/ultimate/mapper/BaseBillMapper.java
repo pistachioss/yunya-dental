@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.treatment.domain.vo.PatientCostInfoVO;
 import com.yunya.models.report.BaseBill;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -161,21 +162,6 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @return PatientCostInfoVO
    */
   List<PatientCostInfoVO> selectPatientCostInfoById(@Param("patientIds") Collection<Integer> patientIds);
-
-  /**
-   * 查询患者现金累计消费
-   *
-   * @param patientIds
-   * @return PatientCostInfoVO
-   */
-  List<PatientCostInfoVO> selectPatientCashById(@Param("patientIds") Collection<Integer> patientIds);
-
-  /**
-   * 查询患者现金累计退费
-   * @param patientIds
-   * @return
-   */
-  List<PatientCostInfoVO> selectPatientCashRefundById(@Param("patientIds") Collection<Integer> patientIds);
 
   /**
    * 查询所有患者消费信息

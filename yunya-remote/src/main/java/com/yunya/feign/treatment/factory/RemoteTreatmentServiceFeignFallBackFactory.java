@@ -319,4 +319,9 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   public List<BaseTariff> listTariffByIds(Collection<Integer> ids) {
     return null;
   }
+
+  @Override
+  public PatientCostInfoVO getCashInfo(Integer patientId) {
+    return null;
+  }
 }

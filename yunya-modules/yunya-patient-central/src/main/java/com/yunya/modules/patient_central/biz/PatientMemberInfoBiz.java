@@ -22,6 +22,7 @@ import com.yunya.feign.system.vo.ClinicChargeItemVO;
 import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.enums.TemplateDataEnum;
@@ -106,6 +107,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   @Autowired
   private RemoteReportServiceFeign remoteReportServiceFeign;
+  /** 注入就诊服务feign */
+  @Autowired
+  private RemoteTreatmentServiceFeign treatmentServiceFeign;
   /**
    * 注入会员充值Mapper
    */
@@ -502,6 +506,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param patientId 患者ID
    */
   public boolean makeMemberLevelByCashAmount(Integer patientId) {
+    log.info("患者会员等级变更开始");
     // 判断该卡是否可以自动升级
     PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(patientId);
     //  || patientMemberInfo.getNonauto()
@@ -515,6 +520,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     Integer cashTypeId = calcTotalCashlevel(memberTypeList, patientId);
     // 变更等级
     Integer newTypeId = calcMaxMemberLevel(memberTypeList, rechargeTypeId, cashTypeId, patientMemberInfo.getMinTypeId());
+    log.info("患者会员等级memberTypeId：{}, 充值等级rechargeTypeId：{}, 消费等级cashTypeId: {}, 变更等级newTypeId: {}",
+            patientMemberInfo.getMemberTypeId(), rechargeTypeId, cashTypeId, newTypeId);
     if (!newTypeId.equals(patientMemberInfo.getMemberTypeId())) {
       // 变更等级
       PatientMemberInfo patientMember =
@@ -525,6 +532,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMember.setUpdTime(new Date());
       patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       this.mapper.updateByPrimaryKeySelective(patientMember);
+      log.info("会员等级变更入库：{}", JSONObject.toJSONString(patientMember));
       this.cardLog(patientMember, "变更", "更新");
       remoteRabbitMqServiceFeign.sendMessage(
           patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
@@ -585,7 +593,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public Integer calcTotalCashlevel(List<MemberType> memberTypeList_tmp, Integer patientId) {
     // TODO: 消费后判断是否升级会员等级，退费后判断是否降级
     Integer newTypeId = 4;
-    BigDecimal sum = remoteReportServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
+    BigDecimal sum = treatmentServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
+    log.info("患者个人现金消费总额：{}", sum);
     if (sum == null) {
       return newTypeId;
     }
@@ -2221,7 +2230,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (StringHelper.isNull(result)) {
       result = new PatientCumulativeInfoVO();
     }
-    BigDecimal cumulativeConsumption = remoteReportServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
+    BigDecimal cumulativeConsumption = treatmentServiceFeign.getCashInfo(patientId).getCumulativeConsumption();
     if (StringHelper.isNotNull(cumulativeConsumption)) {
       result.setCumulativeConsumption(cumulativeConsumption);
     }

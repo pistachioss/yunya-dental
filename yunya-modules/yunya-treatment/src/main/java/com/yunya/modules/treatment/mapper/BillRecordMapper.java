@@ -197,4 +197,19 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
   List<BillRecord> selectRemoveBillAdjustDiscountOrderIds(@Param("query") CategoryIncomeQuery query);
 
   BillRecord selectOneByOrderRecordId(@Param("orderRecordId") Integer orderRecordId);
+
+  /**
+   * 查询患者现金累计消费
+   *
+   * @param patientIds
+   * @return PatientCostInfoVO
+   */
+  List<PatientCostInfoVO> selectPatientCashById(@Param("patientIds") Collection<Integer> patientIds);
+
+  /**
+   * 查询患者现金累计退费
+   * @param patientIds
+   * @return
+   */
+  List<PatientCostInfoVO> selectPatientCashRefundById(@Param("patientIds") Collection<Integer> patientIds);
 }

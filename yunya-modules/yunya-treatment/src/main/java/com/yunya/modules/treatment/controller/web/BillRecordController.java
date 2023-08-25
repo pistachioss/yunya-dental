@@ -10,6 +10,7 @@ import com.yunya.feign.treatment.domain.model.TreatBillRefundModel;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
+import com.yunya.feign.treatment.domain.vo.PatientCostInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -169,5 +170,13 @@ public class BillRecordController {
                                           @RequestBody @Validated BillOfReceivableQuery query) throws IOException {
     billRecordBiz.exportDebtList(query, response);
     return ResponseUtil.success(null);
+  }
+
+
+  @ApiOperation("查询患者累计现金消费（新版会员）")
+  @PostMapping(value = "/cashinfo/{id}", name = "查询患者累计现金消费（新版会员）")
+  public ResponseResult<PatientCostInfoVO> exportMemberBalanceList(@PathVariable(value = "id") Integer patientId) throws IOException {
+    PatientCostInfoVO ret = billRecordBiz.findCashAmountByPatientId(patientId);
+    return ResponseUtil.success(ret);
   }
 }
