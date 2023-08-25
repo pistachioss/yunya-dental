@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz.ws.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
@@ -23,9 +24,10 @@ public class MyWebServiceImpl implements MyWebService {
     private BillRecordBiz billRecordBiz;
 
     @Override
-    public PageInfo<BillRestReceivableAmountVO> findPatientInfoById(BillOfReceivableQuery query) {
-        System.out.println(">>>>>>>>获取到请求参数：" + query);
+    public String findPatientInfoById(String queryStr) {
+        System.out.println(">>>>>>>>获取到请求参数：" + queryStr);
+        BillOfReceivableQuery query = JSONObject.parseObject(queryStr, BillOfReceivableQuery.class);
         PageInfo<BillRestReceivableAmountVO> result = billRecordBiz.findDebtList(query);
-        return result;
+        return JSONObject.toJSONString(result);
     }
 }

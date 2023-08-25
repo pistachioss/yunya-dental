@@ -1,9 +1,5 @@
 package com.yunya.modules.treatment.biz.ws;
 
-import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
-import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
-
 import javax.jws.WebService;
 
 @WebService(
@@ -12,6 +8,5 @@ import javax.jws.WebService;
 )
 public interface MyWebService {
 
-//    @WebMethod
-    PageInfo<BillRestReceivableAmountVO> findPatientInfoById(/*@WebParam(name = "id", targetNamespace = "http://ws.biz.treatment.modules.yunya.com")*/ BillOfReceivableQuery query);
+    String findPatientInfoById(/*@WebParam(name = "id", targetNamespace = "http://ws.biz.treatment.modules.yunya.com")*/ String query);
 }

@@ -1,7 +1,9 @@
 package com.yunya.modules.treatment.config;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +13,6 @@ import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
 import org.apache.cxf.service.model.*;
 
 import javax.xml.namespace.QName;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,20 +38,6 @@ public class WebServiceUtils {
     private static String methodName = "findPatientInfoById";
     private static String webserviceName = "MyWebService";
 
-    public static void main1(String[] args) throws Exception {
-        JaxWsDynamicClientFactory dcf = JaxWsDynamicClientFactory.newInstance();
-        Client client = dcf.createClient(url);
-        // namespace是命名空间，methodName是方法名
-        QName name = new QName(namespace, methodName);
-        long l1 = System.currentTimeMillis();
-        Object[] objects = client.invoke(name, 123);
-        long l2 = System.currentTimeMillis();
-        System.out.println("webservice调用耗时：" + (l2 - l1));
-        System.out.println("webservice调用结果：");
-        System.out.println(JSONObject.toJSONString(objects));
-//        System.out.println(objects[0].toString());
-    }
-
     private static Map<String, Client> clientMap = new HashMap<>();
 
     /**
@@ -64,21 +51,51 @@ public class WebServiceUtils {
         // 创建客户端连接
         Client client = factory.createClient(wsdlUrl);
         clientMap.put(methodName, client);
-        log.info("webservice动态客户端：{} 初始化完成", wsdlUrl);
+        log.info("webservice动态客户端初始化完成，已链接到webservice服务：{}", wsdlUrl);
         return client;
     }
 
     /**
-     * 调用webservice暴露的服务和方法
+     * 通过json对象格式入参方式调用webservice暴露的服务和方法
      *
      * @param methodName 调用的方法名称 selectOrderInfo
      * @param targetNamespace 目标命名空间 http://service.limp.com/
      * @param webServiceName  暴露webservice的服务名称
-     * @param paramList 参数集合
+     * @param params 参数集合
+     * @throws Exception
+     */
+    public  static String callByJson(String wsdlUrl, String methodName, String targetNamespace,
+                                       String webServiceName, Object params) throws Exception{
+        String param = JSONObject.toJSONString(params);
+        return callWebService(wsdlUrl, methodName, targetNamespace, webServiceName, param);
+    }
+
+    /**
+     * 通过json数组格式入参方式调用webservice暴露的服务和方法
+     *
+     * @param methodName 调用的方法名称 selectOrderInfo
+     * @param targetNamespace 目标命名空间 http://service.limp.com/
+     * @param webServiceName  暴露webservice的服务名称
+     * @param params 参数集合
+     * @throws Exception
+     */
+    public  static String callByJArray(String wsdlUrl, String methodName, String targetNamespace,
+                                       String webServiceName, Object...params) throws Exception{
+        String param = JSONArray.toJSONString(params);
+        return callWebService(wsdlUrl, methodName, targetNamespace, webServiceName, param);
+    }
+
+    /**
+     * 通过json格式入参和出参方式调用webservice暴露的服务和方法
+     *
+     * @param methodName 调用的方法名称 selectOrderInfo
+     * @param targetNamespace 目标命名空间 http://service.limp.com/
+     * @param webServiceName  暴露webservice的服务名称
+     * @param params 参数集合
      * @throws Exception
      */
     public  static String callWebService(String wsdlUrl, String methodName, String targetNamespace,
-                                         String webServiceName, List<Object> paramList) throws Exception{
+                                     String webServiceName, Object... params) throws Exception{
         //从缓存中换取 endpoint、client
         Client client = clientMap.computeIfAbsent(methodName, name->initClient(wsdlUrl, name));
         Endpoint endpoint = client.getEndpoint();
@@ -114,14 +131,15 @@ public class WebServiceUtils {
             //实例化对象
             Object initDomain=null;
             //普通参数的形参，不需要fastJson转换直接赋值即可
+            String param = params[m].toString();
             if ("java.lang.String".equalsIgnoreCase(partClass.getCanonicalName())
                     ||"int".equalsIgnoreCase(partClass.getCanonicalName())) {
-                initDomain = paramList.get(m).toString();
+                initDomain = param;
             } else if (partClass.getCanonicalName().indexOf("[]")>-1){
                 //转换数组
-                initDomain = JSON.parseArray(paramList.get(m).toString(), partClass.getComponentType());
+                initDomain = JSON.parseArray(param, partClass.getComponentType());
             } else {
-                initDomain = JSON.parseObject(paramList.get(m).toString(), partClass);
+                initDomain = JSON.parseObject(param, partClass);
             }
             parameters[m] = initDomain;
         }
@@ -132,22 +150,21 @@ public class WebServiceUtils {
         try {
             result = client.invoke(opName, parameters);
         } catch (Exception e) {
-            log.error("invoke webservice:{} method:{} error:{}", url, methodName, e);
+            log.error("invoke webservice:{}, method:{}, error:{}", url, methodName, e);
             throw new ClientServiceException("invoke webservice error", DATA_ERROR);
         }
         //返回调用结果
+        log.info("invoke service: {}, method:{}, result:{}", url, methodName, result);
         if(result.length>0){
-            return  JSON.toJSON(result[0]).toString();
+            return result[0].toString();
         }
         return  "invoke success, but is void ";
     }
 
     public static void main(String[] args) throws Exception {
         String str = "{\"keyword\":\"\",\"queryDate\":\"2023-08-01\",\"orgIds\":[63],\"pageNum\":1,\"pageSize\":10,\"regDentistIds\":[],\"whetherPage\":true}";
-        JSONObject query = JSONObject.parseObject(str);
-        List<Object> params = new ArrayList<>();
-        params.add(query);
-        String result = callWebService(url, methodName, namespace, webserviceName, params);
+        BillOfReceivableQuery query = JSONObject.parseObject(str, BillOfReceivableQuery.class);
+        String result = callByJson(url, methodName, namespace, webserviceName, query);
         System.out.println("webservice结果：");
         System.out.println(result);
     }
