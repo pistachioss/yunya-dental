@@ -488,4 +488,7 @@ public interface RemoteSystemServiceFeign {
 
   @GetMapping("/bj/company/list")
   List<Company> certBjCompanys();
+
+  @GetMapping("/xhq/company/list")
+  List<Company> xhqCompanys();
 }
