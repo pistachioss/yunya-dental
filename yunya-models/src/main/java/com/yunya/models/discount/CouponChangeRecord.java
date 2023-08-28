@@ -29,8 +29,8 @@ public class CouponChangeRecord {
     /**
      * 礼包账单ID
      */
-    @Column(name = "coupon_bill_id")
-    private Integer couponBillId;
+    @Column(name = "order_id")
+    private Integer orderId;
 
     @Column(name = "card_id")
     private Integer cardId;

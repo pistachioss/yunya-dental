@@ -138,23 +138,45 @@ public class CouponOrderBiz {
         return vo;
     }
 
-    public void occur(CouponBillPay billPay, Integer occurType, Date date) {
+    public void occur(Integer orderId, Integer occurType, Integer patientId, Integer cardId, BigDecimal amount) {
         int id = Integer.parseInt(BaseContextHandler.getUserID());
-        if (Objects.nonNull(billPay)) {
-            List<CouponOrderDetail> couponOrderDetails = listOrderDetail(billPay.getOrderId(), null);
-            List<CouponChangeRecord> list = couponOrderDetails.stream().map(t -> {
-                CouponChangeRecord couponChangeRecord = new CouponChangeRecord();
-                couponChangeRecord.setOrgId(billPay.getOrgId());
-                couponChangeRecord.setPatientId(billPay.getPatientId());
-                couponChangeRecord.setCouponBillId(billPay.getBillId());
-                couponChangeRecord.setCouponId(t.getCouponId());
-                couponChangeRecord.setOccurType(occurType);
-                couponChangeRecord.setOccurAmount(t.getReceivableAmount());
-                couponChangeRecord.setOperatorUserId(id);
-                couponChangeRecord.setOccurDate(date);
-                return couponChangeRecord;
-            }).collect(toList());
-            list.forEach(t -> changeRecordMapper.insertSelective(t));
+        Date date = new Date();
+        if (Objects.equals(occurType, 1)) {
+            List<CouponOrderVirtual> cards = listOrderVirtual(orderId, null, true);
+            CouponBillPay billPay = listPay(orderId);
+            if (CollectionUtils.isNotEmpty(cards)) {
+                List<CouponChangeRecord> list = cards.stream().map(t -> {
+                    CouponChangeRecord latest = changeRecordMapper.getLatest(t.getPatientId(), t.getCardId());
+                    BigDecimal curren = Objects.isNull(latest) ? BigDecimal.ZERO : latest.getCurrentAmount();
+                    CouponChangeRecord couponChangeRecord = new CouponChangeRecord();
+                    couponChangeRecord.setOrgId(billPay.getOrgId());
+                    couponChangeRecord.setPatientId(patientId);
+                    couponChangeRecord.setOrderId(orderId);
+                    couponChangeRecord.setCardId(t.getCardId());
+                    couponChangeRecord.setCouponId(t.getCouponId());
+                    couponChangeRecord.setOccurType(occurType);
+                    couponChangeRecord.setOccurAmount(t.getPackageUnitPrice());
+                    couponChangeRecord.setCurrentAmount(curren.add(t.getPackageUnitPrice()));
+                    couponChangeRecord.setOperatorUserId(id);
+                    couponChangeRecord.setCardNumber(t.getCardNumber());
+                    couponChangeRecord.setOccurDate(date);
+                    return couponChangeRecord;
+                }).collect(toList());
+                list.forEach(t -> changeRecordMapper.insertSelective(t));
+            }
+        }
+        if (Objects.equals(occurType, 2)) {
+            CouponChangeRecord latest = changeRecordMapper.getLatest(patientId, cardId);
+            CouponChangeRecord newBean = BeanCopierUtils.generalCopyBean(latest, CouponChangeRecord.class);
+            newBean.setOrderId(orderId);
+            newBean.setOccurType(occurType);
+            newBean.setOccurAmount(amount);
+            newBean.setCurrentAmount(newBean.getCurrentAmount().add(newBean.getOccurAmount()));
+            newBean.setOperatorUserId(id);
+//            newBean.setOccurAmount(date);
+        }
+        if (Objects.equals(occurType, 3)) {
+
         }
     }
 

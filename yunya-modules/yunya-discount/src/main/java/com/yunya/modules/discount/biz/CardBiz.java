@@ -2491,6 +2491,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         if (form.getThirdCardNumber().startsWith("HK")) {
             insertOtherCard.setCardNumber(null);
             insertOtherCard.setCardPassword(null);
+            insertOtherCard.setUpdTime(null);
             mapper.updateByPrimaryKeySelective(insertOtherCard);
         } else {
             insertOtherCard.setCrtId(loginUserId);

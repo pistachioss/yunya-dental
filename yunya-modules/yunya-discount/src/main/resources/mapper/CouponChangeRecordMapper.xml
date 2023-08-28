@@ -1,24 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.discount.mapper.CouponChangeRecordMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.discount.CouponChangeRecord" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="coupon_bill_id" property="couponBillId" jdbcType="INTEGER" />
-    <result column="type" property="type" jdbcType="TINYINT" />
-    <result column="occur_type" property="occurType" jdbcType="TINYINT" />
-    <result column="occur_amount" property="occurAmount" jdbcType="DECIMAL" />
-    <result column="current_amount" property="currentAmount" jdbcType="DECIMAL" />
-    <result column="payment_id" property="paymentId" jdbcType="INTEGER" />
-    <result column="payment_manner" property="paymentManner" jdbcType="VARCHAR" />
-    <result column="operator_user_id" property="operatorUserId" jdbcType="INTEGER" />
-    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
-    <result column="card_number" property="cardNumber" jdbcType="VARCHAR" />
-    <result column="occur_date" property="occurDate" jdbcType="TIMESTAMP" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.discount.mapper.CouponChangeRecordMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.discount.CouponChangeRecord">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="coupon_bill_id" property="couponBillId" jdbcType="INTEGER"/>
+        <result column="card_id" property="cardId" jdbcType="TINYINT"/>
+        <result column="occur_type" property="occurType" jdbcType="TINYINT"/>
+        <result column="occur_amount" property="occurAmount" jdbcType="DECIMAL"/>
+        <result column="current_amount" property="currentAmount" jdbcType="DECIMAL"/>
+        <result column="operator_user_id" property="operatorUserId" jdbcType="INTEGER"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="card_number" property="cardNumber" jdbcType="VARCHAR"/>
+        <result column="occur_date" property="occurDate" jdbcType="TIMESTAMP"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+    </resultMap>
+
+    <select id="getLatest" resultType="com.yunya.models.discount.CouponChangeRecord">
+        select *
+        from coupon_change_record
+        where patient_id = #{patientId}
+          and card_id = #{cardId}
+        order by occur_date desc
+            limit 1
+    </select>
 </mapper>
