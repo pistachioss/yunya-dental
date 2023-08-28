@@ -289,7 +289,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    *
    * @param id            操作LogId
    * @param operateType   操作类型
-   * @param operationType Log类型: 1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.就诊账单返点 7.礼包账单返点 8.转账转入 9.转账转出
+   * @param operationType Log类型: 1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.就诊账单返点 7.礼包账单返点 8.转账转入 9.转账转出, 20 赠金转出，21 赠金转入
    */
   public void sendMemberLogMessages(Integer id, Integer operateType, Integer operationType) {
     Map<String, Object> paramMap = new HashMap<String, Object>();
@@ -642,6 +642,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       throw new ClientServiceException("未找到会员卡信息", DATA_NOT_EXIST);
     }
     patientMemberInfo.setInservice(true);
+    patientMemberInfo.setMinTypeId(patientMemberInfo.getMemberTypeId());
     patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
 
     // 无次一级会员时，默认普通会员
