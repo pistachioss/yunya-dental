@@ -53,15 +53,7 @@
             cci.name                                      as couponName,
             ifnull(c.card_number, c.third_card_number)    as cardNumber,
             sc.name                                       as saleChannel,
-            (SELECT
-                 sum(sale_amount)
-                from deduction_item_period
-                where coupon_id = 209
-                    and crt_time = (select max(crt_time)
-                            from deduction_item_period
-                            where coupon_id = 209
-                            and crt_time &lt;= ifnull(c.sold_date, c.active_date))
-                    group by coupon_id)                          as saleAmount,
+            dip.package_unit_price 						  as saleAmount,
             cb.item_id                                    as itemName,
             cb.item_type,
             count(*)                                      as quantity,
@@ -74,10 +66,15 @@
             inner join card c on cb.card_id = c.id
             inner join coupon_common_info cci on c.coupon_id = cci.id
             left join sales_channel sc on sc.id = c.sale_channel_id
+            left join deduction_item_period dip on dip.item_id = cb.item_id and dip.coupon_id = cb.coupon_id and dip.type = cb.item_type
             left join coupon_order_virtual cov on c.id = cov.card_id
             left join coupon_bill b on cov.order_id = b.order_record_id
         where cb.coupon_type = 5
             and cb.patient_id = #{query.patientId}
+            and dip.crt_time = (select max(crt_time)
+                from deduction_item_period
+                where coupon_id = cci.id
+                and crt_time &lt;= ifnull(c.sold_date, c.active_date))
             group by cb.card_id, b.bill_number, cb.item_id
     </select>
 
