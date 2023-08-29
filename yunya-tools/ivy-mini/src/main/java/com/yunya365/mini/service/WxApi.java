@@ -68,7 +68,7 @@ public class WxApi {
     }
 
     public JSONObject wxPostObject(String url, Object obj, Integer retryTimes) {
-        log.info("微信片post请求，url：{}", url);
+        log.info("微信post请求，url：{}", url);
         String resultStr = restTemplate.postForObject(url, obj, String.class);
         JSONObject result = getRequestRes(resultStr, --retryTimes);
         retryTimes = result.getInteger("retry");
