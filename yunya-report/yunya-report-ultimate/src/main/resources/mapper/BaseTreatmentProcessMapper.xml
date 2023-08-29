@@ -45,6 +45,8 @@
         tr.treatDate,
         tr.patientId,
         tr.patientName,
+        tr.memberTypeName,
+        tr.memberTypeId,
         tr.age,
         tr.mobile,
         tr.gender,
@@ -70,6 +72,8 @@
         DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
         btp.patient_id AS patientId,
         bp.`name` AS patientName,
+        bpm.member_level_name as memberTypeName,
+        bpm.member_level_id as memberTypeId,
         bp.pinyin_name AS pinyinName,
         TIMESTAMPDIFF(YEAR, bp.birthday, CURDATE()) AS age,
         bp.mobile AS mobile,
@@ -94,6 +98,7 @@
         base_treatment_process btp
         LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
         LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+        LEFT JOIN base_patient_member bpm ON btp.patient_id = bpm.patient_id
         LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
         ) tr
         <where>
@@ -116,6 +121,12 @@
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
                 and tr.regDentistId in
                 <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.memberTypeIds != null and query.memberTypeIds.length > 0">
+                and tr.memberTypeId in
+                <foreach collection="query.memberTypeIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>

@@ -40,6 +40,10 @@ public class TreatmentRecordReportVO implements Serializable {
   @Excel(name = "患者姓名")
   @ApiModelProperty("患者姓名")
   private String patientName;
+  /** 患者会员等级 */
+  @Excel(name = "会员等级")
+  @ApiModelProperty("会员等级")
+  private String memberTypeName;
   @Excel(name = "患者年龄")
   @ApiModelProperty("患者年龄")
   private Integer age;

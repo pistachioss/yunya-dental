@@ -45,4 +45,7 @@ public class TreatmentRecordQuery extends PageQuery implements Serializable {
   /** 挂号医生ID列表 */
   @ApiModelProperty("挂号医生ID列表")
   private Integer[] regDentistIds;
+  /** 会员等级ID列表 */
+  @ApiModelProperty("会员等级ID列表")
+  private Integer[] memberTypeIds;
 }
