@@ -37,4 +37,5 @@ public enum MsgCategoryEnum {
     BaseCouponPayBill,
     BaseCouponBillPayDetail,
     BaseCouponRefund,
+    DeductionItem,
 }

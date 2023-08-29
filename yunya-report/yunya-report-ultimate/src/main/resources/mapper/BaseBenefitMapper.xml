@@ -311,48 +311,48 @@
 
     <select id="listAllItemUse" resultType="com.yunya.feign.report.domain.vo.BenefitItemVo">
         select
-        `c`.`card_id`,
-        `bco`.`coupon_name`,
-        `bci`.`item_id`,
-        `bti`.item_num as itemNo,
-        `bti`.`item_name`,
-        `bti`.`unit` as itemUnit,
-        `bti`.`price` as itemPrice,
-        `bci`.`quantity` as `originalQuantity`,
-        if((`bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) &lt; 0
-        , 0, `bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) as `remainingQuantity`
+            `c`.`card_id`,
+            `bco`.`coupon_name`,
+            `bci`.`item_id`,
+            `bti`.item_num as itemNo,
+            `bti`.`item_name`,
+            `bti`.`unit` as itemUnit,
+            `bti`.`price` as itemPrice,
+            `bci`.`quantity` as `originalQuantity`,
+            if((`bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) &lt; 0
+                , 0, `bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) as `remainingQuantity`
         from `base_card` `c`
         inner join `base_coupon_item` `bci` on `bci`.`coupon_id` = `c`.`coupon_id`
         inner join `base_coupon` `bco` on `bco`.`coupon_id` = `c`.`coupon_id`
         left join `base_tariff_info` `bti` on `bti`.`item_id` = `bci`.`item_id`
-        and `bti`.`item_type` = `bci`.`type`
+            and `bti`.`item_type` = `bci`.`type`
         left join (select
-        `bb`.`item_id`,
-        `bb`.`item_type`,
-        `bb`.`card_id`,
-        count(*) as `useCount`
-        from `base_benefit` `bb`
-        where `bb`.`card_id` in
-        <foreach collection="cardIds" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-        and `bb`.`choice_benefit_type` = 0
-        and `bb`.`coupon_type` in (2, 3)
-        group by `bb`.`card_id`, `bb`.`item_id`, `bb`.`item_type`
-        ORDER BY `bb`.`card_id` desc) `temp`
-        on `c`.`card_id` = `temp`.`card_id`
-        and `bci`.`item_id` = `temp`.`item_id`
-        and `temp`.`item_type` = `bci`.`type`
+            `bb`.`item_id`,
+            `bb`.`item_type`,
+            `bb`.`card_id`,
+            count(*) as `useCount`
+            from `base_benefit` `bb`
+            where `bb`.`card_id` in
+            <foreach collection="cardIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            and `bb`.`choice_benefit_type` = 0
+            and `bb`.`coupon_type` in (2, 3, 5)
+            group by `bb`.`card_id`, `bb`.`item_id`, `bb`.`item_type`
+            ORDER BY `bb`.`card_id` desc) `temp`
+            on `c`.`card_id` = `temp`.`card_id`
+            and `bci`.`item_id` = `temp`.`item_id`
+            and `temp`.`item_type` = `bci`.`type`
         where `c`.`status` in (2, 3)
-        and `bco`.`coupon_type` in (2, 3)
-        and (
-        isnull(`c`.`activation_deadline`)
-        or `c`.`activation_deadline` >= date_format(now(), '%y-%m-%d')
-        )
-        and `c`.`card_id` in
-        <foreach collection="cardIds" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
+            and `bco`.`coupon_type` in (2, 3, 5)
+            and (
+            isnull(`c`.`activation_deadline`)
+            or `c`.`activation_deadline` >= date_format(now(), '%y-%m-%d')
+            )
+            and `c`.`card_id` in
+            <foreach collection="cardIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         group by `c`.`card_id`, `bci`.`item_id`, `bci`.`type`,`c`.`active_date`
         order by `c`.`active_date`
     </select>

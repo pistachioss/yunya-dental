@@ -75,6 +75,8 @@ public class ReceiverMessageController {
   private BaseCouponBillPayBiz baseCouponBillPayBiz;
   @Resource
   private BaseCouponRefundBiz baseCouponRefundBiz;
+    @Resource
+    private DeductionItemServiceImpl deductionItemService;
 
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
@@ -172,6 +174,9 @@ public class ReceiverMessageController {
           break;
       case BaseCouponRefund:
           baseCouponRefundBiz.operateRefund(messageModel);
+          break;
+      case DeductionItem:
+          deductionItemService.operateBaseCouponItem(messageModel);
           break;
     default:
       log.info("消息中没有对应的枚举类型[{}]！", messageModel.getMsgCategoryEnum());

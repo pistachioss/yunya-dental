@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.report.DeductionItemMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.DeductionItem">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="coupon_id" property="couponId" jdbcType="INTEGER"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="item_id" property="itemId" jdbcType="INTEGER"/>
+        <result column="count" property="count" jdbcType="TINYINT"/>
+        <result column="sale_amount" property="packageUnitPrice" jdbcType="INTEGER"/>
+        <result column="package_unit_price" property="saleAmount" jdbcType="DECIMAL"/>
+        <result column="workload_load" property="workloadLoad" jdbcType="DECIMAL"/>
+        <result column="unit_price" property="unitPrice" jdbcType="DECIMAL"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="crt_id" property="crtId" jdbcType="DECIMAL"/>
+        <result column="crt_time" property="crtTime" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <insert id="insertList" parameterType="List">
+        insert into
+            `base_coupon_item`
+            (`coupon_id`, `type`, `choice_rang_type`, `item_id`, `sale_unit_price`,`quantity`, `workload_load`,is_show_app)
+        values
+            <foreach collection="list" item="item" separator=",">
+                (#{item.couponId}, #{item.type}, #{item.choiceRangType}, #{item.itemId}, #{item.saleUnitPrice}
+                , #{item.quantity}, #{item.workloadLoad}, #{item.isShowApp})
+            </foreach>
+    </insert>
+
+    <update id="updateList" parameterType="java.util.List">
+        update `base_coupon_item`
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="type = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.type != null">
+                        when `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type} then #{item.type}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="choice_rang_type = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.choiceRangType != null">
+                        when `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type} then #{item.choiceRangType}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="is_show_app = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.isShowApp != null">
+                        when `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type} then #{item.isShowApp}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="item_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.itemId != null">
+                        when `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type} then #{item.itemId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sale_unit_price = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.saleUnitPrice != null">
+                        when `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type} then #{item.saleUnitPrice}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="quantity = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.quantity != null">
+                        when `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type} then #{item.quantity}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="workload_load = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.workloadLoad != null">
+                        when `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type} then #{item.workloadLoad}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+            <foreach collection="list" item="item" open="( " separator=") or (" close=" )">
+                `coupon_id` = #{item.couponId} and `item_id` = #{item.itemId} and `type` = #{item.type}
+            </foreach>
+    </update>
+
+    <delete id="deleteList">
+        delete
+        from `base_coupon_item`
+        where
+            <foreach collection="list" item="item" separator="or" index="index">
+                `coupon_id` = #{item.couponId}
+                <if test="item.itemId != null">
+                    and `item_id` = #{item.itemId}
+                </if>
+                <if test="item.itemId == null">
+                    and isnull(item_id) = 1
+                </if>
+                and `type` = #{item.type}
+            </foreach>
+    </delete>
+
+</mapper>
