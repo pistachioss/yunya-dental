@@ -1,0 +1,18 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 47.104.167.157:8848
+      config:
+        server-addr: 47.104.167.157:8848
+
+  rabbitmq:
+    host: 172.16.17.177
+    port: 5672
+    username: admin
+    password: admin
+
+#自定义mq的队列名
+rabbitmq:
+  queues:
+    q1: DirectQueue_MiddleSingle_Beta

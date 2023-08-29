@@ -4,6 +4,7 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,10 @@ public class RabbitDirectConfig implements BeanPostProcessor {
 
     @Resource
     private RabbitAdmin rabbitAdmin;
+    @Value("${rabbitmq.queues.q1}")
+    private String queue1;
+    @Value("${rabbitmq.exchanges.ex1}")
+    private String exchange1;
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
@@ -30,7 +35,7 @@ public class RabbitDirectConfig implements BeanPostProcessor {
     @Bean
     DirectExchange DirectExchange1() {
 
-        return new DirectExchange("DirectExchange_MiddleSingle", true, false, null);
+        return new DirectExchange(exchange1, true, false, null);
     }
 
     @Bean
@@ -57,7 +62,7 @@ public class RabbitDirectConfig implements BeanPostProcessor {
     @Bean
     public Queue DirectQueue1() {
 
-        return new Queue("DirectQueue_MiddleSingle", true, false, false);
+        return new Queue(queue1, true, false, false);
     }
 
     @Bean

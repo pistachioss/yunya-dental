@@ -171,6 +171,11 @@ swagger:
     contact:
         name: yunya-middle-table
 
+#自定义mq的队列名
+rabbitmq:
+    queues:
+        q1: DirectQueue_MiddleSingle
+
 #设置hystrix超时
 hystrix:
     command:

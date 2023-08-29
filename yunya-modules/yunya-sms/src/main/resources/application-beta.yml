@@ -5,7 +5,7 @@ spring:
     port: 3306
     username: sa
     password: Admin001!
-    name: test_yunya_treatment
+    name: test_yunya_sms
 
   cloud:
     nacos:
@@ -19,3 +19,6 @@ spring:
     host: 47.104.167.157
     port: 6379
     password: foobared
+
+wiki:
+  host: beta.ivy2.yunya365.com/api/sms
