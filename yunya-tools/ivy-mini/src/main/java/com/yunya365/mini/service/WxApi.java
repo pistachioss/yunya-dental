@@ -158,14 +158,14 @@ public class WxApi {
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
         Integer errCode = jsonObject.getInteger("errcode");
         if (errCode != null && errCode != 0) {
-            if (retryTimes>0 && errCode==EX_USER_PASS_INVALID_CODE) {
+            if (retryTimes>0 && EX_USER_PASS_INVALID_CODE.equals(errCode)) {
                 log.info("微信api调用token失效，刷新token");
                 refreshToken();
                 jsonObject = new JSONObject();
                 jsonObject.put("retry", retryTimes);
                 return jsonObject;
             }
-            log.error("微信api调用失败：{}", jsonObject);
+            log.error("微信api调用失败：{}, 重试次数：{}", jsonObject, retryTimes);
             throw ClientServiceException.wrap(errCode, WX_SERVER_ERROR.getMessage());
         }
         return jsonObject;
