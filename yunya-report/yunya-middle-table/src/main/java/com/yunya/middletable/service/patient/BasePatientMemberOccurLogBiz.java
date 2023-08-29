@@ -122,6 +122,17 @@ public class BasePatientMemberOccurLogBiz
           basePatientMemberMapper.updateByPrimaryKeySelective(patientMemberInfo);
         }
       }
+      if (operationType.equals(20) || operationType.equals(21)){
+        Integer id2 = (Integer) msg.getParamMap().get("id2");
+        Integer operationType2 = (Integer) msg.getParamMap().get("operationType2");
+        Integer cardId2 = addMemberOccurLog(id2, type, operationType2);
+        if (cardId2 != null){
+          BasePatientMember patientMemberInfo2 = basePatientMemberBiz.getPatientMemberInfo(cardId2, type);
+          if (StringHelper.isNotNull(patientMemberInfo2)) {
+            basePatientMemberMapper.updateByPrimaryKeySelective(patientMemberInfo2);
+          }
+        }
+      }
     }
     // 预付款操作日志
     if (PatientDepositAccountTypeEnum.isPrepaymentType(type)) {
@@ -517,6 +528,8 @@ public class BasePatientMemberOccurLogBiz
       case 5:
       case 6:
       case 7:
+      case 20:
+      case 21:
         BasePatientMemberOccurLog memberRechargeLog =
             getMemberRechargeRecordInfoLog(id, type, operationType);
         if (StringHelper.isNotNull(memberRechargeLog)) {

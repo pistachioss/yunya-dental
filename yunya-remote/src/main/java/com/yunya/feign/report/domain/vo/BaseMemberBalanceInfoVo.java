@@ -87,4 +87,12 @@ public class BaseMemberBalanceInfoVo {
     /** 期末赠金余额 */
     @ApiModelProperty(value = "期末赠金余额")
     private BigDecimal currentRechargeBonus;
+
+    /** 本期转出赠金（亲密付）20 */
+    @ApiModelProperty(value = "本期转出赠金（亲密付）")
+    private BigDecimal thisRelationBonusOutAmount;
+
+    /** 本期转入赠金（亲密付）21 */
+    @ApiModelProperty(value = "本期转入赠金（亲密付）")
+    private BigDecimal thisRelationBonusInAmount;
 }
