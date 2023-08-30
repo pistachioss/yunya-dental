@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.biz;
 
 import com.google.common.collect.Lists;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.DateUtil;
@@ -30,6 +31,8 @@ public class DeductionPeriodBiz extends BaseBiz<DeductionItemPeriodMapper, Deduc
     private CouponCommonInfoBiz couponCommonInfoBiz;
     @Resource
     private CardBiz cardBiz;
+    @Resource
+    private RemoteRabbitMqServiceFeign mqServiceFeign;
 
     @Transactional(rollbackFor = Exception.class)
     public void save(List<SpecialPackageCouponItemForm> form) {

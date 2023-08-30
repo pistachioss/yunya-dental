@@ -9,8 +9,8 @@
         <result column="type" property="type" jdbcType="INTEGER"/>
         <result column="item_id" property="itemId" jdbcType="INTEGER"/>
         <result column="count" property="count" jdbcType="TINYINT"/>
-        <result column="sale_amount" property="packageUnitPrice" jdbcType="INTEGER"/>
-        <result column="package_unit_price" property="saleAmount" jdbcType="DECIMAL"/>
+        <result column="sale_amount" property="saleAmount" jdbcType="INTEGER"/>
+        <result column="package_unit_price" property="packageUnitPrice" jdbcType="DECIMAL"/>
         <result column="workload_load" property="workloadLoad" jdbcType="DECIMAL"/>
         <result column="unit_price" property="unitPrice" jdbcType="DECIMAL"/>
         <result column="price" property="price" jdbcType="DECIMAL"/>
@@ -20,17 +20,18 @@
 
     <insert id="insertList" parameterType="List">
         insert into
-            `base_coupon_item`
-            (`coupon_id`, `type`, `choice_rang_type`, `item_id`, `sale_unit_price`,`quantity`, `workload_load`,is_show_app)
+            `deduction_item`
+            (`coupon_id`, `type`, `item_id`, `count`, `sale_amount`,`package_unit_price`,`workload_load`,unit_price,`price`
+            ,`crt_id`,`crt_time`)
         values
             <foreach collection="list" item="item" separator=",">
-                (#{item.couponId}, #{item.type}, #{item.choiceRangType}, #{item.itemId}, #{item.saleUnitPrice}
-                , #{item.quantity}, #{item.workloadLoad}, #{item.isShowApp})
+                (#{item.couponId}, #{item.type}, #{item.itemId}, #{item.count}, #{item.saleAmount}
+                , #{item.packageUnitPrice}, #{item.workloadLoad}, #{item.unitPrice}, #{item.price}, #{item.crtId}, #{item.crtTime})
             </foreach>
     </insert>
 
     <update id="updateList" parameterType="java.util.List">
-        update `base_coupon_item`
+        update `deduction_item`
         <trim prefix="set" suffixOverrides=",">
             <trim prefix="type = case" suffix="end,">
                 <foreach collection="list" item="item" index="index">

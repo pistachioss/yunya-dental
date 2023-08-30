@@ -122,8 +122,8 @@ public class DeductionItemServiceImpl extends BaseBiz<DeductionItemMapper, Deduc
 
     private List getCouponItem(String startDateStr, String endDateStr, Class<?> clazz, Mapper mapper) {
         Example example = new Example(clazz);
-        example.createCriteria().andGreaterThanOrEqualTo("updTime", startDateStr)
-                .andLessThan("updTime", endDateStr);
+        example.createCriteria().andGreaterThanOrEqualTo("crtTime", startDateStr)
+                .andLessThan("crtTime", endDateStr);
         return mapper.selectByExample(example);
     }
 

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponItem;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.DeductionItem;
 
 /**
  * @author 杨柳絮
@@ -64,6 +65,7 @@ public class VoucherDiscountItemBiz extends BaseBiz<VoucherDiscountItemMapper, V
         deductionPeriodBiz.save(list);
         if (a > 0 && list.size() > 0) {
             mqServiceFeign.sendMessage(list.get(0).getCouponId(), BusinessConstants.ADD, BaseCouponItem);
+            mqServiceFeign.sendMessage(list.get(0).getCouponId(), BusinessConstants.ADD, DeductionItem);
         }
         return a;
     }
