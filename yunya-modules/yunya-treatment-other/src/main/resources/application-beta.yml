@@ -11,8 +11,7 @@ spring:
     nacos:
       discovery:
         server-addr: 47.104.167.157:8848
-      config:
-        server-addr: 47.104.167.157:8848
+        ip: 47.122.37.218
 
   redis:
     database: 2
@@ -22,6 +21,6 @@ spring:
 
 # netty配置
 netty:
-  protocol: ws://test.ivy2.yunya365.com/api/treatment-netty
+  protocol: ws://114.215.203.158/api/treatment-netty
   discovery:
     server-addr: 47.104.167.157:8848

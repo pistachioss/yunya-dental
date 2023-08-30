@@ -4,3 +4,8 @@ spring:
     nacos:
       config:
         server-addr: 47.104.167.157:8848
+  rabbitmq:
+    host: 114.215.203.158
+    port: 5672
+    username: admin
+    password: admin

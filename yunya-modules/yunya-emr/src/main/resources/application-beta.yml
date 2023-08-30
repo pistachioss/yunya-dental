@@ -11,8 +11,7 @@ spring:
     nacos:
       discovery:
         server-addr: 47.104.167.157:8848
-      config:
-        server-addr: 47.104.167.157:8848
+        ip: 47.122.37.218
 
   redis:
     database: 2
@@ -21,3 +20,13 @@ spring:
     password: foobared
 
 domainUrl: http://test.ivy2.yunya365.com
+
+
+qzt:
+  prefix: http://121.41.36.72:8010
+
+bj:
+  prefix: http://8.136.199.41:84
+
+xhq:
+  prefix: https://www.aioclinic.com/collect_data/api/dataUpload/xiHu
