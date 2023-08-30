@@ -493,4 +493,20 @@ public class ScrmTagBiz {
                                 }).collect(toSet()))
                         ));
     }
+
+    public Map<String, Set<WxFansBindTagVO>> patientTreatIntentionTag(DateRangeQueryForm query) {
+        List<BasePatientBehaviorTagVO> patients = patientOriginBiz.findPatientOriginChangeTag(query);
+        Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientBehaviorTagVO::getPatientId).collect(toSet()));
+        return patients.stream()
+                .collect(
+                        groupingBy(
+                                patient->patient.getTagName(),
+                                collectingAndThen(toList(), list -> list.stream().map(t -> {
+                                    WxFansBindTagVO bindTagVO = new WxFansBindTagVO();
+                                    bindTagVO.setPatientId(t.getPatientId());
+                                    bindTagVO.setUnionId(patientWx.get(t.getPatientId()));
+                                    return bindTagVO;
+                                }).collect(toSet()))
+                        ));
+    }
 }
