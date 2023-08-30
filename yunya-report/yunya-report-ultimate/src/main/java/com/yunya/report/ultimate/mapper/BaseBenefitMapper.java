@@ -62,4 +62,6 @@ public interface BaseBenefitMapper extends Mapper<BaseBenefit> {
 	 * @return
 	 */
     List<CardConsumeRecordVO> selectCardUseRecord(@Param("query") CardConsumeQuery query);
+
+    List<BenefitItemVo> listDeductionItemUseById(@Param("cardId") Integer cardId);
 }

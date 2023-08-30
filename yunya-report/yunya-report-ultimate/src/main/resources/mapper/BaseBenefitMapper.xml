@@ -300,13 +300,47 @@
                             from `base_benefit` `bb`
                             where `bb`.`card_id` = #{cardId}
                               and `bb`.`choice_benefit_type` = 0
-                              and `bb`.`coupon_type` in (2, 3, 5)
+                              and `bb`.`coupon_type` in (2, 3)
                             group by `bb`.`item_id`, `bb`.`item_type`) `temp`
                            on `bci`.`item_id` = `temp`.`item_id`
                                and `temp`.`item_type` = `bci`.`type`
 
         where `c`.`card_id` = #{cardId}
         group by `bci`.`item_id`, `bci`.`type`
+    </select>
+
+    <select id="listDeductionItemUseById" resultType="com.yunya.feign.report.domain.vo.BenefitItemVo">
+        select
+            `di`.`item_id`,
+            `bti`.`item_type`,
+            `bti`.`item_name`,
+            `di`.`count`                                          as `originalQuantity`,
+            if((`di`.`count` - ifnull(`temp`.`useCount`, 0)) &lt; 0
+                , 0, `di`.`count` - ifnull(`temp`.`useCount`, 0)) as `remainingQuantity`
+        from (select bc.coupon_id,
+            (select max(crt_time)
+            from deduction_item
+            where coupon_id = bc.coupon_id
+            and crt_time &lt;= ifnull(bc.sold_date, bc.active_date)) as soldDate,
+            bc.card_id,
+            bc.active_date
+            from base_card bc
+            where card_id = #{cardId}) t1
+        inner join `deduction_item` `di` on `di`.`coupon_id` = `t1`.`coupon_id` and di.crt_time = t1.soldDate
+        left join `base_tariff_info` `bti` on `bti`.`item_id` = `di`.`item_id`
+            and `bti`.`item_type` = `di`.`type`
+            left join (select `bb`.`item_id`,
+                `bb`.`item_type`,
+                `bb`.`card_id`,
+                count(*) as `useCount`
+            from `base_benefit` `bb`
+            where `bb`.`card_id` = #{cardId}
+            and `bb`.`choice_benefit_type` = 0
+            and `bb`.`coupon_type` = 5
+            group by `bb`.`item_id`, `bb`.`item_type`) `temp`
+                on `di`.`item_id` = `temp`.`item_id` and `temp`.`item_type` = `di`.`type`
+        where `t1`.`card_id` = #{cardId}
+        group by `di`.`item_id`, `di`.`type`
     </select>
 
     <select id="listAllItemUse" resultType="com.yunya.feign.report.domain.vo.BenefitItemVo">

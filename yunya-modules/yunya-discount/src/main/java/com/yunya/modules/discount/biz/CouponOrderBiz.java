@@ -32,7 +32,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCardSingle;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponBill;
+import static com.yunya.framework.common.constant.BusinessConstants.UPDATE;
 import static com.yunya.modules.discount.enums.CouponOrderError.COUPON_STOCK_LACK;
 import static com.yunya.modules.discount.enums.CouponOrderError.SALE_CHANNEL_NULL;
 import static java.util.stream.Collectors.*;
@@ -355,6 +357,8 @@ public class CouponOrderBiz {
                 card.setUpdId(userId);
                 card.setUpdTime(date);
                 card.setBuyerId(patientId);
+                mqServiceFeign.sendMessage(card.getId(), UPDATE, BaseCardSingle);
+                log.info("【售卖划扣卡券发送消息成功】：卡券id[{}]", card.getId());
             });
             list1.addAll(list);
         }
@@ -422,6 +426,8 @@ public class CouponOrderBiz {
             card.setSoldPhoneNumber(null);
             card.setActiveDate(null);
             cardMapper.updateByPrimaryKey(card);
+            mqServiceFeign.sendMessage(card.getId(), UPDATE, BaseCardSingle);
+            log.info("【取消售卖划扣卡券发送消息成功】：卡券id[{}]", card.getId());
         }
     }
 
