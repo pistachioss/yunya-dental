@@ -31,7 +31,12 @@ spring:
     port: 6379
     password: foobared
   rabbitmq:
-    host: 47.104.167.157
+    host: 172.16.17.177
     port: 5672
     username: admin
     password: admin
+
+# rabbitmq的自定义配置
+rabbitmq:
+  queues:
+    q1: DirectQueue_MiddleSingle_beta

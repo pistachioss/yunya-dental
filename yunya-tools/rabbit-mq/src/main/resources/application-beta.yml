@@ -11,8 +11,3 @@ spring:
     port: 5672
     username: admin
     password: admin
-
-#自定义mq的队列名
-rabbitmq:
-  queues:
-    q1: DirectQueue_MiddleSingle_Beta

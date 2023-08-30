@@ -3,11 +3,14 @@ package com.yunya365.rabbitmq.rpc;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.domain.model.MessageOrderModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
+import com.yunya365.rabbitmq.config.RabbitDirectConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -15,13 +18,16 @@ public class MiddleTableMsgRest {
 
     @Autowired
     RabbitTemplate rabbitTemplate;
+    @Autowired
+    private RabbitDirectConfig rabbitDirectConfig;
 
     private String sendMessageTemp(MessageModel messageModel) {
         String messageId = String.valueOf(UUID.randomUUID());
         messageModel.setMsgID(messageId);
         // 将消息携带绑定键值：DirectExchange_MiddleSingle 发送到交换机：DirectRouting_Temp
         rabbitTemplate.convertAndSend(
-                "DirectExchange_MiddleSingle", "DirectRouting_Temp", messageModel, message -> {
+                rabbitDirectConfig.getBetaEnvAsSuffix("DirectExchange_MiddleSingle"),
+                rabbitDirectConfig.getBetaEnvAsSuffix("DirectRouting_Temp"), messageModel, message -> {
                     // 设置超时时间 3000ms
                     message.getMessageProperties().setExpiration("3000");
                     return message;
@@ -34,13 +40,16 @@ public class MiddleTableMsgRest {
         messageModel.setMsgID(messageId);
         // 将消息携带绑定键值：DirectExchange_MiddleSingle 发送到交换机：DirectRouting_Order
         rabbitTemplate.convertAndSend(
-                "DirectExchange_MiddleSingle", "DirectRouting_Order", messageModel, message -> {
+                rabbitDirectConfig.getBetaEnvAsSuffix("DirectExchange_MiddleSingle"),
+                rabbitDirectConfig.getBetaEnvAsSuffix("DirectRouting_Order"), messageModel, message -> {
                     // 设置超时时间  15min = 15 * 60 * 1000 = 900000
                     message.getMessageProperties().setExpiration("900000");
                     return message;
                 });
         return "ok";
     }
+
+
 
     @PostMapping("direct/single")
     public String sendDirectMessage(@RequestBody MessageModel messageModel) {

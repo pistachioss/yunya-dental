@@ -1,9 +1,14 @@
 package com.yunya365.rabbitmq.config;
 
-import org.springframework.amqp.core.*;
+import com.yunya.framework.common.utils.StringHelper;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +23,8 @@ public class RabbitDirectConfig implements BeanPostProcessor {
 
     @Resource
     private RabbitAdmin rabbitAdmin;
+    @Value("${spring.profiles.active}")
+    private String env;
 
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
@@ -30,7 +37,7 @@ public class RabbitDirectConfig implements BeanPostProcessor {
     @Bean
     DirectExchange DirectExchange1() {
 
-        return new DirectExchange("DirectExchange_MiddleSingle", true, false, null);
+        return new DirectExchange(getBetaEnvAsSuffix("DirectExchange_MiddleSingle"), true, false, null);
     }
 
     @Bean
@@ -39,9 +46,9 @@ public class RabbitDirectConfig implements BeanPostProcessor {
 //        return new Queue("DirectQueue_Temp", true);
         // 设置超时转发策略 超时后消息会通过x-dead-letter-exchange 转发到x-dead-letter-routing-key绑定的队列中
         Map<String, Object> arguments = new HashMap<>(2);
-        arguments.put("x-dead-letter-exchange", "DirectExchange_MiddleSingle");
-        arguments.put("x-dead-letter-routing-key", "DirectRouting_MiddleSingle");
-        Queue queue = new Queue("DirectQueue_Temp",true,false,false,arguments);
+        arguments.put("x-dead-letter-exchange", getBetaEnvAsSuffix("DirectExchange_MiddleSingle"));
+        arguments.put("x-dead-letter-routing-key", getBetaEnvAsSuffix("DirectRouting_MiddleSingle"));
+        Queue queue = new Queue(getBetaEnvAsSuffix("DirectQueue_Temp"),true,false,false,arguments);
         return queue;
     }
 
@@ -49,42 +56,42 @@ public class RabbitDirectConfig implements BeanPostProcessor {
     public Queue DirectQueue_Order() {
         // 设置超时转发策略 超时后消息会通过x-dead-letter-exchange 转发到x-dead-letter-routing-key绑定的队列中
         Map<String, Object> arguments = new HashMap<>(2);
-        arguments.put("x-dead-letter-exchange", "DirectExchange_MiddleSingle");
-        arguments.put("x-dead-letter-routing-key", "DirectRouting_Order_Delay");
-        return new Queue("DirectQueue_Order",true,false,false,arguments);
+        arguments.put("x-dead-letter-exchange", getBetaEnvAsSuffix("DirectExchange_MiddleSingle"));
+        arguments.put("x-dead-letter-routing-key", getBetaEnvAsSuffix("DirectRouting_Order_Delay"));
+        return new Queue(getBetaEnvAsSuffix("DirectQueue_Order"),true,false,false,arguments);
     }
 
     @Bean
     public Queue DirectQueue1() {
 
-        return new Queue("DirectQueue_MiddleSingle", true, false, false);
+        return new Queue(getBetaEnvAsSuffix("DirectQueue_MiddleSingle"), true, false, false);
     }
 
     @Bean
     Binding bindingDirect_Temp() {
 
-        return BindingBuilder.bind(DirectQueue_Temp()).to(DirectExchange1()).with("DirectRouting_Temp");
+        return BindingBuilder.bind(DirectQueue_Temp()).to(DirectExchange1()).with(getBetaEnvAsSuffix("DirectRouting_Temp"));
     }
 
     @Bean
     Binding bindingDirect1() {
 
-        return BindingBuilder.bind(DirectQueue1()).to(DirectExchange1()).with("DirectRouting_MiddleSingle");
+        return BindingBuilder.bind(DirectQueue1()).to(DirectExchange1()).with(getBetaEnvAsSuffix("DirectRouting_MiddleSingle"));
     }
 
     @Bean
     Binding bindingDirect_Order() {
-        return BindingBuilder.bind(DirectQueue_Order()).to(DirectExchange1()).with("DirectRouting_Order");
+        return BindingBuilder.bind(DirectQueue_Order()).to(DirectExchange1()).with(getBetaEnvAsSuffix("DirectRouting_Order"));
     }
 
     @Bean
     public Queue directOrderQueueDelay() {
-        return new Queue("DirectQueue_Order_Delay", true, false, false);
+        return new Queue(getBetaEnvAsSuffix("DirectQueue_Order_Delay"), true, false, false);
     }
 
     @Bean
     Binding bindingOrderDirectDelay() {
-        return BindingBuilder.bind(directOrderQueueDelay()).to(DirectExchange1()).with("DirectRouting_Order_Delay");
+        return BindingBuilder.bind(directOrderQueueDelay()).to(DirectExchange1()).with(getBetaEnvAsSuffix("DirectRouting_Order_Delay"));
     }
 
     @Override
@@ -99,4 +106,17 @@ public class RabbitDirectConfig implements BeanPostProcessor {
         return null;
     }
 
+
+    /**
+     * 将beta环境作为name的后缀部分
+     *
+     * @param name
+     * @return
+     */
+    public String getBetaEnvAsSuffix(String name) {
+        if (StringHelper.equals("beta", env)) {
+            return name + "_" + env;
+        }
+        return name;
+    }
 }
