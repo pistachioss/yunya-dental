@@ -155,11 +155,12 @@ public class TreatTollBiz {
           deductItem.setReceivableAmount(receivableAmount);
           deductItem.setDiscountRate(BigDecimal.ZERO);
           deductItem.setActualAmount(BigDecimal.ZERO);
-          List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(deduct.getItemBenefitList(), item.getPrice());
+          List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(deduct.getItemBenefitList());
           deductItem.setDiscountAppliesCoupons(privilegeInfo);
           deductItem.setCouponWorkload(deduct.getSupplyWorkload());
-          deductItem.setPrivilegeAmount(deduct.getDeductionAmount());
-          benefitTotalAmount = benefitTotalAmount.add(deductItem.getReceivableAmount());
+          deductItem.setPrivilegeAmount(receivableAmount);
+          deductItem.setDeductionAmount(deduct.getDeductionAmount());
+          benefitTotalAmount = benefitTotalAmount.add(receivableAmount);
           swipeItemList.add(deductItem);
         }
       }
@@ -180,7 +181,7 @@ public class TreatTollBiz {
             vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
             // 设置订单明细卡券匹配信息
             if (StringHelper.gt(receivableAmount, actualAmount)) {
-              List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(benefitVo.getItemBenefitList(), null);
+              List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(benefitVo.getItemBenefitList());
               vo.setDiscountAppliesCoupons(privilegeInfo);
             }
             privilegeAmount = privilegeAmount.add(itemBenefitAmount);
@@ -200,10 +201,8 @@ public class TreatTollBiz {
    * 获取订单卡券优惠信息
    *
    * @param benefitList 匹配卡券列表
-   * @param originAmount 原价
    */
-  private List<PrivilegeCouponInfoVO> getPrivilegeInfo(
-      List<ItemUseBenefitVo> benefitList, BigDecimal originAmount) {
+  private List<PrivilegeCouponInfoVO> getPrivilegeInfo(List<ItemUseBenefitVo> benefitList) {
     List<PrivilegeCouponInfoVO> discountAppliesCoupon = Lists.newArrayList();
     if (StringHelper.isNotEmpty(benefitList)) {
       benefitList.forEach(
@@ -212,15 +211,10 @@ public class TreatTollBiz {
           PrivilegeCouponInfoVO couponInfo = new PrivilegeCouponInfoVO();
           couponInfo.setBenefitId(benefitVo.getBenefitId());
           // 99-会员卡，-1-授权折扣
-          BigDecimal benefitAmount = benefitVo.getBenefitAmount();
           couponInfo.setCouponType(0 == benefitType ? 99 : 2==benefitType?-1:benefitVo.getCouponType());
           couponInfo.setBenefitName(benefitVo.getBenefitName());
           couponInfo.setCardNumber(benefitVo.getCardNumber());
-          if (StringHelper.isNotNull(originAmount)) {
-            couponInfo.setPackageTotalPrice(originAmount.subtract(benefitAmount));
-            benefitAmount = originAmount;
-          }
-          couponInfo.setBenefitAmount(benefitAmount);
+          couponInfo.setBenefitAmount(benefitVo.getBenefitAmount());
           discountAppliesCoupon.add(couponInfo);
         });
     }
@@ -593,9 +587,9 @@ public class TreatTollBiz {
         Integer orderDetailId = item.getOrderDetailId();
         OrderDetailPayBenefitVO vo = discountMap.computeIfAbsent(orderDetailId, v -> new OrderDetailPayBenefitVO());
         vo.setOrderDetailId(orderDetailId);
-        vo.setPrivilegeAmount(vo.getPrivilegeAmount().add(item.getReceivableAmount()));
+        vo.setPrivilegeAmount(vo.getPrivilegeAmount().add(item.getPrivilegeAmount()));
         // 划扣套餐价
-        vo.setPackageTotalAmount(item.getPrivilegeAmount());
+        vo.setPackageTotalAmount(vo.getPackageTotalAmount().add(item.getDeductionAmount()));
         BigDecimal couponWorkload = item.getCouponWorkload();
         vo.setSwipeCouponWorkload(vo.getSwipeCouponWorkload().add(couponWorkload));
         vo.setCouponWorkload(vo.getCouponWorkload().add(couponWorkload));

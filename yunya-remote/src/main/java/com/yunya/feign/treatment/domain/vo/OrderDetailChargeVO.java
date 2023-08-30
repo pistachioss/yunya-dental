@@ -24,8 +24,8 @@ public class OrderDetailChargeVO extends OrderDetailVO {
   /** 开单项目英文名称 */
   @ApiModelProperty("开单项目英文名称")
   private String billingItemEnglishName;
-  /** 优惠金额or划扣金额 */
-  @ApiModelProperty("优惠金额or划扣金额")
+  /** 优惠金额 */
+  @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount = BigDecimal.ZERO;
   /** 折扣率 */
   @ApiModelProperty("折扣率：应收/原价*100%")
@@ -33,6 +33,9 @@ public class OrderDetailChargeVO extends OrderDetailVO {
   /** 应收金额 */
   @ApiModelProperty("应收金额（原价-优惠）")
   private BigDecimal actualAmount = BigDecimal.ZERO;
+  /** 划扣金额 */
+  @ApiModelProperty(value = "划扣金额")
+  private BigDecimal deductionAmount = BigDecimal.ZERO;
   /** 实收金额 */
   @ApiModelProperty("实收金额")
   private BigDecimal receivedAmount;
