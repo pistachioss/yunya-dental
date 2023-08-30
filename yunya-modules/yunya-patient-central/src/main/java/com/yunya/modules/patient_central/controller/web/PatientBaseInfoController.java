@@ -6,10 +6,7 @@
 package com.yunya.modules.patient_central.controller.web;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientLabelRecordModel;
-import com.yunya.feign.patient_central.domain.model.PicturesCallbackInfoModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
@@ -24,6 +21,8 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -284,4 +283,46 @@ public class PatientBaseInfoController {
   public ResponseResult birthdayCheck(@PathVariable("patientId") Integer patientId) {
     return ResponseUtil.success(this.patientBaseInfoBiz.birthdayCheck(patientId));
   }
+
+  /**
+   * 保存患者的其他扩展信息（标签、疾病史、过敏原、患者诊疗需求）
+   *
+   * @param patientId
+   * @param models
+   * @return
+   */
+  @PutMapping("/patientExtInfo/{patientId}")
+  @ApiOperation("保存患者的其他扩展信息（标签、疾病史、过敏原、患者诊疗需求）")
+  public ResponseResult savePatientExtInfoList(@PathVariable(value = "patientId") Integer patientId, @RequestBody List<PatientExtInfoModel> models) {
+    patientBaseInfoBiz.savePatientExtInfoList(patientId, models);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 保存患者的其他扩展信息（标签、疾病史、过敏原、患者诊疗需求）
+   *
+   * @param patientId
+   * @param type
+   * @return
+   */
+  @GetMapping("/patientExtInfo/{patientId}/{type}")
+  @ApiOperation("保存患者的其他扩展信息（标签、疾病史、过敏原、患者诊疗需求）")
+  @ApiImplicitParams(value = {
+          @ApiImplicitParam(
+                  name = "patientId",
+                  value = "患者id",
+                  required = true,
+                  dataType = "int",
+                  paramType = "path"),
+          @ApiImplicitParam(
+                  name = "type",
+                  value = "数据类型：0-标签；1-疾病史；2-过敏原；3-诊疗需求",
+                  required = true,
+                  dataType = "byte",
+                  paramType = "path")})
+  public ResponseResult findPatientExtInfoList(@PathVariable(value = "patientId") Integer patientId, @PathVariable(value = "type") Byte type) {
+    patientBaseInfoBiz.findPatientExtInfoList(patientId, type);
+    return ResponseUtil.success();
+  }
+
 }

@@ -58,6 +58,8 @@ public class ScrmTagBiz {
     private RemoteDiscountFeign remoteDiscountFeign;
     @Resource
     private PatientOriginBiz patientOriginBiz;
+    @Resource
+    private PatientExtInfoBiz patientExtInfoBiz;
 
     private static final  Map<String, String> location = new HashMap<>();
     static {
@@ -75,6 +77,7 @@ public class ScrmTagBiz {
         location.put("330127", "杭州市淳安县");
         location.put("330182", "杭州市建德市");
     }
+
 
     public Map<String, Set<WxFansBindTagVO>> ageTag(TreeMap<Integer, String> ageMap) {
         List<PatientBaseInfo> baseInfos = getAll();
@@ -495,7 +498,7 @@ public class ScrmTagBiz {
     }
 
     public Map<String, Set<WxFansBindTagVO>> patientTreatIntentionTag(DateRangeQueryForm query) {
-        List<BasePatientBehaviorTagVO> patients = patientOriginBiz.findPatientOriginChangeTag(query);
+        List<BasePatientBehaviorTagVO> patients = patientExtInfoBiz.findPatientTreatIntentionChangeTag(query);
         Map<Integer, String> patientWx = mapWxPatient(patients.stream().map(BasePatientBehaviorTagVO::getPatientId).collect(toSet()));
         return patients.stream()
                 .collect(

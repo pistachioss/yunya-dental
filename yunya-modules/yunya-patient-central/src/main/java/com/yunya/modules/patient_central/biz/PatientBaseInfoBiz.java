@@ -327,14 +327,24 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       this.patientExpInfoMapper.updateByPrimaryKey(patientExpInfo);
     }
 
-    // 完善患者其他信息（标签、疾病史、过敏原）
-    List<PatientExtInfoModel> patientExtInfoList =
-            patientExtendInfoModel.getPatientExtInfoModelList();
+    // 完善患者其他信息（标签、疾病史、过敏原，患者诊疗需求）
+    savePatientExtInfo(patientId, patientExtendInfoModel.getPatientExtInfoModelList());
+    // 通知更新放最后
+    sendMessages(patientId, 1);
+  }
+
+  /**
+   * 保存患者其他扩展信息（标签、疾病史、过敏原，患者诊疗需求）
+   *
+   * @param patientId
+   * @param patientExtInfoList
+   */
+  public void savePatientExtInfo(Integer patientId, List<PatientExtInfoModel> patientExtInfoList) {
     List<PatientExtInfoVo> patientExtInfos =
             this.patientExtInfoMapper.patientExtInfoListByid(patientId);
     // 判断是否已存在信息，若存在就删除
     if (!StringHelper.isEmpty(patientExtInfos)) {
-      this.patientExtInfoMapper.deletePatientExtInfoByPatientId(patientId);
+      this.patientExtInfoMapper.deletePatientExtInfoByPatientId(patientId, null);
     }
     if (!StringHelper.isEmpty(patientExtInfoList)) {
       List<PatientExtInfoModel> addPatientExtInfoList = new ArrayList<>();
@@ -352,8 +362,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       }
       this.patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
     }
-    // 通知更新放最后
-    sendMessages(patientId, 1);
   }
 
   /**
@@ -689,19 +697,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
 
     // 标签
-    List<PatientExtInfoVo> patientExtInfoVos = patientExtInfoMapper.patientExtInfoListByid(id);
-    if (!StringHelper.isEmpty(patientExtInfoVos)) {
-      for (PatientExtInfoVo patientExtInfoVo : patientExtInfoVos) {
-        if (patientExtInfoVo.getDictItemId() != null) {
-          DictionaryItem dictionaryItem =
-                  remoteSystemServiceFeign.findDictionaryItemById(patientExtInfoVo.getDictItemId());
-          if (dictionaryItem != null) {
-            patientExtInfoVo.setDictItemName(dictionaryItem.getName());
-          }
-        }
-      }
-    }
-    patientExtendInfoVo.setPatientExtInfoListVo(patientExtInfoVos);
+    patientExtendInfoVo.setPatientExtInfoListVo(findPatientExtInfoList(id, null));
 
     fillPatientChildInfo(patientExtendInfoVo, patientBaseInfo.getId());
     return ResponseUtil.success(patientExtendInfoVo);
@@ -1790,5 +1786,32 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       }
     }
     return result;
+  }
+
+  public void savePatientExtInfoList(Integer patientId, List<PatientExtInfoModel> models) {
+    savePatientExtInfo(patientId, models);
+    // 此处更新患者是为了 患者行为打标签 的一个事件
+    PatientBaseInfo patient = new PatientBaseInfo();
+    patient.setId(patientId);
+    mapper.updateByPrimaryKeySelective(patient);
+  }
+
+  public List<PatientExtInfoVo> findPatientExtInfoList(Integer patientId, Byte type) {
+    List<PatientExtInfoVo> patientExtInfoVos = patientExtInfoMapper.patientExtInfoListByid(patientId);
+    if (!StringHelper.isEmpty(patientExtInfoVos)) {
+      patientExtInfoVos = patientExtInfoVos.stream().filter(ext->{
+        boolean filter = StringHelper.isNull(type) || ext.getType().equals(type);
+        Integer dictItemId = ext.getDictItemId();
+        if (filter && StringHelper.isNotNull(dictItemId)) {
+          DictionaryItem dictionaryItem =
+                  remoteSystemServiceFeign.findDictionaryItemById(dictItemId);
+          if (dictionaryItem != null) {
+            ext.setDictItemName(dictionaryItem.getName());
+          }
+        }
+        return filter;
+      }).collect(Collectors.toList());
+    }
+    return patientExtInfoVos;
   }
 }

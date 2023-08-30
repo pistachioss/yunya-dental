@@ -2,8 +2,10 @@ package com.yunya.feign.patient_central.domain.model;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -28,13 +30,15 @@ public class PatientExtInfoModel implements Serializable {
     /**
      * 诊所ID
      */
-    @ApiModelProperty(value = "诊所ID")
+    @ApiModelProperty(value = "诊所ID", required = true)
+    @NotNull(message = "诊所id不能为空")
     private Integer orgId;
 
     /**
      * 患者ID
      */
-    @ApiModelProperty(value = "患者ID")
+    @ApiModelProperty(value = "患者ID", required = true)
+    @NotNull(message = "患者id不能为空")
     private Integer patientId;
 
     /**
@@ -44,9 +48,10 @@ public class PatientExtInfoModel implements Serializable {
     private Integer dictItemId;
 
     /**
-     * 数据类型 0-标签；1-疾病史；2-过敏原
+     * 数据类型 0-标签；1-疾病史；2-过敏原；3-患者诊疗需求
      */
-    @ApiModelProperty(value = "数据类型 0-标签；1-疾病史；2-过敏原")
+    @ApiModelProperty(value = "数据类型 0-标签；1-疾病史；2-过敏原；3-患者诊疗需求", required = true)
+    @NotNull(message = "数据类型不能为空")
     private Byte type;
 
     /**
