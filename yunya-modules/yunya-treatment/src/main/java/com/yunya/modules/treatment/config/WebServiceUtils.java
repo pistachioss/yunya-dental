@@ -42,15 +42,14 @@ public class WebServiceUtils {
 
     /**
      * @param wsdlUrl  wsdl的地址：http://localhost:8001/demo/HelloServiceDemoUrl?wsdl
-     * @param methodName
      */
-    public static Client initClient(String wsdlUrl, String methodName) {
+    public static Client initClient(String wsdlUrl) {
         wsdlUrl = StringHelper.defaultString(wsdlUrl, url);
         // 创建动态客户端
         JaxWsDynamicClientFactory factory = JaxWsDynamicClientFactory.newInstance();
         // 创建客户端连接
         Client client = factory.createClient(wsdlUrl);
-        clientMap.put(methodName, client);
+        clientMap.put(wsdlUrl, client);
         log.info("webservice动态客户端初始化完成，已链接到webservice服务：{}", wsdlUrl);
         return client;
     }
@@ -95,9 +94,9 @@ public class WebServiceUtils {
      * @throws Exception
      */
     public  static String callWebService(String wsdlUrl, String methodName, String targetNamespace,
-                                     String webServiceName, Object... params) throws Exception{
-        //从缓存中换取 endpoint、client
-        Client client = clientMap.computeIfAbsent(methodName, name->initClient(wsdlUrl, name));
+                                     String webServiceName, Object... params) {
+        //从缓存中换取client
+        Client client = clientMap.computeIfAbsent(wsdlUrl, name->initClient(wsdlUrl));
         Endpoint endpoint = client.getEndpoint();
         // Make use of CXF service model to introspect the existing WSDL
         ServiceInfo serviceInfo = endpoint.getService().getServiceInfos().get(0);
@@ -147,14 +146,15 @@ public class WebServiceUtils {
         //定义返回结果集
         Object[] result = null;
         //普通参数情况 || 对象参数情况  1个参数 ||ArryList集合
+        log.info("webserivce invoke wdsl: {}, method: {}, param:{}", wsdlUrl, methodName, params);
         try {
             result = client.invoke(opName, parameters);
         } catch (Exception e) {
-            log.error("invoke webservice:{}, method:{}, error:{}", url, methodName, e);
+            log.error("webservice invoke wdsl:{}, method:{}, error:{}", wsdlUrl, methodName, e);
             throw new ClientServiceException("invoke webservice error", DATA_ERROR);
         }
         //返回调用结果
-        log.info("invoke service: {}, method:{}, result:{}", url, methodName, result);
+        log.info("webservice invoke wdsl:{}, method:{}, result:{}", wsdlUrl, methodName, result);
         if(result.length>0){
             return result[0].toString();
         }
