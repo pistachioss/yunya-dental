@@ -120,6 +120,12 @@
                         date_format(#{query.searchEndTime},'%Y-%m-%d')
                     </if>
                 </when>
+                <otherwise>
+                    <if test="query.searchBeginTime != null and query.searchEndTime != null">
+                        and date_format(vrd.remind_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d')
+                        and date_format(#{query.searchEndTime},'%Y-%m-%d')
+                    </if>
+                </otherwise>
             </choose>
             <if test="query.inservice != null">
                 and vrd.inservice = #{query.inservice}

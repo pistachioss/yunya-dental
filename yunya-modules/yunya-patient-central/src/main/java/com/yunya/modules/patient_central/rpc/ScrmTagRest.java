@@ -109,6 +109,11 @@ public class ScrmTagRest {
         return scrmTagBiz.patientOriginTag(query);
     }
 
+    @PostMapping("/white/patient/tag/treatIntention")
+    public Map<String, Set<WxFansBindTagVO>> patientTreatIntentionTag(@RequestBody DateRangeQueryForm query) {
+        return scrmTagBiz.patientTreatIntentionTag(query);
+    }
+
     @GetMapping("/white/patient/origin/tree")
     public List<PatientOriginTreeVo> findPatientOrignTree() {
         return patientOriginBiz.findPatientOriginTree();

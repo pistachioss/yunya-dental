@@ -51,22 +51,67 @@
         </foreach>
   </insert>
 
-  <!-- 循环添加患者其他信息（标签,疾病史,过敏原） -->
+  <!-- 循环添加患者其他信息（标签,疾病史,过敏原,患者诊疗需求） -->
   <select id="patientExtInfoListByid" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientExtInfoVo">
     select <include refid="PatientExtInfoList_Column_List"/>
     from patient_ext_info
     where patient_id = #{id}
   </select>
 
-  <!-- 根据id删除对于的 （标签,疾病史,过敏原） 信息 -->
+  <!-- 根据id删除对于的 （标签,疾病史,过敏原,患者诊疗需求） 信息 -->
   <delete id="deletePatientExtInfoByPatientId" >
     delete from patient_ext_info where patient_id = #{id}
+    <if test="types!=null and types.size()>0">
+      and type in
+      <foreach collection="types" item="item" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
   </delete>
 
   <!-- 通过患者id查询标签信息 -->
   <select id="selectListByPatientId" resultType="com.yunya.models.patient_central.PatientExtInfo">
     select <include refid="PatientExtInfo_Column_List"/>
     from patient_ext_info where patient_id = #{patientId} and type = #{type}
+  </select>
+
+  <select id="selectPatientTreatIntentionTag" resultType="com.yunya.models.patient_central.PatientExtInfo">
+    select
+        pbi.id AS patientId,
+        pei.dict_item_id AS dictItemId
+    from patient_base_info pbi
+    LEFT JOIN (
+        SELECT
+            patient_id,
+            dict_item_id
+        FROM patient_ext_info WHERE type = 3
+    ) pei ON pbi.id = pei.patient_id
+    <where>
+      <if test="query.dateType==0">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT(pbi.upd_time, '%Y-%m-%d') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT(pbi.upd_time, '%Y-%m-%d') &lt;= #{query.endDate}
+        </if>
+      </if>
+      <if test="query.dateType==1">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT(pbi.upd_time, '%Y-%m') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT(pbi.upd_time, '%Y-%m') &lt;= #{query.endDate}
+        </if>
+      </if>
+      <if test="query.dateType==2">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT(pbi.upd_time, '%Y') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT(pbi.upd_time, '%Y') &lt;= #{query.endDate}
+        </if>
+      </if>
+    </where>
   </select>
 
 </mapper>

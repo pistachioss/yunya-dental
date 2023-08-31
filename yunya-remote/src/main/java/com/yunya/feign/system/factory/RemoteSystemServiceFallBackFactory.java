@@ -326,4 +326,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public List<Company> certBjCompanys() {
     return null;
   }
+
+    @Override
+    public List<Company> xhqCompanys() {
+        return null;
+    }
 }

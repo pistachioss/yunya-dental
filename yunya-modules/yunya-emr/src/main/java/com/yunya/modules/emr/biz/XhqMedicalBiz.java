@@ -65,6 +65,10 @@ public class XhqMedicalBiz {
         //过滤的医生ids
         Map<Integer, QztDoctor> doctorMap = certDoctorIds(qztDoctors);
         List<Integer> certClinicIds = certClinicIds(qztDoctors);
+        if (CollectionUtils.isEmpty(certClinicIds)) {
+            log.info("不存在医疗机构");
+            return;
+        }
         String preDay = LocalDate.now().minusDays(1).toString();
         Example example = new Example(MedicalCommonRecord.class);
         example.createCriteria().andIn("status", Lists.newArrayList(0, 2))
@@ -124,6 +128,10 @@ public class XhqMedicalBiz {
         }
     }
 
+//    public static void main(String[] args) {
+//        QztXmlToMap.stringGZIP(xml)
+//    }
+
     private void syncTreatDetail(List<MedicalCommonRecord> medicalCommonRecords, Map<Integer, PatientBaseInfoVo> patientMap
             , Map<Integer, QztDoctor> doctorMap, Map<Integer, Company> orgMap, Map<Integer, TreatmentRecordExtendVO> treatMap) {
 
@@ -170,12 +178,17 @@ public class XhqMedicalBiz {
     }
 
     private List<Integer> certClinicIds(List<QztDoctor> qztDoctors) {
-        return qztDoctors.stream()
-                .reduce(Lists.newArrayList()
-                        , (u, t) -> {
-                            u.addAll(Lists.newArrayList(Splitter.on(",").split(t.getPracticeClinic())).stream().map(Integer::valueOf).collect(Collectors.toSet()));
-                            return u;
-                        }, (u, t) -> u);
+        List<Company> companies = systemServiceFeign.xhqCompanys();
+        if (CollectionUtils.isEmpty(companies)) {
+            return Lists.newArrayList();
+        }
+        return companies.stream().map(Company::getId).collect(Collectors.toList());
+//        return qztDoctors.stream()
+//                .reduce(Lists.newArrayList()
+//                        , (u, t) -> {
+//                            u.addAll(Lists.newArrayList(Splitter.on(",").split(t.getPracticeClinic())).stream().map(Integer::valueOf).collect(Collectors.toSet()));
+//                            return u;
+//                        }, (u, t) -> u);
     }
 
     private void filterClinic(List<MedicalCommonRecord> medicalCommonRecords, Map<Integer, TreatmentRecordExtendVO> treatOrgMap
@@ -641,7 +654,7 @@ public class XhqMedicalBiz {
             setdetails.put("WS99_99_925_04", null);
             setdetails.put("WS99_99_925_03", null);
             setdetails.put("WS99_99_925_02", null);
-            setdetails.put("WS99_99_925_01", null);
+            setdetails.put("WS99_99_925_01", "01");
             setdetails.put("WS02_01_912_01", null);
             setdetails.put("WS04_30_909_01", null);
             setdetails.put("WS06_00_903_01", null);
@@ -682,24 +695,25 @@ public class XhqMedicalBiz {
             setdetails.put("WS99_99_020_04", 1);
             setdetails.put("WS99_99_999_110", 0);
             setdetails.put("WS99_99_020_270", 9);
-            setdetails.put("CT99_99_020_270", "护齿");
+            setdetails.put("CT99_99_020_270", "其他");
             setdetails.put("WS99_99_020_267", "1");
             setdetails.put("WS99_99_020_11", "1");
             setdetails.put("WS01_00_919_01", "1");
             setdetails.put("WS08_50_902_01", "艾维口腔");
             setdetails.put("WS08_10_042_03", "杭州");
-            setdetails.put("WS08_50_043_01", 1);
+            setdetails.put("WS08_50_043_01", "0.25g");
             setdetails.put("WS08_50_011_01", "00");
             setdetails.put("WS99_99_902_73", "001");
-            setdetails.put("CT08_50_011_01", "护齿");
+            setdetails.put("CT08_50_011_01", "原料");
             setdetails.put("CT99_99_902_73", "护齿");
             setdetails.put("WS06_00_133_01", "qd");
             setdetails.put("WS99_99_902_77", "qd");
-            setdetails.put("CT99_99_902_77", "qd");
-            setdetails.put("WS99_99_902_74", "牙齿");
+            setdetails.put("CT06_00_133_01", "每天 1 次");
+            setdetails.put("CT99_99_902_77", "每天 1 次");
+            setdetails.put("WS99_99_902_74", "xx");
             setdetails.put("WS06_00_134_01", "1");
             setdetails.put("CT99_99_902_74", "洁牙");
-            setdetails.put("CT06_00_134_01", "洁牙");
+            setdetails.put("CT06_00_134_01", "口服");
             setdetails.put("WS08_50_023_01", 1);
             setdetails.put("WS99_99_902_624", "01");
             setdetails.put("CT99_99_902_624", "瓶");
@@ -708,13 +722,13 @@ public class XhqMedicalBiz {
             setdetails.put("WS99_99_925_06", "01");
             setdetails.put("CT99_99_925_06", "瓶");
             setdetails.put("WS99_99_241_08", 1);
-            setdetails.put("CT99_99_925_01", "艾维口腔");
+            setdetails.put("CT99_99_925_01", "瓶");
             setdetails.put("WS04_50_900_02", "0");
             setdetails.put("WS08_50_033_01", DateUtil.format(treat.getCrtTime(), "yyyyMMddHHmmss"));
             setdetails.put("CT99_99_902_08", "A12");
             setdetails.put("WS99_99_902_08", "口腔科");
-            setdetails.put("CT08_01_025_28", XhqConstants.KE_SHI_CODE);
-            setdetails.put("WS08_01_025_28", "口腔科");
+            setdetails.put("CT08_01_025_28", "12.08");
+            setdetails.put("WS08_01_025_28", "口腔种植专业");
             setdetails.put("WS99_99_902_680", org.getCreditCode());
             setdetails.put("WS08_10_052_01", org.getXhqInstitutionCode());
             setdetails.put("CT08_10_052_01", xhqMap.get(org.getXhqInstitutionCode()));
