@@ -113,5 +113,6 @@
             JOIN patient_base_info pbi ON pbi.id = ppr.master_card_id
         WHERE
             ppr.secondary_card_id = #{patientId}
+            AND ppi.type = 1
     </select>
 </mapper>
