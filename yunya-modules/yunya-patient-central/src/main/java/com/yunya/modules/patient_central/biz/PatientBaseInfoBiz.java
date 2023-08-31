@@ -1793,6 +1793,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 此处更新患者是为了 患者行为打标签 的一个事件
     PatientBaseInfo patient = new PatientBaseInfo();
     patient.setId(patientId);
+    patient.setUpdTime(DateUtil.now());
     mapper.updateByPrimaryKeySelective(patient);
   }
 
