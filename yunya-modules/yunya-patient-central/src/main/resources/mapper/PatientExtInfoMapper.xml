@@ -77,12 +77,16 @@
 
   <select id="selectPatientTreatIntentionTag" resultType="com.yunya.models.patient_central.PatientExtInfo">
     select
-        pei.patient_id AS patientId,
+        pbi.id AS patientId,
         pei.dict_item_id AS dictItemId
     from patient_base_info pbi
-    LEFT JOIN patient_ext_info pei ON pbi.id = pei.patient_id
+    LEFT JOIN (
+        SELECT
+            patient_id,
+            dict_item_id
+        FROM patient_ext_info WHERE type = 3
+    ) pei ON pbi.id = pei.patient_id
     <where>
-      type = 3
       <if test="query.dateType==0">
         <if test="query.startDate != null and query.startDate != ''">
           and DATE_FORMAT(pbi.upd_time, '%Y-%m-%d') &gt;= #{query.startDate}

@@ -49,9 +49,9 @@ public class PatientExtInfoVo implements Serializable {
     private String dictItemName;
 
     /**
-     * 数据类型 0-标签；1-疾病史；2-过敏原
+     * 数据类型 0-标签；1-疾病史；2-过敏原; 3-患者诊疗需求
      */
-    @ApiModelProperty("数据类型 0-标签；1-疾病史；2-过敏原")
+    @ApiModelProperty("数据类型 0-标签；1-疾病史；2-过敏原; 3-患者诊疗需求")
     private Byte type;
 
     /**
