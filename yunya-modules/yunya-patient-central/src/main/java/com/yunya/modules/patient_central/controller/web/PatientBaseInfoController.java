@@ -299,14 +299,14 @@ public class PatientBaseInfoController {
   }
 
   /**
-   * 保存患者的其他扩展信息（标签、疾病史、过敏原、患者诊疗需求）
+   * 查询患者的其他扩展信息（标签、疾病史、过敏原、患者诊疗需求）
    *
    * @param patientId
    * @param type
    * @return
    */
   @GetMapping("/patientExtInfo/{patientId}/{type}")
-  @ApiOperation("保存患者的其他扩展信息（标签、疾病史、过敏原、患者诊疗需求）")
+  @ApiOperation("查询患者的其他扩展信息（标签、疾病史、过敏原、患者诊疗需求）")
   @ApiImplicitParams(value = {
           @ApiImplicitParam(
                   name = "patientId",
@@ -320,9 +320,9 @@ public class PatientBaseInfoController {
                   required = true,
                   dataType = "byte",
                   paramType = "path")})
-  public ResponseResult findPatientExtInfoList(@PathVariable(value = "patientId") Integer patientId, @PathVariable(value = "type") Byte type) {
-    patientBaseInfoBiz.findPatientExtInfoList(patientId, type);
-    return ResponseUtil.success();
+  public ResponseResult<List<PatientExtInfoVo>> findPatientExtInfoList(@PathVariable(value = "patientId") Integer patientId, @PathVariable(value = "type") Byte type) {
+    List<PatientExtInfoVo> result = patientBaseInfoBiz.findPatientExtInfoList(patientId, type);
+    return ResponseUtil.success(result);
   }
 
 }
