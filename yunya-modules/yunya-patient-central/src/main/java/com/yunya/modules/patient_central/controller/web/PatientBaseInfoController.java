@@ -291,6 +291,7 @@ public class PatientBaseInfoController {
    * @param models
    * @return
    */
+  @CurrentUser
   @PutMapping("/patientExtInfo/{patientId}")
   @ApiOperation("保存患者的其他扩展信息（标签、疾病史、过敏原、患者诊疗需求）")
   public ResponseResult savePatientExtInfoList(@PathVariable(value = "patientId") Integer patientId, @RequestBody List<PatientExtInfoModel> models) {
