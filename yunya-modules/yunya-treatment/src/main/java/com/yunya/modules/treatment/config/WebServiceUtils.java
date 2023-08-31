@@ -31,7 +31,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_ER
 @Slf4j
 public class WebServiceUtils {
 	// 接口调用地址
-	private static String url = "http://127.0.0.1:9090/user?wsdl";
+	private static String url = "http://127.0.0.1:8595/user?wsdl";
 	// 命名空间
 	private static String namespace = "http://ws.biz.treatment.modules.yunya.com";
 

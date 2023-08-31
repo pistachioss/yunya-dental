@@ -34,7 +34,7 @@ public class YunyaTreatmentApplication {
   public static void main(String[] args) {
     SpringApplication.run(YunyaTreatmentApplication.class, args);
     MyWebService webService = SpringContextUtil.getBean(MyWebService.class);
-    String path = "http://127.0.0.1:9090/user";
+    String path = "http://127.0.0.1:8595/user";
     Endpoint.publish(path, webService);
     System.out.println("webservice服务发布成功，在线的wsdl：" + path + "?wsdl");
   }
