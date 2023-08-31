@@ -73,4 +73,8 @@ public class QcPatientInfoVO implements Serializable {
     /** 家庭电话 */
     @ApiModelProperty("家庭电话")
     private String PAPER_TelH;
+
+    /** 移动电话 */
+    @ApiModelProperty("移动电话")
+    private String PAPMI_MobPhone;
 }
