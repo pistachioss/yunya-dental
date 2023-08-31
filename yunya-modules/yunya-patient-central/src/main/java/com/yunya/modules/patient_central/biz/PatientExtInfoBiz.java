@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -52,15 +51,18 @@ public class PatientExtInfoBiz extends BaseBiz<PatientExtInfoMapper, PatientExtI
         List<BasePatientBehaviorTagVO> result = Lists.newArrayList();
         List<PatientExtInfo> patientExtInfos = mapper.selectPatientTreatIntentionTag(query);
         patientExtInfos.forEach(ext->{
-            BasePatientBehaviorTagVO vo = new BasePatientBehaviorTagVO();
-            vo.setPatientId(ext.getPatientId());
+            // 空串表示无效标签，作为行为标签的变更事件
+            String tagName = StringHelper.EMPTY;
             Integer dictItemId = ext.getDictItemId();
             if (StringHelper.isNotNull(dictItemId)) {
                 DictionaryItem dictItem = systemServiceFeign.findDictionaryItemById(dictItemId);
                 if (StringHelper.isNotNull(dictItem)) {
-                    vo.setTagName(dictItem.getName());
+                    tagName = dictItem.getName();
                 }
             }
+            BasePatientBehaviorTagVO vo = new BasePatientBehaviorTagVO();
+            vo.setPatientId(ext.getPatientId());
+            vo.setTagName(tagName);
             result.add(vo);
         });
         return result;
