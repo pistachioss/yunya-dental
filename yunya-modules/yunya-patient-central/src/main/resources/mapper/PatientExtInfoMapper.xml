@@ -111,9 +111,9 @@
           and DATE_FORMAT(pbi.upd_time, '%Y') &lt;= #{query.endDate}
         </if>
       </if>
-      <if test="query.dictItemIds!=null and query.dictItemIds.size()>0">
+      <if test="dictItemIds!=null and dictItemIds.size()>0">
         OR pei.dict_item_id IN
-        <foreach collection="query.dictItemIds" item="id" open="(" separator="," close=")">
+        <foreach collection="dictItemIds" item="id" open="(" separator="," close=")">
           #{id}
         </foreach>
       </if>
