@@ -1241,4 +1241,32 @@ public class DateUtil {
   public static Date now() {
     return new Date(System.currentTimeMillis());
   }
+
+  /**
+   * 判断给定值是否在指定范围内闭区间[lower, upper]
+   *
+   * @param val
+   * @param lowwer 为null，则表示无下限
+   * @param upper 为null，则表示无上限
+   * @return
+   */
+  public static boolean betweenAnd(String val, String lowwer, String upper) {
+    if (StringHelper.isNull(val)) {
+      return false;
+    }
+    boolean between = false;
+    boolean and = false;
+    if (StringHelper.isNull(lowwer)) {
+      between = true;
+    } else if (compareDate(val, lowwer) >= 0) {
+      between = true;
+    }
+
+    if (StringHelper.isNull(upper)) {
+      and = true;
+    } else if (compareDate(val, upper) <= 0) {
+      and = true;
+    }
+    return between && and;
+  }
 }

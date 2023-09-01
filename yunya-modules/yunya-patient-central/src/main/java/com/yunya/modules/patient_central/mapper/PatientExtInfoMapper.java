@@ -50,7 +50,8 @@ public interface PatientExtInfoMapper extends Mapper<PatientExtInfo> {
      * 查询患者诊疗需求标签
      *
      * @param query
+     * @param dictItemIds
      * @return
      */
-    List<PatientExtInfo> selectPatientTreatIntentionTag(@Param("query") DateRangeQueryForm query);
+    List<PatientExtInfo> selectPatientTreatIntentionTag(@Param("query") DateRangeQueryForm query, @Param("dictItemIds") List<Integer> dictItemIds);
 }
