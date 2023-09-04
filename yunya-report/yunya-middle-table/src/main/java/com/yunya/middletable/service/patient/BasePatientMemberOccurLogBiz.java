@@ -363,7 +363,11 @@ public class BasePatientMemberOccurLogBiz
         if (memberRechargeToll.getCreditAmount() != null){
           basePatientMemberOccurLog.setCreditAmount(memberRechargeToll.getCreditAmount());
         }
-      }else {
+      } else if (occurType == 20) {
+        basePatientMemberOccurLog.setPaymentManner("赠金转账");
+      } else if (occurType == 21) {
+        basePatientMemberOccurLog.setPaymentManner("赠金充值");
+      } else {
         basePatientMemberOccurLog.setBillId(memberRechargeRecord.getOrderRecordId());
       }
       basePatientMemberOccurLog.setOperatorUserId(memberRechargeRecord.getCrtId());

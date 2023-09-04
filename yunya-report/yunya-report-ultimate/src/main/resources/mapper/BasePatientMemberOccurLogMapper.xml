@@ -60,7 +60,7 @@
         JOIN base_patient_member bpm ON bpm.patient_id = bpt.patient_Id
         <where>
             bpmol.type = 0
-            AND bpmol.occur_type = 1
+            AND (bpmol.occur_type = 1 or bpmol.occur_type = 21)
             <if test="form.orgId != null">
                 AND bpmol.org_id = #{form.orgId}
             </if>
@@ -97,6 +97,7 @@
         select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
+        case bpmol.occur_type when 2 then '账单收费' else bpmol.payment_manner end occurName,
         DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') occurDate,
         DATE_FORMAT(bb.order_date, '%Y-%m-%d') orderDate,
         bb.order_num orderNum,
@@ -122,7 +123,7 @@
         JOIN base_bill bb ON bpmol.bill_id = bb.bill_id
         <where>
             bpmol.type = 0
-            AND bpmol.occur_type = 2
+            AND (bpmol.occur_type = 2 or bpmol.occur_type = 20)
             <if test="form.orgId != null and form.orgId != ''">
                 AND bpmol.org_id = #{form.orgId}
             </if>
