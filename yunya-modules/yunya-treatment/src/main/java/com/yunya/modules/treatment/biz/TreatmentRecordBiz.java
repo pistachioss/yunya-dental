@@ -129,7 +129,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param model 挂号ID
    */
   public void startTreatment(TreatmentModel model) {
-    String medicalNumber;
     Integer regId = model.getRegId();
     Byte postType = model.getPostType();
     Registered regResult = registeredMapper.selectByPrimaryKey(regId);
