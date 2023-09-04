@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.other.mapper.TariffPackageDetailMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.TariffPackageDetail" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="item_type" property="itemType" jdbcType="TINYINT" />
+    <result column="item_id" property="itemId" jdbcType="INTEGER" />
+    <result column="package_id" property="packageId" jdbcType="INTEGER" />
+    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+    <result column="category_name" property="categoryName" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="selectTariffPackageDetailList"
+          resultType="com.yunya.feign.treatment_other.domain.vo.TariffPackageDetailVO">
+    SELECT
+        id,
+        item_type AS itemType,
+        item_id AS itemId,
+        package_id AS packageId,
+        quantity
+    FROM tariff_package_detail
+    WHERE package_id = #{query.packageId}
+  </select>
+
+  <delete id="deleteByPackageId">
+    DELETE FROM tariff_package_detail
+    WHERE package_id = #{packageId}
+  </delete>
+</mapper>
