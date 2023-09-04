@@ -607,6 +607,8 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
         String number = null;
         String unit = null;
         String categoryName = null;
+        Integer categoryId = null;
+        String categoryNumber = null;
         if (itemType.intValue() == 0) {
           BaseTariffInfoVO tariffInfo = baseTariffMapper.selectBaseTariffInfoById(itemId);
           englishName = tariffInfo.getEnglishName();
@@ -615,6 +617,8 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
           number = tariffInfo.getItemNumber();
           unit = tariffInfo.getUnit();
           categoryName = tariffInfo.getTariffCategoryNumber();
+          categoryId = tariffInfo.getTariffCategoryId();
+          categoryNumber = tariffInfo.getTariffCategoryNumber();
         } else {
           BaseOralTariffInfoVO tariffInfo = baseOralTariffMapper.selectBaseOralTariffInfoById(itemId);
           englishName = tariffInfo.getEnglishName();
@@ -623,7 +627,10 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
           number = tariffInfo.getItemNumber();
           unit = tariffInfo.getUnit();
           categoryName = tariffInfo.getOralTariffCategoryName();
+          categoryId = tariffInfo.getOralTariffCategoryId();
+          categoryNumber = tariffInfo.getOralTariffCategoryNumber();
         }
+        vo.setId(itemId);
         vo.setTariffId(itemId);
         vo.setEnglishName(englishName);
         vo.setName(name);
@@ -632,6 +639,9 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
         vo.setUnit(unit);
         vo.setTariffCategoryName(categoryName);
         vo.setOrgId(orgId);
+        vo.setInservice(true);
+        vo.setTariffCategoryId(categoryId);
+        vo.setTariffCategoryNumber(categoryNumber);
         setClinicTariffMemberPrice(Maps.newHashMapWithExpectedSize(16), memberTypes, orgId, vo);
         result.add(vo);
       });

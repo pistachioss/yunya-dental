@@ -81,6 +81,8 @@ public class TariffPackageBiz extends BaseBiz<TariffPackageMapper, TariffPackage
             throw new ClientServiceException("名称已存在", OperationCodeConstants.DATA_EXIST);
         } else if (StringHelper.isNull(id)){
             return new TariffPackage();
+        } else if (StringHelper.isNull(entity)) {
+            return mapper.selectByPrimaryKey(id);
         }
         return entity;
     }
@@ -130,7 +132,7 @@ public class TariffPackageBiz extends BaseBiz<TariffPackageMapper, TariffPackage
         entity.setQuantity(form.getQuantity());
         entity.setUptId(userId);
         entity.setUptTime(now);
-        tariffPackageDetailMapper.updateByPrimaryKey(entity);
+        tariffPackageDetailMapper.updateByPrimaryKeySelective(entity);
     }
 
     public void delWithDetailById(Integer id) {

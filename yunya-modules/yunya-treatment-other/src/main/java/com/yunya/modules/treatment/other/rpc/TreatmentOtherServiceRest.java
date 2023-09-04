@@ -233,7 +233,7 @@ public class TreatmentOtherServiceRest {
    */
   @ApiOperation("条件查询项目组合明细")
   @PostMapping("/package/detail")
-  public PageInfo<TariffPackageDetailVO> findPackageList(TariffPackageDetailQuery query) {
+  public PageInfo<TariffPackageDetailVO> findPackageList(@RequestBody @Validated TariffPackageDetailQuery query) {
     return tariffPackageBiz.findPackageDetailList(query);
   }
 }

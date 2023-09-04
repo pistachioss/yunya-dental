@@ -65,7 +65,6 @@ public class TariffPackageController {
         return ResponseUtil.success();
     }
 
-
     /**
      * 删除
      *
@@ -79,7 +78,6 @@ public class TariffPackageController {
         return ResponseUtil.success();
     }
 
-
     /**
      * 条件查询价目组合
      *
@@ -91,7 +89,6 @@ public class TariffPackageController {
         PageInfo<TariffPackageVO> page = tariffPackageBiz.findList(query);
         return ResponseUtil.success(page);
     }
-
 
     /**
      * 添加明细

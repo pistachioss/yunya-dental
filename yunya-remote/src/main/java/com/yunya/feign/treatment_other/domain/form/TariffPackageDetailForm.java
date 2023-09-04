@@ -20,7 +20,8 @@ import java.io.Serializable;
 @ApiModel("项目明细修改模型")
 public class TariffPackageDetailForm implements Serializable {
     /** 明细id */
-    @ApiModelProperty("明细id")
+    @ApiModelProperty(value = "明细id", required = true)
+    @NotNull(message = "明细id不能为空")
     private Integer id;
 
     /** 项目数量 */

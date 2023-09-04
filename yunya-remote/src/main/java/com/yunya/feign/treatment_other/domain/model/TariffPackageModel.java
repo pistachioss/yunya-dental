@@ -5,8 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -21,7 +20,6 @@ import java.io.Serializable;
 public class TariffPackageModel implements Serializable {
 
     @ApiModelProperty(value = "名称", required = true)
-    @NotEmpty(message = "名称不能为空")
-    @Max(value = 50, message = "名称长度不能超过50")
+    @NotBlank(message = "名称不能为空")
     private String name;
 }

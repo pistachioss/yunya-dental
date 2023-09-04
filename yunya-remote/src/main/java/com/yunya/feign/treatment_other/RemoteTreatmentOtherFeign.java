@@ -153,6 +153,6 @@ public interface RemoteTreatmentOtherFeign {
    * @return
    */
   @ApiOperation("条件查询项目组合明细")
-  @PostMapping("/package/detail")
-  PageInfo<TariffPackageDetailVO> findPackageList(TariffPackageDetailQuery query);
+  @PostMapping("api/treatment/other/package/detail")
+  PageInfo<TariffPackageDetailVO> findPackageList(@RequestBody @Validated TariffPackageDetailQuery query);
 }
