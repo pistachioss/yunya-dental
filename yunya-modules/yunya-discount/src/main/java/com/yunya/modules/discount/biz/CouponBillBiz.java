@@ -138,6 +138,8 @@ public class CouponBillBiz {
             }
             //返点
             returnGift(billPay);
+            //明细结存
+            orderBiz.occur(orderId, 1, order.getPatientId(), null, null);
             rabbitMqServiceFeign.sendMessage(orderId, 1, BaseCouponBill);
             rabbitMqServiceFeign.sendMessage(billPay.getId(), 0, BaseCouponPayBill);
         } finally {

@@ -367,18 +367,18 @@
         count(*) as `useCount`
         from `base_benefit` `bb`
         where `bb`.`card_id` in
-        <foreach collection="cardIds" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
+            <foreach collection="cardIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         and `bb`.`choice_benefit_type` = 0
-        and `bb`.`coupon_type` in (2, 3, 5)
+        and `bb`.`coupon_type` in (2, 3)
         group by `bb`.`card_id`, `bb`.`item_id`, `bb`.`item_type`
         ORDER BY `bb`.`card_id` desc) `temp`
         on `c`.`card_id` = `temp`.`card_id`
         and `bci`.`item_id` = `temp`.`item_id`
         and `temp`.`item_type` = `bci`.`type`
         where `c`.`status` in (2, 3)
-        and `bco`.`coupon_type` in (2, 3, 5)
+        and `bco`.`coupon_type` in (2, 3)
         and (
         isnull(`c`.`activation_deadline`)
         or `c`.`activation_deadline` >= date_format(now(), '%y-%m-%d')

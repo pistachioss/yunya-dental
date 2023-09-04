@@ -102,6 +102,8 @@ public class BenefitBiz {
     private ExecutorService cardThreadPool;
     @Resource
     private DeductionPeriodBiz periodBiz;
+    @Resource
+    private CouponOrderBiz orderBiz;
 
     /**
      * 收费 - 卡券保存优惠
@@ -178,6 +180,7 @@ public class BenefitBiz {
                 updateCards.forEach(obj -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle));
                 log.info("【订单使用卡券优惠，更新卡券发送消息成功】：卡券ids：{}", updateCards.stream().map(Card::getId).collect(toList()));
             }
+            orderBiz.occur(orderId, 2, model.getPatientId(), null, null);
             return ResponseUtil.success();
         } finally {
             //解锁卡券
@@ -420,6 +423,9 @@ public class BenefitBiz {
                 log.info("查询账单优惠明细，开单明细id：{}，计算补入工作量：{}", k, supplyWorkTotalLoad);
                 vo.setOrderDetailId(k);
                 vo.setItemBenefitAmount(itemBenefitAmount);
+                CardBenefit cardBenefit = v.get(0);
+                vo.setItemId(cardBenefit.getItemId());
+                vo.setType(cardBenefit.getItemType());
                 //按照优惠提交顺序排序
                 v.sort(Comparator.comparing(CardBenefit::getSort));
                 List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
@@ -454,6 +460,9 @@ public class BenefitBiz {
                 vo.setOrderDetailId(orderDetailId);
                 vo.setQuantity(v.size());
                 vo.setItemBenefitAmount(itemBenefitAmount);
+                CardBenefit cardBenefit = v.get(0);
+                vo.setItemId(cardBenefit.getItemId());
+                vo.setType(cardBenefit.getItemType());
                 BigDecimal totalDeduct = v.stream().map(t -> {
                     List<DeductionItemPeriod> list = periodBiz.list(t.getCardId());
                     return list.stream().filter(t1 -> Objects.equals(t1.getItemId(),vo.getItemId()) && Objects.equals(t1.getType(),vo.getType()))

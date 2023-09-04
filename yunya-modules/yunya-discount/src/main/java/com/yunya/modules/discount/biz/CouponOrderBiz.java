@@ -1,5 +1,7 @@
 package com.yunya.modules.discount.biz;
 
+import com.alibaba.fastjson.JSON;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.domain.form.CouponOrderForm;
 import com.yunya.feign.discount.domain.model.CouponOrderDetailModel;
@@ -48,6 +50,8 @@ import static java.util.stream.Collectors.*;
 public class CouponOrderBiz {
     @Resource
     private CardMapper cardMapper;
+    @Resource
+    private CardBenefitMapper cardBenefitMapper;
     @Resource
     private CouponCommonInfoMapper couponMapper;
     @Resource
@@ -164,22 +168,54 @@ public class CouponOrderBiz {
                     couponChangeRecord.setOccurDate(date);
                     return couponChangeRecord;
                 }).collect(toList());
+                log.info("划扣结存购买：{}", JSON.toJSONString(list));
                 list.forEach(t -> changeRecordMapper.insertSelective(t));
             }
         }
         if (Objects.equals(occurType, 2)) {
+            List<CardBenefit> orderBenefit = getOrderBenefit(orderId);
+            Map<Integer, List<String>> collect = orderBenefit.stream().collect(groupingBy(CardBenefit::getCardId, mapping(t -> Joiner.on("-").join(t.getItemId(), t.getItemType()), toList())));
+            collect.forEach((k,v) -> {
+                CouponChangeRecord latest = changeRecordMapper.getLatest(patientId, k);
+                List<DeductionItemPeriod> list = periodBiz.list(k);
+                BigDecimal reduce = list.stream().filter(t1 -> {
+                    String join = Joiner.on("-").join(t1.getItemId(), t1.getType());
+                    return v.contains(join);
+                }).map(DeductionItemPeriod::getPackageUnitPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+                CouponChangeRecord newBean = BeanCopierUtils.generalCopyBean(latest, CouponChangeRecord.class);
+                newBean.setOrderId(orderId);
+                newBean.setOccurType(occurType);
+                newBean.setOccurAmount(reduce);
+                newBean.setCurrentAmount(newBean.getCurrentAmount().subtract(newBean.getOccurAmount()));
+                newBean.setOperatorUserId(id);
+                newBean.setOccurDate(date);
+                newBean.setId(null);
+                log.info("划扣结存消费：{}", JSON.toJSONString(newBean));
+                changeRecordMapper.insertSelective(newBean);
+            });
+        }
+        if (Objects.equals(occurType, 3)) {
             CouponChangeRecord latest = changeRecordMapper.getLatest(patientId, cardId);
             CouponChangeRecord newBean = BeanCopierUtils.generalCopyBean(latest, CouponChangeRecord.class);
             newBean.setOrderId(orderId);
             newBean.setOccurType(occurType);
             newBean.setOccurAmount(amount);
-            newBean.setCurrentAmount(newBean.getCurrentAmount().add(newBean.getOccurAmount()));
+            newBean.setCurrentAmount(newBean.getCurrentAmount().subtract(newBean.getOccurAmount()));
             newBean.setOperatorUserId(id);
-//            newBean.setOccurAmount(date);
+            newBean.setOccurDate(date);
+            newBean.setId(null);
+            log.info("划扣结存退费：{}", JSON.toJSONString(newBean));
+            changeRecordMapper.insertSelective(newBean);
         }
-        if (Objects.equals(occurType, 3)) {
+    }
 
-        }
+    public List<CardBenefit> getOrderBenefit(Integer orderId) {
+        Example example = new Example(CardBenefit.class);
+        example.createCriteria()
+                .andEqualTo("orderId", orderId)
+                .andEqualTo("deleted", 0)
+                .andEqualTo("couponType", 5);
+        return cardBenefitMapper.selectByExample(example);
     }
 
     private List<CouponOrderDetail> build(Integer patientId, List<CouponOrderDetailModel> detail, List<Integer> couponIds, Map<Integer, CouponCommonInfo> collect1

@@ -371,6 +371,7 @@ public class DeductionPatientBiz {
         couponOrderBiz.refundVirtual(details, detail, virtuals, virtual, order);
         refundCard(cardId);
         mqServiceFeign.sendMessage(couponRefund.getId(), 0, BaseCouponRefund);
+        couponOrderBiz.occur(orderId, 3, order.getPatientId(), cardId, refundTotalAmount);
     }
 
     public void refundCard(Integer cardId) {
