@@ -172,12 +172,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       } else {
         entity.setType((byte) 0);
         // 患者初诊，初始化病历号
-        medicalNumber = generateMedicalRecordNumber(orgId);
-        patientBaseInfo.setMedicalNumber(medicalNumber);
         patientBaseInfo.setOrgId(orgId);
         patientBaseInfo.setUptId(userId);
         patientBaseInfo.setUpdName(name);
-        patientServiceFeign.updatePatientInfo(patientBaseInfo);
+        patientServiceFeign.generateMedicalNumber(patientBaseInfo);
       }
     }
     entity.setTreatStartTime(new Date(System.currentTimeMillis()));
@@ -212,29 +210,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         rabbitMqServiceFeign.sendMessage(regId, 1, 1, BaseTreatmentProcess);
       }
     }
-  }
-
-  /**
-   * 初始化患者病历号
-   *
-   * @param orgId 组织ID
-   * @return
-   */
-  private String generateMedicalRecordNumber(Integer orgId) {
-
-    String number = patientServiceFeign.findMedicalNumberByOrgId(orgId);
-    String suffix = String.format("%06d", Integer.parseInt(number) + 1);
-    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
-    return String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber()))
-        + new DateTime().toString("yyMMdd")
-        + suffix;
-    //    TODO: make medical number
-    /**
-     * // 获取门诊编号 OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId); String
-     * clinNum = String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber())); // 获取可用的病历编号后6位
-     * Integer number = patientServiceFeign.findMedicalNumberByClinNum(clinNum); String suffix =
-     * String.format("%06d", number); return clinNum + new DateTime().toString("yyMMdd") + suffix;
-     */
   }
 
   /**

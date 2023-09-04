@@ -248,7 +248,7 @@
     </select>
 
     <!-- 根据门诊id获取病历号后六位 -->
-    <select id="findMedicalNumberByOrgId" resultType="java.lang.String">
+    <select id="findMedicalNumberByOrgId" resultType="java.lang.Integer">
         SELECT
         IFNULL( MAX( SUBSTR( medical_number, 10, 6 )), '000000' ) AS maxNum
         FROM

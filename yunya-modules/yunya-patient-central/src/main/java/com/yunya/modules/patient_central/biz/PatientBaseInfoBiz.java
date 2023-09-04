@@ -20,12 +20,14 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -51,8 +53,8 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.yunya.framework.common.constant.RedisConstants.PATIENT_BASE_INFO;
-import static com.yunya.framework.common.constant.RedisConstants.PATIENT_REFERRER;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BasePatient;
+import static com.yunya.framework.common.constant.RedisConstants.*;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -1254,16 +1256,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   }
 
   /**
-   * 根据门诊id获取病历号后六位
-   *
-   * @param orgId 门诊id
-   * @return String
-   */
-  public String findMedicalNumberByOrgId(Integer orgId) {
-    return mapper.findMedicalNumberByOrgId(orgId);
-  }
-
-  /**
    * 根据门诊编号获取病历号后六位
    *
    * @param clinNum 门诊编号
@@ -1814,5 +1806,37 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       }).collect(Collectors.toList());
     }
     return patientExtInfoVos;
+  }
+
+  /**
+   * 初始化患者病历号
+   *
+   * @param orgId 组织ID
+   * @return
+   */
+  public String generateMedicalNumber(Integer orgId, PatientBaseInfo entity) {
+    OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+    if (StringHelper.isNull(orgInfo)) {
+      throw new ClientServiceException("门诊信息不存在", OperationCodeConstants.DATA_ERROR);
+    }
+    return redisUtils.lockedFunc(MEDICAL_GENERAT_LOCK, o->{
+      Integer nextNumber = StringHelper.defaultInt(mapper.findMedicalNumberByOrgId(orgId)) + 1;
+      String suffix = String.format("%06d", nextNumber);
+      String medicalNumber = String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber()))
+              + new DateTime().toString("yyMMdd")
+              + suffix;
+      entity.setMedicalNumber(medicalNumber);
+      updateByPrimaryKeySelective(entity);
+      remoteRabbitMqServiceFeign.sendMessage(entity.getId(), 1, BasePatient);
+      return medicalNumber;
+    });
+
+    //    TODO: make medical number
+    /**
+     * // 获取门诊编号 OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId); String
+     * clinNum = String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber())); // 获取可用的病历编号后6位
+     * Integer number = patientServiceFeign.findMedicalNumberByClinNum(clinNum); String suffix =
+     * String.format("%06d", number); return clinNum + new DateTime().toString("yyMMdd") + suffix;
+     */
   }
 }
