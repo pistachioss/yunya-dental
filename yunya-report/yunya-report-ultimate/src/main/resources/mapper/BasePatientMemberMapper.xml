@@ -36,7 +36,9 @@
             <if test="form.memberLevelId != null">
                     AND bpm.member_level_id = #{form.memberLevelId}
             </if>
-
+            <if test="form.memberLevelName != null">
+                AND bpm.member_level_name = #{form.memberLevelName}
+            </if>
             <if test="form.orgIds != null and form.orgIds.size() > 0">
                 AND bpm.org_id in
                 <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">

@@ -53,8 +53,12 @@ public class MemberOverviewQueryForm implements Serializable {
     private Integer type;
 
     @ApiModelProperty(value = "会员卡级别id", required = false)
-    /** 会员卡类型 */
+    /** 会员卡级别id */
     private Integer memberLevelId;
+
+    @ApiModelProperty(value = "会员卡级别名称", required = false)
+    /** 会员卡级别名称 */
+    private String memberLevelName;
 
 
 }
