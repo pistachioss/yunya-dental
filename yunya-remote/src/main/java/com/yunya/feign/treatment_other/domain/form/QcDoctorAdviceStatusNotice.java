@@ -1,6 +1,5 @@
-package com.yunya.feign.treatment_other.domain.vo;
+package com.yunya.feign.treatment_other.domain.form;
 
-import com.yunya.feign.treatment_other.domain.form.QcAdviceItemNotice;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -11,32 +10,24 @@ import java.util.List;
 
 /**
  * @author: chenlin
- * @date: 2023/8/31 15:19
- * @description: 全程医疗返回对象
+ * @date: 2023/9/5 17:11
+ * @description: 全程医疗-医嘱状态变更
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("全程医疗返回对象")
-public class QcResult implements Serializable {
-
-    /** 成功标识 */
-    @ApiModelProperty("成功标识")
-    private String code;
-
-    /** 提示信息 */
-    @ApiModelProperty("提示信息")
-    private String msg;
+@ApiModel("全程医疗-医嘱状态变更通知")
+public class QcDoctorAdviceStatusNotice implements Serializable {
 
     /** 平台患者登记号 */
     @ApiModelProperty("平台患者登记号")
     private String patient_no;
-
+    
     /** 平台就诊流水号 */
     @ApiModelProperty("平台就诊流水号")
     private String adm_no;
 
-    /** 医嘱项状态 */
-    @ApiModelProperty("医嘱项状态")
+    /** 医嘱信息列表变更 */
+    @ApiModelProperty("医嘱信息列表变更")
     private List<QcAdviceItemNotice> order_infos;
 }

@@ -54,6 +54,7 @@ public class QcTreatmentVO implements Serializable {
     @ApiModelProperty("核销码")
     private String VerifCode;
 
-    /** 医嘱信息列表 */
-    private List<QcAdviceVO> order_infos;
+    /** 医嘱项信息列表 */
+    @ApiModelProperty("医嘱项信息列表")
+    private List<QcAdviceItemVO> order_infos;
 }
