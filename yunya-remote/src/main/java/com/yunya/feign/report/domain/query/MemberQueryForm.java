@@ -58,8 +58,12 @@ public class MemberQueryForm implements Serializable {
     /** 会员级别 */
     private List<Integer> memberLevelIds;
 
-    @ApiModelProperty(value = "会员类型（0：会员卡；１：预付款（普通），2-正畸预付款，3-美白预付款）", required = false)
+    @ApiModelProperty(value = "会员类型（0：会员卡；1：预付款（普通），2-正畸预付款，3-美白预付款）", required = false)
     /** 会员类型 */
     private Integer type;
+
+    @ApiModelProperty(value = "消费类型（0：全部；2：账单收费，20：赠金转账）", required = false)
+    /** 消费类型 */
+    private Integer occurType;
 
 }

@@ -96,4 +96,9 @@ public class BaseMemberExpendLogVo {
   @Excel(name = "收费人")
   @ApiModelProperty(value = "收费人")
   private String operatorUserName;
+
+  /** 消费类型 */
+  @Excel(name = "消费类型")
+  @ApiModelProperty(value = "消费类型")
+  private String occurName;
 }
