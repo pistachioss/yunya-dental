@@ -37,4 +37,8 @@ public class QcDoctorAdviceQuery implements Serializable {
     /** 患者证件号码 */
     @ApiModelProperty("患者证件号码")
     private String cred_no;
+    
+    /** 核销码 */
+    @ApiModelProperty("核销码")
+    private String werif_code;
 }

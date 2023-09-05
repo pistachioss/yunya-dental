@@ -14,7 +14,7 @@ import lombok.ToString;
 @Data
 @ToString
 @ApiModel("全程医疗mall平台-医嘱记录数据模型")
-public class QcDoctorAdviceRecordVO extends QcMedicalResult {
+public class QcDoctorAdviceRecordVO extends QcResult {
 
     /** 患者信息 */
     @ApiModelProperty("患者信息")

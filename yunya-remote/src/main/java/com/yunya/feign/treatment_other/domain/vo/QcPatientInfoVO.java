@@ -77,4 +77,72 @@ public class QcPatientInfoVO implements Serializable {
     /** 移动电话 */
     @ApiModelProperty("移动电话")
     private String PAPMI_MobPhone;
+
+    /** 电子邮箱 */
+    @ApiModelProperty("电子邮箱")
+    private String PAPMI_Email;
+
+    /** 工作单位 */
+    @ApiModelProperty("工作单位")
+    private String PAPMI_SecondPhone;
+
+    /** 婚姻状况：21-未婚, 22-已婚 */
+    @ApiModelProperty("婚姻状况：21-未婚, 22-已婚")
+    private String PAPER_Marital_DR;
+
+    /** 婚姻状况描述 */
+    @ApiModelProperty("婚姻状况描述")
+    private String Marital_Desc;
+    
+    /** 民族：1-汉族 */
+    @ApiModelProperty("民族：1-汉族")
+    private String PAPER_Nation_DR;
+
+    /** 民族描述 */
+    @ApiModelProperty("民族描述")
+    private String Nation_Desc;
+
+    /** 职业描述 */
+    @ApiModelProperty("职业描述")
+    private String Occupation_Desc;
+
+    /** 国籍or地区：1-汉族 */
+    @ApiModelProperty("国籍or地区：1-汉族")
+    private String PAPER_Country_DR;
+
+    /** 国籍or地区描述 */
+    @ApiModelProperty("国籍or地区描述")
+    private String Country_Desc;
+
+    /** 现住国籍or地区：1-汉族 */
+    @ApiModelProperty("现住国籍or地区：1-汉族")
+    private String PAPER_Country_Birth_DR;
+
+    /** 现住国籍or地区描述 */
+    @ApiModelProperty("现住国籍or地区描述")
+    private String Country_Birth_Desc;
+    
+    /** 现住省份 */
+    @ApiModelProperty("现住省份")
+    private String PAPMI_CT_Province_DR;
+    
+    /** 现住省份描述 */
+    @ApiModelProperty("现住省份描述")
+    private String CT_Province_Desc;
+
+    /** 现住城市描述 */
+    @ApiModelProperty("现住城市描述")
+    private String CityCode_Desc;
+
+    /** 现住完整地址描述 */
+    @ApiModelProperty("现住完整地址描述")
+    private String Address;
+
+    /** 现住邮编 */
+    @ApiModelProperty("现住邮编")
+    private String PostCode;
+
+    /** 就诊信息 */
+    @ApiModelProperty("就诊信息")
+    private QcTreatmentVO adm_info;
 }
