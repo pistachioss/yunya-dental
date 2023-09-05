@@ -165,4 +165,8 @@ public class TariffPackageBiz extends BaseBiz<TariffPackageMapper, TariffPackage
         }
         return pageInfo;
     }
+
+    public void delDetailById(Integer id) {
+        tariffPackageDetailMapper.deleteByPrimaryKey(id);
+    }
 }

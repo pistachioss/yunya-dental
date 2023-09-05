@@ -130,7 +130,7 @@ public class TariffPackageController {
     @ApiOperation("删除明细")
     @DeleteMapping("/detail/{id}")
     public ResponseResult deleteDetail(@PathVariable(value = "id") Integer id) {
-        tariffPackageBiz.deleteById(id);
+        tariffPackageBiz.delDetailById(id);
         return ResponseUtil.success();
     }
 
