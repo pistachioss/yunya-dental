@@ -846,34 +846,16 @@
             <if test="query.orgId != null">
                 AND bpmol.org_id = #{query.orgId}
             </if>
-            <if test="query.cardType != null">-- 0:会员卡；1：预付款卡
-                AND bpmol.type = #{query.cardType}
+            <if test="query.type != null">-- 0:会员卡；1：预付款卡
+                AND bpmol.type = #{query.type}
             </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
-                </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
             </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT(bpmol.occur_date, '%Y-%m') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT(bpmol.occur_date, '%Y-%m') &lt;= #{query.endDate}
-                </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
             </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT(bpmol.occur_date, '%Y') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT(bpmol.occur_date, '%Y') &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.patientKeyword != null and query.patientKeyword != ''">
+            <if test="query.combination!=null and query.combination!=''">
                 AND concat(IFNULL(bp.patientName,''), IFNULL(bp.pinyinName,''), IFNULL(bp.patientMobile,''))
                 LIKE concat('%', #{query.combination}, '%')
             </if>
