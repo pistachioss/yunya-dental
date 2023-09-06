@@ -1,13 +1,11 @@
 package com.yunya.feign.treatment_other.domain.vo;
 
-import com.yunya.feign.treatment_other.domain.form.QcAdviceItemNotice;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * @author: chenlin
@@ -27,16 +25,4 @@ public class QcResult implements Serializable {
     /** 提示信息 */
     @ApiModelProperty("提示信息")
     private String msg;
-
-    /** 平台患者登记号 */
-    @ApiModelProperty("平台患者登记号")
-    private String patient_no;
-
-    /** 平台就诊流水号 */
-    @ApiModelProperty("平台就诊流水号")
-    private String adm_no;
-
-    /** 医嘱项状态 */
-    @ApiModelProperty("医嘱项状态")
-    private List<QcAdviceItemNotice> order_infos;
 }
