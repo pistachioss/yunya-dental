@@ -24,8 +24,8 @@ public enum PatientDepositAccountTypeEnum {
     ORTHADANTIC_PREPAYMENT(true, 2, "正畸预付款", "ZY", 100),
     /** 美白预付款 */
     WHITENING_PREPAYMENT(true, 3, "美白预付款", "MY", 101),
-//    /** 种植预付款 */
-//    IMPLANT_PREPAYMENT(true,4, "种植预付款", "ZZY", null),
+    /** 全程医疗支付 */
+    QCYL_PREPAYMENT(false,4, "全程医疗支付", "QCYL", 102),
     ;
 
     /** 是否专项 */

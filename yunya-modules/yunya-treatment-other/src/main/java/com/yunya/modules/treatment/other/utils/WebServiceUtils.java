@@ -1,4 +1,4 @@
-package com.yunya.modules.treatment.config;
+package com.yunya.modules.treatment.other.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -31,12 +31,12 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_ER
 @Slf4j
 public class WebServiceUtils {
 	// 接口调用地址
-	private static String url = "http://127.0.0.1:8595/user?wsdl";
+	private static String url = "http://60.191.117.126:8088/csp/hsb/DHC.Published.PUB0013.BS.PUB0013.CLS?WSDL=1";
 	// 命名空间
-	private static String namespace = "http://ws.biz.treatment.modules.yunya.com";
+	private static String namespace = "http://www.dhcc.com.cn";
 
-    private static String methodName = "findPatientInfoById";
-    private static String webserviceName = "MyWebService";
+    private static String methodName = "HIPMessageServer";
+    private static String webserviceName = "PUB0013";
 
     private static Map<String, Client> clientMap = new HashMap<>();
 
@@ -101,7 +101,8 @@ public class WebServiceUtils {
         // Make use of CXF service model to introspect the existing WSDL
         ServiceInfo serviceInfo = endpoint.getService().getServiceInfos().get(0);
         // 创建QName来指定NameSpace和要调用的service
-        String localPart = webServiceName + "SoapBinding";
+//        String localPart = webServiceName + "SoapBinding";
+        String localPart = webServiceName + "Soap";
         QName bindingName = new QName(targetNamespace, localPart);
         BindingInfo binding = serviceInfo.getBinding(bindingName);
 
@@ -164,7 +165,10 @@ public class WebServiceUtils {
     public static void main(String[] args) throws Exception {
         String str = "{\"keyword\":\"\",\"queryDate\":\"2023-08-01\",\"orgIds\":[63],\"pageNum\":1,\"pageSize\":10,\"regDentistIds\":[],\"whetherPage\":true}";
         BillOfReceivableQuery query = JSONObject.parseObject(str, BillOfReceivableQuery.class);
-        String result = callByJson(url, methodName, namespace, webserviceName, query);
+        String str2 = "";
+//        String result = callByJson(url, methodName, namespace, webserviceName, query);
+//        String result = callByJArray(url, methodName, namespace, webserviceName, query, str2);
+        String result = callWebService(url, methodName, namespace, webserviceName, query, str2);
         System.out.println("webservice结果：");
         System.out.println(result);
     }
