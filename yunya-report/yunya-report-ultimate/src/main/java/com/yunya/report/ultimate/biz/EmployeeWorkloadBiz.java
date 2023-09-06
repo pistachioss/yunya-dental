@@ -82,6 +82,9 @@ public class EmployeeWorkloadBiz {
     Future<Map<String, BigDecimal>> receivableWorkload =
         findClinicEmployeeReceivableWorkload(query);
 
+    // 门诊员工的划扣工作量
+    Future<Map<String, BigDecimal>> swipeWorkload = findClinicEmployeeSwipeWorkload(query);
+
     // 门诊员工的实收工作量（含免单）
     Future<Map<String, BigDecimal>> receivedWorkload =
         findClinicEmployeeReceivedWorkload(query, true);
@@ -106,6 +109,7 @@ public class EmployeeWorkloadBiz {
             employee,
             receivableWorkload,
             receivedWorkload,
+            swipeWorkload,
             supplementWorkload,
             freePaymentWorkload,
             refundWorkload,
@@ -186,6 +190,7 @@ public class EmployeeWorkloadBiz {
       Future<List<ClinicEmployeBonusCoefficientVO>> empFuture,
       Future<Map<String, BigDecimal>> receivableWorkload,
       Future<Map<String, BigDecimal>> receivedWorkload,
+      Future<Map<String, BigDecimal>> swipeWorkload,
       Future<Map<String, BigDecimal>> supplementWorkload,
       Future<Map<String, BigDecimal>> freePaymentWorkload,
       Future<Map<String, BigDecimal>> refundWorkload,
@@ -194,6 +199,7 @@ public class EmployeeWorkloadBiz {
     List<ClinicEmployeBonusCoefficientVO> employees = empFuture.get();
     Map<String, BigDecimal> receivableMap = receivableWorkload.get();
     Map<String, BigDecimal> receivedMap = receivedWorkload.get();
+    Map<String, BigDecimal> swipeMap = swipeWorkload.get();
     Map<String, BigDecimal> suppleMap = supplementWorkload.get();
     Map<String, BigDecimal> freePaymentMap = freePaymentWorkload.get();
     Map<String, BigDecimal> refundMap = refundWorkload.get();
@@ -215,7 +221,7 @@ public class EmployeeWorkloadBiz {
           vo.setSupplementWorkload(ifAbsent(suppleMap, key));
           vo.setFreePaymentWorkload(ifAbsent(freePaymentMap, key));
           vo.setRefundWorkload(ifAbsent(refundMap, key));
-          vo.setEmployeeWorkload(computeWorkload(vo));
+          vo.setEmployeeWorkload(computeWorkload(vo, ifAbsent(swipeMap, key)));
           EmployeeWorkloadCost employeeWorkloadCost = feeMap.get(key);
           BigDecimal baseWorkload = BigDecimal.ZERO;
           BigDecimal processingFee = BigDecimal.ZERO;
@@ -240,15 +246,16 @@ public class EmployeeWorkloadBiz {
    * 员工工作量=实收工作量+划扣卡核销工作量+补入工作量-退费工作量-免单支付工作量
    *
    * @param vo
+   * @param swipeWorkload
    * @return
    */
-  private BigDecimal computeWorkload(ClinicEmployeeWorkloadOfOperationVO vo) {
+  private BigDecimal computeWorkload(ClinicEmployeeWorkloadOfOperationVO vo, BigDecimal swipeWorkload) {
     BigDecimal receivedWorkload = vo.getReceivedWorkload();
     BigDecimal supplementWorkload = vo.getSupplementWorkload();
     BigDecimal refundWorkload = vo.getRefundWorkload();
     BigDecimal freePaymentWorkload = vo.getFreePaymentWorkload();
-      // TODO: 2023/6/25 需补充划扣卡核销工作量
     return receivedWorkload
+        .add(swipeWorkload)
         .add(supplementWorkload)
         .subtract(refundWorkload)
         .subtract(freePaymentWorkload);
@@ -262,7 +269,7 @@ public class EmployeeWorkloadBiz {
    */
   private BigDecimal ifAbsent(Map<String, BigDecimal> valueMap, String key) {
     BigDecimal value = valueMap.get(key);
-    if (value == null || value.compareTo(BigDecimal.ZERO) < 0) {
+    if (value == null || StringHelper.leZero(value)) {
       value = BigDecimal.ZERO;
     }
     return value;
@@ -363,6 +370,22 @@ public class EmployeeWorkloadBiz {
         () -> {
           List<EmployeeWorkloadVO> workloads =
               baseBillDetailMapper.selectClinicEmployeeReceivableWorkload(query);
+          return mapEmployeeWorkload(workloads);
+        });
+  }
+
+  /**
+   * 多线程查询门诊员工的划扣工作量
+   *
+   * @param query
+   * @return
+   */
+  private Future<Map<String, BigDecimal>> findClinicEmployeeSwipeWorkload(
+      ClinicEmployeeWorkloadQuery query) {
+    return threadPool.submit(
+        () -> {
+          List<EmployeeWorkloadVO> workloads =
+              baseBillDetailMapper.selectClinicEmployeeSwipeWorkload(query);
           return mapEmployeeWorkload(workloads);
         });
   }

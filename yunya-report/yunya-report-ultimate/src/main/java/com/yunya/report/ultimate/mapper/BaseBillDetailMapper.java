@@ -458,12 +458,21 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillItemInfoQuery query);
 
   /**
-   * 查询门诊员工的应收工作量
+   * 查询门诊员工的应收工作量（含划扣工作量）
    *
    * @param query
    * @return
    */
   List<EmployeeWorkloadVO> selectClinicEmployeeReceivableWorkload(
+      @Param("query") ClinicEmployeeWorkloadQuery query);
+
+  /**
+   * 查询门诊员工的划扣工作量
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeWorkloadVO> selectClinicEmployeeSwipeWorkload(
       @Param("query") ClinicEmployeeWorkloadQuery query);
 
   /**
