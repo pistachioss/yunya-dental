@@ -11,8 +11,6 @@ import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
 import com.yunya.middletable.dao.report.*;
 import com.yunya.middletable.dao.treatment.*;
 import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
-import com.yunya.models.patient_central.MemberExpendRecord;
-import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.models.report.*;
 import com.yunya.models.treatment.*;
 import lombok.extern.slf4j.Slf4j;
@@ -216,53 +214,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
             Byte type = payDetailRecord.getType();
             baseBillPayDetail.setType(type);
             baseBillPayDetail.setAccountItemId(payDetailRecord.getAccountItemId());
-            switch (type) {
-                // 会员卡
-              case 1:
-                String memberNum = payDetailRecord.getRemark();
-                if (StringHelper.isNotBlank(memberNum)) {
-                  MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
-                  memberExpendRecord.setBillPayRecordId(billPayRecordId);
-                  memberExpendRecord.setMemberId(memberNum);
-                  memberExpendRecord.setInservice(true);
-                  MemberExpendRecord memberExpendRecordResult =
-                      memberExpendRecordMapper.selectOne(memberExpendRecord);
-                  log.info(
-                      "memberExpendRecordMapper.selectOne_查询会员卡消费记录:{}", memberExpendRecordResult);
-                  if (null != memberExpendRecordResult) {
-                    baseBillPayDetail.setPrincipalAmount(
-                        memberExpendRecordResult.getExpendPrincipal());
-                    baseBillPayDetail.setBonusAmount(memberExpendRecordResult.getExpendGift());
-                    baseBillPayDetail.setCardNum(memberNum);
-                  }
-                }
-                break;
-                // 预付款
-              case 0:
-                String prepaidNum = payDetailRecord.getRemark();
-                if (StringHelper.isNotBlank(prepaidNum)) {
-                  PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord();
-                  prepaidExpendRecord.setBillPayRecordId(billPayRecordId);
-                  prepaidExpendRecord.setPrepaidId(prepaidNum);
-                  prepaidExpendRecord.setInservice(true);
-                  PrepaidExpendRecord prepaidExpendRecordResult =
-                      prepaidExpendRecordMapper.selectOne(prepaidExpendRecord);
-                  log.info(
-                      "prepaidExpendRecordMapper.selectOne_查询预付款消费记录:{}",
-                      prepaidExpendRecordResult);
-                  if (null != prepaidExpendRecordResult) {
-                    baseBillPayDetail.setPrincipalAmount(
-                        prepaidExpendRecordResult.getExpendPrincipal());
-                    baseBillPayDetail.setBonusAmount(prepaidExpendRecordResult.getExpendGift());
-                    baseBillPayDetail.setCardNum(prepaidNum);
-                  }
-                }
-                break;
-              default:
-                baseBillPayDetail.setPrincipalAmount(payDetailRecord.getAmount());
-                baseBillPayDetail.setCardNum(payDetailRecord.getRemark());//备注
-                break;
-            }
+            baseBillPayDetail.setPrincipalAmount(payDetailRecord.getAmount().subtract(payDetailRecord.getBonus()));
+            baseBillPayDetail.setBonusAmount(payDetailRecord.getBonus());
+            baseBillPayDetail.setCardNum(payDetailRecord.getRemark());//备注
             baseBillPayDetailMapper.insertSelective(baseBillPayDetail);
           });
     }

@@ -815,6 +815,7 @@ public class TreatTollBiz {
                       billPayRecord,
                       prepaymentAccountModel.getAccountItemId(),
                       prepaymentAccountModel.getAmount(),
+                      prepaymentAccountModel.getBonusAmount(),
                       (byte) 0,
                       null);
               billPayDetailRecord.setRemark(prepaymentAccountModel.getPrepaymentNum());
@@ -832,6 +833,7 @@ public class TreatTollBiz {
                       billPayRecord,
                       memberAccountModel.getAccountItemId(),
                       memberAccountModel.getAmount(),
+                      memberAccountModel.getBonusAmount(),
                       (byte) 1,
                       null);
               billPayDetailRecord.setRemark(memberAccountModel.getMemberNum());
@@ -849,6 +851,7 @@ public class TreatTollBiz {
                       billPayRecord,
                       paymentModel.getAccountItemId(),
                       paymentModel.getAmount(),
+                      BigDecimal.ZERO,
                       (byte) 2,
                       paymentModel.getRemarks());
               billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
@@ -863,12 +866,14 @@ public class TreatTollBiz {
    * @param billPayRecord 账单收费记录
    * @param accountItemId 支付方式ID
    * @param amount 支付金额
+   * @param bonus 赠金
    * @param remarks 备注
    */
   private BillPayDetailRecord setBillPayRecordDetailValue(
       BillPayRecord billPayRecord,
       Integer accountItemId,
       BigDecimal amount,
+      BigDecimal bonus,
       Byte type,
       String remarks) {
     BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
@@ -877,6 +882,7 @@ public class TreatTollBiz {
     billPayDetailRecord.setBillPayRecordId(billPayRecord.getId());
     billPayDetailRecord.setAccountItemId(accountItemId);
     billPayDetailRecord.setAmount(amount);
+    billPayDetailRecord.setBonus(bonus);
     billPayDetailRecord.setType(type);
     billPayDetailRecord.setRemark(remarks);
     return billPayDetailRecord;

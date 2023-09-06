@@ -15,6 +15,7 @@
         <result column="type" property="type" jdbcType="TINYINT"/>
         <result column="account_item_id" property="accountItemId" jdbcType="INTEGER"/>
         <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="bonus" property="bonus" jdbcType="DECIMAL"/>
         <result column="transaction_number" property="transactionNumber" jdbcType="VARCHAR"/>
         <result column="status" property="status" jdbcType="TINYINT"/>
         <result column="remark" property="remark" jdbcType="VARCHAR"/>

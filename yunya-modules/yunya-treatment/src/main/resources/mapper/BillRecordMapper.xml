@@ -576,7 +576,7 @@
     <select id="selectPatientCashById" resultType="com.yunya.feign.treatment.domain.vo.PatientCostInfoVO">
         select
         bb.patient_id AS patientId,
-        sum(bbpd.amount) as cumulativeConsumption
+        sum(bbpd.amount - bbpd.bonus) as cumulativeConsumption
         from bill_pay_detail_record bbpd
         left join bill_record bb on bbpd.bill_record_id = bb.id
         <where>

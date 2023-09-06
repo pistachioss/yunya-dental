@@ -67,6 +67,11 @@ public class BillPayDetailRecord {
     private BigDecimal amount;
 
     /**
+     * 赠金
+     */
+    private BigDecimal bonus;
+
+    /**
      * 交易号
      */
     @Column(name = "transaction_number")
@@ -301,6 +306,24 @@ public class BillPayDetailRecord {
      */
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    /**
+     * 获取赠金
+     *
+     * @return
+     */
+    public BigDecimal getBonus() {
+        return bonus;
+    }
+
+    /**
+     * 设置赠金
+     *
+     * @param bonus
+     */
+    public void setBonus(BigDecimal bonus) {
+        this.bonus = bonus;
     }
 
     /**
