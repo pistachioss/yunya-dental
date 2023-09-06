@@ -114,4 +114,12 @@ public interface BasePatientMemberOccurLogMapper extends Mapper<BasePatientMembe
    */
   List<StatementPatientCardRefundDetailVO> selectPatientCardRefundDetailList(
       @Param("query") StatementPatientCardRefundDetailQuery query);
+
+  /**
+   * 根据条件查询患者预付款间转账记录列表
+   *
+   * @param query
+   * @return
+   */
+  List<BasePrepaidTransferVO> selectPrepaidTransferList(@Param("query") PrepaidQueryForm query);
 }

@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.query.PrepaidQueryForm;
 import com.yunya.feign.report.domain.vo.BasePrepaidExpendLogVo;
 import com.yunya.feign.report.domain.vo.BasePrepaidRechargeLogVo;
 import com.yunya.feign.report.domain.vo.BasePrepaidReturnLogVo;
+import com.yunya.feign.report.domain.vo.BasePrepaidTransferVO;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -137,6 +138,36 @@ public class PrepaidOccurLogController {
     @PostMapping(value = "/return/export", name = "公司端-数据记录-预付款退费列表-导出")
     public ResponseResult<T> exportPrepaidReturnList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException {
         memberOccurLogBiz.exportPrepaidReturnList(response,prepaidQueryForm);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 查询预付款间转账记录列表
+     *
+     * @param prepaidQueryForm 预付款查询form
+     * @return 预付款转账记录列表
+     */
+    @ApiOperation("查询预付款间转账记录列表")
+    @PostMapping("/transfer/list")
+    public ResponseResult<PageInfo<BasePrepaidTransferVO>> prepaidTransferList(@RequestBody PrepaidQueryForm prepaidQueryForm) {
+        PageInfo<BasePrepaidTransferVO> result = memberOccurLogBiz.prepaidTransferList(prepaidQueryForm);
+        if (StringHelper.isNotNull(result)){
+            return ResponseUtil.success(result);
+        }
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据", null);
+    }
+
+    /**
+     * 导出预付款间转账记录列表
+     *
+     * @param response 响应
+     * @param prepaidQueryForm 查询条件
+     * @return 预付款退费列表
+     */
+    @ApiOperation("导出预付款间转账记录列表")
+    @PostMapping(value = "/transfer/export")
+    public ResponseResult<T> exportPrepaidTransferList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException {
+        memberOccurLogBiz.exportPrepaidTransferList(response,prepaidQueryForm);
         return ResponseUtil.success(null);
     }
 

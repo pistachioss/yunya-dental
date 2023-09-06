@@ -48,11 +48,11 @@ public class PrepaidQueryForm implements Serializable {
     /** 预付款账号 */
     private String cardNumber;
 
-    @ApiModelProperty(value = "充值开始日期", required = false)
+    @ApiModelProperty(value = "开始日期", required = false)
     /** 充值开始日期 */
     private String startDate;
 
-    @ApiModelProperty(value = "充值结束日期", required = false)
+    @ApiModelProperty(value = "结束日期", required = false)
     /** 充值结束日期 */
     private String endDate;
 

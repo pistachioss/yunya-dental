@@ -623,4 +623,37 @@ public class MemberOccurLogBiz
     }
     excelUtil.exportExcel(response, list, "患者储值卡退费记录明细", fileName);
   }
+
+  /**
+   * 查询预付款间转账记录列表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<BasePrepaidTransferVO> prepaidTransferList(PrepaidQueryForm query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BasePrepaidTransferVO> result = mapper.selectPrepaidTransferList(query);
+    return new PageInfo<>(result);
+  }
+
+  /**
+   * 导出预付款间转账记录列表
+   *
+   * @param response
+   * @param query
+   * @throws IOException
+   */
+  public void exportPrepaidTransferList(HttpServletResponse response, PrepaidQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    List<BasePrepaidTransferVO> result = prepaidTransferList(query).getList();
+    ExcelUtil<BasePrepaidTransferVO> excelUtil = new ExcelUtil<>(BasePrepaidTransferVO.class);
+    BaseOrganization org = baseOrganizationMapper.selectByPrimaryKey(query.getOrgId());
+    String fileName = "预付款退费记录表";
+    if (StringHelper.isNotNull(org)) {
+      fileName = org.getAbbreviation() + fileName;
+    }
+    excelUtil.exportExcel(response, result, "预付款退款记录表", fileName);
+  }
 }
