@@ -9,6 +9,7 @@ import com.yunya.feign.discount.domain.model.CouponOrderModel;
 import com.yunya.feign.discount.domain.vo.CouponOrderDetailVO;
 import com.yunya.feign.discount.domain.vo.CouponOrderVO;
 import com.yunya.feign.discount.domain.vo.CouponPayDetailVO;
+import com.yunya.feign.middle.RemoteMiddleServiceFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -74,6 +75,8 @@ public class CouponOrderBiz {
     private RemotePatientCentralServiceFeign patientFeign;
     @Autowired
     private RemoteRabbitMqServiceFeign mqServiceFeign;
+    @Resource
+    private RemoteMiddleServiceFeign middleServiceFeign;
 
     @Transactional(rollbackFor = Exception.class)
     public CouponOrderVO soldCard(CouponOrderModel model) {
@@ -169,14 +172,22 @@ public class CouponOrderBiz {
                     return couponChangeRecord;
                 }).collect(toList());
                 log.info("划扣结存购买：{}", JSON.toJSONString(list));
-                list.forEach(t -> changeRecordMapper.insertSelective(t));
+                list.forEach(t -> {
+                    changeRecordMapper.insertSelective(t);
+                    middleServiceFeign.occur(t);
+                });
             }
         }
         if (Objects.equals(occurType, 2)) {
             List<CardBenefit> orderBenefit = getOrderBenefit(orderId);
             Map<Integer, List<String>> collect = orderBenefit.stream().collect(groupingBy(CardBenefit::getCardId, mapping(t -> Joiner.on("-").join(t.getItemId(), t.getItemType()), toList())));
-            collect.forEach((k,v) -> {
+            for (Map.Entry<Integer, List<String>> entry : collect.entrySet()) {
+                Integer k = entry.getKey();
+                List<String> v = entry.getValue();
                 CouponChangeRecord latest = changeRecordMapper.getLatest(patientId, k);
+                if (Objects.isNull(latest)) {
+                    continue;
+                }
                 List<DeductionItemPeriod> list = periodBiz.list(k);
                 BigDecimal reduce = list.stream().filter(t1 -> {
                     String join = Joiner.on("-").join(t1.getItemId(), t1.getType());
@@ -192,10 +203,14 @@ public class CouponOrderBiz {
                 newBean.setId(null);
                 log.info("划扣结存消费：{}", JSON.toJSONString(newBean));
                 changeRecordMapper.insertSelective(newBean);
-            });
+                middleServiceFeign.occur(newBean);
+            }
         }
         if (Objects.equals(occurType, 3)) {
             CouponChangeRecord latest = changeRecordMapper.getLatest(patientId, cardId);
+            if (Objects.isNull(latest)) {
+                return;
+            }
             CouponChangeRecord newBean = BeanCopierUtils.generalCopyBean(latest, CouponChangeRecord.class);
             newBean.setOrderId(orderId);
             newBean.setOccurType(occurType);
@@ -206,6 +221,7 @@ public class CouponOrderBiz {
             newBean.setId(null);
             log.info("划扣结存退费：{}", JSON.toJSONString(newBean));
             changeRecordMapper.insertSelective(newBean);
+            middleServiceFeign.occur(newBean);
         }
     }
 

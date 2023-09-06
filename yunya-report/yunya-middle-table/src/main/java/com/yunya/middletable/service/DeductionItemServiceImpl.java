@@ -8,10 +8,12 @@ import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.middletable.dao.discount.CouponChangeRecordMapper;
 import com.yunya.middletable.dao.discount.CouponMapper;
 import com.yunya.middletable.dao.discount.DeductionItemPeriodMapper;
 import com.yunya.middletable.dao.discount.SpecialPackageCouponItemMapper;
 import com.yunya.middletable.dao.report.DeductionItemMapper;
+import com.yunya.models.discount.CouponChangeRecord;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.DeductionItemPeriod;
 import com.yunya.models.discount.SpecialPackageCouponItem;
@@ -60,6 +62,8 @@ public class DeductionItemServiceImpl extends BaseBiz<DeductionItemMapper, Deduc
     private SpecialPackageCouponItemMapper specialPackageCouponItemMapper;
     @Resource
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
+    @Resource
+    private CouponChangeRecordMapper changeRecordMapper;
 
 	private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -236,4 +240,9 @@ public class DeductionItemServiceImpl extends BaseBiz<DeductionItemMapper, Deduc
 			return null;
 		};
 	}
+
+    public void occur(CouponChangeRecord newBean) {
+        changeRecordMapper.insertSelective(newBean);
+    }
+
 }

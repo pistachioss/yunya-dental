@@ -6,6 +6,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.DeductionItemServiceImpl;
+import com.yunya.models.discount.CouponChangeRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,5 +38,11 @@ public class DeductionItemController {
 		}
 		return ResponseUtil.success();
 	}
+
+    @PostMapping("/deduction/occur")
+    public ResponseResult<Boolean> occur(@RequestBody CouponChangeRecord newBean) {
+        deductionItemService.occur(newBean);
+        return ResponseUtil.success();
+    }
 
 }
