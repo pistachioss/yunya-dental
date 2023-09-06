@@ -166,7 +166,7 @@ public class TreatTollBiz {
       }
     }
     result.setSwipeItemList(swipeItemList);
-    if (StringHelper.isNotEmpty(detailMap) && StringHelper.isNotEmpty(itemList)) {
+    if (StringHelper.isNotEmpty(detailMap) || StringHelper.isNotEmpty(itemList)) {
       for (Map.Entry<Integer, OrderDetailChargeVO> entry : detailMap.entrySet()) {
         OrderDetailChargeVO vo = entry.getValue();
         BigDecimal receivableAmount = vo.getPrice().multiply(BigDecimal.valueOf(vo.getQuantity()));
