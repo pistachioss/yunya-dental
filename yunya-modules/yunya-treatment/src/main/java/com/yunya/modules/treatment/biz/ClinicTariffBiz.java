@@ -630,7 +630,6 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
           categoryId = tariffInfo.getOralTariffCategoryId();
           categoryNumber = tariffInfo.getOralTariffCategoryNumber();
         }
-        vo.setId(itemId);
         vo.setTariffId(itemId);
         vo.setEnglishName(englishName);
         vo.setName(name);
@@ -640,6 +639,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
         vo.setTariffCategoryName(categoryName);
         vo.setOrgId(orgId);
         vo.setInservice(true);
+        vo.setQuantity(item.getQuantity());
         vo.setTariffCategoryId(categoryId);
         vo.setTariffCategoryNumber(categoryNumber);
         setClinicTariffMemberPrice(Maps.newHashMapWithExpectedSize(16), memberTypes, orgId, vo);
