@@ -54,7 +54,7 @@ public class BasePrepaidTransferVO implements Serializable {
     /** 转出赠金 */
     @Excel(name = "转出赠金", type = EXPORT, isStatistics = true, cellType = NUMERIC)
     @ApiModelProperty("转出赠金")
-    private BigDecimal outBouns;
+    private BigDecimal outBonus;
 
     /** 转出后本金 */
     @Excel(name = "转出后本金", type = EXPORT, isStatistics = true, cellType = NUMERIC)
@@ -64,7 +64,7 @@ public class BasePrepaidTransferVO implements Serializable {
     /** 转出后赠金 */
     @Excel(name = "转出后赠金", type = EXPORT, isStatistics = true, cellType = NUMERIC)
     @ApiModelProperty("转出后赠金")
-    private BigDecimal currentBouns;
+    private BigDecimal currentBonus;
 
     /** 转入患者 */
     @Excel(name = "转入患者")
