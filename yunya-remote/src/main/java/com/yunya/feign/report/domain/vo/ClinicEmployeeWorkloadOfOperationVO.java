@@ -36,6 +36,10 @@ public class ClinicEmployeeWorkloadOfOperationVO extends ClinicEmployeBonusCoeff
   @Excel(name = "实收工作量（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("实收工作量（元）")
   private BigDecimal receivedWorkload;
+  /** 划扣工作量 */
+  @Excel(name = "划扣工作量（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("划扣工作量")
+  private BigDecimal swipeWorkload;
   /** 免单支付工作量（元） */
   @Excel(name = "免单支付工作量（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("免单支付工作量（元）")
@@ -44,6 +48,10 @@ public class ClinicEmployeeWorkloadOfOperationVO extends ClinicEmployeBonusCoeff
   @Excel(name = "补入工作量（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("补入工作量（元）")
   private BigDecimal supplementWorkload;
+  /** 划扣补入工作量 */
+  @Excel(name = "划扣补入工作量（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("划扣补入工作量")
+  private BigDecimal swipeCouponWorkload;
   /** 退费工作量（元） */
   @Excel(name = "退费工作量（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("退费工作量（元）")

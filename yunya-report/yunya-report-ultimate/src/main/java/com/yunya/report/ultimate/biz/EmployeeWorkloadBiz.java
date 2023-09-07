@@ -82,15 +82,12 @@ public class EmployeeWorkloadBiz {
     Future<Map<String, BigDecimal>> receivableWorkload =
         findClinicEmployeeReceivableWorkload(query);
 
-    // 门诊员工的划扣工作量
-    Future<Map<String, BigDecimal>> swipeWorkload = findClinicEmployeeSwipeWorkload(query);
-
     // 门诊员工的实收工作量（含免单）
     Future<Map<String, BigDecimal>> receivedWorkload =
         findClinicEmployeeReceivedWorkload(query, true);
 
-    // 门诊员工的补入工作量
-    Future<Map<String, BigDecimal>> supplementWorkload =
+    // 门诊员工的补入工作量（含划扣工作量、划扣补入工作量）
+    Future<Map<String, EmployeeWorkloadVO>> supplementWorkload =
         findClinicEmployeeSupplementWorkload(query);
 
     // 门诊员工的免单支付工作量
@@ -109,7 +106,6 @@ public class EmployeeWorkloadBiz {
             employee,
             receivableWorkload,
             receivedWorkload,
-            swipeWorkload,
             supplementWorkload,
             freePaymentWorkload,
             refundWorkload,
@@ -190,8 +186,7 @@ public class EmployeeWorkloadBiz {
       Future<List<ClinicEmployeBonusCoefficientVO>> empFuture,
       Future<Map<String, BigDecimal>> receivableWorkload,
       Future<Map<String, BigDecimal>> receivedWorkload,
-      Future<Map<String, BigDecimal>> swipeWorkload,
-      Future<Map<String, BigDecimal>> supplementWorkload,
+      Future<Map<String, EmployeeWorkloadVO>> supplementWorkload,
       Future<Map<String, BigDecimal>> freePaymentWorkload,
       Future<Map<String, BigDecimal>> refundWorkload,
       Future<Map<String, EmployeeWorkloadCost>> fee)
@@ -199,8 +194,7 @@ public class EmployeeWorkloadBiz {
     List<ClinicEmployeBonusCoefficientVO> employees = empFuture.get();
     Map<String, BigDecimal> receivableMap = receivableWorkload.get();
     Map<String, BigDecimal> receivedMap = receivedWorkload.get();
-    Map<String, BigDecimal> swipeMap = swipeWorkload.get();
-    Map<String, BigDecimal> suppleMap = supplementWorkload.get();
+    Map<String, EmployeeWorkloadVO> suppleMap = supplementWorkload.get();
     Map<String, BigDecimal> freePaymentMap = freePaymentWorkload.get();
     Map<String, BigDecimal> refundMap = refundWorkload.get();
     Map<String, EmployeeWorkloadCost> feeMap = fee.get();
@@ -218,10 +212,21 @@ public class EmployeeWorkloadBiz {
           vo.setOrgId(orgId);
           vo.setActualWorkload(ifAbsent(receivableMap, key));
           vo.setReceivedWorkload(ifAbsent(receivedMap, key));
-          vo.setSupplementWorkload(ifAbsent(suppleMap, key));
+          BigDecimal couponWorkload = BigDecimal.ZERO;
+          BigDecimal swipeWorkload = BigDecimal.ZERO;
+          BigDecimal swipeCouponWorkload = BigDecimal.ZERO;
+          EmployeeWorkloadVO supply = suppleMap.get(key);
+          if (StringHelper.isNotNull(supply)) {
+            couponWorkload = StringHelper.defaultBigDecimal(supply.getWorkload());
+            swipeWorkload = StringHelper.defaultBigDecimal(supply.getWorkload1());
+            swipeCouponWorkload = StringHelper.defaultBigDecimal(supply.getWorkload2());
+          }
+          vo.setSupplementWorkload(couponWorkload);
           vo.setFreePaymentWorkload(ifAbsent(freePaymentMap, key));
           vo.setRefundWorkload(ifAbsent(refundMap, key));
-          vo.setEmployeeWorkload(computeWorkload(vo, ifAbsent(swipeMap, key)));
+          vo.setSwipeWorkload(swipeWorkload);
+          vo.setSwipeCouponWorkload(swipeCouponWorkload);
+          vo.setEmployeeWorkload(computeWorkload(vo));
           EmployeeWorkloadCost employeeWorkloadCost = feeMap.get(key);
           BigDecimal baseWorkload = BigDecimal.ZERO;
           BigDecimal processingFee = BigDecimal.ZERO;
@@ -246,19 +251,15 @@ public class EmployeeWorkloadBiz {
    * 员工工作量=实收工作量+划扣卡核销工作量+补入工作量-退费工作量-免单支付工作量
    *
    * @param vo
-   * @param swipeWorkload
    * @return
    */
-  private BigDecimal computeWorkload(ClinicEmployeeWorkloadOfOperationVO vo, BigDecimal swipeWorkload) {
+  private BigDecimal computeWorkload(ClinicEmployeeWorkloadOfOperationVO vo) {
     BigDecimal receivedWorkload = vo.getReceivedWorkload();
-    BigDecimal supplementWorkload = vo.getSupplementWorkload();
-    BigDecimal refundWorkload = vo.getRefundWorkload();
-    BigDecimal freePaymentWorkload = vo.getFreePaymentWorkload();
     return receivedWorkload
-        .add(swipeWorkload)
-        .add(supplementWorkload)
-        .subtract(refundWorkload)
-        .subtract(freePaymentWorkload);
+        .add(vo.getSwipeWorkload())
+        .add(vo.getSupplementWorkload())
+        .subtract(vo.getRefundWorkload())
+        .subtract(vo.getFreePaymentWorkload());
   }
 
   /**
@@ -331,13 +332,15 @@ public class EmployeeWorkloadBiz {
    * @param query
    * @return
    */
-  private Future<Map<String, BigDecimal>> findClinicEmployeeSupplementWorkload(
+  private Future<Map<String, EmployeeWorkloadVO>> findClinicEmployeeSupplementWorkload(
       ClinicEmployeeWorkloadQuery query) {
     return threadPool.submit(
         () -> {
           List<EmployeeWorkloadVO> workloads =
               baseBillDetailMapper.selectClinicEmployeeSupplementWorkload(query);
-          return mapEmployeeWorkload(workloads);
+          return workloads.stream().collect(toMap(vo-> String.valueOf(vo.getEmployeeId())
+                  + (StringHelper.isNotNull(vo.getOrgId())? "," + vo.getOrgId() : StringHelper.EMPTY),
+                  Function.identity()));
         });
   }
 
@@ -370,22 +373,6 @@ public class EmployeeWorkloadBiz {
         () -> {
           List<EmployeeWorkloadVO> workloads =
               baseBillDetailMapper.selectClinicEmployeeReceivableWorkload(query);
-          return mapEmployeeWorkload(workloads);
-        });
-  }
-
-  /**
-   * 多线程查询门诊员工的划扣工作量
-   *
-   * @param query
-   * @return
-   */
-  private Future<Map<String, BigDecimal>> findClinicEmployeeSwipeWorkload(
-      ClinicEmployeeWorkloadQuery query) {
-    return threadPool.submit(
-        () -> {
-          List<EmployeeWorkloadVO> workloads =
-              baseBillDetailMapper.selectClinicEmployeeSwipeWorkload(query);
           return mapEmployeeWorkload(workloads);
         });
   }
@@ -442,7 +429,7 @@ public class EmployeeWorkloadBiz {
         vo -> {
           String key = vo.getEmployeeId() + "";
           Integer orgId = vo.getOrgId();
-          if (orgId != null) {
+          if (StringHelper.isNotNull(orgId)) {
             key += "," + orgId;
           }
           result.put(key, vo.getWorkload());
@@ -569,7 +556,9 @@ public class EmployeeWorkloadBiz {
     result.setAbbreviation(vo.getAbbreviation());
     result.setActualWorkload(vo.getActualWorkload());
     result.setReceivedWorkload(vo.getReceivedWorkload());
+    result.setSwipeWorkload(vo.getSwipeWorkload());
     result.setSupplementWorkload(vo.getSupplementWorkload());
+    result.setSwipeCouponWorkload(vo.getSwipeCouponWorkload());
     result.setRefundWorkload(vo.getRefundWorkload());
     result.setFreePaymentWorkload(vo.getFreePaymentWorkload());
     result.setProcessingFee(vo.getProcessingFee());

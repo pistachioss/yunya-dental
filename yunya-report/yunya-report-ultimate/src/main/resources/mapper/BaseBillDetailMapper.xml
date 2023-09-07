@@ -4891,63 +4891,6 @@
         GROUP BY bbd.employeeId, bbd.org_id
     </select>
 
-    <!--查询门诊员工的划扣金额工作量-->
-    <select id="selectClinicEmployeeSwipeWorkload"
-            resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadVO">
-        SELECT
-        bbd.employeeId,
-        bbd.org_id AS orgId,
-        SUM(bbd.swipe_workload) AS workload
-        FROM (
-        SELECT
-        if(#{query.isConsulter} = 0, bbd.executor_id, bbd.consulter_id) as employeeId,
-        bbd.org_id,
-        bbd.swipe_workload
-        FROM base_bill_detail bbd
-        INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
-        <where>
-            AND bb.bill_date IS NOT NULL
-            <if test="query.isConsulter == 0">
-                and bbd.executor_id > 0
-            </if>
-            <if test="query.isConsulter == 1">
-                and bbd.consulter_id > 0
-            </if>
-            <if test="query.orgIds != null and query.orgIds.length > 0">
-                and bb.org_id in
-                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
-        ) bbd
-        GROUP BY bbd.employeeId, bbd.org_id
-    </select>
-
     <!--查询门诊员工的实收工作量-->
     <select id="selectClinicEmployeeReceivedWorkload"
             resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadVO">
@@ -5138,12 +5081,16 @@
         SELECT
         bbd.employeeId,
         bbd.org_id AS orgId,
-        SUM(bbd.coupon_workload) AS workload
+        SUM(bbd.coupon_workload) AS workload,
+        SUM(bbd.swipe_workload) AS workload1,
+        SUM(bbd.swipe_coupon_workload) AS workload2
         FROM (
         SELECT
         if(#{query.isConsulter} = 0, bbd.executor_id, bbd.consulter_id) as employeeId,
         bbd.org_id,
-        bbd.coupon_workload
+        bbd.coupon_workload,
+        bbd.swipe_workload,
+        bbd.swipe_coupon_workload
         FROM base_bill_detail bbd
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         <where>

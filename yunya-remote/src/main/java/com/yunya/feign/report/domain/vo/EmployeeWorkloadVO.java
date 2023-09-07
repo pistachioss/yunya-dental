@@ -25,4 +25,10 @@ public class EmployeeWorkloadVO extends ClinicEmployeeReportVO implements Serial
 
     @ApiModelProperty("工作量")
     private BigDecimal workload;
+
+    @ApiModelProperty("工作量1")
+    private BigDecimal workload1;
+
+    @ApiModelProperty("工作量2")
+    private BigDecimal workload2;
 }
