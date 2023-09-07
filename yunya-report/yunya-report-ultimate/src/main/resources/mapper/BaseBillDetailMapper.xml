@@ -6635,4 +6635,196 @@
         bb.order_date DESC,
         bb.bill_num DESC
     </select>
+
+    <!--根据条件查询员工个人划扣工作量明细列表-->
+    <select id="selectEmployeePersonalSwipeWorkloadDetailList"
+            resultType="com.yunya.feign.report.domain.vo.EmployeePersonalSwipeWorkloadDetailVO">
+        SELECT
+            bb.org_id AS orgId,
+            bb.bill_id AS billId,
+            bb.privilege_date AS chargeDate,
+            bb.bill_date AS billDate,
+            bb.bill_num AS billNum,
+            bp.name AS patientName,
+            bp.mobile,
+            bbd.swipeWorkload
+        FROM (
+            SELECT
+                bill_id,
+                SUM(swipe_workload) AS swipeWorkload
+            FROM base_bill_detail bbd
+            <where>
+                <if test="query.isConsulter == 0">
+                    AND bbd.executor_id = #{query.employeeId}
+                </if>
+                <if test="query.isConsulter == 1">
+                    AND bbd.consulter_id = #{query.employeeId}
+                </if>
+            </where>
+            GROUP BY bill_id
+        ) bbd
+        LEFT JOIN base_bill bb ON bbd.bill_id=bb.bill_id
+        LEFT JOIN base_patient bp ON bp.patient_id=bb.patient_id
+        <where>
+            AND bbd.swipeWorkload > 0
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bb.bill_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bb.bill_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND concat(IFNULL(bp.patientName, ''), IFNULL(bp.pinyinName, ''), IFNULL(bp.mobile, '')) Like
+                concat('%', #{query.keyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                AND bb.billNum LIKE concat('%', #{query.billNum} ,'%')
+            </if>
+            <if test="query.billDate != null and query.billDate != ''">
+                AND DATE_FORMAT(bb.bill_date, '%Y-%m-%d') = #{query.billDate}
+            </if>
+        </where>
+        ORDER BY bb.bill_Date DESC, bb.bill_Num DESC
+    </select>
+
+    <!--根据条件查询员工划扣补入工作量明细列表-->
+    <select id="selectEmployeePersonalSwipeCouponWorkloadDetailList"
+            resultType="com.yunya.feign.report.domain.vo.EmployeePersonalSwipeCouponWorkloadDetailVO">
+        SELECT
+            orgId,
+            billId,
+            billNum,
+            DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
+            totalOriginalAmount,
+            privilegeAmount,
+            actualAmount,
+            patientName,
+            mobile,
+            swipeCouponWorkload
+        FROM (
+            SELECT
+            bb.orgId,
+            bb.billId,
+            bb.billNum,
+            bb.billDate,
+            bb.totalOriginalAmount,
+            bb.privilegeAmount,
+            bb.actualAmount,
+            bb.patientName,
+            bb.mobile,
+            bbd.swipeCouponWorkload
+            FROM (
+                SELECT
+                    bbd.bill_id,
+                    SUM(bbd.swipe_coupon_workload) AS swipeCouponWorkload
+                FROM
+                base_bill_detail bbd
+                <where>
+                    <if test="query.orgId != null">
+                        AND bbd.org_id = #{query.orgId}
+                    </if>
+                    <if test="query.isConsulter == 0">
+                        AND bbd.executor_id = #{query.employeeId}
+                    </if>
+                    <if test="query.isConsulter == 1">
+                        AND bbd.consulter_id = #{query.employeeId}
+                    </if>
+                </where>
+                GROUP BY
+                bbd.bill_id
+                <if test="query.isConsulter == 0">
+                    , bbd.executor_id
+                </if>
+                <if test="query.isConsulter == 1">
+                    , bbd.consulter_id
+                </if>
+            ) bbd
+            INNER JOIN (
+                SELECT
+                bb.org_id as orgId,
+                bb.bill_id AS billId,
+                bb.bill_num AS billNum,
+                bb.bill_date AS billDate,
+                bb.order_date AS orderDate,
+                bb.order_amount AS totalOriginalAmount,
+                bb.privilege_amount AS privilegeAmount,
+                bb.actual_amount AS actualAmount,
+                bb.patient_id AS patientId,
+                bp.`name` AS patientName,
+                bp.pinyin_name AS pinyinName,
+                TIMESTAMPDIFF(YEAR,bp.birthday,CURDATE()) AS age,
+                bp.mobile AS mobile
+                FROM
+                base_bill bb
+                LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+                <where>
+                    <if test="query.orgId != null">
+                        AND bb.org_id = #{query.orgId}
+                    </if>
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            AND DATE_FORMAT( bb.bill_date, '%Y' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+            ) bb ON bbd.bill_id = bb.billId
+        ) bbd
+        <where>
+            bbd.swipeCouponWorkload > 0
+            <if test="query.keyword != null and query.keyword != ''">
+                AND concat(IFNULL(bbd.patientName, ''), IFNULL(bbd.pinyinName, ''), IFNULL(bbd.mobile, '')) Like
+                concat('%', #{query.keyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                AND bbd.billNum LIKE concat('%', #{query.billNum} ,'%')
+            </if>
+            <if test="query.orderDate != null and query.orderDate != ''">
+                AND DATE_FORMAT(bbd.orderDate, '%Y-%m-%d') = #{query.orderDate}
+            </if>
+            <if test="query.billDate != null and query.billDate != ''">
+                AND DATE_FORMAT(bbd.billDate, '%Y-%m-%d') = #{query.billDate}
+            </if>
+        </where>
+        ORDER BY bbd.billDate DESC, bbd.billNum DESC
+    </select>
 </mapper>

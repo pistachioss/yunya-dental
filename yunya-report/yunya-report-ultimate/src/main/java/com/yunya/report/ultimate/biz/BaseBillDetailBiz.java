@@ -2991,4 +2991,74 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   public List<EmployeeTariffWorkloadVO> findExecutorTariffItemStatistics(MultiClinicEmloyeeDateRangeQueryForm query) {
     return mapper.selectExecutorTariffItemStatistics(query);
   }
+
+  /**
+   * 根据条件查询员工个人划扣工作量明细列表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<EmployeePersonalSwipeWorkloadDetailVO> findEmployeePersonalSwipeWorkloadDetailList(EmployeePersonalWorkloadDetailQuery query) {
+      if (query.getWhetherPage()) {
+          PageHelper.startPage(query.getPageNum(), query.getPageSize());
+      }
+      List<EmployeePersonalSwipeWorkloadDetailVO> result = mapper.selectEmployeePersonalSwipeWorkloadDetailList(query);
+      return new PageInfo<>(result);
+  }
+
+    /**
+     * 根据条件导出员工个人划扣工作量明细列表
+     *
+     * @param response http响应
+     * @param query 查询条件
+     */
+    public void exportEmployeePersonalSwipeWorkloadDetailList(
+            HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) throws IOException {
+        query.setWhetherPage(false);
+        List<EmployeePersonalSwipeWorkloadDetailVO> result =
+                findEmployeePersonalSwipeWorkloadDetailList(query).getList();
+        BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+        String fileName = query.getStartDate() + "-" + query.getEndDate() + "划扣工作量明细表";
+        if (null != organization) {
+            fileName = organization.getAbbreviation();
+        }
+        ExcelUtil<EmployeePersonalSwipeWorkloadDetailVO> excelUtil =
+                new ExcelUtil<>(EmployeePersonalSwipeWorkloadDetailVO.class);
+        excelUtil.exportExcel(response, result, "个人划扣工作量明细列表", fileName);
+    }
+
+    /**
+     * 根据条件查询员工划扣补入工作量明细列表
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<EmployeePersonalSwipeCouponWorkloadDetailVO> findEmployeePersonalSwipeCouponWorkloadDetailList(EmployeePersonalWorkloadDetailQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<EmployeePersonalSwipeCouponWorkloadDetailVO> result = mapper.selectEmployeePersonalSwipeCouponWorkloadDetailList(query);
+        return new PageInfo<>(result);
+    }
+
+    /**
+     * 根据条件导出员工个人划扣补入工作量明细列表
+     *
+     * @param response http响应
+     * @param query 查询条件
+     */
+    public void exportEmployeePersonalSwipeCouponWorkloadDetailList(
+            HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) throws IOException {
+        query.setWhetherPage(false);
+        List<EmployeePersonalSwipeCouponWorkloadDetailVO> result =
+                findEmployeePersonalSwipeCouponWorkloadDetailList(query).getList();
+        BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+        String fileName = query.getStartDate() + "-" + query.getEndDate() + "划扣补入工作量明细表";
+        if (null != organization) {
+            fileName = organization.getAbbreviation();
+        }
+        ExcelUtil<EmployeePersonalSwipeCouponWorkloadDetailVO> excelUtil =
+                new ExcelUtil<>(EmployeePersonalSwipeCouponWorkloadDetailVO.class);
+        excelUtil.exportExcel(response, result, "个人划扣补入工作量明细列表", fileName);
+    }
 }

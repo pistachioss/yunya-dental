@@ -156,6 +156,72 @@ public class CompanyReportOfPersonnelController {
   }
 
   /**
+   * 根据条件查询员工划扣工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeePersonalReceivedWorkloadDetailVO>
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-划扣工作量明细")
+  @PostMapping(value = "/employee/workload/swipe/list", name = "根据条件查询员工个人划扣工作量明细列表")
+  public ResponseResult<PageInfo<EmployeePersonalSwipeWorkloadDetailVO>>
+      findEmployeePersonalSwipeWorkloadDetailList(
+          @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
+    PageInfo<EmployeePersonalSwipeWorkloadDetailVO> pageInfo =
+        billDetailBiz.findEmployeePersonalSwipeWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出员工个人划扣工作量明细列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-划扣工作量明细-导出")
+  @PostMapping(value = "/employee/workload/swipe/export", name = "根据条件导出员工个人划扣工作量明细列表")
+  public ResponseResult exportEmployeePersonalSwipeWorkloadDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
+      throws IOException {
+    billDetailBiz.exportEmployeePersonalSwipeWorkloadDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工划扣补入工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeePersonalReceivedWorkloadDetailVO>
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-划扣补入工作量明细")
+  @PostMapping(value = "/employee/workload/swipeCoupon/list", name = "根据条件查询员工个人划扣补入工作量明细列表")
+  public ResponseResult<PageInfo<EmployeePersonalSwipeCouponWorkloadDetailVO>>
+      findEmployeePersonalSwipeCouponWorkloadDetailList(
+          @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
+    PageInfo<EmployeePersonalSwipeCouponWorkloadDetailVO> pageInfo =
+        billDetailBiz.findEmployeePersonalSwipeCouponWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出员工个人划扣补入工作量明细列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-划扣补入工作量明细-导出")
+  @PostMapping(value = "/employee/workload/swipeCoupon/export", name = "根据条件导出员工个人划扣补入工作量明细列表")
+  public ResponseResult exportEmployeePersonalSwipeCouponWorkloadDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
+      throws IOException {
+    billDetailBiz.exportEmployeePersonalSwipeCouponWorkloadDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 根据条件查询员工已收工作量明细列表
    *
    * @param query 查询条件
