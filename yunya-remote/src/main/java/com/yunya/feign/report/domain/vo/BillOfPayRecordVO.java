@@ -80,6 +80,10 @@ public class BillOfPayRecordVO implements Serializable {
   @Excel(name = "本次收费金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("本次收费金额")
   private BigDecimal receivedAmount;
+  /** 本次划扣金额 */
+  @Excel(name = "本次划扣金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("本次划扣金额")
+  private BigDecimal swipeAmount;
   /** 本次欠费金额 */
   @Excel(name = "本次欠费金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("本次欠费金额")
