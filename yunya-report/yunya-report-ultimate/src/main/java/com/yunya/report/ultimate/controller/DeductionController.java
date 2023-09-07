@@ -1,42 +1,61 @@
-//package com.yunya.report.ultimate.controller;
-//
-//import com.alibaba.excel.EasyExcel;
-//import com.github.pagehelper.PageInfo;
-//import com.yunya.feign.report.domain.query.CouponUseQuery;
-//import com.yunya.feign.report.domain.query.DeductionPeriodQuery;
-//import com.yunya.feign.report.domain.vo.CouponUseVo;
-//import com.yunya.framework.common.model.ResponseResult;
-//import com.yunya.framework.common.utils.ResponseUtil;
-//import com.yunya.report.ultimate.biz.DiscountBiz;
-//import io.swagger.annotations.Api;
-//import io.swagger.annotations.ApiOperation;
-//import lombok.extern.slf4j.Slf4j;
-//import org.springframework.web.bind.annotation.PostMapping;
-//import org.springframework.web.bind.annotation.RequestBody;
-//import org.springframework.web.bind.annotation.RestController;
-//
-//import javax.annotation.Resource;
-//import javax.servlet.http.HttpServletResponse;
-//import javax.validation.Valid;
-//import java.io.IOException;
-//
-//@Api(tags = {"划扣表接口"})
-//@Slf4j
-//@RestController
-//public class DeductionController {
-//	@Resource
-//	private DiscountBiz discountBiz;
-//
-//	@ApiOperation(value = "公司端-报表统计-市场报表-产品使用报表")
-//	@PostMapping("/coupon/use/page")
-//	public ResponseResult<PageInfo<CouponUseVo>> getCouponUse(@RequestBody DeductionPeriodQuery query) {
-//		return ResponseUtil.success(discountBiz.getCouponUse(query));
-//	}
-//	@ApiOperation(value = "公司端-产品使用报表-导出")
-//	@PostMapping("/coupon/use/page/export")
-//	public void getCouponUseExport(HttpServletResponse response,@Valid @RequestBody CouponUseQuery query) throws IOException {
-//		discountBiz.buildResponse(response, "产品使用记录");
-//		EasyExcel.write(response.getOutputStream(), CouponUseVo.class)
-//				.sheet("sheet").doWrite(discountBiz.getCouponUse(query).getList());
-//	}
-//}
+package com.yunya.report.ultimate.controller;
+
+import com.alibaba.excel.EasyExcel;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.DeductionPeriodQuery;
+import com.yunya.feign.report.domain.vo.CouponUseVo;
+import com.yunya.feign.report.domain.vo.DeductionBalanceInfoVO;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.report.ultimate.biz.DeductionBiz;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.IOException;
+
+@Api(tags = {"划扣表接口"})
+@Slf4j
+@RestController
+public class DeductionController {
+    @Resource
+    private DeductionBiz deductionBiz;
+
+    @ApiOperation(value = "公司端-报表统计-财务报表-划扣卡结存表")
+    @PostMapping("/deduction/chang/balance")
+    public ResponseResult<PageInfo<DeductionBalanceInfoVO>> deductionChange(@RequestBody DeductionPeriodQuery query) {
+        return ResponseUtil.success(deductionBiz.deductionChange(query));
+    }
+
+    @ApiOperation(value = "公司端-报表统计-财务报表-划扣卡结存表-导出")
+    @PostMapping("/deduction/chang/balance/export")
+    public void deductionChangeExport(HttpServletResponse response, @Valid @RequestBody DeductionPeriodQuery query) throws IOException {
+        deductionBiz.buildResponse(response, "划扣结存表");
+        EasyExcel.write(response.getOutputStream(), CouponUseVo.class)
+                .sheet("sheet").doWrite(deductionBiz.deductionChange(query).getList());
+    }
+
+    @ApiOperation(value = "运营报表-划扣卡购买记录")
+    @PostMapping("/deduction/buy/record")
+    public ResponseResult<PageInfo<DeductionBalanceInfoVO>> deductionBuy(@RequestBody DeductionPeriodQuery query) {
+        return ResponseUtil.success(deductionBiz.deductionChange(query));
+    }
+
+    @ApiOperation(value = "运营报表-划扣卡消耗记录")
+    @PostMapping("/deduction/used/record")
+    public ResponseResult<PageInfo<DeductionBalanceInfoVO>> deductionUse(@RequestBody DeductionPeriodQuery query) {
+        return ResponseUtil.success(deductionBiz.deductionChange(query));
+    }
+
+    @ApiOperation(value = "运营报表-划扣卡退费记录")
+    @PostMapping("/deduction/refund/record")
+    public ResponseResult<PageInfo<DeductionBalanceInfoVO>> deductionRefund(@RequestBody DeductionPeriodQuery query) {
+        return ResponseUtil.success(deductionBiz.deductionChange(query));
+    }
+}

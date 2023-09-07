@@ -63,6 +63,8 @@ public class BaseCouponRefundBiz extends BaseBiz<BaseCouponRefundMapper, BaseCou
 
     @Resource
     private BaseCouponRefundPayMapper baseCouponRefundPayMapper;
+    @Resource
+    private BaseCouponBillBiz baseCouponBillBiz;
 
     /**
      * 根据消息更新中间表退费信息
@@ -80,6 +82,7 @@ public class BaseCouponRefundBiz extends BaseBiz<BaseCouponRefundMapper, BaseCou
                 if (null != refund) {
                     mapper.insertSelective(refund);
                     saveBaseRefundDetail(dataId);
+                    baseCouponBillBiz.saveCardVirtual(refund.getOrderId());
                 }
                 break;
             case 1:
