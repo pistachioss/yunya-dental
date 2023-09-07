@@ -641,6 +641,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     patientMemberRelationMapper.deleteOtherMemberRelation(
         openCardModel.getPatientId(), new ArrayList<>());
 
+    this.cardLog(patientMemberInfo, "退卡", "退卡");
+    remoteRabbitMqServiceFeign.sendMessage(
+            patientMemberInfo.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);
+
     return ResponseUtil.success();
   }
 
