@@ -76,10 +76,18 @@ public interface BasePatientMemberOccurLogMapper extends Mapper<BasePatientMembe
       @Param("form") PrepaidQueryForm prepaidQueryForm);
 
   /**
-   * 查询会员or预付款余额结存信息列表
+   * 查询专项预付款余额结存信息列表
    *
    * @param form 查询条件
    * @return List<BaseMemberBalanceInfoVo>
+   */
+  List<BaseSpecialPrepaidBalanceInfoVO> selectSpecialPrepaidBalanceList(@Param("form") MemberQueryForm form);
+
+  /**
+   * 查询会员卡余额结存信息列表
+   *
+   * @param form
+   * @return
    */
   List<BaseMemberBalanceInfoVo> selectMemberBalanceList(@Param("form") MemberQueryForm form);
 
@@ -122,4 +130,12 @@ public interface BasePatientMemberOccurLogMapper extends Mapper<BasePatientMembe
    * @return
    */
   List<BasePrepaidTransferVO> selectPrepaidTransferList(@Param("query") PrepaidQueryForm query);
+
+  /**
+   * 查询预付款余额结存信息列表
+   *
+   * @param query
+   * @return
+   */
+  List<BasePrepaidBalanceInfoVO> selectPrepaidBalanceList(@Param("form") MemberQueryForm query);
 }

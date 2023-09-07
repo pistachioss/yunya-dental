@@ -12,17 +12,17 @@ import java.math.BigDecimal;
 import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
 /**
- * 简介: 会员余额结存表返回模型
+ * 简介: 专项预付款余额结存数据模型
  *
- * @author: WY
- * @date: 2020/10/24 14:11
- * @description:
+ * @author: chenlin
+ * @date: 2023/09/06 14:11
+ * @description: 专项预付款余额结存数据模型
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("会员余额结存表Vo")
-public class BaseMemberBalanceInfoVo implements Serializable {
+@ApiModel("专项预付款余额结存数据模型")
+public class BaseSpecialPrepaidBalanceInfoVO implements Serializable {
 
     /** 患者姓名 */
     @Excel(name = "患者")
@@ -34,19 +34,15 @@ public class BaseMemberBalanceInfoVo implements Serializable {
     @ApiModelProperty(value = "手机号")
     private String mobile;
 
-    /** 会员卡号 */
-    @Excel(name = "会员卡号")
-    @ApiModelProperty(value = "会员卡号")
+    /** 预付款卡号 */
+    @Excel(name = "预付款卡号")
+    @ApiModelProperty(value = "预付款卡号")
     private String cardNumber;
 
-    /** 会员级别id */
-    @ApiModelProperty(value = "会员级别id")
-    private Integer memberLevelId;
-
-    /** 会员卡级别名称 */
-    @Excel(name = "会员卡名称")
-    @ApiModelProperty(value = "会员卡级别名称")
-    private String memberLevelName;
+    /** 预付款类型 */
+    @Excel(name = "预付款类型")
+    @ApiModelProperty("预付款类型")
+    private String type;
 
     /** 期初本金余额 */
     @Excel(name = "期初本金余额", cellType = Excel.ColumnType.NUMERIC, isStatistics = true, type = EXPORT)
@@ -97,25 +93,4 @@ public class BaseMemberBalanceInfoVo implements Serializable {
     @Excel(name = "期末赠金余额", cellType = Excel.ColumnType.NUMERIC, isStatistics = true, type = EXPORT)
     @ApiModelProperty(value = "期末赠金余额")
     private BigDecimal currentRechargeBonus;
-
-
-    /** 本期转入本金（预付款）*/
-    @Excel(name = "本期转入本金（预付款）", cellType = Excel.ColumnType.NUMERIC, isStatistics = true, type = EXPORT)
-    @ApiModelProperty(value = "本期转入本金（预付款）")
-    private BigDecimal thisPrepaidPrincipalInAmount;
-
-    /** 本期转入赠金（预付款） */
-    @Excel(name = "本期转入赠金（预付款）", cellType = Excel.ColumnType.NUMERIC, isStatistics = true, type = EXPORT)
-    @ApiModelProperty(value = "本期转入赠金（预付款）")
-    private BigDecimal thisPrepaidBonusInAmount;
-
-    /** 本期转出赠金（亲密付）20 */
-    @Excel(name = "本期转出赠金（亲密付）", cellType = Excel.ColumnType.NUMERIC, isStatistics = true, type = EXPORT)
-    @ApiModelProperty(value = "本期转出赠金（亲密付）")
-    private BigDecimal thisRelationBonusOutAmount;
-
-    /** 本期转入赠金（亲密付）21 */
-    @Excel(name = "本期转入赠金（亲密付）", cellType = Excel.ColumnType.NUMERIC, isStatistics = true, type = EXPORT)
-    @ApiModelProperty(value = "本期转入赠金（亲密付）")
-    private BigDecimal thisRelationBonusInAmount;
 }

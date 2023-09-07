@@ -33,6 +33,10 @@ public class BaseMemberRechargeLogVo {
   @ApiModelProperty(value = "充值日期")
   private String occurDate;
 
+  /** 发生类型(1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.就诊账单返点 7.礼包账单返点 8.转账转入 9.转账转出, 20 赠金转出，21 赠金转入) */
+  @ApiModelProperty("发生类型(1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.就诊账单返点 7.礼包账单返点 8.转账转入 9.转账转出, 20 赠金转出，21 赠金转入)")
+  private Integer occurType;
+
   /** 患者姓名 */
   @Excel(name = "患者姓名")
   @ApiModelProperty(value = "患者姓名")

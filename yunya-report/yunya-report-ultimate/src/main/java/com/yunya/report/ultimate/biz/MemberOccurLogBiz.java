@@ -56,16 +56,27 @@ public class MemberOccurLogBiz
    * @return List<MemberRechargeLogBizVo>
    */
   public PageInfo<BaseMemberRechargeLogVo> memberRechargeList(MemberQueryForm form) {
-    if (StringHelper.isNotEmpty(form.getEndDate())) {
-      String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-      form.setEndDate(endDate);
-    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-
-    List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = mapper.selectMemberRechargeList(form);
-    return new PageInfo<>(memberRechargeLogBizVos);
+    List<BaseMemberRechargeLogVo> result = mapper.selectMemberRechargeList(form);
+    result.forEach(vo->{
+      Integer occurType = vo.getOccurType();
+      if (occurType == 8) {
+        String paymentManner = StringHelper.EMPTY;
+        if (StringHelper.gtZero(vo.getPrincipalAmount())) {
+          paymentManner += "预付款本金充值";
+        }
+        if (StringHelper.geZero(vo.getBonusAmount())) {
+          if (paymentManner.length() > 0) {
+            paymentManner += "、";
+          }
+          paymentManner += "预付款赠金充值";
+        }
+        vo.setPaymentManner(paymentManner);
+      }
+    });
+    return new PageInfo<>(result);
   }
 
   /**
@@ -76,16 +87,11 @@ public class MemberOccurLogBiz
    */
   public void exportMemberRechargeList(HttpServletResponse response, MemberQueryForm form)
       throws IOException {
-    if (StringHelper.isNotEmpty(form.getEndDate())) {
-      String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-      form.setEndDate(endDate);
-    }
-    List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = mapper.selectMemberRechargeList(form);
+    form.setWhetherPage(false);
+    List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = memberRechargeList(form).getList();
     ExcelUtil<BaseMemberRechargeLogVo> excelUtil = new ExcelUtil<>(BaseMemberRechargeLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
-      BaseOrganization baseOrganization = new BaseOrganization();
-      baseOrganization.setOrgId(form.getOrgId());
-      BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
+      BaseOrganization baseOrganizationv = baseOrganizationMapper.selectByPrimaryKey(form.getOrgId());
       if (baseOrganizationv != null) {
         excelUtil.exportExcel(
             response,
@@ -397,16 +403,12 @@ public class MemberOccurLogBiz
    * @param form 条件
    * @return 查询会员or预付款余额结存信息列表
    */
-  public PageInfo<BaseMemberBalanceInfoVo> memberBalanceList(MemberQueryForm form) {
-    if (StringHelper.isNotEmpty(form.getEndDate())) {
-      String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-      form.setEndDate(endDate);
-    }
+  public PageInfo<BaseSpecialPrepaidBalanceInfoVO> findSpecialPrepaidBalanceList(MemberQueryForm form) {
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    List<BaseMemberBalanceInfoVo> basePrepaidReturnLogVoList = mapper.selectMemberBalanceList(form);
-    return new PageInfo<>(basePrepaidReturnLogVoList);
+    List<BaseSpecialPrepaidBalanceInfoVO> result = mapper.selectSpecialPrepaidBalanceList(form);
+    return new PageInfo<>(result);
   }
   /*
 
@@ -418,29 +420,24 @@ public class MemberOccurLogBiz
    * @param response 导出响应
    * @param form 条件
    */
-  public void exportMemberBalanceList(HttpServletResponse response, MemberQueryForm form)
+  public void exportSpecialPrepaidBalanceList(HttpServletResponse response, MemberQueryForm form)
       throws IOException {
-    String endDate = form.getEndDate();
-    String formEndDate = form.getEndDate();
-    if (StringHelper.isNotEmpty(endDate)) {
-      endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-      form.setEndDate(endDate);
-    }
-    List<BaseMemberBalanceInfoVo> resultList = mapper.selectMemberBalanceList(form);
+    form.setWhetherPage(false);
+    List<BaseSpecialPrepaidBalanceInfoVO> resultList = findSpecialPrepaidBalanceList(form).getList();
     if (form.getType() == 0) {
       ExcelUtil<ExcelBaseMemberBalanceInfoVo> excelUtil =
           new ExcelUtil<>(ExcelBaseMemberBalanceInfoVo.class);
       List<ExcelBaseMemberBalanceInfoVo> build =
           EntityUtils.build(resultList, ExcelBaseMemberBalanceInfoVo.class);
       excelUtil.exportExcel(
-          response, build, "会员余额结存表", (form.getStartDate() + "-" + formEndDate) + "会员余额结存表");
+          response, build, "会员余额结存表", (form.getStartDate() + "-" + form.getEndDate()) + "会员余额结存表");
     } else {
       ExcelUtil<ExcelBasePrepaymentsBalanceInfoVo> excelUtil =
           new ExcelUtil<>(ExcelBasePrepaymentsBalanceInfoVo.class);
       List<ExcelBasePrepaymentsBalanceInfoVo> build =
           EntityUtils.build(resultList, ExcelBasePrepaymentsBalanceInfoVo.class);
       excelUtil.exportExcel(
-          response, build, "预付款余额结存表", (form.getStartDate() + "-" + formEndDate) + "预付款余额结存表");
+          response, build, "预付款余额结存表", (form.getStartDate() + "-" + form.getEndDate()) + "预付款余额结存表");
     }
   }
 
@@ -655,5 +652,58 @@ public class MemberOccurLogBiz
       fileName = org.getAbbreviation() + fileName;
     }
     excelUtil.exportExcel(response, result, "预付款退款记录表", fileName);
+  }
+
+  /**
+   * 条件查询会员卡余额结存表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<BaseMemberBalanceInfoVo> findMemberBalanceList(MemberQueryForm query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BaseMemberBalanceInfoVo> result = mapper.selectMemberBalanceList(query);
+    return new PageInfo<>(result);
+  }
+
+
+  /**
+   * 导出预付款间转账记录列表
+   *
+   * @param response
+   * @param query
+   * @throws IOException
+   */
+  public void exportMemberBalanceList(HttpServletResponse response, MemberQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    List<BaseMemberBalanceInfoVo> result = findMemberBalanceList(query).getList();
+    ExcelUtil<BaseMemberBalanceInfoVo> excelUtil = new ExcelUtil<>(BaseMemberBalanceInfoVo.class);
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "会员余额结存表";
+    excelUtil.exportExcel(response, result, "会员余额结存表", fileName);
+  }
+
+
+  /**
+   * 条件查询预付款余额结存表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<BasePrepaidBalanceInfoVO> findPrepaidBalanceList(MemberQueryForm query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BasePrepaidBalanceInfoVO> result = mapper.selectPrepaidBalanceList(query);
+    return new PageInfo<>(result);
+  }
+
+  public void exportPrepaidBalanceList(HttpServletResponse response, MemberQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    List<BasePrepaidBalanceInfoVO> result = findPrepaidBalanceList(query).getList();
+    ExcelUtil<BasePrepaidBalanceInfoVO> excelUtil = new ExcelUtil<>(BasePrepaidBalanceInfoVO.class);
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "预付款余额结存表";
+    excelUtil.exportExcel(response, result, "预付款余额结存表", fileName);
   }
 }
