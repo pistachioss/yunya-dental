@@ -48,53 +48,58 @@
         brp.privilegeAmount,
         brp.actualAmount,
         brp.receivedAmount,
+        brp.swipeAmount,
         brp.stillOweAmount,
         brp.remainingOweAmount,
         brp.payeeUserId,
         brp.payeeUserName
         FROM
         (
-        SELECT
-        DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) AS toolDate,
-        DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) AS orderDate,
-        DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
-        bbp.bill_pay_id AS billPayId,
-        bb.bill_num AS billNum,
-        tp.patient_id AS patientId,
-        tp.`name` AS patientName,
-        tp.pinyin_name AS pinyinName,
-        tp.mobile AS mobile,
-        tp.gender AS gender,
-        tp.registered_dentist_id AS regDentistId,
-        tp.regDentistName AS regDentistName,
-        bb.order_amount AS orderAmount,
-        bb.privilege_amount AS privilegeAmount,
-        bb.actual_amount AS actualAmount,
-        bbp.org_id as orgId,
-        bbp.received_amount AS receivedAmount,
-        bbp.still_owe_amount AS stillOweAmount,
-        bb.debt_amount AS remainingOweAmount,
-        bbp.payee_user_id AS payeeUserId,
-        be.employee_name AS payeeUserName
-        FROM
-        base_bill_pay bbp
-        LEFT JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
-        LEFT JOIN (
-        SELECT
-        btp.treatment_id,
-        bp.patient_id,
-        bp.`name`,
-        bp.pinyin_name,
-        bp.mobile,
-        bp.gender,
-        btp.registered_dentist_id,
-        be.employee_name AS regDentistName
-        FROM
-        base_treatment_process btp
-        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        ) tp ON bbp.treatment_id = tp.treatment_id
+            SELECT
+            DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) AS toolDate,
+            DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) AS orderDate,
+            DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
+            bbp.bill_pay_id AS billPayId,
+            bb.bill_num AS billNum,
+            tp.patient_id AS patientId,
+            tp.`name` AS patientName,
+            tp.pinyin_name AS pinyinName,
+            tp.mobile AS mobile,
+            tp.gender AS gender,
+            tp.registered_dentist_id AS regDentistId,
+            tp.regDentistName AS regDentistName,
+            bb.order_amount AS orderAmount,
+            bb.privilege_amount AS privilegeAmount,
+            bb.actual_amount AS actualAmount,
+            bbp.org_id as orgId,
+            bbp.received_amount AS receivedAmount,
+            bbp.still_owe_amount AS stillOweAmount,
+            bb.debt_amount AS remainingOweAmount,
+            IFNULL(bbd.swipeWorkload, 0) AS swipeAmount,
+            bbp.payee_user_id AS payeeUserId,
+            be.employee_name AS payeeUserName
+            FROM base_bill_pay bbp
+            LEFT JOIN base_bill bb ON bb.bill_id = bbp.bill_id
+            LEFT JOIN (
+                SELECT bill_id, SUM(swipe_workload) AS swipeWorkload
+                FROM base_bill_detail GROUP BY bill_id
+            ) bbd ON bbd.bill_id = bb.bill_id
+            LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
+            LEFT JOIN (
+                SELECT
+                btp.treatment_id,
+                bp.patient_id,
+                bp.`name`,
+                bp.pinyin_name,
+                bp.mobile,
+                bp.gender,
+                btp.registered_dentist_id,
+                be.employee_name AS regDentistName
+                FROM
+                base_treatment_process btp
+                LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+                LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+            ) tp ON bbp.treatment_id = tp.treatment_id
         ) brp
         <where>
             <if test="query.orgId != null">

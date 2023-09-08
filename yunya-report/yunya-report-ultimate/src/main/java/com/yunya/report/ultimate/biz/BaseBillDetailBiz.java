@@ -3061,4 +3061,32 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                 new ExcelUtil<>(EmployeePersonalSwipeCouponWorkloadDetailVO.class);
         excelUtil.exportExcel(response, result, "个人划扣补入工作量明细列表", fileName);
     }
+
+    /**
+     * 根据条件查询员工划扣工作量项目明细列表
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<EmployeeBillItemSwipeWorkloadVO> findBillItemSwipeWorkloadList(EmployeeWorkloadDetailQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<EmployeeBillItemSwipeWorkloadVO> result = mapper.selectEmployeeBillItemSwipeWorkloadList(query);
+        return new PageInfo<>(result);
+    }
+
+    /**
+     * 根据条件查询员工划扣补入工作量项目明细列表
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<EmployeeBillItemSwipeCouponWorkloadVO> findBillItemSwipeCouponWorkloadList(EmployeeWorkloadDetailQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<EmployeeBillItemSwipeCouponWorkloadVO> result = mapper.selectEmployeeBillItemSwipeCouponWorkloadList(query);
+        return new PageInfo<>(result);
+    }
 }

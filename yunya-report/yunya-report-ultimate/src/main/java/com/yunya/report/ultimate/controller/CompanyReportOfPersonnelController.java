@@ -189,6 +189,21 @@ public class CompanyReportOfPersonnelController {
   }
 
   /**
+   * 根据条件查询员工划扣工作量项目明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeOrderDetailWorkloadVO> 分页列表
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-划扣工作量项目明细-查看明细")
+  @PostMapping(value = "/employee/swipeWorkload/item", name = "根据条件查询员工划扣工作量项目明细列表")
+  public ResponseResult<PageInfo<EmployeeBillItemSwipeWorkloadVO>> findBillItemSwipeWorkloadList(
+          @RequestBody @Validated EmployeeWorkloadDetailQuery query) {
+    PageInfo<EmployeeBillItemSwipeWorkloadVO> pageInfo =
+            billDetailBiz.findBillItemSwipeWorkloadList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
    * 根据条件查询员工划扣补入工作量明细列表
    *
    * @param query 查询条件
@@ -219,6 +234,21 @@ public class CompanyReportOfPersonnelController {
       throws IOException {
     billDetailBiz.exportEmployeePersonalSwipeCouponWorkloadDetailList(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工划扣补入工作量项目明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeOrderDetailWorkloadVO> 分页列表
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-划扣补入工作量项目明细-查看明细")
+  @PostMapping(value = "/employee/swipeCouponWorkload/item", name = "公司端报表-人事报表-员工工作量-根据条件查询员工划扣补入工作量项目明细列表")
+  public ResponseResult<PageInfo<EmployeeBillItemSwipeCouponWorkloadVO>> findBillItemSwipeCouponWorkloadList(
+          @RequestBody @Validated EmployeeWorkloadDetailQuery query) {
+    PageInfo<EmployeeBillItemSwipeCouponWorkloadVO> pageInfo =
+            billDetailBiz.findBillItemSwipeCouponWorkloadList(query);
+    return ResponseUtil.success(pageInfo);
   }
 
   /**
