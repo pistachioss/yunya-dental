@@ -629,4 +629,20 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return
    */
   List<EmployeePersonalSwipeCouponWorkloadDetailVO> selectEmployeePersonalSwipeCouponWorkloadDetailList(@Param("query") EmployeePersonalWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工划扣工作量项目明细列表
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeBillItemSwipeWorkloadVO> selectEmployeeBillItemSwipeWorkloadList(@Param("query") EmployeeWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工划扣补入工作量项目明细列表
+   *
+   * @param query
+   * @return
+   */
+  List<EmployeeBillItemSwipeCouponWorkloadVO> selectEmployeeBillItemSwipeCouponWorkloadList(@Param("query") EmployeeWorkloadDetailQuery query);
 }

@@ -6829,4 +6829,58 @@
         </where>
         ORDER BY bbd.billDate DESC, bbd.billNum DESC
     </select>
+
+    <!--根据条件查询员工划扣工作量项目明细列表-->
+    <select id="selectEmployeeBillItemSwipeWorkloadList"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeBillItemSwipeWorkloadVO">
+        select
+            bbd.bill_detail_id as orderDetailId,
+            bbd.item_type as itemType,
+            bbd.item_id as itemId,
+            bti.item_num as itemNum,
+            bti.item_name as itemName,
+            bbd.swipe_workload as swipeWorkload
+        from base_bill_detail bbd
+        left join base_tariff_info bti on bbd.item_type=bti.item_type and bbd.item_id=bti.item_id
+        <where>
+            AND bbd.swipe_workload > 0
+            <if test="query.billId != null">
+                and bbd.bill_id = #{query.billId}
+            </if>
+            <if test="query.isConsulter == 0">
+                AND bbd.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND bbd.consulter_id = #{query.employeeId}
+            </if>
+        </where>
+        ORDER BY bbd.bill_detail_id
+    </select>
+
+    <!--根据条件查询员工划扣补入工作量项目明细列表-->
+    <select id="selectEmployeeBillItemSwipeCouponWorkloadList"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeBillItemSwipeCouponWorkloadVO">
+        SELECT
+            bbd.bill_detail_id AS orderDetailId,
+            bbd.item_type AS itemType,
+            bbd.item_id AS itemId,
+            bti.item_name AS itemName,
+            bti.item_num AS itemNum,
+            bbd.swipe_coupon_workload AS swipeCouponWorkload
+        FROM base_bill_detail bbd
+        LEFT JOIN base_tariff_info bti ON bbd.item_type=bti.item_type AND bbd.item_id=bti.item_id
+        <where>
+            AND bbd.swipe_coupon_workload > 0
+            <if test="query.billId != null">
+                and bbd.bill_id = #{query.billId}
+            </if>
+            <if test="query.isConsulter == 0">
+                AND bbd.executor_id = #{query.employeeId}
+            </if>
+            <if test="query.isConsulter == 1">
+                AND bbd.consulter_id = #{query.employeeId}
+            </if>
+        </where>
+        ORDER BY bbd.bill_detail_id
+    </select>
 </mapper>
