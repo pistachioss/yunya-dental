@@ -38,7 +38,7 @@
         inner join base_coupon bc1 on bc1.coupon_id = ccr.coupon_id
         left join base_patient bp on bp.patient_id = bc.sold_target
         left join base_patient bp1 on bp1.patient_id = bc.patient_id
-        where
+        <where>
             <if test="query.couponIds != null and query.couponIds.size() > 0">
                 `ccr`.`coupon_id` in
                 <foreach collection="query.couponIds" item="item" open="(" separator="," close=")">
@@ -57,6 +57,74 @@
                 #{query.patientKeyword}, '%')
                 or `bp1`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
             </if>
-        group by ccr.card_id,  ccr.patient_id
+        </where>
+        group by ccr.card_id,ccr.patient_id
+    </select>
+
+    <select id="deductionUse" resultType="com.yunya.feign.report.domain.vo.DeductionUsedVO">
+        select
+            cci.coupon_name                                      as couponName,
+            c.card_number    as cardNumber,
+            c.sale_channel_name                                       as saleChannel,
+            dip.package_unit_price 						  as saleAmount,
+            cb.item_id                                    as itemName,
+            cb.item_type,
+            count(*)                                      as quantity,
+            bp.name                                     as patientName,
+            b.bill_num,
+            date_format(cb.use_date, '%Y-%m-%d %H:%i:%s') as `billDate`,
+            cb.org_id                                     as orgName,
+            be.employee_name                            as executorName
+        from base_benefit cb
+                 inner join base_card c on cb.card_id = c.card_id
+                 inner join base_coupon cci on c.coupon_id = cci.coupon_id
+                 left join deduction_item dip on dip.item_id = cb.item_id and dip.coupon_id = cb.coupon_id and dip.type = cb.item_type
+                 left join base_coupon_order_virtual cov on c.card_id = cov.card_id
+                 left join base_coupon_bill b on cov.order_id = b.order_id
+                 left join base_patient bp on bp.patient_id = cb.patient_id
+                left join base_employee be on be.user_id = cb.operate_user_id
+        where cb.coupon_type = 5
+        <if test="query.startDate != null and query.endDate != null">
+            and (cb.use_date &gt;= #{query.startDate} and cb.use_date &lt; DATE_ADD(#{query.endDate} ,INTERVAL '1'
+            DAY))
+        </if>
+        <if test="query.channelIds != null and query.channelIds.size() > 0">
+            and `c`.`sale_channel_id` in
+            <foreach collection="query.channelIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="query.couponTypeIds != null and query.couponTypeIds.size() > 0">
+            and `cci`.`product_type_id` in
+            <foreach collection="query.couponTypeIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="query.couponName !=null and query.couponName != ''">
+            and `cci`.`coupon_name` like concat('%', #{query.couponName}, '%')
+        </if>
+        <if test="query.cardNumber !=null and query.cardNumber != ''">
+            and `c`.`card_number` like concat('%', #{query.cardNumber}, '%')
+        </if>
+        <if test="query.patientKeyword !=null and query.patientKeyword != ''">
+            and (`bp`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp`.`mobile` like concat('%',
+            #{query.patientKeyword}, '%')
+            or `bp`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
+        </if>
+        <if test="query.orgIds != null and query.orgIds.size() > 0">
+            and `cb`.`org_id` in
+            <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+          and dip.crt_time = (select max(crt_time)
+                              from deduction_item
+                              where coupon_id = cci.coupon_id
+                                and crt_time &lt;= ifnull(c.sold_date, c.active_date))
+        group by cb.card_id, b.bill_num, cb.item_id
+    </select>
+
+    <select id="deductionBuy" resultType="com.yunya.feign.report.domain.vo.DeductionBuyVO">
+
     </select>
 </mapper>

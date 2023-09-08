@@ -8,6 +8,7 @@
 
     <insert id="batchInsertSelective">
         INSERT INTO base_coupon_order_virtual (
+            virtual_id,
             order_id,
             order_sn,
             card_id,
@@ -25,7 +26,7 @@
         )
         VALUES
         <foreach collection="virtuals" item="item" separator=",">
-            (#{item.orderId}, #{item.orderSn}, #{item.cardId},
+            (#{item.virtualId}, #{item.orderId}, #{item.orderSn}, #{item.cardId},
             #{item.couponId}, #{item.patientId}, #{item.couponName}, #{item.cardNumber}
             ,#{item.soldDate}, #{item.packageUnitPrice},#{item.inservice}, #{item.crtId},
             #{item.crtTime}, #{item.updTime}, #{item.updId})

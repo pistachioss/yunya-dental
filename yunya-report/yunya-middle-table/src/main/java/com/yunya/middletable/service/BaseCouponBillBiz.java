@@ -145,7 +145,7 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
      */
     private BaseCouponBill generateBaseBill(Integer orderRecordId) {
         CouponOrder orderRecord = couponOrderMapper.selectByPrimaryKey(orderRecordId);
-        if (null != orderRecord && orderRecord.getInservice()) {
+        if (null != orderRecord) {
             BaseCouponBill baseBill = new BaseCouponBill();
             baseBill.setOrderId(orderRecord.getId());
             baseBill.setOrgId(orderRecord.getOrgId());

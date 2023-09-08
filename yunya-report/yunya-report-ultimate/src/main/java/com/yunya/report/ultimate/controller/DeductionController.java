@@ -2,9 +2,13 @@ package com.yunya.report.ultimate.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.DeductionBuyQuery;
 import com.yunya.feign.report.domain.query.DeductionPeriodQuery;
+import com.yunya.feign.report.domain.query.DeductionUseQuery;
 import com.yunya.feign.report.domain.vo.CouponUseVo;
 import com.yunya.feign.report.domain.vo.DeductionBalanceInfoVO;
+import com.yunya.feign.report.domain.vo.DeductionBuyVO;
+import com.yunya.feign.report.domain.vo.DeductionUsedVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.DeductionBiz;
@@ -43,14 +47,22 @@ public class DeductionController {
 
     @ApiOperation(value = "运营报表-划扣卡购买记录")
     @PostMapping("/deduction/buy/record")
-    public ResponseResult<PageInfo<DeductionBalanceInfoVO>> deductionBuy(@RequestBody DeductionPeriodQuery query) {
-        return ResponseUtil.success(deductionBiz.deductionChange(query));
+    public ResponseResult<PageInfo<DeductionBuyVO>> deductionBuy(@RequestBody DeductionBuyQuery query) {
+        return ResponseUtil.success(deductionBiz.deductionBuy(query));
     }
 
     @ApiOperation(value = "运营报表-划扣卡消耗记录")
     @PostMapping("/deduction/used/record")
-    public ResponseResult<PageInfo<DeductionBalanceInfoVO>> deductionUse(@RequestBody DeductionPeriodQuery query) {
-        return ResponseUtil.success(deductionBiz.deductionChange(query));
+    public ResponseResult<PageInfo<DeductionUsedVO>> deductionUse(@RequestBody DeductionUseQuery query) {
+        return ResponseUtil.success(deductionBiz.deductionUse(query));
+    }
+
+    @ApiOperation(value = "运营报表-划扣卡消耗记录-导出")
+    @PostMapping("/deduction/used/record/export")
+    public void deductionUseExport(HttpServletResponse response, @Valid @RequestBody DeductionUseQuery query) throws IOException {
+        deductionBiz.buildResponse(response, "划扣消耗表");
+        EasyExcel.write(response.getOutputStream(), CouponUseVo.class)
+                .sheet("sheet").doWrite(deductionBiz.deductionUse(query).getList());
     }
 
     @ApiOperation(value = "运营报表-划扣卡退费记录")
