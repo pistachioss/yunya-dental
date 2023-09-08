@@ -4,19 +4,23 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.discount.CouponBillMapper;
-import com.yunya.middletable.dao.discount.CouponBillPayDetailMapper;
 import com.yunya.middletable.dao.discount.CouponOrderDetailMapper;
 import com.yunya.middletable.dao.discount.CouponOrderMapper;
+import com.yunya.middletable.dao.discount.CouponOrderVirtualMapper;
 import com.yunya.middletable.dao.report.BaseCouponBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseCouponBillMapper;
+import com.yunya.middletable.dao.report.BaseCouponOrderVirtualMapper;
 import com.yunya.models.discount.CouponBill;
 import com.yunya.models.discount.CouponOrder;
 import com.yunya.models.discount.CouponOrderDetail;
+import com.yunya.models.discount.CouponOrderVirtual;
 import com.yunya.models.report.BaseCouponBill;
 import com.yunya.models.report.BaseCouponBillDetail;
+import com.yunya.models.report.BaseCouponOrderVirtual;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
@@ -46,11 +50,8 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
      */
     @Resource
     private CouponOrderDetailMapper couponOrderDetailMapper;
-    /**
-     * 订单明细付款记录
-     */
     @Resource
-    private CouponBillPayDetailMapper couponBillPayDetailMapper;
+    private CouponOrderVirtualMapper virtualMapper;
     /**
      * 账单记录
      */
@@ -63,7 +64,7 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
     private BaseCouponBillDetailMapper baseCouponBillDetailMapper;
 
     @Resource
-    private BaseCouponBillMapper baseCouponBillMapper;
+    private BaseCouponOrderVirtualMapper baseCouponOrderVirtualMapper;
 
     /**
      * 多线程
@@ -108,6 +109,7 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
                     baseCouponBillDetailMapper.deleteByBillId(dataId);
                     // 保存账单明细
                     saveBaseBillDetail(dataId);
+                    saveCardVirtual(dataId);
                 } else {
                     baseCouponBillDetailMapper.deleteByBillId(dataId);
                 }
@@ -173,7 +175,6 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
         CouponBill bill = new CouponBill();
         if (Objects.equals(orderRecord.getStatus(), 1)) {
             bill.setOrderRecordId(orderRecord.getId());
-            bill.setInservice(true);
             CouponBill billRecord = couponBillMapper.selectOne(bill);
             if (null != billRecord) {
                 baseBill.setOrderStatus(orderRecord.getStatus());
@@ -208,7 +209,6 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
     private void saveBaseBillDetail(Integer orderRecordId) {
         CouponOrderDetail orderDetail = new CouponOrderDetail();
         orderDetail.setOrderId(orderRecordId);
-        orderDetail.setInservice(true);
         List<CouponOrderDetail> details = couponOrderDetailMapper.select(orderDetail);
         if (StringHelper.isNotEmpty(details)) {
             // 构建中间表账单明细列表
@@ -216,6 +216,20 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
             if (StringHelper.isNotEmpty(billDetails)) {
                 baseCouponBillDetailMapper.deleteByBillId(orderRecordId);
                 billDetails.forEach(billDetail -> baseCouponBillDetailMapper.insertSelective(billDetail));
+            }
+        }
+    }
+
+    public void saveCardVirtual(Integer orderRecordId) {
+        CouponOrderVirtual orderVirtual = new CouponOrderVirtual();
+        orderVirtual.setOrderId(orderRecordId);
+        List<CouponOrderVirtual> virtuals = virtualMapper.select(orderVirtual);
+        if (StringHelper.isNotEmpty(virtuals)) {
+            // 构建中间表账单明细列表
+            List<BaseCouponOrderVirtual> virtualList = generateBaseVirtual(virtuals);
+            if (StringHelper.isNotEmpty(virtualList)) {
+                baseCouponOrderVirtualMapper.deleteByBillId(orderRecordId);
+                baseCouponOrderVirtualMapper.batchInsertSelective(virtualList);
             }
         }
     }
@@ -236,6 +250,18 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
                     billDetails.add(billDetail);
                 });
         return billDetails;
+    }
+
+    private List<BaseCouponOrderVirtual> generateBaseVirtual(List<CouponOrderVirtual> virtuals) {
+        List<BaseCouponOrderVirtual> baseCouponOrderVirtuals = Lists.newArrayList();
+        virtuals.forEach(
+                virtual -> {
+                    // 设置中间表订单明细属性
+                    BaseCouponOrderVirtual virtual1 = BeanCopierUtils.generalCopyBean(virtual, BaseCouponOrderVirtual.class);
+                    virtual1.setVirtualId(virtual.getId());
+                    baseCouponOrderVirtuals.add(virtual1);
+                });
+        return baseCouponOrderVirtuals;
     }
 
     /**
@@ -283,7 +309,6 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
                                         Example orderExample = new Example(CouponOrder.class);
                                         orderExample
                                                 .createCriteria()
-                                                .andEqualTo("inservice", true)
                                                 .andCondition(
                                                         "crt_time >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
                                                 .andCondition(
@@ -309,6 +334,7 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
 
                                                 // 批量生成并保存中间表开单明细
                                                 generateAndSaveBaseBillDetailByOrderDate(date, orderRecords);
+                                                generateAndSaveBaseBillVirtual(date, orderRecords);
 
                         /*for (BaseBill baseBill : baseBills) {
                           Integer billId = baseBill.getBillId();
@@ -339,7 +365,6 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
         Example orderDetailEmp = new Example(CouponOrderDetail.class);
         orderDetailEmp
                 .createCriteria()
-                .andEqualTo("inservice", true)
                 .andCondition("crt_time >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
                 .andCondition("crt_time < '" + new DateTime(date).plusDays(1).toString("yyyy-MM-dd") + "'");
         List<CouponOrderDetail> details = couponOrderDetailMapper.selectByExample(orderDetailEmp);
@@ -356,6 +381,29 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
                     baseCouponBillDetailMapper.deleteByPrimaryKey(baseBillDetail.getOrderDetailId());
                 }
                 baseCouponBillDetailMapper.batchInsertSelective(baseBillDetails);
+            }
+        }
+    }
+
+    private void generateAndSaveBaseBillVirtual(String date, List<CouponOrder> orderRecords) {
+        Example virtualEmp = new Example(CouponOrderVirtual.class);
+        virtualEmp
+                .createCriteria()
+                .andCondition("crt_time >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                .andCondition("crt_time < '" + new DateTime(date).plusDays(1).toString("yyyy-MM-dd") + "'");
+        List<CouponOrderVirtual> virtuals = virtualMapper.selectByExample(virtualEmp);
+        if (StringHelper.isNotEmpty(virtuals)) {
+            List<BaseCouponOrderVirtual> baseCouponOrderVirtuals = Lists.newArrayList();
+            for (CouponOrderVirtual virtual : virtuals) {
+                BaseCouponOrderVirtual baseCouponOrderVirtual1 = BeanCopierUtils.generalCopyBean(virtuals, BaseCouponOrderVirtual.class);
+                baseCouponOrderVirtual1.setVirtualId(virtual.getId());
+                baseCouponOrderVirtuals.add(baseCouponOrderVirtual1);
+            }
+            if (StringHelper.isNotEmpty(baseCouponOrderVirtuals)) {
+                for (BaseCouponOrderVirtual baseCouponOrderVirtual : baseCouponOrderVirtuals) {
+                    baseCouponOrderVirtualMapper.deleteByPrimaryKey(baseCouponOrderVirtual.getVirtualId());
+                }
+                baseCouponOrderVirtualMapper.batchInsertSelective(baseCouponOrderVirtuals);
             }
         }
     }

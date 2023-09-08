@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.CouponChangeRecordMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.discount.CouponChangeRecord">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="order_id" property="orderId" jdbcType="INTEGER"/>
+        <result column="card_id" property="cardId" jdbcType="TINYINT"/>
+        <result column="occur_type" property="occurType" jdbcType="TINYINT"/>
+        <result column="occur_amount" property="occurAmount" jdbcType="DECIMAL"/>
+        <result column="current_amount" property="currentAmount" jdbcType="DECIMAL"/>
+        <result column="operator_user_id" property="operatorUserId" jdbcType="INTEGER"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="card_number" property="cardNumber" jdbcType="VARCHAR"/>
+        <result column="occur_date" property="occurDate" jdbcType="TIMESTAMP"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+    </resultMap>
+
+    <select id="deductionBalance" resultType="com.yunya.feign.report.domain.vo.DeductionBalanceInfoVO">
+        select
+            bc1.coupon_name,
+            ccr.card_number,
+            ccr.card_id,
+            if(isnull(bc.sold_date) , null, bp.name)    as buyer,
+            bp1.name    as activator,
+            max(ccr.current_amount) as beginDeduction,
+            sum(case when ccr.occur_type = 2 then ccr.occur_amount
+            else 0 end)     as thisDeduction,
+            sum(case when ccr.occur_type = 3 then ccr.occur_amount
+            else 0 end)     as thisDeductionRefund,
+            min(ccr.current_amount)     as endDeduction
+        from coupon_change_record ccr
+        inner join base_card bc on bc.card_id = ccr.card_id
+        inner join base_coupon bc1 on bc1.coupon_id = ccr.coupon_id
+        left join base_patient bp on bp.patient_id = bc.sold_target
+        left join base_patient bp1 on bp1.patient_id = bc.patient_id
+        where
+            <if test="query.couponIds != null and query.couponIds.size() > 0">
+                `ccr`.`coupon_id` in
+                <foreach collection="query.couponIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.startDate != null and query.endDate != null">
+                and (ccr.occur_date &gt;= #{query.startDate} and ccr.occur_date &lt; DATE_ADD(#{query.endDate} ,INTERVAL '1'
+                DAY))
+            </if>
+            <if test="query.patientKeyword !=null and query.patientKeyword != ''">
+                and (`bp`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp`.`mobile` like concat('%',
+                #{query.patientKeyword}, '%')
+                or `bp`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
+                and (`bp1`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp1`.`mobile` like concat('%',
+                #{query.patientKeyword}, '%')
+                or `bp1`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
+            </if>
+        group by ccr.card_id,  ccr.patient_id
+    </select>
+</mapper>
