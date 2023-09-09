@@ -89,8 +89,8 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
-    public void updatePatientInfo(PatientBaseInfo patientBaseInfo) {
-
+    public String generateMedicalNumber(PatientBaseInfo patientBaseInfo) {
+        return null;
     }
 
     @Override
@@ -100,11 +100,6 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
 
     @Override
     public List<PatientBaseInfo> findPatientInfoList(PatientBaseInfo patientBaseInfo) {
-        return null;
-    }
-
-    @Override
-    public String findMedicalNumberByOrgId(Integer orgId) {
         return null;
     }
 

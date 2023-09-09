@@ -23,7 +23,7 @@
     </sql>
 
     <!-- 根据条件查询字典明细列表 -->
-    <select id="selectDictionaryByExample" resultType="com.yunya.modules.system.vo.DictionaryItemVO">
+    <select id="selectDictionaryByExample" resultType="com.yunya.feign.system.vo.DictionaryItemVO">
         select
         di.id as id,
         di.name as `name`,
@@ -41,6 +41,9 @@
           </if>
           <if test="queryForm.dictTypeId != null">
             and di.dictionary_type_id = #{queryForm.dictTypeId}
+          </if>
+          <if test="queryForm.dictTypeName!=null and queryForm.dictTypeName!=''">
+            and dt.name = #{queryForm.dictTypeName}
           </if>
           <if test="queryForm.inservice != null">
             and di.inservice = #{queryForm.inservice}
@@ -79,7 +82,8 @@
             di.id as id,
             di.name as `name`,
             di.english_name as englishName,
-            di.dictionary_type_id as dictionaryTypeId
+            di.dictionary_type_id as dictionaryTypeId,
+            di.upd_time AS updTime
         from dictionary_item di
         inner join dictionary_type dt on di.dictionary_type_id = dt.id
         <where>

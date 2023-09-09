@@ -2,6 +2,7 @@ package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.model.PatientExtInfoModel;
 import com.yunya.feign.patient_central.domain.vo.web.PatientExtInfoVo;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.models.patient_central.PatientExtInfo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -35,7 +36,7 @@ public interface PatientExtInfoMapper extends Mapper<PatientExtInfo> {
      *
      * @param id 患者id
      */
-    int deletePatientExtInfoByPatientId(@Param("id") Integer id);
+    int deletePatientExtInfoByPatientId(@Param("id") Integer id, @Param("types") List<Integer> types);
 
     /**
      * 通过患者id查询标签信息
@@ -44,4 +45,13 @@ public interface PatientExtInfoMapper extends Mapper<PatientExtInfo> {
      * @return List<PatientExtInfo>
      */
     List<PatientExtInfo> selectListByPatientId(@Param("patientId") Integer patientId,@Param("type") Integer type);
+
+    /**
+     * 查询患者诊疗需求标签
+     *
+     * @param query
+     * @param dictItemIds
+     * @return
+     */
+    List<PatientExtInfo> selectPatientTreatIntentionTag(@Param("query") DateRangeQueryForm query, @Param("dictItemIds") List<Integer> dictItemIds);
 }

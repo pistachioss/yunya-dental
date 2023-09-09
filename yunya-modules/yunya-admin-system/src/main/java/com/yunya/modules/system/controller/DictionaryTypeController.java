@@ -9,7 +9,7 @@ import com.yunya.models.system.DictionaryType;
 import com.yunya.modules.system.biz.DictionaryTypeBiz;
 import com.yunya.modules.system.domain.form.DictForm;
 import com.yunya.modules.system.domain.model.DictionaryTypeModel;
-import com.yunya.modules.system.domain.query.DictQueryForm;
+import com.yunya.feign.system.query.DictQueryForm;
 import com.yunya.modules.system.vo.DictionaryTypeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
