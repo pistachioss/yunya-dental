@@ -188,7 +188,9 @@ public class BaseCouponRefundBiz extends BaseBiz<BaseCouponRefundMapper, BaseCou
                         Integer refundDetailId = detail.getId();
                         refundDetail.setRefundDetailId(refundDetailId);
                         refundDetail.setRefundId(refundId);
+                        refundDetail.setOrgId(detail.getOrgId());
                         refundDetail.setOrderDetailId(detail.getOrderDetailId());
+                        refundDetail.setOrderVirtualId(detail.getOrderVirtualId());
                         refundDetail.setCardId(detail.getCardId());
                         refundDetail.setRefundAmount(detail.getRefundAmount());
 //                        refundDetail.setCardNumber(detail.getca);
