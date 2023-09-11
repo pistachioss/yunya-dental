@@ -565,6 +565,7 @@ public class CouponOrderBiz {
         }
         if (totalQuantity <= count) {
             order.setInservice(false);
+            order.setStatus(2);
             couponOrderMapper.updateByPrimaryKeySelective(order);
         }
     }
