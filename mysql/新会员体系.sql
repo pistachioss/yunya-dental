@@ -21,7 +21,8 @@ create table `test_yunya_treatment`.`bill_pay_share_detail` (
 ) ENGINE=InnoDB AUTO_INCREMENT=831768 DEFAULT CHARSET=utf8mb4 comment='账单收费分摊明细表';
 
 alter table `test_yunya_treatment`.`bill_pay_detail_record` add column `bonus` decimal(19,4) NOT NULL DEFAULT '0.0000' comment '赠金';
-update `test_yunya_treatment`.`bill_pay_detail_record` bdr left join yunya_report.base_bill_pay_detail bpd on bdr.id=bpd.bill_pay_detail_record_id set bdr.bonus = ifnull(bpd.bonus_amount,0);
+update `test_yunya_treatment`.`bill_pay_detail_record` bdr
+left join `test_yunya_report`.`base_bill_pay_detail` bpd on bdr.id=bpd.bill_pay_detail_record_id set bdr.bonus = ifnull(bpd.bonus_amount,0);
 
 
 
@@ -60,10 +61,10 @@ COMMENT = '患者亲属关系、推荐关系' ;
 
 
 -- yunya_report
-update `test_yunya_report`.`base_bill_detail` set swipe_workload = 0, swipe_coupon_workload = 0;
 alter table `test_yunya_report`.`base_bill_detail` add column `free_amount` decimal(19,4) NOT NULL DEFAULT 0 comment '项目免单金额';
 alter table `test_yunya_report`.`base_bill_detail` add column `swipe_workload` decimal(19,4) NOT NULL DEFAULT 0 comment '划扣卡核销工作量';
 alter table `test_yunya_report`.`base_bill_detail` add column `swipe_coupon_workload` decimal(19,4) NOT NULL DEFAULT 0 comment '划扣卡补入工作量';
+update `test_yunya_report`.`base_bill_detail` set swipe_workload = 0, swipe_coupon_workload = 0;
 alter table `test_yunya_report`.`stat_emp_pay` add column `swipe_workload` decimal(19,4) NOT NULL DEFAULT 0 comment '划扣卡核销工作量';
 alter table `test_yunya_report`.`base_bill_detail` drop column `item_name`;
 alter table `test_yunya_report`.`base_patient_member_occur_log` modify column `occur_type` tinyint(8) NOT NULL comment '发生类型(1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.就诊账单返点 7.礼包账单返点 8.转账转入 9.转账转出，20 赠金转出，21 赠金转入)';
