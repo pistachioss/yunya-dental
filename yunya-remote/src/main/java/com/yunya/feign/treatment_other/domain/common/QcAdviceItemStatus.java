@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment_other.domain.form;
+package com.yunya.feign.treatment_other.domain.common;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -10,13 +10,13 @@ import java.io.Serializable;
 /**
  * @author: chenlin
  * @date: 2023/9/5 17:14
- * @description: 全程医疗-就诊信息变更
+ * @description: 全程医疗-医嘱项状态信息
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("全程医疗-医嘱信息变更通知")
-public class QcAdviceItemNotice implements Serializable {
+@ApiModel("全程医疗-医嘱项状态信息")
+public class QcAdviceItemStatus implements Serializable {
 
     /** 平台医嘱流水号 */
     @ApiModelProperty("平台医嘱流水号")

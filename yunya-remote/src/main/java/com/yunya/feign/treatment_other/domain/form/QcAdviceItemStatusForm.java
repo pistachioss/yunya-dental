@@ -10,12 +10,12 @@ import java.io.Serializable;
 /**
  * @author: chenlin
  * @date: 2023/9/5 17:39
- * @description: 全程医疗-医嘱信息状态变更
+ * @description: 全程医疗-医嘱项状态变更入参模型
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("全程医疗-医嘱信息状态变更")
+@ApiModel("全程医疗-医嘱项状态变更入参模型")
 public class QcAdviceItemStatusForm implements Serializable {
 
     /** 平台医嘱流水号 */
@@ -23,6 +23,7 @@ public class QcAdviceItemStatusForm implements Serializable {
     private String Mall_order_no;
 
     /** 医疗机构医嘱流水号 */
+    @ApiModelProperty("医疗机构医嘱流水号")
     private String Org_order_no;
 
     /** 核销码 */
@@ -40,4 +41,8 @@ public class QcAdviceItemStatusForm implements Serializable {
     /** 强制标志：Y, N */
     @ApiModelProperty("强制标志：Y, N")
     private String ForceFlag;
+    
+    /** 医疗机构代码 */
+    @ApiModelProperty("医疗机构代码")
+    private String Org_Code;
 }

@@ -8,12 +8,12 @@ import lombok.ToString;
 /**
  * @author: chenlin
  * @date: 2023/8/31 15:09
- * @description: 全程医疗mall平台-医嘱记录数据模型
+ * @description: 全程医疗-医嘱查询出参模型
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("全程医疗mall平台-医嘱记录数据模型")
+@ApiModel("全程医疗-医嘱查询出参模型")
 public class QcDoctorAdviceRecordVO extends QcResult {
 
     /** 患者信息 */
