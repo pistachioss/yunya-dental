@@ -30,7 +30,7 @@ public class QcAdviceItemStatus implements Serializable {
     @ApiModelProperty("平台项目id")
     private String ItmMast_rowid;
 
-    /** 医嘱状态：1-核实，2-作废，4-停止，6-执行，12-撤销*/
-    @ApiModelProperty("医嘱状态：1-核实，2-作废，4-停止，6-执行，12-撤销")
+    /** 医嘱状态：0-开立，1-核实，2-作废，4-停止，6-执行，12-撤销*/
+    @ApiModelProperty("医嘱状态：0-开立，1-核实，2-作废，4-停止，6-执行，12-撤销")
     private String order_status;
 }
