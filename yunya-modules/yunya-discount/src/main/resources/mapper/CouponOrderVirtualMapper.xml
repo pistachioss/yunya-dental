@@ -22,12 +22,12 @@
     <insert id="insertList" parameterType="List">
         insert into
         `coupon_order_virtual`
-        (`order_id`, `order_sn`, `card_id`, `coupon_id`, `patient_id`, `coupon_name`,`package_unit_price`, `card_number`, `sold_date`,
+        (`order_id`, `order_sn`, `card_id`, `coupon_id`, `patient_id`, `coupon_name`,`package_unit_price`, `price`,`card_number`, `sold_date`,
         `crt_id`, `crt_time`, `upd_id`)
         values
         <foreach collection="virtuals" item="item" separator=",">
             (#{item.orderId}, #{item.orderSn}, #{item.cardId}, #{item.couponId},#{item.patientId}
-            ,#{item.couponName},#{item.packageUnitPrice},#{item.cardNumber},#{item.soldDate},#{item.crtId},#{item.crtTime},#{item.updId})
+            ,#{item.couponName},#{item.packageUnitPrice},#{item.price},#{item.cardNumber},#{item.soldDate},#{item.crtId},#{item.crtTime},#{item.updId})
         </foreach>
     </insert>
 

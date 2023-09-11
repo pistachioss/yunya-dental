@@ -18,6 +18,7 @@
             card_number,
             sold_date,
             package_unit_price,
+            price,
             inservice,
             crt_id,
             crt_time,
@@ -28,7 +29,7 @@
         <foreach collection="virtuals" item="item" separator=",">
             (#{item.virtualId}, #{item.orderId}, #{item.orderSn}, #{item.cardId},
             #{item.couponId}, #{item.patientId}, #{item.couponName}, #{item.cardNumber}
-            ,#{item.soldDate}, #{item.packageUnitPrice},#{item.inservice}, #{item.crtId},
+            ,#{item.soldDate}, #{item.packageUnitPrice},#{item.price},#{item.inservice}, #{item.crtId},
             #{item.crtTime}, #{item.updTime}, #{item.updId})
         </foreach>
     </insert>
