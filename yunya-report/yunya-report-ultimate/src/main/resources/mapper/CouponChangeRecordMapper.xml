@@ -125,6 +125,52 @@
     </select>
 
     <select id="deductionBuy" resultType="com.yunya.feign.report.domain.vo.DeductionBuyVO">
-
+        select bp.name  as buyer,
+               bp.mobile,
+               cov.coupon_name,
+               cov.card_number,
+               cov.sold_date    as buyDate,
+               cov.order_sn as orderNumber,
+               group_concat(cbbp.account_item_name)     as accountTypeName,
+               bo.abbreviation  as orgName,
+               cov.price,
+               cov.package_unit_price   as saleAmount,
+               be.employee_name as operateName
+        from base_coupon_order_virtual cov
+                 inner join base_coupon cci on c.coupon_id = cci.coupon_id
+                 left join base_patient bp on cov.patient_id = bp.patient_id
+                 left join base_coupon_bill cb on cb.order_id = cov.order_id
+                 left join base_organization bo on bo.org_id = cb.org_id
+                 left join base_coupon_bill_pay_detail cbbp on cbbp.order_id = cov.order_id
+                 left join base_employee be on be.user_id = cb.checker_id
+        where cb.order_status = 1
+            <if test="query.startDate != null and query.endDate != null">
+                and (cb.bill_date &gt;= #{query.startDate} and cb.bill_date &lt; DATE_ADD(#{query.endDate} ,INTERVAL '1'
+                DAY))
+            </if>
+            <if test="query.couponTypeIds != null and query.couponTypeIds.size() > 0">
+                and `cci`.`product_type_id` in
+                <foreach collection="query.couponTypeIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+             <if test="query.couponName !=null and query.couponName != ''">
+                and `cci`.`coupon_name` like concat('%', #{query.couponName}, '%')
+            </if>
+            <if test="query.cardNumber !=null and query.cardNumber != ''">
+                and `cov`.`card_number` like concat('%', #{query.cardNumber}, '%')
+            </if>
+             <if test="query.patientKeyword !=null and query.patientKeyword != ''">
+                and (`bp`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp`.`mobile` like concat('%',
+                #{query.patientKeyword}, '%')
+                or `bp`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
+            </if>
+            <if test="query.orgIds != null and query.orgIds.size() > 0">
+                and `cb`.`org_id` in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        group by cov.order_id, cov.card_id
     </select>
 </mapper>

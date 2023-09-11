@@ -93,11 +93,13 @@ public class CouponOrderBiz {
             LocalDateTime now = LocalDateTime.now();
             list = selectCard(model.getPatientId(), cards, detail, now);
             CouponOrder couponOrder = new CouponOrder();
-            List<CouponOrderDetail> build = build(model.getPatientId(), detail, couponIds, collect, couponOrder, now);
+            List<DeductionItemPeriod> periods = periodBiz.listByCoupon(couponIds, DateUtil.localDateTimeToDate(now));
+            Map<Integer, List<DeductionItemPeriod>> periodsCollect = periods.stream().collect(groupingBy(DeductionItemPeriod::getCouponId, toList()));
+            List<CouponOrderDetail> build = build(model.getPatientId(), detail, collect, couponOrder, now,periodsCollect);
             couponOrderMapper.insertSelective(couponOrder);
             build.forEach(o -> o.setOrderId(couponOrder.getId()));
             orderDetailMapper.insertList(build);
-            List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now, collect);
+            List<CouponOrderVirtual> virtuals = orderVirtual(couponOrder, list, now, collect, periodsCollect);
             virtualMapper.insertList(virtuals);
             vo = detail(couponOrder.getId());
             mqServiceFeign.sendMessage(couponOrder.getId(), 0, BaseCouponBill);
@@ -129,11 +131,13 @@ public class CouponOrderBiz {
                 checkRemaining(cards, detail, collect);
                 LocalDateTime now = LocalDateTime.now();
                 list = selectCard(order.getPatientId(), cards, detail, now);
-                List<CouponOrderDetail> build = build(order.getPatientId(), detail, couponIds, collect, order, now);
+                List<DeductionItemPeriod> periods = periodBiz.listByCoupon(couponIds, DateUtil.localDateTimeToDate(now));
+                Map<Integer, List<DeductionItemPeriod>> periodsCollect = periods.stream().collect(groupingBy(DeductionItemPeriod::getCouponId, toList()));
+                List<CouponOrderDetail> build = build(order.getPatientId(), detail, collect, order, now,periodsCollect);
                 couponOrderMapper.updateByPrimaryKeySelective(order);
                 build.forEach(o -> o.setOrderId(order.getId()));
                 orderDetailMapper.insertList(build);
-                List<CouponOrderVirtual> virtuals = orderVirtual(order, list, now, collect);
+                List<CouponOrderVirtual> virtuals = orderVirtual(order, list, now, collect,periodsCollect);
                 virtualMapper.insertList(virtuals);
                 vo = detail(order.getId());
                 mqServiceFeign.sendMessage(order.getId(), 0, BaseCouponBill);
@@ -234,17 +238,15 @@ public class CouponOrderBiz {
         return cardBenefitMapper.selectByExample(example);
     }
 
-    private List<CouponOrderDetail> build(Integer patientId, List<CouponOrderDetailModel> detail, List<Integer> couponIds, Map<Integer, CouponCommonInfo> collect1
-            , CouponOrder couponOrder, LocalDateTime now) {
+    private List<CouponOrderDetail> build(Integer patientId, List<CouponOrderDetailModel> detail, Map<Integer, CouponCommonInfo> collect1
+            , CouponOrder couponOrder, LocalDateTime now, Map<Integer, List<DeductionItemPeriod>> periodsCollect) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         Date date = DateUtil.localDateTimeToDate(now);
-        List<DeductionItemPeriod> periods = periodBiz.listByCoupon(couponIds, date);
         SalesChannel name = salesChannelBiz.getByName("艾维门诊");
         if (Objects.isNull(name)) {
             throw ClientServiceException.wrap(SALE_CHANNEL_NULL);
         }
-        Map<Integer, List<DeductionItemPeriod>> collect = periods.stream().collect(groupingBy(DeductionItemPeriod::getCouponId, toList()));
         couponOrder.setOrgId(Objects.isNull(couponOrder.getOrgId()) ? orgId : couponOrder.getOrgId());
         couponOrder.setPatientId(patientId);
         couponOrder.setOrderRecordNum(StringUtils.isBlank(couponOrder.getOrderRecordNum())
@@ -257,7 +259,7 @@ public class CouponOrderBiz {
         for (CouponOrderDetailModel detailModel : detail) {
             Integer couponId = detailModel.getCouponId();
             Integer quantity = detailModel.getQuantity();
-            List<DeductionItemPeriod> period = collect.get(couponId);
+            List<DeductionItemPeriod> period = periodsCollect.get(couponId);
             CouponCommonInfo coupon = collect1.get(couponId);
             BigDecimal price = period.stream().map(p -> p.getPrice().multiply(BigDecimal.valueOf(quantity)))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -432,7 +434,7 @@ public class CouponOrderBiz {
     }
 
     private List<CouponOrderVirtual> orderVirtual(CouponOrder couponOrder, List<Card> list
-            , LocalDateTime now, Map<Integer, CouponCommonInfo> collect) {
+            , LocalDateTime now, Map<Integer, CouponCommonInfo> collect,Map<Integer, List<DeductionItemPeriod>> periodsCollect) {
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         CouponOrderVirtual orderVirtual;
         List<CouponOrderVirtual> list1 = Lists.newArrayList();
@@ -452,6 +454,9 @@ public class CouponOrderBiz {
             orderVirtual.setCrtTime(date);
             CouponCommonInfo couponCommonInfo = collect.get(card.getCouponId());
             orderVirtual.setPackageUnitPrice(couponCommonInfo.getSoldAmount());
+            BigDecimal price = periodsCollect.get(orderVirtual.getCouponId()).stream().map(DeductionItemPeriod::getPrice)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            orderVirtual.setPrice(price);
             orderVirtual.setCouponName(couponCommonInfo.getName());
             list1.add(orderVirtual);
         }

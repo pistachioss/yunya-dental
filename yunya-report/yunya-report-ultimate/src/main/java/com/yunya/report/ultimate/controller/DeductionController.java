@@ -51,6 +51,14 @@ public class DeductionController {
         return ResponseUtil.success(deductionBiz.deductionBuy(query));
     }
 
+    @ApiOperation(value = "运营报表-划扣卡购买记录-导出")
+    @PostMapping("/deduction/buy/record/export")
+    public void deductionBuyExport(HttpServletResponse response, @Valid @RequestBody DeductionBuyQuery query) throws IOException {
+        deductionBiz.buildResponse(response, "划扣购买记录表");
+        EasyExcel.write(response.getOutputStream(), CouponUseVo.class)
+                .sheet("sheet").doWrite(deductionBiz.deductionBuy(query).getList());
+    }
+
     @ApiOperation(value = "运营报表-划扣卡消耗记录")
     @PostMapping("/deduction/used/record")
     public ResponseResult<PageInfo<DeductionUsedVO>> deductionUse(@RequestBody DeductionUseQuery query) {

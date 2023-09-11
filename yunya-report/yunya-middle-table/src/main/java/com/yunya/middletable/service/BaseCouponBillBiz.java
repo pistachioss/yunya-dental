@@ -109,6 +109,7 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
                     baseCouponBillDetailMapper.deleteByBillId(dataId);
                     // 保存账单明细
                     saveBaseBillDetail(dataId);
+                    baseCouponOrderVirtualMapper.deleteByBillId(dataId);
                     saveCardVirtual(dataId);
                 } else {
                     baseCouponBillDetailMapper.deleteByBillId(dataId);
@@ -173,11 +174,11 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
      */
     private void setBaseBillChargeValue(CouponOrder orderRecord, BaseCouponBill baseBill) {
         CouponBill bill = new CouponBill();
-        if (Objects.equals(orderRecord.getStatus(), 1)) {
-            bill.setOrderRecordId(orderRecord.getId());
-            CouponBill billRecord = couponBillMapper.selectOne(bill);
-            if (null != billRecord) {
-                baseBill.setOrderStatus(orderRecord.getStatus());
+        bill.setOrderRecordId(orderRecord.getId());
+        CouponBill billRecord = couponBillMapper.selectOne(bill);
+        if (null != billRecord) {
+            baseBill.setOrderStatus(orderRecord.getStatus());
+            if (Objects.equals(orderRecord.getStatus(), 1)) {
                 record2baseReport(billRecord, baseBill);
             }
         }

@@ -54,6 +54,7 @@ public class BaseCouponOrderVirtual {
 
     @Column(name = "package_unit_price")
     private BigDecimal packageUnitPrice;
+    private BigDecimal price;
 
     /**
      * 卡号
