@@ -4,11 +4,9 @@ import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.DeductionBuyQuery;
 import com.yunya.feign.report.domain.query.DeductionPeriodQuery;
+import com.yunya.feign.report.domain.query.DeductionRefundQuery;
 import com.yunya.feign.report.domain.query.DeductionUseQuery;
-import com.yunya.feign.report.domain.vo.CouponUseVo;
-import com.yunya.feign.report.domain.vo.DeductionBalanceInfoVO;
-import com.yunya.feign.report.domain.vo.DeductionBuyVO;
-import com.yunya.feign.report.domain.vo.DeductionUsedVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.DeductionBiz;
@@ -75,7 +73,7 @@ public class DeductionController {
 
     @ApiOperation(value = "运营报表-划扣卡退费记录")
     @PostMapping("/deduction/refund/record")
-    public ResponseResult<PageInfo<DeductionBalanceInfoVO>> deductionRefund(@RequestBody DeductionPeriodQuery query) {
-        return ResponseUtil.success(deductionBiz.deductionChange(query));
+    public ResponseResult<PageInfo<DeductionRefundVO>> deductionRefund(@RequestBody DeductionRefundQuery query) {
+        return ResponseUtil.success(deductionBiz.deductionRefund(query));
     }
 }

@@ -5,9 +5,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.DeductionBuyQuery;
 import com.yunya.feign.report.domain.query.DeductionPeriodQuery;
+import com.yunya.feign.report.domain.query.DeductionRefundQuery;
 import com.yunya.feign.report.domain.query.DeductionUseQuery;
 import com.yunya.feign.report.domain.vo.DeductionBalanceInfoVO;
 import com.yunya.feign.report.domain.vo.DeductionBuyVO;
+import com.yunya.feign.report.domain.vo.DeductionRefundVO;
 import com.yunya.feign.report.domain.vo.DeductionUsedVO;
 import com.yunya.report.ultimate.mapper.CouponChangeRecordMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +56,12 @@ public class DeductionBiz {
     public PageInfo<DeductionBuyVO> deductionBuy(DeductionBuyQuery query) {
         Page<DeductionBuyVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
         changeRecordMapper.deductionBuy(query);
+        return new PageInfo<>(page);
+    }
+
+    public PageInfo<DeductionRefundVO> deductionRefund(DeductionRefundQuery query) {
+        Page<DeductionRefundVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        changeRecordMapper.deductionRefund(query);
         return new PageInfo<>(page);
     }
 }

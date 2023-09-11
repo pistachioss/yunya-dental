@@ -483,6 +483,7 @@ CREATE TABLE `test_yunya_report`.`base_coupon_refund_detail` (
     `refund_detail_id` int(11) NOT NULL COMMENT '退费明细记录ID',
     `refund_id` int(11) NOT NULL COMMENT '退费记录ID',
     `order_detail_id` int(11) NOT NULL COMMENT '订单明细ID',
+    `order_virtual_id` int(11) DEFAULT NULL COMMENT '订单卡券id',
     `card_id` int(11) NOT NULL COMMENT '卡券id',
     `refund_amount` decimal(19,4) NOT NULL COMMENT '退费金额',
     `executor_id` int(11) DEFAULT NULL COMMENT '执行人id',
