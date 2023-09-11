@@ -57,6 +57,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponBill;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponRefund;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.modules.discount.enums.CardStatusEnum.USE_ALL;
@@ -370,8 +371,9 @@ public class DeductionPatientBiz {
         virtual.setInservice(false);
         couponOrderBiz.refundVirtual(details, detail, virtuals, virtual, order);
         refundCard(cardId);
-        mqServiceFeign.sendMessage(couponRefund.getId(), 0, BaseCouponRefund);
         couponOrderBiz.occur(orderId, 3, order.getPatientId(), cardId, refundTotalAmount);
+        mqServiceFeign.sendMessage(couponRefund.getId(), 0, BaseCouponRefund);
+        mqServiceFeign.sendMessage(couponRefund.getOrderId(), 0, BaseCouponBill);
     }
 
     public void refundCard(Integer cardId) {

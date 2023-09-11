@@ -86,3 +86,480 @@ select * from `yunya_system`.`member_type` where name = '普通会员';
 UPDATE `yunya_system`.`member_type` SET `name` = '金卡会员', `old_name` = '银藤会员' WHERE (`id` = '2');
 UPDATE `yunya_system`.`member_type` SET `name` = '白金卡会员', `old_name` = '金藤会员' WHERE (`id` = '1');
 UPDATE `yunya_system`.`member_type` SET `old_name` = '普通会员' WHERE (`id` = '4');
+
+--向阳
+CREATE TABLE `test_yunya_discount`.`coupon_bill` (
+     `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '账单ID',
+     `org_id` int(11) NOT NULL COMMENT '组织（门诊）id',
+     `patient_id` int(11) NOT NULL COMMENT '患者id',
+     `order_record_id` int(11) NOT NULL COMMENT '开单记录id',
+     `bill_number` varchar(32) NOT NULL COMMENT '账单编号（ZD+门诊ID+时间戳）',
+     `price` decimal(19,4) NOT NULL COMMENT '原价',
+     `receivable_amount` decimal(19,4) NOT NULL COMMENT '应收金额',
+     `received_amount` decimal(19,4) NOT NULL COMMENT '已收金额',
+     `debt_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '欠费金额（本单欠费）',
+     `invoice` bit(1) NOT NULL DEFAULT b'0' COMMENT '是否开发票',
+     `invoice_number` varchar(32) DEFAULT NULL COMMENT '发票编号',
+     `inservice` bit(1) NOT NULL DEFAULT b'1' COMMENT '是否有效',
+     `crt_id` int(11) NOT NULL COMMENT '创建人id',
+     `crt_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+     `upd_id` int(11) NOT NULL COMMENT '更新人',
+     `upd_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+     PRIMARY KEY (`id`),
+     KEY `idx_org_id` (`org_id`) USING BTREE,
+     KEY `idx_patient_id` (`patient_id`) USING BTREE,
+     KEY `idx_order_record_id` (`order_record_id`) USING BTREE,
+     KEY `idx_crt_time` (`crt_time`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=203 DEFAULT CHARSET=utf8mb4 COMMENT='划扣账单';
+
+CREATE TABLE `test_yunya_discount`.`coupon_bill_pay` (
+     `id` int(11) NOT NULL AUTO_INCREMENT,
+     `org_id` int(11) NOT NULL COMMENT '组织id',
+     `patient_id` int(11) NOT NULL COMMENT '患者id',
+     `order_id` int(11) NOT NULL COMMENT '开单记录id',
+     `bill_id` int(11) NOT NULL COMMENT '账单记录ID',
+     `received_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '本次收费金额',
+     `owe_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '欠费金额',
+     `inservice` bit(1) NOT NULL DEFAULT b'1' COMMENT '是否有效',
+     `crt_id` int(11) NOT NULL COMMENT '收款人id',
+     `crt_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '收款时间',
+     `upd_id` int(11) NOT NULL COMMENT '更新人',
+     `upd_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+     PRIMARY KEY (`id`),
+     KEY `idx_org_id` (`org_id`) USING BTREE,
+     KEY `idx_order_record_id` (`order_id`) USING BTREE,
+     KEY `idx_bill_record_id` (`bill_id`) USING BTREE,
+     KEY `idx_ctt_time` (`crt_time`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=191 DEFAULT CHARSET=utf8mb4 COMMENT='划扣收费记录';
+
+
+
+CREATE TABLE `test_yunya_discount`.`coupon_bill_pay_detail` (
+    `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `org_id` int(11) NOT NULL COMMENT '组织（诊所）id',
+    `patient_id` int(11) NOT NULL COMMENT '患者id',
+    `order_id` int(11) NOT NULL COMMENT '订单记录id',
+    `bill_id` int(11) NOT NULL COMMENT '账单ID',
+    `bill_pay_id` int(11) NOT NULL COMMENT '账单收费记录ID',
+    `type` tinyint(5) NOT NULL COMMENT '入账方式类型（0-预付款；1-会员卡；2-其他支付方式）',
+    `account_item_id` int(11) NOT NULL COMMENT '入账方式明细ID',
+    `account_item_name` varchar(20) NOT NULL COMMENT '入账方式明细',
+    `amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '入账金额',
+    `principal_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '本金',
+    `bonus_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '赠金',
+    `patient_num` varchar(20) DEFAULT NULL COMMENT '会员卡号或预付款卡号',
+    `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+    `inservice` bit(1) NOT NULL DEFAULT b'1' COMMENT '是否有效',
+    `crt_id` int(11) NOT NULL COMMENT '创建人ID',
+    `crt_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建人姓名',
+    `upd_id` int(11) NOT NULL COMMENT '更新人ID',
+    `upd_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idk_org_id` (`org_id`) USING BTREE,
+    KEY `idk_patient_id` (`patient_id`) USING BTREE,
+    KEY `idk_order_record_id` (`order_id`) USING BTREE,
+    KEY `idk_bill_record_id` (`bill_id`) USING BTREE,
+    KEY `bill_pay_record_id` (`bill_pay_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=210 DEFAULT CHARSET=utf8mb4 COMMENT='yunya_treatment.008(账单收费详情记录)';
+
+
+CREATE TABLE `test_yunya_discount`.`coupon_change_record` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `org_id` int(11) NOT NULL COMMENT '门诊id',
+  `patient_id` int(11) NOT NULL COMMENT '患者ID(产生)',
+  `order_id` int(11) NOT NULL COMMENT '订单id',
+  `card_id` int(11) NOT NULL COMMENT '卡券id',
+  `coupon_id` int(11) NOT NULL COMMENT '礼包id',
+  `occur_type` tinyint(8) NOT NULL COMMENT '发生类型(1.购买 2.消费 3.退款)',
+  `occur_amount` decimal(19,2) NOT NULL DEFAULT '0.00' COMMENT '发生金额',
+  `current_amount` decimal(19,2) NOT NULL DEFAULT '0.00' COMMENT '当前金额',
+  `payment_id` int(11) DEFAULT NULL COMMENT '发生方式字典',
+  `payment_manner` varchar(32) DEFAULT NULL COMMENT '发生方式名称',
+  `operator_user_id` int(11) DEFAULT NULL COMMENT '操作人',
+  `remarks` varchar(255) DEFAULT NULL COMMENT '备注/原因',
+  `card_number` varchar(64) DEFAULT NULL COMMENT '卡号',
+  `occur_date` datetime DEFAULT NULL COMMENT '发生日期',
+  `inservice` bit(1) DEFAULT b'1' COMMENT '是否启用 是否有效',
+  PRIMARY KEY (`id`),
+  KEY `indx_patient_id` (`patient_id`) USING BTREE,
+  KEY `indx_occur_date` (`occur_date`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COMMENT='划扣卡变动记录';
+
+
+CREATE TABLE `test_yunya_discount`.`coupon_order` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `org_id` int(11) NOT NULL COMMENT '组织（门诊）ID',
+  `patient_id` int(11) NOT NULL COMMENT '患者ID',
+  `order_record_num` varchar(32) DEFAULT NULL COMMENT '订单编号',
+  `status` tinyint(5) NOT NULL DEFAULT '0' COMMENT '状态（0-已下单；1-已收费；2-已退款）',
+  `total_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '订单总额',
+  `receivable_amount` decimal(19,4) NOT NULL COMMENT '应收金额（实际支付金额）',
+  `received_amount` decimal(19,4) DEFAULT NULL COMMENT '已收金额（本单收费总额）',
+  `remarks` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
+  `inservice` bit(1) NOT NULL DEFAULT b'1' COMMENT '是否有效',
+  `crt_id` int(11) NOT NULL COMMENT '创建人ID',
+  `crt_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `upd_id` int(11) NOT NULL COMMENT '更新人',
+  `upd_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_org_id` (`org_id`) USING BTREE,
+  KEY `idx_patient_id` (`patient_id`) USING BTREE,
+  KEY `idx_order_record_num` (`order_record_num`) USING BTREE,
+  KEY `idx_crt_time` (`crt_time`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=203 DEFAULT CHARSET=utf8mb4 COMMENT='卡券订单';
+
+
+CREATE TABLE `test_yunya_discount`.`coupon_order_detail` (
+     `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+     `org_id` int(11) NOT NULL COMMENT '组织（门诊）ID',
+     `order_id` int(11) NOT NULL COMMENT '订单ID',
+     `type` tinyint(5) NOT NULL COMMENT '卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券; 5-划扣券）',
+     `coupon_id` int(11) NOT NULL COMMENT '开单项目ID',
+     `coupon_number` varchar(12) NOT NULL COMMENT '礼包编码',
+     `coupon_name` varchar(255) DEFAULT NULL COMMENT '开单项目名称',
+     `price` decimal(19,4) NOT NULL COMMENT '售出单价',
+     `quantity` int(11) NOT NULL COMMENT '数量',
+     `receivable_amount` decimal(19,4) NOT NULL COMMENT '应收金额',
+     `consulter_id` int(11) DEFAULT NULL COMMENT '咨询师ID',
+     `executor_id` int(11) DEFAULT NULL COMMENT '执行人ID',
+     `remarks` varchar(255) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
+     `sale_channel_id` int(11) NOT NULL COMMENT '销售渠道(艾维门诊)',
+     `inservice` bit(1) NOT NULL DEFAULT b'1' COMMENT '是否有效',
+     `crt_id` int(11) NOT NULL COMMENT '创建人ID',
+     `crt_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+     `upd_id` int(11) NOT NULL COMMENT '更新人',
+     `upd_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+     PRIMARY KEY (`id`),
+     KEY `idk_org_id` (`org_id`) USING BTREE,
+     KEY `idk_order_record_id` (`order_id`) USING BTREE,
+     KEY `idx_coupon_id` (`coupon_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=234 DEFAULT CHARSET=utf8mb4 COMMENT='卡券订单明细';
+
+
+CREATE TABLE `test_yunya_discount`.`coupon_order_virtual` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `order_id` int(11) NOT NULL COMMENT '订单id',
+    `order_sn` varchar(64) NOT NULL COMMENT '订单号',
+    `card_id` int(11) NOT NULL COMMENT '卡券id',
+    `coupon_id` int(11) NOT NULL COMMENT '礼包id',
+    `patient_id` int(11) NOT NULL COMMENT '患者',
+    `coupon_name` varchar(255) NOT NULL COMMENT '礼包名称',
+    `card_number` varchar(12) NOT NULL COMMENT '卡号',
+    `sold_date` datetime NOT NULL COMMENT '售卖时间',
+    `package_unit_price` decimal(11,2) NOT NULL COMMENT '套餐单价',
+    `price` decimal(11,2) NOT NULL COMMENT '原价',
+    `inservice` bit(1) DEFAULT b'1' COMMENT '是否有效',
+    `crt_id` int(11) NOT NULL COMMENT '创建人',
+    `crt_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `upd_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    `upd_id` int(11) DEFAULT NULL COMMENT '更新人',
+                                                              PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=295 DEFAULT CHARSET=utf8mb4 COMMENT='虚拟卡券';
+
+
+CREATE TABLE `test_yunya_discount`.`coupon_refund` (
+    `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '退费记录ID',
+    `org_id` int(11) NOT NULL COMMENT '组织ID',
+    `patient_id` int(11) NOT NULL COMMENT '患者ID',
+    `order_id` int(11) NOT NULL COMMENT '开单记录ID',
+    `refund_amount` decimal(19,4) NOT NULL COMMENT '退款总额',
+    `reason` varchar(1024) DEFAULT NULL COMMENT '退费原因',
+    `refund_certificate` varchar(1024) DEFAULT NULL COMMENT '退费凭证(多个用法逗号隔开)',
+    `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+    `inservice` bit(1) NOT NULL DEFAULT b'1' COMMENT '是否有效',
+    `crt_id` int(11) NOT NULL COMMENT '创建人ID',
+    `crt_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `upd_id` int(11) DEFAULT NULL COMMENT '更新人ID',
+    `upd_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_org_id` (`org_id`) USING BTREE,
+    KEY `idx_patient_id` (`patient_id`) USING BTREE,
+    KEY `idx_order_record_id` (`order_id`) USING BTREE,
+    KEY `idx_crt_time` (`crt_time`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=104 DEFAULT CHARSET=utf8mb4 COMMENT='划扣退费';
+
+CREATE TABLE `test_yunya_discount`.`coupon_refund_detail` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '退费项目明细ID',
+  `org_id` int(11) NOT NULL COMMENT '组织ID',
+  `order_detail_id` int(11) NOT NULL COMMENT '订单明细id',
+  `order_virtual_id` int(11) NOT NULL COMMENT '订单卡券id',
+  `card_id` int(11) NOT NULL COMMENT '卡券id',
+  `refund_id` int(11) DEFAULT NULL COMMENT '退费记录ID',
+  `refund_amount` decimal(19,4) DEFAULT '0.0000' COMMENT '退费金额',
+  `inservice` bit(1) NOT NULL DEFAULT b'1' COMMENT '是否有效',
+  `crt_id` int(11) NOT NULL COMMENT '创建人ID',
+  `crt_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `upd_id` int(11) DEFAULT NULL COMMENT '更新人ID',
+  `upd_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idk_org_id` (`org_id`) USING BTREE,
+  KEY `idk_order_detail_id` (`card_id`) USING BTREE,
+  KEY `idk_bill_refund_record_id` (`refund_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=97 DEFAULT CHARSET=utf8mb4 COMMENT='退款项目明细';
+
+
+CREATE TABLE `test_yunya_discount`.`coupon_refund_pay` (
+   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+   `refund_id` int(11) NOT NULL COMMENT '退费记录ID',
+   `account_item_id` int(11) NOT NULL COMMENT '退费支付方式ID',
+   `account_item_name` varchar(20) NOT NULL,
+   `refund_pay_amount` decimal(19,4) NOT NULL COMMENT '退费付款合计金额',
+   `total_amount` decimal(19,4) NOT NULL COMMENT '该明细退款总额',
+   `principal_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '退款本金',
+   `gift_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '退款赠金',
+   `patient_number` varchar(255) DEFAULT NULL COMMENT '预付款号或会员卡号或支付方式id',
+   `inservice` bit(1) NOT NULL DEFAULT b'1' COMMENT '是否有效',
+   `crt_id` int(11) NOT NULL COMMENT '创建人ID',
+   `crt_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+   `upd_id` int(11) DEFAULT NULL COMMENT '更新人ID',
+   `upd_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+   PRIMARY KEY (`id`),
+   KEY `idk_bill_refund_record_id` (`refund_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COMMENT='退费支付';
+
+
+CREATE TABLE `test_yunya_discount`.`deduction_coupon` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `coupon_id` int(11) NOT NULL COMMENT '优惠券id',
+  `activation_deadline` date DEFAULT NULL COMMENT '激活截至日期(产品有效期)',
+  `effective_days` int(11) DEFAULT '0' COMMENT '卡券激活后有效期',
+  `mixable` int(11) NOT NULL COMMENT '是否可混合使用优惠 0.不可以共用 1.可以共用',
+  `useable_clinic` varchar(1024) CHARACTER SET utf8 NOT NULL COMMENT '可使用门诊',
+  `use_way` tinyint(4) NOT NULL COMMENT '使用方式 0:一次使用 1:多次使用',
+  `limit_count` int(11) NOT NULL COMMENT '账单单次使用限制数量',
+  `is_share` tinyint(1) NOT NULL COMMENT '是否可与他人共享',
+  `workload_rate` decimal(11,0) DEFAULT NULL COMMENT '工作量比例',
+  `remark` varchar(1000) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
+  `crt_id` int(11) NOT NULL COMMENT '创建人',
+  `crt_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `upd_id` int(11) DEFAULT NULL COMMENT '更新人',
+  `upd_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_coupon_id` (`coupon_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COMMENT='划扣券';
+
+CREATE TABLE `test_yunya_discount`.`deduction_item_period` (
+   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+   `coupon_id` int(11) NOT NULL COMMENT '卡券ID',
+   `type` int(11) NOT NULL COMMENT '类型 0:基础价目表,1:基础商品表',
+   `item_id` int(11) NOT NULL COMMENT '明细ID',
+   `count` int(11) NOT NULL COMMENT '数量',
+   `sale_amount` decimal(11,2) NOT NULL COMMENT '套餐价',
+   `package_unit_price` decimal(11,2) NOT NULL COMMENT '套餐单价',
+   `workload_load` decimal(11,2) DEFAULT NULL COMMENT '单个数量补入工作量',
+   `unit_price` decimal(11,2) NOT NULL COMMENT '单价',
+   `price` decimal(11,2) NOT NULL COMMENT '原价',
+   `crt_id` int(11) DEFAULT NULL COMMENT '创建人',
+   `crt_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+   `is_show_app` int(2) DEFAULT '1' COMMENT '套餐券匹配项目小程序是否显示 0否 1是',
+   PRIMARY KEY (`id`),
+   KEY `idx_coupon_id` (`coupon_id`) USING BTREE,
+   KEY `idx_date` (`crt_time`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=8462 DEFAULT CHARSET=utf8mb4 COMMENT='划扣项目变化';
+
+CREATE TABLE `test_yunya_report`.`base_coupon_bill` (
+    `order_id` int(11) NOT NULL,
+    `bill_id` int(11) DEFAULT NULL COMMENT '订单记录ID(order_record表ID)',
+    `org_id` int(11) NOT NULL COMMENT '组织ID',
+    `patient_id` int(11) NOT NULL COMMENT '患者ID',
+    `order_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '状态（0-已下单；1-已收费；2-已退款）',
+    `order_num` varchar(32) NOT NULL COMMENT '订单编号',
+    `bill_num` varchar(32) DEFAULT NULL COMMENT '账单编号',
+    `order_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '订单总额',
+    `received_amount` decimal(19,4) DEFAULT '0.0000' COMMENT '已收总额',
+    `receivable_amount` decimal(19,4) DEFAULT '0.0000' COMMENT '应收金额',
+    `debt_amount` decimal(19,4) DEFAULT '0.0000' COMMENT '欠费总额',
+    `order_date` datetime NOT NULL COMMENT '开单日期',
+    `biller_id` int(11) DEFAULT NULL COMMENT '开单人ID',
+    `bill_date` datetime DEFAULT NULL COMMENT '账单日期',
+    `checker_id` int(11) DEFAULT NULL COMMENT '结账人ID',
+    PRIMARY KEY (`order_id`),
+    KEY `idx_org_id` (`org_id`) USING BTREE,
+    KEY `idx_patient_id` (`patient_id`) USING BTREE,
+    KEY `idx_orde_date` (`order_date`) USING BTREE,
+    KEY `idx_bill_date` (`bill_date`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='账单记录';
+
+CREATE TABLE `test_yunya_report`.`base_coupon_bill_detail` (
+    `order_detail_id` int(11) NOT NULL COMMENT '订单明细ID',
+    `org_id` int(11) DEFAULT NULL COMMENT '组织ID',
+    `order_id` int(11) NOT NULL COMMENT '订单ID',
+    `coupon_id` int(11) NOT NULL COMMENT '礼包id',
+    `type` int(11) NOT NULL COMMENT '卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券; 5-划扣券）',
+    `coupon_number` varchar(12) NOT NULL COMMENT '礼包编码',
+    `coupon_name` varchar(255) NOT NULL COMMENT '开单项目名称',
+    `price` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '售出单价',
+    `receivable_amount` decimal(19,4) NOT NULL COMMENT '应收金额',
+    `quantity` int(11) NOT NULL COMMENT '数量',
+    `executor_id` int(11) DEFAULT NULL COMMENT '执行人ID',
+    `consulter_id` int(11) DEFAULT NULL COMMENT '咨询师ID',
+    `sale_channel_id` int(11) NOT NULL COMMENT '销售渠道(艾维门诊)',
+    `received_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '项目收费金额',
+    `remark` varchar(128) DEFAULT '' COMMENT '开单备注',
+    PRIMARY KEY (`order_detail_id`),
+    KEY `idx_org_id` (`org_id`) USING BTREE,
+    KEY `idx_executor_id` (`executor_id`) USING BTREE,
+    KEY `idx_bill_id` (`order_id`) USING BTREE,
+    KEY `idx_cmp` (`org_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='账单明细';
+
+CREATE TABLE `test_yunya_report`.`base_coupon_bill_pay` (
+    `bill_pay_id` int(11) NOT NULL COMMENT '账单收费记录ID',
+    `order_id` int(11) NOT NULL COMMENT '订单ID',
+    `org_id` int(11) NOT NULL COMMENT '组织ID',
+    `patient_id` int(11) NOT NULL COMMENT '患者id',
+    `payee_user_id` int(11) NOT NULL COMMENT '收款人ID',
+    `payee_date` datetime NOT NULL COMMENT '收款日期',
+    `received_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '本次收费总额',
+    `owe_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '欠费总额',
+    PRIMARY KEY (`bill_pay_id`),
+    KEY `idx_bill_id` (`order_id`) USING BTREE,
+    KEY `idx_org_id` (`org_id`) USING BTREE,
+    KEY `idx_payee_user_id` (`payee_user_id`) USING BTREE,
+    KEY `idx_payee_date` (`payee_date`) USING BTREE,
+    KEY `idx_cmp` (`order_id`,`org_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='账单收费记录';
+
+CREATE TABLE `test_yunya_report`.`base_coupon_bill_pay_detail` (
+    `bill_pay_detail_id` int(11) NOT NULL COMMENT '账单支付明细记录ID',
+    `order_id` int(11) NOT NULL COMMENT '订单id',
+    `bill_pay_id` int(11) NOT NULL COMMENT '账单收费记录ID',
+    `account_item_id` int(11) NOT NULL COMMENT '入账方式明细ID',
+    `account_item_name` varchar(20) NOT NULL COMMENT '入账方式明细',
+    `type` tinyint(5) NOT NULL COMMENT '入账方式类型（0-预付款；1-会员卡；2-其他支付方式）',
+    `amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '入账金额',
+    `principal_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '消费本金',
+    `bonus_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '消费赠金',
+    `patient_num` varchar(20) DEFAULT NULL COMMENT '会员卡号或预付款卡号',
+    PRIMARY KEY (`bill_pay_detail_id`),
+    KEY `idx_bill_id` (`order_id`),
+    KEY `idx_bill_pay_id` (`bill_pay_id`),
+    KEY `idx_account_item_id` (`account_item_id`),
+    KEY `idx_cmp` (`type`,`account_item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC COMMENT='账单付款明细记录';
+
+CREATE TABLE `test_yunya_report`.`base_coupon_order_virtual` (
+    `virtual_id` int(11) NOT NULL,
+    `order_id` int(11) NOT NULL COMMENT '订单id',
+    `order_sn` varchar(64) NOT NULL COMMENT '订单号',
+    `card_id` int(11) NOT NULL COMMENT '卡券id',
+    `coupon_id` int(11) NOT NULL COMMENT '礼包id',
+    `patient_id` int(11) NOT NULL COMMENT '患者',
+    `coupon_name` varchar(255) NOT NULL COMMENT '礼包名称',
+    `card_number` varchar(12) NOT NULL COMMENT '卡号',
+    `sold_date` datetime NOT NULL COMMENT '售卖时间',
+    `package_unit_price` decimal(11,2) NOT NULL COMMENT '套餐单价',
+    `inservice` bit(1) DEFAULT b'1' COMMENT '是否有效',
+    `price` decimal(11,2) NOT NULL COMMENT '原价',
+    `crt_id` int(11) NOT NULL COMMENT '创建人',
+    `crt_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `upd_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    `upd_id` int(11) DEFAULT NULL COMMENT '更新人',
+    PRIMARY KEY (`virtual_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='虚拟卡券';
+
+CREATE TABLE `test_yunya_report`.`base_coupon_refund` (
+    `refund_id` int(11) NOT NULL COMMENT '退费记录ID',
+    `org_id` int(11) NOT NULL COMMENT '组织ID',
+    `patient_id` int(11) NOT NULL COMMENT '患者ID',
+    `order_id` int(11) NOT NULL COMMENT '订单id',
+    `refund_amount` decimal(19,4) NOT NULL COMMENT '退费总额',
+    `refund_operator_id` int(11) DEFAULT NULL COMMENT '退费人ID',
+    `refund_date` datetime DEFAULT NULL COMMENT '退费日期',
+    `refund_reason` varchar(255) DEFAULT NULL COMMENT '退费原因',
+    `bill_num` varchar(64) NOT NULL COMMENT '账单编号',
+    `bill_date` datetime DEFAULT NULL COMMENT '账单日期',
+    `order_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '订单总额',
+    `receivable_amount` decimal(19,4) DEFAULT '0.0000' COMMENT '应收总额',
+    `received_amount` decimal(19,4) DEFAULT '0.0000' COMMENT '账单已收总额',
+    PRIMARY KEY (`refund_id`),
+    KEY `idx_org_id` (`org_id`) USING BTREE,
+    KEY `idx_patient_id` (`patient_id`) USING BTREE,
+    KEY `idx_bill_id` (`order_id`) USING BTREE,
+    KEY `idx_refund_date` (`refund_date`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='退费记录';
+
+CREATE TABLE `test_yunya_report`.`base_coupon_refund_detail` (
+    `refund_detail_id` int(11) NOT NULL COMMENT '退费明细记录ID',
+    `refund_id` int(11) NOT NULL COMMENT '退费记录ID',
+    `order_detail_id` int(11) NOT NULL COMMENT '订单明细ID',
+    `card_id` int(11) NOT NULL COMMENT '卡券id',
+    `refund_amount` decimal(19,4) NOT NULL COMMENT '退费金额',
+    `executor_id` int(11) DEFAULT NULL COMMENT '执行人id',
+    `consulter_id` int(11) DEFAULT NULL COMMENT '咨询死ID',
+    `type` tinyint(3) NOT NULL COMMENT '卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券; 5-划扣券）',
+    `card_number` varchar(100) DEFAULT NULL COMMENT '卡号',
+    `coupon_name` varchar(200) DEFAULT NULL COMMENT '礼包名称',
+    PRIMARY KEY (`refund_detail_id`),
+    KEY `idx_refund_id` (`refund_id`) USING BTREE,
+    KEY `idx_bill_detail_id` (`order_detail_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='退费明细';
+
+CREATE TABLE `test_yunya_report`.`base_coupon_refund_pay` (
+    `bill_refund_pay_id` int(11) NOT NULL COMMENT '账单退费支付明细ID',
+    `refund_id` int(11) NOT NULL COMMENT '账单退费记录ID',
+    `account_item_id` int(11) NOT NULL COMMENT '支付方式ID',
+    `account_item_name` varchar(20) NOT NULL,
+    `patient_number` varchar(255) DEFAULT NULL COMMENT '预付款号或会员卡号或支付方式id',
+    `total_amount` decimal(19,4) NOT NULL COMMENT '该明细退款总额',
+    `principal_amount` decimal(19,4) NOT NULL COMMENT '退款本金',
+    `bonus_amount` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '退款赠金',
+    PRIMARY KEY (`bill_refund_pay_id`),
+    KEY `idx_refund_id` (`refund_id`) USING BTREE,
+    KEY `idx_account_item_id` (`account_item_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='账单退费付款明细';
+
+CREATE TABLE `test_yunya_report`.`coupon_change_record` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `org_id` int(11) NOT NULL COMMENT '门诊id',
+    `patient_id` int(11) NOT NULL COMMENT '患者ID(产生)',
+    `order_id` int(11) NOT NULL COMMENT '订单id',
+    `card_id` int(11) NOT NULL COMMENT '卡券id',
+    `coupon_id` int(11) NOT NULL COMMENT '礼包id',
+    `occur_type` tinyint(8) NOT NULL COMMENT '发生类型(1.购买 2.消费 3.退款)',
+    `occur_amount` decimal(19,2) NOT NULL DEFAULT '0.00' COMMENT '发生金额',
+    `current_amount` decimal(19,2) NOT NULL DEFAULT '0.00' COMMENT '当前金额',
+    `payment_id` int(11) DEFAULT NULL COMMENT '发生方式字典',
+    `payment_manner` varchar(32) DEFAULT NULL COMMENT '发生方式名称',
+    `operator_user_id` int(11) DEFAULT NULL COMMENT '操作人',
+    `remarks` varchar(255) DEFAULT NULL COMMENT '备注/原因',
+    `card_number` varchar(64) DEFAULT NULL COMMENT '卡号',
+    `occur_date` datetime DEFAULT NULL COMMENT '发生日期',
+    `inservice` bit(1) DEFAULT b'1' COMMENT '是否启用 是否有效',
+    PRIMARY KEY (`id`),
+    KEY `indx_patient_id` (`patient_id`) USING BTREE,
+    KEY `indx_occur_date` (`occur_date`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COMMENT='划扣卡变动记录';
+
+CREATE TABLE `test_yunya_report`.`deduction_item` (
+    `coupon_id` int(11) NOT NULL COMMENT '卡券ID',
+    `type` int(11) NOT NULL COMMENT '类型 0:基础价目表,1:基础商品表',
+    `item_id` int(11) NOT NULL COMMENT '明细ID',
+    `count` int(11) NOT NULL COMMENT '数量',
+    `sale_amount` decimal(11,2) NOT NULL COMMENT '套餐价',
+    `package_unit_price` decimal(11,2) NOT NULL COMMENT '套餐单价',
+    `workload_load` decimal(11,2) DEFAULT NULL COMMENT '单个数量补入工作量',
+    `unit_price` decimal(11,2) NOT NULL COMMENT '单价',
+    `price` decimal(11,2) NOT NULL COMMENT '原价',
+    `crt_id` int(11) DEFAULT NULL COMMENT '创建人',
+    `crt_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
+    KEY `idx_coupon_id` (`coupon_id`) USING BTREE,
+    KEY `idx_date` (`crt_time`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='划扣项目变化';
+
+
+
+
+
+
+
+--更新表格sql
+ALTER TABLE `test_yunya_discount`.`card`
+    ADD COLUMN `buyer_id` INT(11) NULL AFTER `seller_user_id`,
+ADD COLUMN `b` INT(11) NULL AFTER `a`;
+
+ALTER TABLE `test_yunya_discount`.`coupon_common_info`
+    CHANGE COLUMN `type` `type` TINYINT(10) NOT NULL COMMENT '卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券; 5-划扣券）' ;
+
+ALTER TABLE `test_yunya_report`.`base_coupon`
+    CHANGE COLUMN `coupon_type` `coupon_type` TINYINT(6) NULL DEFAULT NULL COMMENT '卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券；5-划扣卡）' ;
