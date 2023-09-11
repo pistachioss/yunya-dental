@@ -89,7 +89,7 @@ public class BillPayDetailRecordBiz
     if (null != billPayRecord) {
       if (billPayRecord.getInservice()) {
         List<BillPayDetailRecordVO> detailRecords = getBillPayDetailRecordList(billPayRecordId);
-        checkPaymentType(detailRecords);
+//        checkPaymentType(detailRecords);
         resultData.setBillPayDetailRecords(detailRecords);
         resultData.setBillPayRecordId(billPayRecordId);
         resultData.setChargeDate(new DateTime(billPayRecord.getCrtTime()).toString("yyyy-MM-dd"));
