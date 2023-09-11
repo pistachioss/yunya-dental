@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.other.mapper.QcTreatmentRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.QcTreatmentRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="adm_no" property="admNo" jdbcType="VARCHAR" />
+    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="bill_id" property="billId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="verify_code" property="verifyCode" jdbcType="VARCHAR" />
+    <result column="verify_date" property="verifyDate" jdbcType="TIMESTAMP" />
+    <result column="verify_id" property="verifyId" jdbcType="INTEGER" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="adm_date" property="admDate" jdbcType="TIMESTAMP" />
+    <result column="sync_id" property="syncId" jdbcType="INTEGER" />
+    <result column="sync_time" property="syncTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>
