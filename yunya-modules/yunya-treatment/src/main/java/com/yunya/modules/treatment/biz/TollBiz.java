@@ -748,9 +748,6 @@ public class TollBiz {
       default:
         break;
     }
-    if (true) {
-      throw new ClientServiceException("", 500);
-    }
   }
 
   private void saveBillPayDetailRecordWithMixDiscount(BigDecimal totalCharge, Integer orderRecordId, Integer billRecordId, GeneralDiscountModel generalDiscount, AccreditDiscountModel accreditDiscount) {
