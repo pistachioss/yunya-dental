@@ -555,8 +555,7 @@ CREATE TABLE `test_yunya_report`.`deduction_item` (
 
 --更新表格sql
 ALTER TABLE `test_yunya_discount`.`card`
-    ADD COLUMN `buyer_id` INT(11) NULL AFTER `seller_user_id`,
-ADD COLUMN `b` INT(11) NULL AFTER `a`;
+    ADD COLUMN `buyer_id` INT(11) NULL AFTER `seller_user_id`;
 
 ALTER TABLE `test_yunya_discount`.`coupon_common_info`
     CHANGE COLUMN `type` `type` TINYINT(10) NOT NULL COMMENT '卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券; 5-划扣券）' ;
