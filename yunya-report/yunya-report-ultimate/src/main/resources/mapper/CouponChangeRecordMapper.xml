@@ -137,7 +137,7 @@
                cov.package_unit_price   as saleAmount,
                be.employee_name as operateName
         from base_coupon_order_virtual cov
-                 inner join base_coupon cci on c.coupon_id = cci.coupon_id
+                 inner join base_coupon cci on cov.coupon_id = cci.coupon_id
                  left join base_patient bp on cov.patient_id = bp.patient_id
                  left join base_coupon_bill cb on cb.order_id = cov.order_id
                  left join base_organization bo on bo.org_id = cb.org_id

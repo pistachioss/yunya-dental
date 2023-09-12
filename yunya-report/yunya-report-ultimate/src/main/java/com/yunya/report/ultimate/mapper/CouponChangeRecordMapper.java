@@ -21,5 +21,5 @@ public interface CouponChangeRecordMapper extends Mapper<CouponChangeRecord> {
 
     List<DeductionBuyVO> deductionBuy(@Param("query")DeductionBuyQuery query);
 
-    List<DeductionRefundVO> deductionRefund(DeductionRefundQuery query);
+    List<DeductionRefundVO> deductionRefund(@Param("query")DeductionRefundQuery query);
 }
