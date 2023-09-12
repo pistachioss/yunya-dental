@@ -159,7 +159,7 @@ public class WebServiceUtils {
         if(result.length>0){
             return result[0].toString();
         }
-        return  "invoke success, but is void ";
+        return  "{\"code\": 0, \"msg\":\"ok\"}";
     }
 
     public static void main(String[] args) throws Exception {

@@ -10,7 +10,10 @@ import com.yunya.modules.treatment.other.biz.QcTreatmentRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author: chenlin
@@ -52,4 +55,50 @@ public class QcTreatmentRecordController {
         qcTreatmentRecordBiz.verify(id, verifyCode);
         return ResponseUtil.success();
     }
+
+    /**
+     * mall平台推荐绑定患者
+     *
+     * @param id
+     * @param patientId
+     * @return
+     */
+    @CurrentUser
+    @ApiOperation("mall平台推荐绑定患者")
+    @PutMapping("/bindPatient/{id}/${patientId}")
+    public ResponseResult bindPatient(@PathVariable(value = "id") Integer id, @PathVariable(value = "patientId") Integer patientId) {
+        qcTreatmentRecordBiz.bindPatient(id, patientId);
+        return ResponseUtil.success();
+    }
+
+    /**
+     * 医嘱执行
+     *
+     * @param id
+     * @return
+     */
+    @CurrentUser
+    @ApiOperation("医嘱执行")
+    @PutMapping("/execute/{id}")
+    public ResponseResult execute(@PathVariable(value = "id") Integer id) {
+        qcTreatmentRecordBiz.execute(id);
+        return ResponseUtil.success();
+    }
+
+
+    /**
+     * 同步医嘱上传
+     *
+     * @param qcTreatmentIds
+     * @return
+     */
+    @CurrentUser
+    @ApiOperation("同步医嘱上传")
+    @PostMapping("/adviceUpload")
+    public ResponseResult doctorAdviceUpload(@RequestBody @Validated List<Integer> qcTreatmentIds) {
+        qcTreatmentRecordBiz.doctorAdviceUpload(qcTreatmentIds);
+        return ResponseUtil.success();
+    }
+
+
 }
