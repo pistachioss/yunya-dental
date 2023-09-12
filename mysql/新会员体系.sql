@@ -48,18 +48,23 @@ alter table `test_yunya_patient_central`.`member_recharge_record` modify column 
 alter table `test_yunya_patient_central`.`prepaid_recharge_record` modify column `type` int(5) NOT NULL DEFAULT '0' comment '操作类型：0 充值，1 撤销收费 2 订单退费 6.就诊账单返点 7.礼包账单返点';
 
 create table `test_yunya_patient_central`.`patient_transfer_record` (
-  `id` int(11) NOT NULL AUTO_INCREMENT comment '转账记录id',
-  `org_id` int(11) DEFAULT NULL comment '门诊id',
-  `transferor_number` varchar(64) NOT NULL comment '转账人卡号',
-  `acceptor_number` varchar(64) NOT NULL comment '接收人卡号',
-  `principal` decimal(19,4) NOT NULL DEFAULT '0.0000' comment '本金',
-  `bonus` decimal(19,4) NOT NULL DEFAULT '0.0000' comment '赠金',
-  `inservice` bit(1) NOT NULL DEFAULT b'1' comment '是否启用',
-  `remark` varchar(255) DEFAULT NULL comment '备注',
-  `crt_time` datetime DEFAULT NULL comment '创建时间',
-  `crt_id` int(11) DEFAULT NULL comment '创建人id',
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '转账记录id',
+  `org_id` int(11) DEFAULT NULL COMMENT '门诊id',
+  `main_number` varchar(64) NOT NULL COMMENT '主体卡号',
+  `main_patient_id` int(11) DEFAULT NULL COMMENT '主体患者id',
+  `minor_number` varchar(64) NOT NULL COMMENT '次要卡号',
+  `minor_patient_id` int(11) DEFAULT NULL COMMENT '次要患者id',
+  `type` tinyint(2) NOT NULL DEFAULT '1' COMMENT '类型：1-转入，2-转出',
+  `principal` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '本金',
+  `bonus` decimal(19,4) NOT NULL DEFAULT '0.0000' COMMENT '赠金',
+  `inservice` bit(1) NOT NULL DEFAULT b'1' COMMENT '是否启用',
+  `operate_type` tinyint(2) NOT NULL DEFAULT '0' COMMENT '转账方式：0-预付款充值会员卡，1-预付款账户转账',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `crt_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `crt_id` int(11) DEFAULT NULL COMMENT '创建人id',
+  `crt_name` varchar(255) DEFAULT NULL COMMENT '创建人姓名',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 comment='账户转账记录';
+) ENGINE=InnoDB AUTO_INCREMENT=117 DEFAULT CHARSET=utf8mb4 COMMENT='账户转账记录';
 
 alter table `test_yunya_patient_central`.`patient_member_relation` modify column `org_id` int(11) DEFAULT NULL comment '诊所ID';
 alter table `test_yunya_patient_central`.`patient_member_relation` modify column `crt_id` int(11) DEFAULT NULL comment '创建人ID';
