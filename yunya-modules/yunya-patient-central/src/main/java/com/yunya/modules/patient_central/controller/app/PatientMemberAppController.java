@@ -253,14 +253,14 @@ public class PatientMemberAppController {
     }
 
     /**
-     * 授权码是否失效
+     * 授权码是否有效
      *
      * @param patientId
      * @throws IOException
      */
-    @ApiOperation("小程序-我的-会员卡授权码-授权码是否失效")
+    @ApiOperation("小程序-我的-会员卡授权码-判断患者的会员卡授权码是否有效: true-有效，false-失效")
     @PostMapping("/patientMember/codeIsFailure/{patientId}")
-    public ResponseResult<Boolean> patientMemberAutCodeIsFailure(@PathVariable(value = "patientId") Integer patientId) throws IOException {
-        return ResponseUtil.success(patientBaseInfoBiz.patientMemberAutCodeIsFailure(patientId));
+    public ResponseResult<Boolean> patientMemberAutCodeInservice(@PathVariable(value = "patientId") Integer patientId) throws IOException {
+        return ResponseUtil.success(patientBaseInfoBiz.patientMemberAutCodeInservice(patientId));
     }
 }
