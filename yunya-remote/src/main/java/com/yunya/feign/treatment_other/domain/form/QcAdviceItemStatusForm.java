@@ -42,7 +42,7 @@ public class QcAdviceItemStatusForm implements Serializable {
     @ApiModelProperty("强制标志：Y, N")
     private String ForceFlag;
     
-    /** 医疗机构代码 */
-    @ApiModelProperty("医疗机构代码")
-    private String Org_Code;
+    /** 医疗机构代码：HZAWQYKQMZBYXGS-乾元门诊, HZQCYL-全程医疗 */
+    @ApiModelProperty("医疗机构代码：HZAWQYKQMZBYXGS-乾元门诊, HZQCYL-全程医疗")
+    private String Org_Code = "HZAWQYKQMZBYXGS";
 }

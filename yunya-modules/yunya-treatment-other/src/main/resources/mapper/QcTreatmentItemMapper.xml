@@ -23,4 +23,8 @@
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
     <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+    <select id="selectListByQcTreatmentId" resultType="com.yunya.models.treatment_other.QcTreatmentItem">
+
+    </select>
 </mapper>
