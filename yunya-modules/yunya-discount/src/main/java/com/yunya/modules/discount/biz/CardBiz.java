@@ -460,10 +460,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             List<Integer> collect = result.stream().filter(t -> StringUtils.isNotBlank(t.getSoldTarget())
                     && StringUtils.isNumeric(t.getSoldTarget())).map(t -> Integer.valueOf(t.getSoldTarget()))
                     .collect(toList());
-            List<PatientBaseInfoVo> infoVos = patientFeign.findPatientInfoByIds(collect);
-            Map<Integer, String> collect1 = infoVos.stream().collect(toMap(PatientBaseInfoVo::getId, PatientBaseInfoVo::getName, (o, n) -> n));
-            result.stream().filter(t -> StringUtils.isNotBlank(t.getSoldTarget()) && collect1.containsKey(Integer.valueOf(t.getSoldTarget())))
-                    .forEach(t -> t.setSoldTarget(collect1.get(Integer.valueOf(t.getSoldTarget()))));
+            if (StringHelper.isNotEmpty(collect)) {
+                List<PatientBaseInfoVo> infoVos = patientFeign.findPatientInfoByIds(collect);
+                Map<Integer, String> collect1 = infoVos.stream().collect(toMap(PatientBaseInfoVo::getId, PatientBaseInfoVo::getName, (o, n) -> n));
+                result.stream().filter(t -> StringUtils.isNotBlank(t.getSoldTarget()) && collect1.containsKey(Integer.valueOf(t.getSoldTarget())))
+                        .forEach(t -> t.setSoldTarget(collect1.get(Integer.valueOf(t.getSoldTarget()))));
+            }
         }
 
         //实体转换为pageVo

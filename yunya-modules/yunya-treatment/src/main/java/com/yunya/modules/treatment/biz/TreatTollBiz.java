@@ -172,20 +172,22 @@ public class TreatTollBiz {
         BigDecimal receivableAmount = vo.getPrice().multiply(BigDecimal.valueOf(vo.getQuantity()));
         BigDecimal actualAmount = receivableAmount;
         BigDecimal privilegeAmount = BigDecimal.ZERO;
-        for (PatientItemBenefitVo benefitVo : itemList) {
-          if (entry.getKey().equals(benefitVo.getOrderDetailId())) {
-            vo.setCouponWorkload(benefitVo.getSupplyWorkload());
-            BigDecimal itemBenefitAmount = benefitVo.getItemBenefitAmount();
-            actualAmount = actualAmount.subtract(itemBenefitAmount);
-            // 设置折扣率
-            vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
-            // 设置订单明细卡券匹配信息
-            if (StringHelper.gt(receivableAmount, actualAmount)) {
-              List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(benefitVo.getItemBenefitList());
-              vo.setDiscountAppliesCoupons(privilegeInfo);
+        if (StringHelper.isNotEmpty(itemList)) {
+          for (PatientItemBenefitVo benefitVo : itemList) {
+            if (entry.getKey().equals(benefitVo.getOrderDetailId())) {
+              vo.setCouponWorkload(benefitVo.getSupplyWorkload());
+              BigDecimal itemBenefitAmount = benefitVo.getItemBenefitAmount();
+              actualAmount = actualAmount.subtract(itemBenefitAmount);
+              // 设置折扣率
+              vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
+              // 设置订单明细卡券匹配信息
+              if (StringHelper.gt(receivableAmount, actualAmount)) {
+                List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(benefitVo.getItemBenefitList());
+                vo.setDiscountAppliesCoupons(privilegeInfo);
+              }
+              privilegeAmount = privilegeAmount.add(itemBenefitAmount);
+              benefitTotalAmount = benefitTotalAmount.add(receivableAmount.subtract(actualAmount));
             }
-            privilegeAmount = privilegeAmount.add(itemBenefitAmount);
-            benefitTotalAmount = benefitTotalAmount.add(receivableAmount.subtract(actualAmount));
           }
         }
         vo.setPrivilegeAmount(privilegeAmount);
