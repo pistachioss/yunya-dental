@@ -20,6 +20,23 @@ create table `test_yunya_treatment`.`bill_pay_share_detail` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=831768 DEFAULT CHARSET=utf8mb4 comment='账单收费分摊明细表';
 
+create table `test_yunya_treatment`.`bill_pay_record_log` (
+  `bill_pay_record_id` int(11) NOT NULL COMMENT '收费记录id',
+  `org_id` int(11) NOT NULL COMMENT '门诊id',
+  `order_record_id` int(11) NOT NULL COMMENT '订单记录id',
+  `total_charge` decimal(19,4) NOT NULL COMMENT '总收费',
+  `total_principal` decimal(19,4) NOT NULL COMMENT '总收费中的本金',
+  `param` varchar(2048) NOT NULL COMMENT '收费参数json',
+  `type` tinyint(2) NOT NULL DEFAULT '2' COMMENT '类型：1-挂账，2-确认收费，3-收欠费',
+  `status` tinyint(2) NOT NULL DEFAULT '1' COMMENT '收费状态：1-主流程完成，2-次流程完成',
+  `err_msg` mediumtext COMMENT '错误信息',
+  `crt_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `crt_id` int(11) NOT NULL COMMENT '创建人id',
+  `crt_name` varchar(255) DEFAULT NULL COMMENT '创建人姓名',
+  `upt_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`bill_pay_record_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收费日志表';
+
 alter table `test_yunya_treatment`.`bill_pay_detail_record` add column `bonus` decimal(19,4) NOT NULL DEFAULT '0.0000' comment '赠金';
 update `test_yunya_treatment`.`bill_pay_detail_record` bdr
 left join `test_yunya_report`.`base_bill_pay_detail` bpd on bdr.id=bpd.bill_pay_detail_record_id set bdr.bonus = ifnull(bpd.bonus_amount,0);
