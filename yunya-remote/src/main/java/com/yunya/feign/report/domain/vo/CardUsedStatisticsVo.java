@@ -17,7 +17,7 @@ public class CardUsedStatisticsVo {
 	@ApiModelProperty(value = "产品名称")
 	@ExcelProperty(value = "产品名称")
 	private String couponName;
-	@ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）")
+	@ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券；5-划扣卡）")
 	@ExcelProperty(value = "产品类型")
 	private String couponType;
 	@ApiModelProperty(value = "卡号")
