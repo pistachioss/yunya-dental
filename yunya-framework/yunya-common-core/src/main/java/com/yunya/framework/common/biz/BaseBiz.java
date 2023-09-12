@@ -1,7 +1,5 @@
 package com.yunya.framework.common.biz;
 
-import cn.hutool.extra.qrcode.QrCodeUtil;
-import cn.hutool.extra.qrcode.QrConfig;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.model.PageQueryParams;
@@ -12,9 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +23,6 @@ import java.util.Set;
 public abstract class BaseBiz<M extends Mapper<T>, T> {
 
   @Autowired protected M mapper;
-
-  @Autowired private QrConfig qrConig;
 
   public void setMapper(M mapper) {
     this.mapper = mapper;
@@ -241,27 +234,5 @@ public abstract class BaseBiz<M extends Mapper<T>, T> {
       }
     }
     return example;
-  }
-
-  /**
-   * 生成二维码并保存到指定文件
-   *
-   * @param content
-   * @param file
-   */
-  public void generateFile(String content, File file){
-    //生成到本地文件
-    QrCodeUtil.generate(content, qrConig, file);
-  }
-
-  /**
-   * 生成二维码并输出到响应流
-   *
-   * @param content
-   * @param response
-   * @throws IOException
-   */
-  public void generateAsStream(String content, HttpServletResponse response) throws IOException {
-    QrCodeUtil.generate(content, qrConig,"png", response.getOutputStream());
   }
 }
