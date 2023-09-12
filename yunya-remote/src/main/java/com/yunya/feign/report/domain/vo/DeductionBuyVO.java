@@ -47,5 +47,5 @@ public class DeductionBuyVO implements Serializable {
     private BigDecimal saleAmount;
     @ApiModelProperty("操作人")
     @ExcelProperty("操作人")
-    private Integer operateName;
+    private String operateName;
 }
