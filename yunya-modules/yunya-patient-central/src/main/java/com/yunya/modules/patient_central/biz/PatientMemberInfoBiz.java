@@ -1015,6 +1015,14 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     patientMember.setNonauto(true);
 //    patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     this.mapper.updateByPrimaryKeySelective(patientMember);
+
+
+    // 将不是普通会员，需
+    // 删除该亲密付的绑定
+    patientMemberRelationMapper.deleteOtherMemberRelation(
+            form.getPatientId(), new ArrayList<>());
+
+
     this.cardLog(patientMember, "升级", "更新");
     remoteRabbitMqServiceFeign.sendMessage(
         patientMember.getId(), MEMBER.getType(), 1, MsgCategoryEnum.BasePatientMember);

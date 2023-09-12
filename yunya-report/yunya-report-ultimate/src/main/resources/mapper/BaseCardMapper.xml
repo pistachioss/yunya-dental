@@ -375,6 +375,7 @@
         when `b`.`coupon_type` = 2 then '兑换券'
         when `b`.`coupon_type` = 3 then '套餐券'
         when `b`.`coupon_type` = 4 then '充值卡'
+        when `b`.`coupon_type` = 5 then '划扣卡'
         else null
         end as `coupon_type`,
         `bc`.`card_number`,

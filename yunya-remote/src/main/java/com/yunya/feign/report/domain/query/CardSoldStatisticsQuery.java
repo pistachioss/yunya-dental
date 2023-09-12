@@ -17,7 +17,7 @@ import java.util.List;
 public class CardSoldStatisticsQuery extends PageQuery {
 	@ApiModelProperty(value = "产品名称")
 	private String couponName;
-	@ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）")
+	@ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券；5-划扣卡）")
 	private List<Integer> couponTypes;
 	@ApiModelProperty(value = "卡号")
 	private String cardNumber;

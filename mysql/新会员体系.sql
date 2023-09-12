@@ -64,7 +64,19 @@ create table `test_yunya_patient_central`.`patient_transfer_record` (
 alter table `test_yunya_patient_central`.`patient_member_relation` modify column `org_id` int(11) DEFAULT NULL comment '诊所ID';
 alter table `test_yunya_patient_central`.`patient_member_relation` modify column `crt_id` int(11) DEFAULT NULL comment '创建人ID';
 ALTER TABLE `test_yunya_patient_central`.`patient_origin` ADD COLUMN `gift_rebate_rate`  decimal(19,4) NULL COMMENT '赠金返点比例' AFTER `qr_code_path`;
+
+-- 默认全部会员卡未激活
 update `test_yunya_patient_central`.`patient_member_info` set inservice = 0;
+-- 更新之前异常会员卡与诊所ID的关联
+update test_yunya_patient_central.patient_member_info m
+left join test_yunya_system.clinic_ext_info c on substr(m.card_number, 2, 3) = c.clinic_number
+set m.org_id = c.company_id
+where m.org_id != c.company_id
+;
+update test_yunya_patient_central.patient_member_info m
+set org_id = 21
+where substr(m.card_number, 2, 3) = '000'
+;
 
 ALTER TABLE `test_yunya_patient_central`.`patient_member_info`
 ADD COLUMN `nonauto` BIT(1) NOT NULL DEFAULT b'0' COMMENT '非自动升级、降级会员等级' AFTER `v1_id`,
@@ -74,7 +86,6 @@ ADD UNIQUE INDEX `card_number_UNIQUE` (`card_number` ASC);
 ALTER TABLE `test_yunya_patient_central`.`patient_kin_relation`
 ADD COLUMN `type` TINYINT(5) NOT NULL DEFAULT 0 COMMENT '关系区分: 0 亲属关系；1 推荐关系；' AFTER `inservice`,
 COMMENT = '患者亲属关系、推荐关系' ;
-
 
 
 -- yunya_report
