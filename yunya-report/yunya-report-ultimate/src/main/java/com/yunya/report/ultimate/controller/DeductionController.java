@@ -4,11 +4,9 @@ import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.DeductionBuyQuery;
 import com.yunya.feign.report.domain.query.DeductionPeriodQuery;
+import com.yunya.feign.report.domain.query.DeductionRefundQuery;
 import com.yunya.feign.report.domain.query.DeductionUseQuery;
-import com.yunya.feign.report.domain.vo.CouponUseVo;
-import com.yunya.feign.report.domain.vo.DeductionBalanceInfoVO;
-import com.yunya.feign.report.domain.vo.DeductionBuyVO;
-import com.yunya.feign.report.domain.vo.DeductionUsedVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.DeductionBiz;
@@ -41,7 +39,7 @@ public class DeductionController {
     @PostMapping("/deduction/chang/balance/export")
     public void deductionChangeExport(HttpServletResponse response, @Valid @RequestBody DeductionPeriodQuery query) throws IOException {
         deductionBiz.buildResponse(response, "划扣结存表");
-        EasyExcel.write(response.getOutputStream(), CouponUseVo.class)
+        EasyExcel.write(response.getOutputStream(), DeductionBalanceInfoVO.class)
                 .sheet("sheet").doWrite(deductionBiz.deductionChange(query).getList());
     }
 
@@ -55,7 +53,7 @@ public class DeductionController {
     @PostMapping("/deduction/buy/record/export")
     public void deductionBuyExport(HttpServletResponse response, @Valid @RequestBody DeductionBuyQuery query) throws IOException {
         deductionBiz.buildResponse(response, "划扣购买记录表");
-        EasyExcel.write(response.getOutputStream(), CouponUseVo.class)
+        EasyExcel.write(response.getOutputStream(), DeductionBuyVO.class)
                 .sheet("sheet").doWrite(deductionBiz.deductionBuy(query).getList());
     }
 
@@ -68,14 +66,22 @@ public class DeductionController {
     @ApiOperation(value = "运营报表-划扣卡消耗记录-导出")
     @PostMapping("/deduction/used/record/export")
     public void deductionUseExport(HttpServletResponse response, @Valid @RequestBody DeductionUseQuery query) throws IOException {
-        deductionBiz.buildResponse(response, "划扣消耗表");
-        EasyExcel.write(response.getOutputStream(), CouponUseVo.class)
+        deductionBiz.buildResponse(response, "划扣消耗记录表");
+        EasyExcel.write(response.getOutputStream(), DeductionUsedVO.class)
                 .sheet("sheet").doWrite(deductionBiz.deductionUse(query).getList());
     }
 
     @ApiOperation(value = "运营报表-划扣卡退费记录")
     @PostMapping("/deduction/refund/record")
-    public ResponseResult<PageInfo<DeductionBalanceInfoVO>> deductionRefund(@RequestBody DeductionPeriodQuery query) {
-        return ResponseUtil.success(deductionBiz.deductionChange(query));
+    public ResponseResult<PageInfo<DeductionRefundVO>> deductionRefund(@RequestBody DeductionRefundQuery query) {
+        return ResponseUtil.success(deductionBiz.deductionRefund(query));
+    }
+
+    @ApiOperation(value = "运营报表-划扣卡退费记录-导出")
+    @PostMapping("/deduction/refund/record/export")
+    public void deductionRefundExport(HttpServletResponse response, @Valid @RequestBody DeductionRefundQuery query) throws IOException {
+        deductionBiz.buildResponse(response, "划扣退费记录表");
+        EasyExcel.write(response.getOutputStream(), DeductionRefundVO.class)
+                .sheet("sheet").doWrite(deductionBiz.deductionRefund(query).getList());
     }
 }

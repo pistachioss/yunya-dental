@@ -17,6 +17,9 @@ public class BaseCouponRefundDetail {
     @Column(name = "refund_detail_id")
     private Integer refundDetailId;
 
+    @Column(name = "org_id")
+    private Integer orgId;
+
     /**
      * 退费记录ID
      */
@@ -28,6 +31,9 @@ public class BaseCouponRefundDetail {
      */
     @Column(name = "order_detail_id")
     private Integer orderDetailId;
+
+    @Column(name = "order_virtual_id")
+    private Integer orderVirtualId;
 
     /**
      * 卡券id
