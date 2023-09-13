@@ -482,6 +482,12 @@ public class ClinicDataStatisticsBiz {
               prepaymentsDataStatistic.getTotalPrepaymentsExpendAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
               prepaymentsDataStatistic.getTotalPrepaymentsRefundAmount().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
     });
+
+    DeductionDataStatisticVO deductionDataStatistic = clinicDataStatisticsInfoVO.getDeductionDataStatistic();
+    resultList.add(crtObj("划扣卡售卖金额合计","划扣卡消耗金额合计","划扣卡退费金额合计","","",""));
+    resultList.add(crtObj(deductionDataStatistic.getTotalDeductionRechargeAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+          deductionDataStatistic.getTotalDeductionExpendAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+          deductionDataStatistic.getTotalDeductionRefundAmount().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
     return resultList;
   }
 
