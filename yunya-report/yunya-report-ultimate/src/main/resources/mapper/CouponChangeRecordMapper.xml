@@ -184,8 +184,8 @@
                cr.refund_reason    as remark
         from base_coupon_refund_detail crd
                  inner join base_coupon_refund_pay cfp on cfp.refund_id = crd.refund_id
-                 inner join base_coupon_order_virtual cov on cov.virtual_id = crd.order_virtual_id
                  inner join base_coupon_refund cr on crd.refund_id = cr.refund_id
+                 LEFT join base_coupon_order_virtual cov on cov.virtual_id = crd.order_virtual_id
                 left join base_coupon cci on cci.coupon_id = cov.coupon_id
                  left join base_employee be on be.user_id = crd.executor_id
                  left join base_organization bo on bo.org_id = cr.org_id

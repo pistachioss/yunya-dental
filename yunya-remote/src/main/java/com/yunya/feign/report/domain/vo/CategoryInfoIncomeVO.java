@@ -67,4 +67,10 @@ public class CategoryInfoIncomeVO implements Serializable {
   @Excel(name = "合计收入", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("合计收入")
   private BigDecimal totalAmount = BigDecimal.ZERO;
+    @Excel(name = "划扣金额合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+    @ApiModelProperty("划扣金额合计")
+    private BigDecimal totalDeductionAmount = BigDecimal.ZERO;
+    @Excel(name = "划扣补入工作量合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+    @ApiModelProperty("划扣补入工作量合计")
+    private BigDecimal totalDeductionWorkload = BigDecimal.ZERO;
 }

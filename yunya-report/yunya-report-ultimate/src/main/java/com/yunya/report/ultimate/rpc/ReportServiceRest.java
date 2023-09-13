@@ -2,18 +2,21 @@ package com.yunya.report.ultimate.rpc;
 
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.report.domain.vo.PatientHasBillItemVO;
 import com.yunya.feign.treatment.domain.vo.PatientCostInfoVO;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.CreditsShop;
 import com.yunya.report.ultimate.biz.BaseBillBiz;
 import com.yunya.report.ultimate.biz.BaseTreatmentProcessBiz;
 import com.yunya.report.ultimate.biz.DiscountBiz;
 import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
 import com.yunya.report.ultimate.biz.tag.PatientTreatmentTagBiz;
+import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +40,8 @@ public class ReportServiceRest {
     private BaseBillMapper baseBillMapper;
     @Resource
     private BaseBillBiz baseBillBiz;
+    @Resource
+    private BaseBillDetailMapper billDetailMapper;
 
     @PostMapping("/card/{cardId}/item/usage")
     public List<BenefitItemVo> listWxCouponsUseItem(@PathVariable(value = "cardId") Integer cardId) {
@@ -93,5 +98,10 @@ public class ReportServiceRest {
     @PostMapping(value = "/patient/bill/hasitemlist")
     List<PatientHasBillItemVO> hasItemlist() {
         return baseBillMapper.selectPatientBillItemList();
+    }
+
+    @PostMapping(value = "/bill/detail/deduction")
+    List<BaseBillDetail> billDeduction(@RequestBody CategoryIncomeQuery query) {
+        return billDetailMapper.billDeduction(query);
     }
 }

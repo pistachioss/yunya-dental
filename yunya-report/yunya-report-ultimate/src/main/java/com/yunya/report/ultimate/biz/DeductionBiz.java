@@ -1,6 +1,5 @@
 package com.yunya.report.ultimate.biz;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.DeductionBuyQuery;
@@ -19,6 +18,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -34,9 +34,11 @@ public class DeductionBiz {
      * @return page
      */
     public PageInfo<DeductionBalanceInfoVO> deductionChange(DeductionPeriodQuery query) {
-        Page<DeductionBalanceInfoVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        changeRecordMapper.deductionBalance(query);
-        return new PageInfo<>(page);
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<DeductionBalanceInfoVO> list = changeRecordMapper.deductionBalance(query);
+        return new PageInfo<>(list);
     }
 
     public void buildResponse(HttpServletResponse response, String fileName)
@@ -48,20 +50,26 @@ public class DeductionBiz {
     }
 
     public PageInfo<DeductionUsedVO> deductionUse(DeductionUseQuery query) {
-        Page<DeductionUsedVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        changeRecordMapper.deductionUse(query);
-        return new PageInfo<>(page);
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<DeductionUsedVO> list = changeRecordMapper.deductionUse(query);
+        return new PageInfo<>(list);
     }
 
     public PageInfo<DeductionBuyVO> deductionBuy(DeductionBuyQuery query) {
-        Page<DeductionBuyVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        changeRecordMapper.deductionBuy(query);
-        return new PageInfo<>(page);
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<DeductionBuyVO> lis = changeRecordMapper.deductionBuy(query);
+        return new PageInfo<>(lis);
     }
 
     public PageInfo<DeductionRefundVO> deductionRefund(DeductionRefundQuery query) {
-        Page<DeductionRefundVO> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        changeRecordMapper.deductionRefund(query);
-        return new PageInfo<>(page);
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<DeductionRefundVO> list = changeRecordMapper.deductionRefund(query);
+        return new PageInfo<>(list);
     }
 }

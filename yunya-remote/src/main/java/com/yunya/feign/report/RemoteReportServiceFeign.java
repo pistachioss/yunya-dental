@@ -3,6 +3,7 @@ package com.yunya.feign.report;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
@@ -10,6 +11,7 @@ import com.yunya.feign.report.factory.RemoteReportServiceFactory;
 import com.yunya.feign.treatment.domain.vo.PatientCostInfoVO;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
+import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.CreditsShop;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -65,4 +67,8 @@ public interface RemoteReportServiceFeign {
 
     @RequestMapping(value = "/api/patient/bill/hasitemlist",method = RequestMethod.POST)
     List<PatientHasBillItemVO> getHasItemList();
+
+    @PostMapping(value = "/api/bill/detail/deduction")
+    List<BaseBillDetail> billDeduction(@RequestBody CategoryIncomeQuery query);
 }
+

@@ -19,6 +19,7 @@ import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
@@ -74,6 +75,7 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillDetail;
@@ -140,6 +142,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private SysConfig sysConfig;
   @Autowired private BillPayShareDetailMapper billPayShareDetailMapper;
   @Autowired private TreatTollBiz treatTollBiz;
+  @Resource
+  private RemoteReportServiceFeign remoteReportServiceFeign;
   
   /** 重试次数 */
   private static final int RETRY_TIMES = 5;
@@ -1139,11 +1143,11 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
     // 项目的优惠合计和补入工作量
     List<ClinicTariffDiscountCouponVO> discounts = findTariffCategoryDiscountAmount(query);
-
-    // 组装数据并排序
+      List<com.yunya.models.report.BaseBillDetail> baseBillDetails = remoteReportServiceFeign.billDeduction(query);
+      // 组装数据并排序
     List<CategoryInfoIncomeVO> list =
         mergeCategoryIncomeList(
-            tariffFuture.get(), originalFuture.get(), freePaymentFuture.get(), discounts, orgs);
+            tariffFuture.get(), originalFuture.get(), freePaymentFuture.get(), discounts, orgs,baseBillDetails);
     return list;
   }
 
@@ -1173,21 +1177,27 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       List<ClinicTariffOrderVO> originals,
       Map<String, BigDecimal> freePaymentMap,
       List<ClinicTariffDiscountCouponVO> discountCoupons,
-      List<OrganizationInfoDetail> orgList) {
+      List<OrganizationInfoDetail> orgList,
+      List<com.yunya.models.report.BaseBillDetail> baseBillDetails) {
     Map<String, String> categoryMap = new HashMap<>(16);
     Map<String, CategoryInfoIncomeVO> resultMap =
         createEntityBaseMap(orgList, baseTariffVOS, categoryMap);
-
-    // 填充项目分类的原价
+      Map<String, com.yunya.models.report.BaseBillDetail> collect = baseBillDetails.stream().collect(toMap(t -> t.getItemType() + "," + t.getItemId() + "," +t.getOrgId(), Function.identity(), (o, n) -> n));
+      // 填充项目分类的原价
     if (StringHelper.isNotEmpty(originals)) {
       originals.forEach(
           vo -> {
             String categoryKey = categoryMap.get(vo.getType() + "," + vo.getBillingItemId());
             CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + vo.getOrgId());
-            BigDecimal originalAmount = vo.getAmount().add(income.getTotalOriginalAmount());
+              com.yunya.models.report.BaseBillDetail baseBillDetail = collect.get(vo.getType() + "," + vo.getBillingItemId() + "," + vo.getOrgId());
+              BigDecimal originalAmount = vo.getAmount().add(income.getTotalOriginalAmount());
             income.setTotalOriginalAmount(originalAmount);
             income.setTotalActualAmount(originalAmount);
             income.setTotalAmount(originalAmount);
+            if (Objects.nonNull(baseBillDetail)) {
+                income.setTotalDeductionAmount(income.getTotalDeductionAmount().add(baseBillDetail.getSwipeWorkload()));
+                income.setTotalDeductionWorkload(income.getTotalDeductionWorkload().add(baseBillDetail.getSwipeCouponWorkload()));
+            }
           });
     }
 
