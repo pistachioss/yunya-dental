@@ -1,6 +1,5 @@
 package com.yunya.feign.report.domain.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -32,8 +31,7 @@ public class EmployeePersonalSwipeWorkloadDetailVO implements Serializable {
   @ApiModelProperty("账单ID")
   private Integer billId;
   /** 收费时间 */
-  @Excel(name = "收费日期", dateFormat = "yyyy-MM-dd")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  @Excel(name = "收费日期")
   @ApiModelProperty("收费时间")
   private String chargeDate;
   /** 收费时间 */
@@ -42,8 +40,7 @@ public class EmployeePersonalSwipeWorkloadDetailVO implements Serializable {
   @ApiModelProperty("账单编号")
   private String billNum;
   /** 账单日期 */
-  @Excel(name = "账单日期", dateFormat = "yyyy-MM-dd")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
   private String billDate;
   /** 患者 */

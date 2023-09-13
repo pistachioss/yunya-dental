@@ -1,6 +1,5 @@
 package com.yunya.feign.report.domain.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -32,8 +31,7 @@ public class EmployeePersonalSwipeCouponWorkloadDetailVO implements Serializable
   @ApiModelProperty("开单组织ID")
   private Integer orgId;
   /** 账单日期 */
-  @Excel(name = "账单日期", dateFormat = "yyyy-MM-dd")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
   private String billDate;
   /** 账单编号 */

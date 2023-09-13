@@ -6644,8 +6644,8 @@
         SELECT
             bb.org_id AS orgId,
             bb.bill_id AS billId,
-            bb.privilege_date AS chargeDate,
-            bb.bill_date AS billDate,
+            DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') AS chargeDate,
+            DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
             bb.bill_num AS billNum,
             bp.name AS patientName,
             bp.mobile,
@@ -6697,11 +6697,11 @@
                 </if>
             </if>
             <if test="query.keyword != null and query.keyword != ''">
-                AND concat(IFNULL(bp.patientName, ''), IFNULL(bp.pinyinName, ''), IFNULL(bp.mobile, '')) Like
+                AND concat(IFNULL(bp.name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                AND bb.billNum LIKE concat('%', #{query.billNum} ,'%')
+                AND bb.bill_num LIKE concat('%', #{query.billNum} ,'%')
             </if>
             <if test="query.billDate != null and query.billDate != ''">
                 AND DATE_FORMAT(bb.bill_date, '%Y-%m-%d') = #{query.billDate}
@@ -6734,6 +6734,7 @@
             bb.privilegeAmount,
             bb.actualAmount,
             bb.patientName,
+            bb.pinyinName,
             bb.mobile,
             bbd.swipeCouponWorkload
             FROM (
