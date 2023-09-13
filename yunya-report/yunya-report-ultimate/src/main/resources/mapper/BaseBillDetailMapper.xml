@@ -6893,19 +6893,20 @@
         where bd.bill_id in (select
                               bill_id
                           from base_bill br
-                          where
-                   <if test="query.orgIds != null and query.orgIds.size() > 0">
-                    AND br.org_id IN
-                        <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
-                            #{item}
-                        </foreach>
-                    </if>
-                    <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT(br.bill_date, '%Y-%m') &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        AND DATE_FORMAT(br.bill_date, '%Y-%m') &lt;= #{query.endDate}
-                    </if>)
+                         <where>
+                       <if test="query.orgIds != null and query.orgIds.size() > 0">
+                         br.org_id IN
+                            <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
+                                #{item}
+                            </foreach>
+                        </if>
+                        <if test="query.startDate != null and query.startDate != ''">
+                            AND DATE_FORMAT(br.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            AND DATE_FORMAT(br.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                        </if>)
+                    </where>
         GROUP BY bd.org_id, bd.item_type, bd.item_id
     </select>
 </mapper>
