@@ -6610,10 +6610,10 @@
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bbd.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                    and DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bbd.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    and DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
