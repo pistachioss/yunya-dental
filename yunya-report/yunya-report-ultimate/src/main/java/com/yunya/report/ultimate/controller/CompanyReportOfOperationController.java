@@ -491,6 +491,18 @@ public class CompanyReportOfOperationController {
    *
    * @return
    */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营BI-月工作量完成度")
+  @PostMapping(value = "/workload/monthGoalCompleted", name = "月工作量完成度查询")
+  public ResponseResult<DynamicHeaderPageInfo<JSONObject>> findWorkloadMonthGoalCompleted(@RequestBody @Validated DataStatisticsQuery query) {
+    DynamicHeaderPageInfo<JSONObject> pageInfo = billDetailBiz.findWorkloadCompleted(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 月工作量完成度导出
+   *
+   * @return
+   */
   @ApiOperation("公司端报表-报表统计-运营报表-运营BI-月工作量完成度导出")
   @PostMapping(value = "/workload/monthGoalCompleted/export", name = "月工作量完成度导出")
   public ResponseResult<T> workloadMonthGoalCompletedExport(HttpServletResponse response)

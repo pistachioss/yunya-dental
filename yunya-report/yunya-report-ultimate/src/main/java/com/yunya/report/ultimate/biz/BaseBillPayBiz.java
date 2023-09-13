@@ -311,6 +311,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         Integer payeeOrgId = vo.getPayeeOrgId();
         Date payeeDate = vo.getPayeeDate();
         BigDecimal receivedAmount = vo.getReceivedAmount();
+        BigDecimal swipeWorkload = vo.getSwipeWorkload();
         BigDecimal freePayAmount = vo.getFreeAmount();
         BigDecimal firstReceivedWorkload = BigDecimal.ZERO;
         BigDecimal firstSwipeWorkload = BigDecimal.ZERO;
@@ -326,6 +327,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           if (billDate.equals(payeeDate)) {
             firstReceivedWorkload = firstReceivedWorkload.add(receivedAmount);
             firstFreePayWorkload = firstFreePayWorkload.add(freePayAmount);
+            firstSwipeWorkload = firstSwipeWorkload.add(swipeWorkload);
           } else {
             arrearsReceivedWorkload = arrearsReceivedWorkload.add(receivedAmount);
             arrearsFreePayWorkload = arrearsFreePayWorkload.add(freePayAmount);

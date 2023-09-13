@@ -1284,7 +1284,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     DateTime now = new DateTime();
     String startDate = now.dayOfMonth().withMinimumValue().toString("yyyy-MM-dd");
     String curDate = now.toString("yyyy-MM-dd");
-    DynamicHeaderPageInfo<JSONObject> pageInfo = workloadCompleted(startDate, curDate);
+    List<BaseOrganization> orgs =
+              baseOrganizationBiz.getOrganization(new ClinicPerformanceBusinessQuery());
+    Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
+    DataStatisticsQuery query = new DataStatisticsQuery();
+    query.setDateType((byte) 0);
+    query.setStartDate(startDate);
+    query.setEndDate(curDate);
+    query.setOrgIds(orgIds);
+    DynamicHeaderPageInfo<JSONObject> pageInfo = findWorkloadCompleted(query);
     List<JSONObject> resultList = pageInfo.getList();
     Map<String, String> titles = pageInfo.getMap(); // 表头
     ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
@@ -1292,23 +1300,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     excelUtil.exportExcel(response, resultList, fileName, fileName, titles);
   }
 
-  /**
+    /**
    * 各个门诊的月工作量和日工作量合计
    *
-   * @param startDate
-   * @param curDate
+   * @param query
    * @return
    */
-  public DynamicHeaderPageInfo<JSONObject> workloadCompleted(String startDate, String curDate) {
-    Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
+  public DynamicHeaderPageInfo<JSONObject> findWorkloadCompleted(DataStatisticsQuery query) {
     List<BaseOrganization> orgs =
-        baseOrganizationBiz.getOrganization(new ClinicPerformanceBusinessQuery());
-    Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
-    DataStatisticsQuery query = new DataStatisticsQuery();
-    query.setDateType((byte) 0);
-    query.setStartDate(startDate);
-    query.setEndDate(curDate);
-    query.setOrgIds(orgIds);
+              baseOrganizationBiz.getOrganization(new ClinicPerformanceBusinessQuery());
+    Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
     Map<Integer, BigDecimal[]> workloadCompleted = baseBillPayBiz.computeWorkloadGroupOrgId(query);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo();
     JSONObject goalObj = new JSONObject();

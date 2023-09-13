@@ -278,17 +278,6 @@ public class BizTest {
     }
 
     /**
-     * 月工作量完成度导出
-     */
-    @Test
-    public void test23() throws IOException {
-        String startDate = "2021-04-01";
-        String curDate = "2021-04-13";
-        DynamicHeaderPageInfo<JSONObject> resultList = baseBillDetailBiz.workloadCompleted(startDate, curDate);
-        System.out.println(JSONObject.toJSON(resultList));
-    }
-
-    /**
      * 门诊工作量统计
      */
     @Test

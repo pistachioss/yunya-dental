@@ -104,12 +104,12 @@
   <select id="selectRecievedWorkloadsGroupByMonth" resultType="com.yunya.feign.report.domain.vo.BillWorkloadVO">
     SELECT
     bbps.month,
-    bb.bill_id AS billId,
     bb.org_id AS billOrgId,
-    IFNULL(bbps.swipe_workload,0) AS swipeWorkload,
-    IFNULL(bbps.received_amount, 0) AS receivedAmount,
-    IFNULL(bbps.free_amount, 0) AS freePayAmount
-    FROM (
+    SUM(IFNULL(bbps.swipe_workload,0)) AS swipeWorkload,
+    SUM(IFNULL(bbps.received_amount, 0)) AS receivedAmount,
+    SUM(IFNULL(bbps.free_amount, 0)) AS freePayAmount
+    FROM base_bill bb
+    LEFT JOIN (
         SELECT
             bill_id,
             <if test="query.dateType == 0">
@@ -121,6 +121,7 @@
             <if test="query.dateType == 2">
               DATE_FORMAT(pay_date,'%Y') AS month,
             </if>
+            SUM(received_amount + free_amount + swipe_workload) AS total,
             SUM(received_amount + free_amount) AS received_amount,
             SUM(free_amount) AS free_amount,
             SUM(swipe_workload) AS swipe_workload
@@ -160,32 +161,18 @@
           </if>
         </where>
         GROUP BY bill_id, month
-    ) bbps
-    INNER JOIN (
-      SELECT
-      bb.org_id,
-      bb.bill_id,
-      bb.bill_date,
-      bb.actual_amount
-      FROM base_bill bb
-      <where>
-        AND bb.bill_date IS NOT NULL
-        AND bb.actual_amount &gt; 0
-        <if test="query.orgIds != null and query.orgIds.length > 0">
-          AND bb.org_id IN
-          <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-            #{item}
-          </foreach>
-        </if>
-      </where>
-    ) bb ON bbps.bill_id = bb.bill_id
+    ) bbps ON bbps.bill_id = bb.bill_id
     <where>
-      AND bbps.received_amount &gt; 0
+      AND bbps.total &gt; 0
+      AND bb.bill_date IS NOT NULL
+      <if test="query.orgIds != null and query.orgIds.length > 0">
+        AND bb.org_id IN
+        <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
     </where>
-    group by
-    bb.bill_id,
-    bb.org_id,
-    month
+    GROUP BY bb.org_id, month
   </select>
 
   <!--根据条件查询个人开单项目实收金额统计明细表-->
