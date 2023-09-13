@@ -582,7 +582,7 @@ CREATE TABLE `test_yunya_report`.`deduction_item` (
     KEY `idx_date` (`crt_time`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='划扣项目变化';
 
-CREATE TABLE  `test_yunya_discount`.``card_change` (
+CREATE TABLE  `test_yunya_discount`.`card_change` (
                                `id` int(11) NOT NULL AUTO_INCREMENT,
                                `card_id` int(11) NOT NULL COMMENT '卡券id',
                                `buyer_id` int(11) NOT NULL COMMENT '购买人id',
