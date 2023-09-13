@@ -216,4 +216,155 @@
         </where>
         GROUP BY crd.refund_id
     </select>
+    <select id="selectClinicDeductionDataStatistic"
+            resultType="com.yunya.feign.report.domain.vo.DeductionDataStatisticVO">
+        SELECT
+        IFNULL(SUM( bpmol.totalDeductionRechargeAmount ), 0) AS totalDeductionRechargeAmount,
+        IFNULL(SUM( bpmol.totalDeductionExpendAmount ), 0) AS totalDeductionExpendAmount,
+        IFNULL(SUM( bpmol.totalDeductionRefundAmount ), 0) AS totalDeductionRefundAmount
+        FROM
+        (
+        SELECT
+        bo.org_id,
+        IFNULL( bpmol.totalDeductionRechargeAmount, 0 ) AS totalDeductionRechargeAmount,
+        IFNULL( bpmol1.totalDeductionExpendAmount, 0 ) AS totalDeductionExpendAmount,
+        IFNULL( bpmol2.totalDeductionRefundAmount, 0 ) AS totalDeductionRefundAmount
+        FROM
+        base_organization bo
+        LEFT JOIN (
+        SELECT
+        bpmol.org_id,
+        SUM( bpmol.occur_amount) AS totalDeductionRechargeAmount
+        FROM
+        (
+        SELECT
+        bpmol.org_id,
+        bpmol.occur_amount
+        FROM
+        coupon_change_record bpmol
+        <where>
+            AND bpmol.occur_type = 1
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bpmol
+        GROUP BY
+        bpmol.org_id
+        ) bpmol ON bo.org_id = bpmol.org_id
+        LEFT JOIN (
+        SELECT
+        bpmol.org_id,
+        SUM( bpmol.occur_amount) AS totalDeductionExpendAmount
+        FROM
+        (
+        SELECT
+        bpmol.org_id,
+        bpmol.occur_amount
+        FROM
+        coupon_change_record bpmol
+        <where>
+            AND bpmol.occur_type = 2
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bpmol
+        GROUP BY
+        bpmol.org_id
+        ) bpmol1 ON bo.org_id = bpmol1.org_id
+        LEFT JOIN (
+        SELECT
+        bpmol.org_id,
+        SUM(bpmol.occur_amount ) AS totalDeductionRefundAmount
+        FROM
+        (
+        SELECT
+        bpmol.org_id,
+        bpmol.occur_amount
+        FROM
+        coupon_change_record bpmol
+        <where>
+            AND bpmol.occur_type = 3
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bpmol
+        GROUP BY
+        bpmol.org_id
+        ) bpmol2 ON bo.org_id = bpmol2.org_id
+        GROUP BY
+        bo.org_id
+        ) bpmol
+        <where>
+            and bpmol.org_id in
+            <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 </mapper>

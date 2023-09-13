@@ -1,13 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.query.DeductionBuyQuery;
-import com.yunya.feign.report.domain.query.DeductionPeriodQuery;
-import com.yunya.feign.report.domain.query.DeductionRefundQuery;
-import com.yunya.feign.report.domain.query.DeductionUseQuery;
-import com.yunya.feign.report.domain.vo.DeductionBalanceInfoVO;
-import com.yunya.feign.report.domain.vo.DeductionBuyVO;
-import com.yunya.feign.report.domain.vo.DeductionRefundVO;
-import com.yunya.feign.report.domain.vo.DeductionUsedVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.discount.CouponChangeRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -22,4 +16,6 @@ public interface CouponChangeRecordMapper extends Mapper<CouponChangeRecord> {
     List<DeductionBuyVO> deductionBuy(@Param("query")DeductionBuyQuery query);
 
     List<DeductionRefundVO> deductionRefund(@Param("query")DeductionRefundQuery query);
+
+    DeductionDataStatisticVO selectClinicDeductionDataStatistic( @Param("query") DataStatisticsQuery query);
 }

@@ -30,6 +30,8 @@ public class ClinicDataStatisticsInfoVO implements Serializable {
   private WorkloadStatisticsVO workloadStatistic;
   /** 会员数据 */
   private MemberDataStatisticVO memberDataStatistic;
+  /** 划扣数据 */
+  private DeductionDataStatisticVO deductionDataStatistic;
   /** 预付款数据 */
   private List<PrepaymentsDataStatisticVO> prepaymentsDataStatistic;
 }
