@@ -645,4 +645,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return
    */
   List<EmployeeBillItemSwipeCouponWorkloadVO> selectEmployeeBillItemSwipeCouponWorkloadList(@Param("query") EmployeeWorkloadDetailQuery query);
+
+    List<BaseBillDetail> billDeduction( @Param("query") CategoryIncomeQuery query);
 }
