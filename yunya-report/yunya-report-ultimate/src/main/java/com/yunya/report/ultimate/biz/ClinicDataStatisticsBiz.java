@@ -18,6 +18,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.common.utils.poi.RowStyle;
+import com.yunya.report.ultimate.mapper.CouponChangeRecordMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -56,6 +57,8 @@ public class ClinicDataStatisticsBiz {
   @Resource private BaseVisitRemindBiz visitRemindBiz;
   /** 诊所基础信息 */
   @Resource private RemoteClinicBaseServiceFeign clinicBaseServiceFeign;
+  @Resource
+  private CouponChangeRecordMapper changeRecordMapper;
 
   /**
    * 根据条件查询门诊数据统计
@@ -97,6 +100,8 @@ public class ClinicDataStatisticsBiz {
     clinicPrepaymentsDataStatistic3.setTypeName("美白预付款");
     prepaymentsDataStatisticVOList.add(clinicPrepaymentsDataStatistic3);
     resultData.setPrepaymentsDataStatistic(prepaymentsDataStatisticVOList);
+    DeductionDataStatisticVO deductionDataStatisticVO = changeRecordMapper.selectClinicDeductionDataStatistic(query);
+    resultData.setDeductionDataStatistic(deductionDataStatisticVO);
     return resultData;
   }
 
