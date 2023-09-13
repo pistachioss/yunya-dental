@@ -6,6 +6,7 @@ import com.yunya.feign.treatment.domain.query.BillPayShareDetailQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPayShareDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -143,9 +144,9 @@ public class BillPayShareDetailBiz extends BaseBiz<BillPayShareDetailMapper, Bil
      * @param orderDetailId
      */
     public void removeByCombinationKey(Integer orderRecordId, Integer billPayId, Integer orderDetailId) {
-//        if (StringHelper.isAllNull(orderRecordId, billPayId, orderDetailId)) {
-//            throw new ClientServiceException(INTERNAL_SERVER_ERROR);
-//        }
+        if (StringHelper.isAllNull(orderRecordId, billPayId, orderDetailId)) {
+            throw new ClientServiceException("参数不能全为空", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        }
         mapper.tombstoneByCombinationKey(orderRecordId, billPayId, orderDetailId);
         orderDetailPayRecordBiz.statOrderDetailPayItemTotal(orderRecordId);
     }
