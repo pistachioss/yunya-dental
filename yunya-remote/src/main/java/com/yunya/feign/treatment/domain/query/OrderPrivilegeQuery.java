@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment.domain.query;
 
+import com.yunya.feign.treatment.domain.model.AccreditDiscountModel;
 import com.yunya.feign.treatment.domain.model.GeneralDiscountModel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -32,4 +33,6 @@ public class OrderPrivilegeQuery implements Serializable {
   /** 卡券优惠信息 */
   @ApiModelProperty("卡券优惠信息")
   private GeneralDiscountModel generalDiscountModel;
+  /** 授权折扣 */
+  private AccreditDiscountModel accreditDiscountModel;
 }
