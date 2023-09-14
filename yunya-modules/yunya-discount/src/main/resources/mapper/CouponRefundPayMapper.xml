@@ -20,4 +20,30 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="sumCouponBillRefundCashReceipt" resultType="java.math.BigDecimal">
+    SELECT
+        IFNULL(SUM(brpdr.refund_pay_amount), 0)
+    FROM coupon_refund_pay brpdr
+    <where>
+      <if test="query.payId != null">
+        AND brpdr.account_item_id = #{query.payId}
+      </if>
+      <if test="query.startDate != null">
+        AND DATE_FORMAT(brpdr.crt_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{query.startDate}, '%Y-%m-%d')
+      </if>
+      <if test="query.endDate != null">
+        AND DATE_FORMAT(brpdr.crt_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{query.endDate}, '%Y-%m-%d')
+      </if>
+      AND brpdr.refund_id IN (
+        SELECT brr.id
+        FROM coupon_refund brr
+        <where>
+          <if test="query.orgId != null">
+            AND brr.org_id = #{query.orgId}
+          </if>
+        </where>
+      )
+    </where>
+  </select>
 </mapper>

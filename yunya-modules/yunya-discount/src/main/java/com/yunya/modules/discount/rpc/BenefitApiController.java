@@ -23,6 +23,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.discount.biz.BenefitBiz;
 import com.yunya.modules.discount.biz.CardBiz;
+import com.yunya.modules.discount.biz.CouponBillBiz;
 import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -52,6 +53,8 @@ public class BenefitApiController {
     private BenefitBiz benefitBiz;
     @Resource
     private CouponCommonInfoBiz couponBiz;
+    @Resource
+    private CouponBillBiz couponBillBiz;
 
     @ApiOperation(value = "收费-选择优惠")
     @PostMapping("/order/choice/benefit")
@@ -98,6 +101,13 @@ public class BenefitApiController {
     public BigDecimal getCardSaleCashReceipt(
             @RequestBody @Validated CashReceiptOrRefundQuery query) {
         return cardBiz.findCardSaleCashReceipt(query);
+    }
+
+    @ApiOperation("卡券账单现金结存")
+    @RequestMapping(value = "/coupon/bill/cashBalance", method = RequestMethod.POST)
+    public BigDecimal sumCouponBillCashBalanceReceipt(
+            @RequestBody @Validated CashReceiptOrRefundQuery query) {
+        return couponBillBiz.sumCouponBillCashBalanceReceipt(query);
     }
 
     @PostMapping("/patient/{patientId}/effective/card")

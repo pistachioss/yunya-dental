@@ -152,4 +152,9 @@ public interface RemoteDiscountFeign {
 
     @GetMapping("/card/listTwoYearsActive")
     Map<Integer, Long> listTwoYearsActive();
+
+    @ApiOperation("卡券账单现金结存")
+    @RequestMapping(value = "/coupon/bill/cashBalance", method = RequestMethod.POST)
+    BigDecimal sumCouponBillCashBalanceReceipt(
+            @RequestBody @Validated CashReceiptOrRefundQuery query);
 }

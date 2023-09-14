@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.BillRebate2MemberAccountModel;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -18,10 +19,7 @@ import com.yunya.models.discount.CouponBill;
 import com.yunya.models.discount.CouponBillPay;
 import com.yunya.models.discount.CouponBillPayDetail;
 import com.yunya.models.discount.CouponOrder;
-import com.yunya.modules.discount.mapper.CouponBillMapper;
-import com.yunya.modules.discount.mapper.CouponBillPayDetailMapper;
-import com.yunya.modules.discount.mapper.CouponBillPayMapper;
-import com.yunya.modules.discount.mapper.CouponOrderMapper;
+import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +62,8 @@ public class CouponBillBiz {
     private RemotePatientCentralServiceFeign patientCentralServiceFeign;
     @Autowired
     private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+    @Autowired
+    private CouponRefundPayMapper couponRefundPayMapper;
 
 
     public void charge(CouponBillModel model) {
@@ -368,5 +368,17 @@ public class CouponBillBiz {
         example.createCriteria().andEqualTo("orderId", orderId)
                 .andEqualTo("inservice", true);
         return billPayDetailMapper.selectByExample(example);
+    }
+
+
+    /**
+     * 根据条件查询划扣卡账单收款和账单退款的现金总和
+     *
+     * @param query 查询条件
+     * @return BigDecimal
+     */
+    public BigDecimal sumCouponBillCashBalanceReceipt(CashReceiptOrRefundQuery query) {
+        BigDecimal cashIn = billPayDetailMapper.sumCouponBillSaleCashReceipt(query);
+        return cashIn.subtract(couponRefundPayMapper.sumCouponBillRefundCashReceipt(query));
     }
 }

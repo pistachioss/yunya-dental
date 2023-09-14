@@ -184,6 +184,11 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     if (soldCash != null) {
       total = total.add(soldCash);
     }
+    // 卡券账单的现金结存（现金收款+现金退款）
+    BigDecimal couponBillCash = discountFeign.sumCouponBillCashBalanceReceipt(query);
+    if (StringHelper.isNotNull(couponBillCash)) {
+      total = total.add(couponBillCash);
+    }
     // 会员充值的现金收款+预付款充值的现金收款
     BigDecimal rechargeCash = patientCentralServiceFeign.sumMemberAndPrepayRechargeCash(query);
     if (rechargeCash != null) {

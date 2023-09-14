@@ -47,4 +47,23 @@
         where t1.order_id = #{orderId}
         group by t1.order_id, t1.account_item_id, t1.patient_num
     </select>
+
+    <select id="sumCouponBillSaleCashReceipt" resultType="java.math.BigDecimal">
+        select IFNULL(sum(t.amount), 0) from coupon_bill_pay_detail t
+        <where>
+            AND t.inservice = true
+            <if test="query.startDate != null">
+                and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.startDate},'%Y-%m-%d')
+            </if>
+            <if test="query.endDate != null">
+                and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.endDate},'%Y-%m-%d')
+            </if>
+            <if test="query.orgId">
+                and t.org_id = #{query.orgId}
+            </if>
+            <if test="query.payId">
+                and t.account_item_id = #{query.payId}
+            </if>
+        </where>
+    </select>
 </mapper>

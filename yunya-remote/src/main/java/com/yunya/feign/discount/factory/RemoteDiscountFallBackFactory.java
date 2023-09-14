@@ -171,5 +171,10 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
         return null;
     }
 
+    @Override
+    public BigDecimal sumCouponBillCashBalanceReceipt(CashReceiptOrRefundQuery query) {
+        return null;
+    }
+
 
 }
