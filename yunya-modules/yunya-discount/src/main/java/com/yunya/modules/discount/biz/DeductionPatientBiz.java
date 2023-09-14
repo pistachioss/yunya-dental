@@ -233,7 +233,7 @@ public class DeductionPatientBiz {
         Integer orderId = query.getOrderId();
         PatientRefundOrderVO refundOrderVO = new PatientRefundOrderVO();
         CouponBill bill = couponBillBiz.getBill(orderId);
-        List<CouponOrderDetail> details = couponOrderBiz.listOrderDetail(orderId, query.getCouponId());
+        List<CouponOrderDetail> details = couponOrderBiz.listOrderDetail(orderId, query.getCouponId(), true);
         CouponOrderDetail detail = details.get(0);
         Integer quantity = detail.getQuantity();
         refundOrderVO.setPatientId(bill.getPatientId());
@@ -295,7 +295,7 @@ public class DeductionPatientBiz {
     public void refund(DeductionRefundModel model) {
         Integer orderId = model.getOrderId();
         Integer cardId = model.getCardId();
-        CouponOrder order = couponOrderBiz.getOrder(orderId);
+        CouponOrder order = couponOrderBiz.getOrder(orderId, true);
         if (Objects.isNull(order) || order.getStatus() == 2) {
             throw ClientServiceException.wrap(ORDER_HAS_REFUND);
         }
@@ -304,7 +304,7 @@ public class DeductionPatientBiz {
         if (Objects.isNull(virtual) || !virtual.getInservice()) {
             throw ClientServiceException.wrap(CARD_HAS_REFUND);
         }
-        List<CouponOrderDetail> details = couponOrderBiz.listOrderDetail(orderId, null);
+        List<CouponOrderDetail> details = couponOrderBiz.listOrderDetail(orderId, null, true);
         CouponOrderDetail detail = details.stream().filter(t -> Objects.equals(t.getId(), model.getOrderDetailId())).findFirst().orElse(null);
         if (Objects.isNull(detail)) {
             log.info("该订单礼包无法退费");
