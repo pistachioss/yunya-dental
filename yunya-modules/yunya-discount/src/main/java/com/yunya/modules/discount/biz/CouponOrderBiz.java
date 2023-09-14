@@ -123,7 +123,7 @@ public class CouponOrderBiz {
         CouponOrderVO vo = null;
         try {
             Integer orderId = form.getOrderId();
-            CouponOrder order = getOrder(orderId);
+            CouponOrder order = getOrder(orderId, true);
             if (Objects.nonNull(order)) {
                 deleteDetail(orderId);
                 deleteVirtual(orderId);
@@ -310,12 +310,12 @@ public class CouponOrderBiz {
 
     public CouponOrderVO detail(Integer orderId) {
         CouponOrderVO couponOrderVO = new CouponOrderVO();
-        CouponOrder order = getOrder(orderId);
+        CouponOrder order = getOrder(orderId, null);
         if (Objects.isNull(order)) {
             return couponOrderVO;
         }
         couponOrderVO.setOrderId(orderId);
-        List<CouponOrderDetail> details = listOrderDetail(orderId, null);
+        List<CouponOrderDetail> details = listOrderDetail(orderId, null, null);
         List<Integer> couponIds = details.stream().map(CouponOrderDetail::getCouponId).collect(toList());
         Map<Integer, CouponCommonInfo> collect = listCoupon(couponIds);
         List<CouponOrderDetailVO> detailVOS = Lists.newArrayList();
@@ -358,19 +358,24 @@ public class CouponOrderBiz {
         return couponOrderVO;
     }
 
-    public CouponOrder getOrder(Integer orderId) {
+    public CouponOrder getOrder(Integer orderId, Boolean inservice) {
         Example example = new Example(CouponOrder.class);
-        example.createCriteria().andEqualTo("id", orderId)
-                .andEqualTo("inservice", true);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("id", orderId);
+        if (Objects.nonNull(inservice)) {
+            criteria.andEqualTo("inservice", inservice);
+        }
         return couponOrderMapper.selectOneByExample(example);
     }
 
-    List<CouponOrderDetail> listOrderDetail(Integer orderId, Integer couponId) {
+    List<CouponOrderDetail> listOrderDetail(Integer orderId, Integer couponId, Boolean inservice) {
         Example example = new Example(CouponOrderDetail.class);
-        Example.Criteria criteria = example.createCriteria().andEqualTo("orderId", orderId)
-                .andEqualTo("inservice", true);
+        Example.Criteria criteria = example.createCriteria().andEqualTo("orderId", orderId);
         if (Objects.nonNull(couponId)) {
             criteria.andEqualTo("couponId", couponId);
+        }
+        if (Objects.nonNull(inservice)) {
+            criteria.andEqualTo("inservice", inservice);
         }
         return orderDetailMapper.selectByExample(example);
     }
@@ -496,7 +501,7 @@ public class CouponOrderBiz {
 
     @Transactional(rollbackFor = Exception.class)
     public void delete(Integer orderId) {
-        CouponOrder couponOrder = getOrder(orderId);
+        CouponOrder couponOrder = getOrder(orderId, true);
         if (Objects.nonNull(couponOrder)) {
             deleteVirtual(orderId);
             removeDetail(orderId);
@@ -571,7 +576,7 @@ public class CouponOrderBiz {
     }
 
     private void removeDetail(Integer orderId) {
-        List<CouponOrderDetail> details = listOrderDetail(orderId, null);
+        List<CouponOrderDetail> details = listOrderDetail(orderId, null, true);
         details.forEach(t -> {
             t.setInservice(false);
             orderDetailMapper.updateByPrimaryKeySelective(t);
@@ -579,7 +584,7 @@ public class CouponOrderBiz {
     }
 
     private void deleteDetail(Integer orderId) {
-        List<CouponOrderDetail> details = listOrderDetail(orderId, null);
+        List<CouponOrderDetail> details = listOrderDetail(orderId, null, true);
         details.forEach(t -> {
             orderDetailMapper.deleteByPrimaryKey(t.getId());
         });
@@ -594,7 +599,7 @@ public class CouponOrderBiz {
     }
 
     public void updateOrder(Integer orderId, BigDecimal totalCharge) {
-        CouponOrder order = getOrder(orderId);
+        CouponOrder order = getOrder(orderId, true);
         if (Objects.nonNull(order) && Objects.equals(0, order.getStatus())) {
             log.info("订单已收费:{}", orderId);
             order.setStatus(1);

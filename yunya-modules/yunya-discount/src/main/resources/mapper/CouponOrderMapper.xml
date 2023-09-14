@@ -40,8 +40,8 @@
         from coupon_bill cb
                  inner join coupon_order co on cb.order_record_id = co.id
                  inner join coupon_bill_pay_detail cd on cb.id = cd.bill_id
-        where co.inservice = 1
-            and cb.patient_id = #{query.patientId}
+        where
+            cb.patient_id = #{query.patientId}
             <if test="query.orgList != null and query.orgList.size > 0">
                 and cb.org_id in
                 <foreach collection="query.orgList" item="item" index="index" open="(" close=")" separator=",">
