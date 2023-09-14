@@ -555,10 +555,10 @@ public class TreatTollBiz {
   public TreatOrderBenefitVO cacheOrderBenefitInfo(Integer orderRecordId, TreatOrderRecordVO order) {
     String key = buildLockCacheKey(BILL_BENEFIT_MATCH, orderRecordId);
     if (StringHelper.isNotNull(order)) {
-      // 暂存10分钟
+      // 暂存1分钟
       TreatOrderBenefitVO result = orderConvertBenefit(order);
-//    redisUtils.set(key, result, 600);
-      redisUtils.set(key, result);
+      redisUtils.set(key, result, 60);
+//      redisUtils.set(key, result);
       return result;
     } else {
       // 获取缓存中的订单优惠总额
