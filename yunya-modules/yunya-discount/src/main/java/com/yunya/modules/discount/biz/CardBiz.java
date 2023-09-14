@@ -1520,7 +1520,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 if (CollectionUtils.isNotEmpty(collect)) {
                     List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(collect, ItemUseBenefitVo.class);
                     vo.setItemBenefitList(itemUseBenefitVos);
-                    vo.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
+                    vo.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo, false));
                     BigDecimal benefitAmount = itemUseBenefitVos.stream().map(ItemUseBenefitVo::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
                     vo.setBenefitDiscountRate(benefitAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
                     vo.setItemBenefitAmount(benefitAmount);
@@ -1532,7 +1532,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                         DeductionItemBenefitVo vo1 = BeanCopierUtils.generalCopyBean(vo, DeductionItemBenefitVo.class);
                         List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(v, ItemUseBenefitVo.class);
                         vo1.setItemBenefitList(itemUseBenefitVos);
-                        vo1.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo));
+                        vo1.setSupplyWorkload(this.calculateTotalWordLoad(orderItemBo, true));
                         vo1.setQuantity(v.size());
                         BigDecimal totalDeduct = v.stream().map(t -> {
                             List<DeductionItemPeriod> list = periodBiz.list(t.getBenefitId());
@@ -1559,10 +1559,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      *
      * @param itemBenefitBo itemBenefitBo
      */
-    private BigDecimal calculateTotalWordLoad(OrderItemUseBo itemBenefitBo) {
+    private BigDecimal calculateTotalWordLoad(OrderItemUseBo itemBenefitBo, Boolean deduction) {
         Example example;
         BigDecimal supplyWorkload = BigDecimal.ZERO;
-        List<ItemUseBenefitBo> itemUseBenefitBos = itemBenefitBo.getItemUseBenefitBos();
+        List<ItemUseBenefitBo> itemUseBenefitBos = deduction ? itemBenefitBo.getItemUseBenefitBos().stream().filter(t -> DEDUCTION.equals(t.getCouponType())).collect(toList())
+                : itemBenefitBo.getItemUseBenefitBos().stream().filter(t -> !DEDUCTION.equals(t.getCouponType())).collect(toList());
         for (ItemUseBenefitBo itemUseBenefitBo : itemUseBenefitBos) {
             if (COUPON_TYPE.equals(itemUseBenefitBo.getBenefitType())) {
                 Integer couponType = itemUseBenefitBo.getCouponType();
