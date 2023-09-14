@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment.domain.model;
 
+import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -7,7 +8,6 @@ import lombok.ToString;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -22,21 +22,7 @@ import java.util.Set;
 @ApiModel("收欠费参数添加模型")
 @Data
 @ToString
-public class TreatTollModel implements Serializable {
-
-  /** 账单（开单）记录ID */
-  @ApiModelProperty(value = "开单记录ID ", required = true)
-  @NotNull(message = "开单记录ID不能为空！")
-  private Integer orderRecordId;
-  
-  /** 折扣方式（0-不使用优惠；1-优惠；）*/
-  @ApiModelProperty(value = "折扣类型（0-不使用优惠；1-优惠；）", required = true)
-  @NotNull(message = "折扣类型不能为空")
-  private Byte discountType;
-
-  /** 普通优惠信息 */
-  @ApiModelProperty("普通优惠信息")
-  private GeneralDiscountModel generalDiscountModel;
+public class TreatTollModel extends OrderPrivilegeQuery {
 
   /** 预付款账户 */
   @ApiModelProperty("预付款账户")

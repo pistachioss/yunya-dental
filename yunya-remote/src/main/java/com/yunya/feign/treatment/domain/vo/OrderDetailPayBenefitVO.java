@@ -19,10 +19,6 @@ import java.math.BigDecimal;
 @ApiModel("订单明细优惠数据模型")
 public class OrderDetailPayBenefitVO implements Serializable {
 
-    /** 订单明细id */
-    @ApiModelProperty("订单明细id")
-    private Integer orderDetailId;
-
     /** 优惠金额 */
     @ApiModelProperty("优惠金额")
     private BigDecimal privilegeAmount = BigDecimal.ZERO;

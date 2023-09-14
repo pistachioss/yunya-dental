@@ -243,11 +243,7 @@ public class TreatTollBiz {
    */
   public TollConfirmVO chargeOnCredit(TreatTollModel model) {
     OrderRecord orderRecord = checkChargeParam(model);
-    Integer orderRecordId = orderRecord.getId();
-    Integer patientId = orderRecord.getPatientId();
-    Byte discountType = model.getDiscountType();
-    GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
-    BigDecimal privilegeAmount = calculatePrivilegeAmount(discountType, orderRecordId, patientId, generalDiscount);
+    BigDecimal privilegeAmount = calculatePrivilegeAmount(model);
     // 计算入账总额、应收总额
     BigDecimal actualReceivableAmount = orderRecord.getTotalAmount().subtract(privilegeAmount);
     if (StringHelper.leZero(actualReceivableAmount)) {
@@ -270,11 +266,8 @@ public class TreatTollBiz {
   public TollConfirmVO confirmCharge(TreatTollModel model, byte type) {
     OrderRecord orderRecord = checkChargeParam(model);
     Integer orderRecordId = orderRecord.getId();
-    Integer patientId = orderRecord.getPatientId();
     Byte discountType = model.getDiscountType();
-    GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
-
-    BigDecimal privilegeAmount = calculatePrivilegeAmount(discountType, orderRecordId, patientId, generalDiscount);
+    BigDecimal privilegeAmount = calculatePrivilegeAmount(model);
     // 计算入账总额、应收总额
     BigDecimal[] totalAmount = calculateTotalCharge(model);
     BigDecimal totalCharge = totalAmount[0];
@@ -440,8 +433,7 @@ public class TreatTollBiz {
       BillRecord billRecord,
       TreatTollModel model) {
     // 构建明细收费列表
-//    Map<Integer, OrderDetailPayBenefitVO> discountMap = findBillDiscountCoupons(model, billRecord);
-    Map<Integer, OrderDetailPayBenefitVO> discountMap = cacheOrderBenefitInfo(billRecord.getOrderRecordId()).getDiscountMap();
+    Map<Integer, OrderDetailPayBenefitVO> discountMap = cacheOrderBenefitInfo(model).getDiscountMap();
     List<OrderDetailPayRecord> orderDetailPayRecords = Lists.newArrayList();
     OrderDetail orderDetail = new OrderDetail();
     Integer orderRecordId = billRecord.getOrderRecordId();
@@ -541,8 +533,22 @@ public class TreatTollBiz {
     return totalCharge;
   }
 
-  public TreatOrderBenefitVO cacheOrderBenefitInfo(Integer orderRecordId) {
-    return cacheOrderBenefitInfo(orderRecordId, null);
+  /**
+   * 获取缓存中的订单明细及其优惠信息
+   * @param model
+   * @return
+   */
+  public TreatOrderBenefitVO cacheOrderBenefitInfo(TreatTollModel model) {
+    TreatOrderBenefitVO result = cacheOrderBenefitInfo(model.getOrderRecordId(), null);
+    if (StringHelper.isNull(result)) {
+      TreatOrderRecordVO orderRecord = matchOrderTailPrivilege(model);
+      if (StringHelper.isNotNull(orderRecord)) {
+        result = orderConvertBenefit(orderRecord);
+      } else {
+        result = new TreatOrderBenefitVO();
+      }
+    }
+    return result;
   }
 
   /**
@@ -558,15 +564,10 @@ public class TreatTollBiz {
       // 暂存1分钟
       TreatOrderBenefitVO result = orderConvertBenefit(order);
       redisUtils.set(key, result, 60);
-//      redisUtils.set(key, result);
       return result;
     } else {
       // 获取缓存中的订单优惠总额
-      TreatOrderBenefitVO result = redisUtils.get(key, TreatOrderBenefitVO.class);
-      if (StringHelper.isNull(result)) {
-        result = new TreatOrderBenefitVO();
-      }
-      return result;
+      return redisUtils.get(key, TreatOrderBenefitVO.class);
     }
   }
 
@@ -579,7 +580,6 @@ public class TreatTollBiz {
       itemList.forEach(item->{
         Integer orderDetailId = item.getOrderDetailId();
         OrderDetailPayBenefitVO vo = discountMap.computeIfAbsent(orderDetailId, v -> new OrderDetailPayBenefitVO());
-        vo.setOrderDetailId(orderDetailId);
         vo.setPrivilegeAmount(vo.getPrivilegeAmount().add(item.getPrivilegeAmount()));
         vo.setCouponWorkload(vo.getCouponWorkload().add(item.getCouponWorkload()));
       });
@@ -588,7 +588,6 @@ public class TreatTollBiz {
       deductionList.forEach(item->{
         Integer orderDetailId = item.getOrderDetailId();
         OrderDetailPayBenefitVO vo = discountMap.computeIfAbsent(orderDetailId, v -> new OrderDetailPayBenefitVO());
-        vo.setOrderDetailId(orderDetailId);
         vo.setPrivilegeAmount(vo.getPrivilegeAmount().add(item.getPrivilegeAmount()));
         // 划扣套餐价
         vo.setPackageTotalAmount(vo.getPackageTotalAmount().add(item.getDeductionAmount()));
@@ -605,22 +604,14 @@ public class TreatTollBiz {
   /**
    * 计算优惠总额
    *
-   * @param discountType 折扣类型
-   * @param orderRecordId 订单ID
-   * @param patientId 患者ID
-   * @param generalDiscountModel 卡券优惠
+   * @param model
    * @return
    */
-  private BigDecimal calculatePrivilegeAmount(
-      Byte discountType,
-      Integer orderRecordId,
-      Integer patientId,
-      GeneralDiscountModel generalDiscountModel) {
+  private BigDecimal calculatePrivilegeAmount(TreatTollModel model) {
     BigDecimal privilegeAmount = BigDecimal.ZERO;
-    switch (discountType) {
+    switch (model.getDiscountType()) {
       case 1:
-//        privilegeAmount = calculateGeneralPrivilegeAmount(orderRecordId, patientId, generalDiscountModel);
-        privilegeAmount = cacheOrderBenefitInfo(orderRecordId).getBenefitTotalAmount();
+        privilegeAmount = cacheOrderBenefitInfo(model).getBenefitTotalAmount();
         if (StringHelper.isNull(privilegeAmount)) {
           throw new ClientServiceException("收费失败，优惠信息不存在，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
         }
