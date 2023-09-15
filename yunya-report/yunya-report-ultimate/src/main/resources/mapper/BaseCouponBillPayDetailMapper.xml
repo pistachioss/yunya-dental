@@ -57,7 +57,7 @@
             </if>
         </where>
         GROUP BY
-        bcbd.account_item_id,
+        bcbd.account_item_id
         ORDER BY
         bcbd.account_item_id
     </select>
