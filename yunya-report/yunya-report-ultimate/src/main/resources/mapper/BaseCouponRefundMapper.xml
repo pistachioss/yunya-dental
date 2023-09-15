@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseCouponRefundMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseCouponRefund" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="refund_id" property="refundId" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="order_id" property="orderId" jdbcType="INTEGER" />
+    <result column="refund_amount" property="refundAmount" jdbcType="DECIMAL" />
+    <result column="refund_operator_id" property="refundOperatorId" jdbcType="INTEGER" />
+    <result column="refund_date" property="refundDate" jdbcType="TIMESTAMP" />
+    <result column="refund_reason" property="refundReason" jdbcType="VARCHAR" />
+    <result column="bill_num" property="billNum" jdbcType="VARCHAR" />
+    <result column="bill_date" property="billDate" jdbcType="TIMESTAMP" />
+    <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
+    <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL" />
+    <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+  </resultMap>
+</mapper>
