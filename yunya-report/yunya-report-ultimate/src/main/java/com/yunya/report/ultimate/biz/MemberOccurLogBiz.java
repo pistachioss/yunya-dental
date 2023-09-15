@@ -67,7 +67,7 @@ public class MemberOccurLogBiz
         if (StringHelper.gtZero(vo.getPrincipalAmount())) {
           paymentManner += "预付款本金充值";
         }
-        if (StringHelper.geZero(vo.getBonusAmount())) {
+        if (StringHelper.gtZero(vo.getBonusAmount())) {
           if (paymentManner.length() > 0) {
             paymentManner += "、";
           }
