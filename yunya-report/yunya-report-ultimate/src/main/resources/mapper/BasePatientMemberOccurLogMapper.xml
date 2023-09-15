@@ -632,7 +632,7 @@
                 AND DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
             </if>
             <if test="query.combination!=null and query.combination!=''">
-                AND concat(IFNULL(bp.patientName,''), IFNULL(bp.pinyinName,''), IFNULL(bp.patientMobile,''))
+                AND concat(IFNULL(bp.name,''), IFNULL(bp.pinyin_name,''), IFNULL(bp.mobile,''))
                 LIKE concat('%', #{query.combination}, '%')
             </if>
             <if test="query.cardNumber!=null and query.cardNumber!=''">
