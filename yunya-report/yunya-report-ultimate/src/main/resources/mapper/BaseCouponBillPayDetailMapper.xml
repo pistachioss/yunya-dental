@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseCouponBillPayDetailMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseCouponBillPayDetail">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="bill_pay_detail_id" property="billPayDetailId" jdbcType="INTEGER"/>
+        <result column="order_id" property="orderId" jdbcType="INTEGER"/>
+        <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER"/>
+        <result column="account_item_id" property="accountItemId" jdbcType="INTEGER"/>
+        <result column="account_item_name" property="accountItemName" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL"/>
+        <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL"/>
+        <result column="patient_num" property="patientNum" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectDeductionSoldPaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
+        SELECT
+        bcbd.account_item_id as accountItemId,
+        bcbd.account_item_name as accountItemName,
+        IFNULL( SUM( bcbd.principal_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bcbd.bonus_amount ), 0 ) AS bonusAmount
+        FROM
+        base_coupon_bill_pay_detail bcbd
+        LEFT JOIN base_coupon_bill bcb ON bcb.order_id = bcbd.order_id
+        <where>
+            <if test="query.orgId != null">
+                AND bcb.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bcb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bcb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bcb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bcb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bcb.bill_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bcb.bill_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bcbd.account_item_id,
+        ORDER BY
+        bcbd.account_item_id
+    </select>
+</mapper>

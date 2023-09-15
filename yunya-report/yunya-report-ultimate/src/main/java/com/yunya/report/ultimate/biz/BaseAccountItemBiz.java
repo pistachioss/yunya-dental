@@ -13,10 +13,13 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseAccountItem;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.BaseAccountItemMapper;
+import com.yunya.report.ultimate.mapper.BaseCouponBillPayDetailMapper;
+import com.yunya.report.ultimate.mapper.BaseCouponRefundPayMapper;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -40,6 +43,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   /** 组织信息*/
   @Autowired
   private BaseOrganizationMapper organizationMapper;
+  @Resource
+  private BaseCouponBillPayDetailMapper baseCouponBillPayDetailMapper;
+  @Resource
+  private BaseCouponRefundPayMapper baseCouponRefundPayMapper;
 
   /**
    * 获取全部支付方式表头
@@ -117,6 +124,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     // 预付款退费 -- 查询时间段内本门诊预付款充值退费
     prepaidRefund(query, resultList);
 
+    deductionSold(query, resultList);
+
+    deductionRefund(query, resultList);
+
     // 计算出入账合计
     calculateInboundAndOutbound(resultList);
 
@@ -172,7 +183,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     inboundAndOutboundVO.setName("合计");
     inboundAndOutboundVO.setPaymentInfoList(inboundPaymentResult);
     inboundAndOutboundVO.setClassify((byte) 2);
-    resultList.add(12, inboundAndOutboundVO);
+    resultList.add(14, inboundAndOutboundVO);
   }
 
   /**
@@ -245,7 +256,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicIsAcceptedNotThisMonthVO.setName("诊所被代收（非本期）");
     clinicIsAcceptedNotThisMonthVO.setPaymentInfoList(clinicIsAcceptedNotThisMonth);
     clinicIsAcceptedNotThisMonthVO.setClassify((byte) 2);
-    resultList.add(14, clinicIsAcceptedNotThisMonthVO);
+    resultList.add(16, clinicIsAcceptedNotThisMonthVO);
   }
 
   /**
@@ -283,7 +294,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicIsAcceptedThisMonthVO.setName("诊所被代收（本期）");
     clinicIsAcceptedThisMonthVO.setPaymentInfoList(clinicIsAcceptedThisMonth);
     clinicIsAcceptedThisMonthVO.setClassify((byte) 2);
-    resultList.add(13, clinicIsAcceptedThisMonthVO);
+    resultList.add(15, clinicIsAcceptedThisMonthVO);
   }
 
   /**
@@ -555,6 +566,68 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     productSoldVO.setClassify((byte) 0);
     resultList.add(5, productSoldVO);
   }
+
+    private void deductionSold(
+            InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+        List<StatementPaymentVO> productSoldResult = baseCouponBillPayDetailMapper.selectDeductionSoldPaymentInfo(query);
+        List<BaseAccountItemVO> paymentList = mapper.selectAllPaymentList();
+        List<StatementPaymentVO> deductionSold = new ArrayList<>();
+        if (StringHelper.isNotEmpty(paymentList)) {
+            for (BaseAccountItemVO accountItem : paymentList) {
+                StatementPaymentVO vo = new StatementPaymentVO();
+                Integer accountItemId = accountItem.getAccountItemId();
+                vo.setAccountItemId(accountItemId);
+                vo.setAccountItemName(accountItem.getAccountItemName());
+                vo.setTotalAmount(BigDecimal.ZERO);
+                vo.setBonusAmount(BigDecimal.ZERO);
+                for (StatementPaymentVO statementPayment : productSoldResult) {
+                    if (accountItemId.equals(statementPayment.getAccountItemId())) {
+                        vo.setTotalAmount(statementPayment.getTotalAmount());
+                        vo.setBonusAmount(statementPayment.getBonusAmount());
+                    }
+                }
+                deductionSold.add(vo);
+            }
+        }
+        deductionSold = reBuildStatementsPaymentList(deductionSold);
+        ClinicInboundAndOutboundVO productSoldVO = new ClinicInboundAndOutboundVO();
+        productSoldVO.setType((byte) 19);
+        productSoldVO.setName("划扣卡预付款");
+        productSoldVO.setPaymentInfoList(deductionSold);
+        productSoldVO.setClassify((byte) 0);
+        resultList.add(12, productSoldVO);
+    }
+
+    private void deductionRefund(
+            InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+        List<StatementPaymentVO> deductionRefundResult = baseCouponRefundPayMapper.selectDeductionRefundPaymentInfo(query);
+        List<BaseAccountItemVO> paymentList = mapper.selectAllPaymentList();
+        List<StatementPaymentVO> deductionRefund = new ArrayList<>();
+        if (StringHelper.isNotEmpty(paymentList)) {
+            for (BaseAccountItemVO accountItem : paymentList) {
+                StatementPaymentVO vo = new StatementPaymentVO();
+                Integer accountItemId = accountItem.getAccountItemId();
+                vo.setAccountItemId(accountItemId);
+                vo.setAccountItemName(accountItem.getAccountItemName());
+                vo.setTotalAmount(BigDecimal.ZERO);
+                vo.setBonusAmount(BigDecimal.ZERO);
+                for (StatementPaymentVO statementPayment : deductionRefundResult) {
+                    if (accountItemId.equals(statementPayment.getAccountItemId())) {
+                        vo.setTotalAmount(statementPayment.getTotalAmount());
+                        vo.setBonusAmount(statementPayment.getBonusAmount());
+                    }
+                }
+                deductionRefund.add(vo);
+            }
+        }
+        deductionRefund = reBuildStatementsPaymentList(deductionRefund);
+        ClinicInboundAndOutboundVO billRefundThisMonthVO = new ClinicInboundAndOutboundVO();
+        billRefundThisMonthVO.setType((byte) 20);
+        billRefundThisMonthVO.setName("划扣卡预付款退费");
+        billRefundThisMonthVO.setPaymentInfoList(deductionRefund);
+        billRefundThisMonthVO.setClassify((byte) 1);
+        resultList.add(13, billRefundThisMonthVO);
+    }
 
   /**
    * 门诊预付款充值

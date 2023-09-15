@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseCouponBillDetailMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseCouponBillDetail">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="order_detail_id" property="orderDetailId" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="order_id" property="orderId" jdbcType="INTEGER"/>
+        <result column="coupon_id" property="couponId" jdbcType="INTEGER"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="coupon_number" property="couponNumber" jdbcType="VARCHAR"/>
+        <result column="coupon_name" property="couponName" jdbcType="VARCHAR"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="executor_id" property="executorId" jdbcType="INTEGER"/>
+        <result column="consulter_id" property="consulterId" jdbcType="INTEGER"/>
+        <result column="sale_channel_id" property="saleChannelId" jdbcType="INTEGER"/>
+        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <delete id="deleteByBillId">
+        delete
+        from base_coupon_bill_detail
+        where order_id = #{billId}
+    </delete>
+
+    <insert id="batchInsertSelective">
+        INSERT INTO base_coupon_bill_detail (
+            order_detail_id,
+            org_id,
+            order_id,
+            coupon_id,
+            `type`,
+            coupon_number,
+            coupon_name,
+            price,
+            receivable_amount,
+            quantity,
+            executor_id,
+            consulter_id,
+            sale_channel_id,
+            received_amount,
+            remark
+        )
+        VALUES
+        <foreach collection="baseBillDetails" item="item" separator=",">
+            (#{item.orderDetailId}, #{item.orgId}, #{item.orderId},
+            #{item.couponId}, #{item.type}, #{item.couponNumber}, #{item.couponName},
+            #{item.price}, #{item.receivableAmount}, #{item.quantity},
+            #{item.executorId}, #{item.consulterId}, #{item.saleChannelId},
+            #{item.receivedAmount},#{item.remark})
+        </foreach>
+    </insert>
+</mapper>
