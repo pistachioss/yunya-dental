@@ -400,15 +400,15 @@ public class BasePatientMemberOccurLogBiz
       if (StringHelper.isNotNull(patientMemberInfo)) {
         basePatientMemberOccurLog.setCardId(patientMemberInfo.getId());
         basePatientMemberOccurLog.setPatientId(patientMemberInfo.getPatientId());
+        basePatientMemberOccurLog.setCurrentRechargePrincipal(
+                patientMemberInfo.getPrincipalAmount());
+        basePatientMemberOccurLog.setCurrentRechargeBonus(
+                patientMemberInfo.getBonusAmount());
       }
       basePatientMemberOccurLog.setType((byte) type.intValue());
       basePatientMemberOccurLog.setOccurType((byte) occurType.intValue());
       basePatientMemberOccurLog.setPrincipalAmount(entity.getPrincipal());
       basePatientMemberOccurLog.setBonusAmount(entity.getBonus());
-      basePatientMemberOccurLog.setCurrentRechargePrincipal(
-              patientMemberInfo.getPrincipalAmount());
-      basePatientMemberOccurLog.setCurrentRechargeBonus(
-              patientMemberInfo.getBonusAmount());
       basePatientMemberOccurLog.setRechargeMethod((byte)0);
       if (occurType == 1){
         MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
@@ -710,16 +710,16 @@ public class BasePatientMemberOccurLogBiz
           patientPrepaymentsInfoMapper.selectOne(prepaymentsInfo);
       if (StringHelper.isNotNull(patientPrepaymentsInfo)) {
         basePatientMemberOccurLog.setCardId(patientPrepaymentsInfo.getId());
+        basePatientMemberOccurLog.setCurrentRechargePrincipal(
+                patientPrepaymentsInfo.getPrepaymentPrincipal());
+        basePatientMemberOccurLog.setCurrentRechargeBonus(
+                patientPrepaymentsInfo.getPrepaymentBonus());
+        basePatientMemberOccurLog.setPatientId(patientPrepaymentsInfo.getPatientId());
       }
-      basePatientMemberOccurLog.setPatientId(patientPrepaymentsInfo.getPatientId());
       basePatientMemberOccurLog.setType((byte) type.intValue());
       basePatientMemberOccurLog.setOccurType((byte) operationType.intValue());
       basePatientMemberOccurLog.setPrincipalAmount(transferRecord.getPrincipal());
       basePatientMemberOccurLog.setBonusAmount(transferRecord.getBonus());
-      basePatientMemberOccurLog.setCurrentRechargePrincipal(
-              patientPrepaymentsInfo.getPrepaymentPrincipal());
-      basePatientMemberOccurLog.setCurrentRechargeBonus(
-              patientPrepaymentsInfo.getPrepaymentBonus());
       if (operationType == 1){
         PrepaidRechargeTollRecord memberRechargeTollRecord = new PrepaidRechargeTollRecord();
         memberRechargeTollRecord.setRechargeRecordId(transferRecord.getId());
