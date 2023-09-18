@@ -161,7 +161,7 @@ public class CouponBillBiz {
             memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
             memberExpendRecordModel.setPrincipalAmount(memberAccountModel.getPrincipalAmount());
             memberExpendRecordModel.setBonusAmount(memberAccountModel.getBonusAmount());
-//            memberExpendRecordModel.setTreatmentRecordId(billPay.getBillId());
+            memberExpendRecordModel.setTreatmentRecordId(0);
             memberExpendRecordModel.setOrderRecordId(billPay.getOrderId());
             memberExpendRecordModel.setBillRecordId(billPay.getBillId());
             memberExpendRecordModel.setBillPayRecordId(billPay.getId());
@@ -184,7 +184,7 @@ public class CouponBillBiz {
                     prepaidExpendRecordModel.setExpendTotal(prepaymentAccountModel.getAmount());
                     prepaidExpendRecordModel.setPrincipalAmount(prepaymentAccountModel.getPrincipalAmount());
                     prepaidExpendRecordModel.setBonusAmount(prepaymentAccountModel.getBonusAmount());
-//                    prepaidExpendRecordModel.setTreatmentRecordId(billPay.getBillId());
+                    prepaidExpendRecordModel.setTreatmentRecordId(0);
                     prepaidExpendRecordModel.setOrderRecordId(billPay.getOrderId());
                     prepaidExpendRecordModel.setBillRecordId(billPay.getBillId());
                     prepaidExpendRecordModel.setBillPayRecordId(billPay.getId());
