@@ -22,4 +22,9 @@ public class RemoteMiddleServiceFactory implements RemoteMiddleServiceFeign {
     public ResponseResult<Boolean> occur(CouponChangeRecord newBean) {
         return null;
     }
+
+    @Override
+    public ResponseResult<Boolean> occurDelete(CouponChangeRecord newBean) {
+        return null;
+    }
 }

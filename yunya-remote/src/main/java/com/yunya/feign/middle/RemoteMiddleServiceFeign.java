@@ -26,4 +26,7 @@ public interface RemoteMiddleServiceFeign {
 
     @PostMapping("/deduction/occur")
     ResponseResult<Boolean> occur(@RequestBody CouponChangeRecord newBean);
+
+    @PostMapping("/deduction/occurDelete")
+    ResponseResult<Boolean> occurDelete(@RequestBody CouponChangeRecord newBean);
 }

@@ -45,4 +45,10 @@ public class DeductionItemController {
         return ResponseUtil.success();
     }
 
+    @PostMapping("/deduction/occurDelete")
+    public ResponseResult<Boolean> occurDelete(@RequestBody CouponChangeRecord newBean) {
+        deductionItemService.occurDelete(newBean);
+        return ResponseUtil.success();
+    }
+
 }

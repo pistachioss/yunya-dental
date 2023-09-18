@@ -1,5 +1,6 @@
 package com.yunya.modules.discount.biz;
 
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -19,6 +20,7 @@ import com.yunya.feign.discount.domain.query.DeductionOrderQuery;
 import com.yunya.feign.discount.domain.query.DeductionPatientQuery;
 import com.yunya.feign.discount.domain.query.DeductionRecordQuery;
 import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.feign.middle.RemoteMiddleServiceFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberBillRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
@@ -114,6 +116,8 @@ public class DeductionPatientBiz {
     private RemoteRabbitMqServiceFeign mqServiceFeign;
     @Resource
     private CouponBillPayDetailMapper couponBillPayDetailMapper;
+    @Resource
+    private RemoteMiddleServiceFeign remoteMiddleServiceFeign;
 
     public PageInfo<PatientDeductionBaseVO> deductionList(DeductionPatientQuery query) {
         Page<PatientCardBo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
@@ -391,6 +395,7 @@ public class DeductionPatientBiz {
     }
 
     public void cancel(Card card) {
+        Integer patientId = card.getPatientId();
         card.setStatus(1);
         card.setPatientId(null);
         card.setActiveOrgId(null);
@@ -404,6 +409,11 @@ public class DeductionPatientBiz {
             card.setSoldTarget(null);
             card.setSoldPhoneNumber(null);
             card.setSaleChannelId(null);
+            CouponChangeRecord newBean = new CouponChangeRecord();
+            newBean.setPatientId(patientId);
+            newBean.setCardId(card.getId());
+            log.info("划扣取消激活结存更新:{}", JSON.toJSONString(newBean));
+            remoteMiddleServiceFeign.occurDelete(newBean);
         }
         cardMapper.updateByPrimaryKey(card);
     }

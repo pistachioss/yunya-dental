@@ -2489,11 +2489,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             insertOtherCard.setSoldPhoneNumber(form.getSoldPhoneNumber());
             insertOtherCard.setSharer(form.getSharerIdStr());
         }
-        insertOtherCard.setOrgId(0);
+//        insertOtherCard.setOrgId(0);
         insertOtherCard.setThirdCardNumber(form.getThirdCardNumber());
         insertOtherCard.setActiveOrgId(activeOrgId);
         insertOtherCard.setActiveUserId(loginUserId);
-        insertOtherCard.setCouponAllocateId(0);
+//        insertOtherCard.setCouponAllocateId(0);
         insertOtherCard.setPatientId(patientId);
         insertOtherCard.setStatus(ACTIVATED.getCode());
         insertOtherCard.setSharer(form.getSharerIdStr());
