@@ -539,6 +539,15 @@ public class CompanyReportOfFinanceController {
         return ResponseUtil.success(pageInfo);
     }
 
+    @ApiOperation("公司端报表-财务报表-对账单-划扣卡预付款-导出")
+    @PostMapping(value = "/deduction/sold/detail/list/export", name = "公司端报表-财务报表-对账单-划扣卡预付款-查看明细")
+    public ResponseResult<Boolean> exportDeductionSoldDetailList(
+            HttpServletResponse response, @RequestBody @Validated StatementDeductionSoldDetailQuery query)
+            throws IOException {
+        baseCardBiz.exportDeductionSoldDetailList(response, query);
+        return ResponseUtil.success();
+    }
+
   /**
    * 根据条件导出产品售出记录明细
    *

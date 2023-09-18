@@ -79,15 +79,6 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
         List<StatementDeductionSoldDetailVO> resultList = mapper.selectDeductionSoldDetailList(query);
-        if (StringHelper.isNotEmpty(resultList)) {
-            for (StatementDeductionSoldDetailVO vo : resultList) {
-                StatementPaymentVO statementPaymentVO =
-                        mapper.selectStatementPaymentByCardId(vo.getCardId());
-                if (null != statementPaymentVO) {
-//                    setProductSoldAmountValue(statementPaymentVO, vo);
-                }
-            }
-        }
         return new PageInfo<>(resultList);
     }
 
@@ -133,6 +124,15 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
         new ExcelUtil<>(StatementProductSoldDetailVO.class);
     excelUtil.exportExcel(response, list, "产品售出记录明细列表");
   }
+
+    public void exportDeductionSoldDetailList(
+            HttpServletResponse response, StatementDeductionSoldDetailQuery query) throws IOException {
+        PageInfo<StatementDeductionSoldDetailVO> pageInfo = deductionSoldDetailList(query);
+        List<StatementDeductionSoldDetailVO> list = pageInfo.getList();
+        ExcelUtil<StatementDeductionSoldDetailVO> excelUtil =
+                new ExcelUtil<>(StatementDeductionSoldDetailVO.class);
+        excelUtil.exportExcel(response, list, "划扣卡预付款明细列表");
+    }
 
   public List<BaseCard> findCardCouponSoldStatistics(CardCouponUsedQueryForm query) {
     return mapper.selectCardCouponSoldList(query);

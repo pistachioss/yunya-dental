@@ -23,6 +23,10 @@ public class StatementDeductionSoldDetailVO implements Serializable {
     @ApiModelProperty("收费日期")
     private String soldDate;
 
+    @Excel(name = "账单编号")
+    @ApiModelProperty("账单编号")
+    private String billNumber;
+
     @Excel(name = "购卡患者姓名")
     @ApiModelProperty("购卡患者姓名")
     private String soldTargetName;
@@ -32,43 +36,19 @@ public class StatementDeductionSoldDetailVO implements Serializable {
     @Excel(name = "购卡患者手机号")
     @ApiModelProperty("购卡患者手机号")
     private String soldTargetMobile;
-    /**
-     * 产品名称
-     */
-    @Excel(name = "产品名称")
-    @ApiModelProperty("产品名称")
-    private String productName;
 
-    @Excel(name = "产品售出单价", cellType = NUMERIC, type = EXPORT, isStatistics = true)
-    @ApiModelProperty("产品售出单价")
-    private BigDecimal soldAmount;
-    /**
-     * 产品类型
-     */
-    @Excel(name = "产品类型")
-    @ApiModelProperty("产品类型:0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券")
-    private Byte productType;
-    /**
-     * 卡ID
-     */
-    @ApiModelProperty("卡ID")
-    private Integer cardId;
-    /**
-     * 卡号
-     */
-    @Excel(name = "卡号")
-    @ApiModelProperty("卡号")
-    private String cardNum;
-    /**
-     * 售出金额
-     */
-
-    /**
-     * 现金
-     */
-    @Excel(name = "现金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
-    @ApiModelProperty("现金")
-    private BigDecimal cashAmount;
+    @Excel(name = "会员卡本金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+    @ApiModelProperty("会员卡本金")
+    private BigDecimal memberPrincipalAmount;
+    @Excel(name = "会员卡赠金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+    @ApiModelProperty("会员卡赠金")
+    private BigDecimal memberBonusAmount;
+    @Excel(name = "预付款本金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+    @ApiModelProperty("预付款本金")
+    private BigDecimal prepayPrincipalAmount;
+    @Excel(name = "预付款赠金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+    @ApiModelProperty("预付款预付款赠金")
+    private BigDecimal prepayBonusAmount;
     /**
      * 支付宝
      */
@@ -88,6 +68,16 @@ public class StatementDeductionSoldDetailVO implements Serializable {
     @ApiModelProperty("银行账户")
     private BigDecimal bankAmount;
     /**
+     * 现金
+     */
+    @Excel(name = "现金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+    @ApiModelProperty("现金")
+    private BigDecimal cashAmount;
+
+    @Excel(name = "杭州医保", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+    @ApiModelProperty("杭州医保")
+    private BigDecimal hzInsurance;
+    /**
      * 售出人ID
      */
     @ApiModelProperty("售出人ID")
@@ -95,7 +85,7 @@ public class StatementDeductionSoldDetailVO implements Serializable {
     /**
      * 售出人
      */
-    @Excel(name = "售出人")
-    @ApiModelProperty("售出人")
+    @Excel(name = "收费人")
+    @ApiModelProperty("收费人")
     private String soldOperatorName;
 }
