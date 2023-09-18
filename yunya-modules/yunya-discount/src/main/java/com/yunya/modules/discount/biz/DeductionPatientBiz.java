@@ -397,6 +397,14 @@ public class DeductionPatientBiz {
         card.setActiveUserId(null);
         card.setSharer(null);
         card.setActiveDate(null);
+        if (Objects.nonNull(card.getThirdCardNumber())
+                && Objects.equals(card.getCardNumber(), card.getThirdCardNumber())) {
+            card.setStatus(0);
+            card.setThirdCardNumber(null);
+            card.setSoldTarget(null);
+            card.setSoldPhoneNumber(null);
+            card.setSaleChannelId(null);
+        }
         cardMapper.updateByPrimaryKey(card);
     }
 
