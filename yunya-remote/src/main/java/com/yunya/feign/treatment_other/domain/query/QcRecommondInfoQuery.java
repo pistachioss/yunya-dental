@@ -29,6 +29,7 @@ public class QcRecommondInfoQuery extends DateRangeQueryForm {
     @ApiModelProperty("推荐类型：1-医嘱单，2-引导单")
     private Integer type;
     
-    /** 就诊状态： */
-    private Integer treatStatus;
+    /** 状态：1-未核销（已下载），2-未开单（已核销并绑定患者），3-已开单（已绑定账单），4-已同步（已上传） */
+    @ApiModelProperty("状态：1-未核销（已下载），2-未开单（已核销并绑定患者），3-已开单（已绑定账单），4-已同步（已上传）")
+    private Integer status;
 }

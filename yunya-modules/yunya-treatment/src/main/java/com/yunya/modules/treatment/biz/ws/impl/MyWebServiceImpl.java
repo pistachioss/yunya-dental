@@ -17,9 +17,6 @@ import javax.jws.WebService;
         endpointInterface = "com.yunya.modules.treatment.biz.ws.MyWebService" // 接口类全路径
 )
 public class MyWebServiceImpl implements MyWebService {
-//    @Autowired
-//    private RemotePatientCentralServiceFeign patientFeign;
-
     @Autowired
     private BillRecordBiz billRecordBiz;
 

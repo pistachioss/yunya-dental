@@ -1,175 +1,119 @@
 package com.yunya.modules.treatment.other.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
-import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.StringHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.cxf.endpoint.Client;
-import org.apache.cxf.endpoint.Endpoint;
-import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
-import org.apache.cxf.service.model.*;
+import org.apache.axis.client.Call;
+import org.apache.axis.client.Service;
+import org.apache.axis.message.SOAPHeaderElement;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 
 import javax.xml.namespace.QName;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.xml.rpc.ParameterMode;
+import javax.xml.rpc.encoding.XMLType;
+import java.net.URL;
+import java.util.Iterator;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_ERROR;
-
-/**
- * WebService - 工具类
- * Title: WebServiceUtils
- * Description:
- *
- * @author Micromaple
- * @version 1.0.0
- * @date 2022/7/1 12:14
- */
 @Slf4j
 public class WebServiceUtils {
-	// 接口调用地址
-	private static String url = "http://60.191.117.126:8088/csp/hsb/DHC.Published.PUB0013.BS.PUB0013.CLS?WSDL=1";
-	// 命名空间
-	private static String namespace = "http://www.dhcc.com.cn";
+    private static String url = "http://60.191.117.126:8088/csp/hsb/DHC.Published.PUB0013.BS.PUB0013.CLS";
+    // 命名空间
+    private static String namespace = "http://www.dhcc.com.cn";
 
     private static String methodName = "HIPMessageServer";
-    private static String webserviceName = "PUB0013";
 
-    private static Map<String, Client> clientMap = new HashMap<>();
+    private static String soapAction = "http://www.dhcc.com.cn/DHC.Published.PUB0013.BS.PUB0013.HIPMessageServer";
 
-    /**
-     * @param wsdlUrl  wsdl的地址：http://localhost:8001/demo/HelloServiceDemoUrl?wsdl
-     */
-    public static Client initClient(String wsdlUrl) {
-        wsdlUrl = StringHelper.defaultString(wsdlUrl, url);
-        // 创建动态客户端
-        JaxWsDynamicClientFactory factory = JaxWsDynamicClientFactory.newInstance();
-        // 创建客户端连接
-        Client client = factory.createClient(wsdlUrl);
-        clientMap.put(wsdlUrl, client);
-        log.info("webservice动态客户端初始化完成，已链接到webservice服务：{}", wsdlUrl);
-        return client;
-    }
+    private static Integer timeout = 10 * 60 * 1000;
 
-    /**
-     * 通过json对象格式入参方式调用webservice暴露的服务和方法
-     *
-     * @param methodName 调用的方法名称 selectOrderInfo
-     * @param targetNamespace 目标命名空间 http://service.limp.com/
-     * @param webServiceName  暴露webservice的服务名称
-     * @param params 参数集合
-     * @throws Exception
-     */
-    public  static String callByJson(String wsdlUrl, String methodName, String targetNamespace,
-                                       String webServiceName, Object params) throws Exception{
-        String param = JSONObject.toJSONString(params);
-        return callWebService(wsdlUrl, methodName, targetNamespace, webServiceName, param);
-    }
-
-    /**
-     * 通过json数组格式入参方式调用webservice暴露的服务和方法
-     *
-     * @param methodName 调用的方法名称 selectOrderInfo
-     * @param targetNamespace 目标命名空间 http://service.limp.com/
-     * @param webServiceName  暴露webservice的服务名称
-     * @param params 参数集合
-     * @throws Exception
-     */
-    public  static String callByJArray(String wsdlUrl, String methodName, String targetNamespace,
-                                       String webServiceName, Object...params) throws Exception{
-        String param = JSONArray.toJSONString(params);
-        return callWebService(wsdlUrl, methodName, targetNamespace, webServiceName, param);
-    }
-
-    /**
-     * 通过json格式入参和出参方式调用webservice暴露的服务和方法
-     *
-     * @param methodName 调用的方法名称 selectOrderInfo
-     * @param targetNamespace 目标命名空间 http://service.limp.com/
-     * @param webServiceName  暴露webservice的服务名称
-     * @param params 参数集合
-     * @throws Exception
-     */
-    public  static String callWebService(String wsdlUrl, String methodName, String targetNamespace,
-                                     String webServiceName, Object... params) {
-        //从缓存中换取client
-        Client client = clientMap.computeIfAbsent(wsdlUrl, name->initClient(wsdlUrl));
-        Endpoint endpoint = client.getEndpoint();
-        // Make use of CXF service model to introspect the existing WSDL
-        ServiceInfo serviceInfo = endpoint.getService().getServiceInfos().get(0);
-        // 创建QName来指定NameSpace和要调用的service
-//        String localPart = webServiceName + "SoapBinding";
-        String localPart = webServiceName + "Soap";
-        QName bindingName = new QName(targetNamespace, localPart);
-        BindingInfo binding = serviceInfo.getBinding(bindingName);
-
-        //创建QName来指定NameSpace和要调用的方法绑定方法
-        QName opName = new QName(targetNamespace, methodName);//selectOrderInfo
-
-        BindingOperationInfo boi = binding.getOperation(opName);
-//		BindingMessageInfo inputMessageInfo = boi.getInput();
-        BindingMessageInfo inputMessageInfo = null;
-        if (!boi.isUnwrapped()) {
-            //OrderProcess uses document literal wrapped style.
-            inputMessageInfo = boi.getWrappedOperation().getInput();
-        } else {
-            inputMessageInfo = boi.getUnwrappedOperation().getInput();
-        }
-
-        List<MessagePartInfo> parts = inputMessageInfo.getMessageParts();
-
-        /***********************以下是初始化参数，组装参数；处理返回结果的过程******************************************/
-        Object[] parameters = new Object[parts.size()];
-        for(int m=0; m<parts.size(); m++){
-            MessagePartInfo part = parts.get(m);
-            // 取得webservice服务方法入参Class对象
-            Class<?> partClass = part.getTypeClass();//OrderInfo.class;
-            System.out.println("入参类型：" + partClass.getCanonicalName()); // GetAgentDetails
-            //实例化对象
-            Object initDomain=null;
-            //普通参数的形参，不需要fastJson转换直接赋值即可
-            String param = params[m].toString();
-            if ("java.lang.String".equalsIgnoreCase(partClass.getCanonicalName())
-                    ||"int".equalsIgnoreCase(partClass.getCanonicalName())) {
-                initDomain = param;
-            } else if (partClass.getCanonicalName().indexOf("[]")>-1){
-                //转换数组
-                initDomain = JSON.parseArray(param, partClass.getComponentType());
-            } else {
-                initDomain = JSON.parseObject(param, partClass);
-            }
-            parameters[m] = initDomain;
-        }
-
-        //定义返回结果集
-        Object[] result = null;
-        //普通参数情况 || 对象参数情况  1个参数 ||ArryList集合
-        log.info("webserivce invoke wdsl: {}, method: {}, param:{}", wsdlUrl, methodName, params);
+    public static void main1(String[] args) {
         try {
-            result = client.invoke(opName, parameters);
+                 String endpoint = url;
+                 //直接引用远程的wsdl文件
+                 //以下都是套路
+                 Service service = new Service();
+                 Call call = (Call) service.createCall();
+                 call.setTargetEndpointAddress(endpoint);
+                 call.setOperationName("HIPMessageServer");//WSDL里面描述的接口名称
+                 call.addParameter("input1", org.apache.axis.encoding.XMLType.XSD_DATE,
+                               javax.xml.rpc.ParameterMode.IN);//接口的参数
+                 call.setReturnType(org.apache.axis.encoding.XMLType.XSD_STRING);//设置返回类型
+                 String temp = "测试人员";
+                 String result = (String)call.invoke(new Object[]{temp});
+    //给方法传递参数，并且调用方法
+                 System.out.println("result is "+result);
         } catch (Exception e) {
-            log.error("webservice invoke wdsl:{}, method:{}, error:{}", wsdlUrl, methodName, e);
-            throw new ClientServiceException("invoke webservice error", DATA_ERROR);
+             System.err.println(e.toString());
         }
-        //返回调用结果
-        log.info("webservice invoke wdsl:{}, method:{}, result:{}", wsdlUrl, methodName, result);
-        if(result.length>0){
-            return result[0].toString();
-        }
-        return  "{\"code\": 0, \"msg\":\"ok\"}";
+   }
+
+    public static void main(String[] args) {
+        callWebService(methodName,
+                WebServiceParam.builder().inName("input1").data("1").build(),
+                WebServiceParam.builder().inName("input2").data("2").build());
     }
 
-    public static void main(String[] args) throws Exception {
-        String str = "{\"keyword\":\"\",\"queryDate\":\"2023-08-01\",\"orgIds\":[63],\"pageNum\":1,\"pageSize\":10,\"regDentistIds\":[],\"whetherPage\":true}";
-        BillOfReceivableQuery query = JSONObject.parseObject(str, BillOfReceivableQuery.class);
-        String str2 = "";
-//        String result = callByJson(url, methodName, namespace, webserviceName, query);
-//        String result = callByJArray(url, methodName, namespace, webserviceName, query, str2);
-        String result = callWebService(url, methodName, namespace, webserviceName, query, str2);
-        System.out.println("webservice结果：");
-        System.out.println(result);
+    public static String callByJson(String methodName, String inName, Object json){
+        String data = JSONArray.toJSONString(json);
+        return callWebService(methodName,
+                WebServiceParam.builder().inName(inName).data(data).build());
     }
-}
+
+    public static String callWebService(String methodName, WebServiceParam...params){
+        String result = null;
+        try {
+            // 服务端的url，需要根据情况更改。
+            String endpointURL = url;
+            Service service = new Service();
+            Call call = (Call) service.createCall();
+            call.setTimeout(timeout);
+            call.setTargetEndpointAddress(new URL(endpointURL));
+            call.setSOAPActionURI(soapAction);
+            call.setOperationName(new QName(namespace, methodName));// 设置操作的名称。
+//            appendAuthericate2Header(call, userId, password);
+            call.setReturnType(XMLType.XSD_STRING);// 返回的数据类型
+            Object[] paramDatas = new Object[params.length];
+            for (int i = 0; i < params.length; i++) {
+                WebServiceParam param = params[i];
+                call.addParameter(new QName(namespace, param.getInName()), param.getInType(), ParameterMode.IN);// 参数的类型
+                paramDatas[i] = param.getData();
+            }
+            result = (String) call.invoke(paramDatas);// 执行调用
+            log.info("WebService: {}, method: {}, 调用结果：{}", url, methodName, result);
+            // 结果信息解析
+            Document document = DocumentHelper.parseText(result);
+            Element rootElement = document.getRootElement();
+            Iterator iter = rootElement.elementIterator("State");
+            while(iter.hasNext()){
+                Element recordEle = (Element) iter.next();
+                String code = recordEle.getTextTrim();// State值
+                if("0".equals(code)){ //成功
+                    log.error("调用接口成功");
+                }else{ // 失败保存log
+                    log.error(result);
+                }
+            }
+        } catch (Exception e) {
+            log.error("调用接口失败",e);
+        }
+        return result;
+    }
+
+    /**
+     * 认证参数
+     *
+     * @param call
+     * @param userId
+     * @param password
+     * @throws Exception
+     */
+    private static void appendAuthericate2Header(Call call, String userId, String password) throws Exception {
+        // 由于需要认证，故需要设置调用的用户名和密码。
+        SOAPHeaderElement soapHeaderElement = new SOAPHeaderElement(namespace, "UserSoapHeader");
+        soapHeaderElement.setNamespaceURI("http://tempuri.org/");
+        soapHeaderElement.addChildElement("UserId").setValue(userId);
+        soapHeaderElement.addChildElement("PassWord").setValue(password);
+        call.addHeader(soapHeaderElement);
+    }
+}  

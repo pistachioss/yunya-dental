@@ -35,10 +35,10 @@ public class QcWebServiceClientBiz {
      */
     public QcDoctorAdviceRecordVO findDoctorAdviceRecommondList(QcDoctorAdviceQuery query) {
         String methodName = "";
-        String webServiceName = "";
+        String paramName = "";
         QcDoctorAdviceRecordVO qcResult = null;
         try {
-            String result = WebServiceUtils.callByJson(wsdlUrl, methodName, targetNamespace, webServiceName, query);
+            String result = WebServiceUtils.callByJson(methodName, paramName, query);
             qcResult = JSONObject.parseObject(result, QcDoctorAdviceRecordVO.class);
         } catch (Exception e) {
             log.error("QcMedical doctorAdvice item status update error: ", e);
@@ -55,10 +55,10 @@ public class QcWebServiceClientBiz {
      */
     public QcAdviceStatusVO updateAdviceItemStatus(QcAdviceStatusForm statusForm) {
         String methodName = "";
-        String webServiceName = "";
+        String paramName = "";
         QcAdviceStatusVO qcResult = null;
         try {
-            String result = WebServiceUtils.callByJson(wsdlUrl, methodName, targetNamespace, webServiceName, statusForm);
+            String result = WebServiceUtils.callByJson(methodName, paramName, statusForm);
             qcResult = JSONObject.parseObject(result, QcAdviceStatusVO.class);
             noticeAdviceItemStatus(qcResult);
         } catch (Exception e) {
@@ -75,10 +75,10 @@ public class QcWebServiceClientBiz {
      */
     public QcAdviceStatusNoticeVO noticeAdviceItemStatus(QcAdviceStatusVO form) {
         String methodName = "";
-        String webServiceName = "";
+        String paramName = "";
         QcAdviceStatusNoticeVO qcResult = null;
         try {
-            String result = WebServiceUtils.callByJson(wsdlUrl, methodName, targetNamespace, webServiceName, form);
+            String result = WebServiceUtils.callByJson(methodName, paramName, form);
             qcResult = JSONObject.parseObject(result, QcAdviceStatusNoticeVO.class);
         } catch (Exception e) {
             log.error("QcMedical doctorAdvice item status notice error: ", e);
@@ -95,10 +95,10 @@ public class QcWebServiceClientBiz {
      */
     public QcAdviceStatusVO uploadAdvice2MallPlatform(QcAdviceUploadTreatmentForm form) {
         String methodName = "";
-        String webServiceName = "";
+        String paramName = "";
         QcAdviceStatusVO qcResult = null;
         try {
-            String result = WebServiceUtils.callByJson(wsdlUrl, methodName, targetNamespace, webServiceName, form);
+            String result = WebServiceUtils.callByJson(methodName, paramName, form);
             qcResult = JSONObject.parseObject(result, QcAdviceStatusVO.class);
             noticeAdviceItemStatus(qcResult);
         } catch (Exception e) {

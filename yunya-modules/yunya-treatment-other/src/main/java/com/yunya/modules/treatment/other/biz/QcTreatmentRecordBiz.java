@@ -7,8 +7,10 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.treatment_other.domain.form.QcAdviceItemStatusForm;
 import com.yunya.feign.treatment_other.domain.form.QcAdviceStatusForm;
 import com.yunya.feign.treatment_other.domain.form.QcAdviceUploadTreatmentForm;
+import com.yunya.feign.treatment_other.domain.query.QcDoctorAdviceQuery;
 import com.yunya.feign.treatment_other.domain.query.QcRecommondInfoQuery;
 import com.yunya.feign.treatment_other.domain.vo.QcAdviceStatusVO;
+import com.yunya.feign.treatment_other.domain.vo.QcDoctorAdviceRecordVO;
 import com.yunya.feign.treatment_other.domain.vo.QcRecommondInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -47,6 +49,12 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
+        QcDoctorAdviceQuery queryForm = new QcDoctorAdviceQuery();
+        queryForm.setStart_date(query.getStartDate());
+        queryForm.setEnd_date(query.getEndDate());
+        queryForm.setWerif_code(query.getVerifyCode());
+        QcDoctorAdviceRecordVO recommondList = qcWebServiceClientBiz.findDoctorAdviceRecommondList(queryForm);
+
         List<QcRecommondInfoVO> result = mapper.selectMallRecommondList(query);
         return new PageInfo<>(result);
     }

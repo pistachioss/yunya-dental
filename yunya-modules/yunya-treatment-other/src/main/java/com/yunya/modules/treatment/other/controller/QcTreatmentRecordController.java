@@ -50,7 +50,7 @@ public class QcTreatmentRecordController {
      */
     @CurrentUser
     @ApiOperation("mall平台医嘱核销")
-    @PutMapping("/verify/{id}/${verifyCode}")
+    @PutMapping("/verify/{id}/{verifyCode}")
     public ResponseResult verify(@PathVariable(value = "id") Integer id, @PathVariable(value = "verifyCode") String verifyCode) {
         qcTreatmentRecordBiz.verify(id, verifyCode);
         return ResponseUtil.success();
@@ -65,7 +65,7 @@ public class QcTreatmentRecordController {
      */
     @CurrentUser
     @ApiOperation("mall平台推荐绑定患者")
-    @PutMapping("/bindPatient/{id}/${patientId}")
+    @PutMapping("/bindPatient/{id}/{patientId}")
     public ResponseResult bindPatient(@PathVariable(value = "id") Integer id, @PathVariable(value = "patientId") Integer patientId) {
         qcTreatmentRecordBiz.bindPatient(id, patientId);
         return ResponseUtil.success();
