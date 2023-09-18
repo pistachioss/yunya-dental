@@ -461,6 +461,9 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setPatientId(memberExpendRecord.getPatientId());
       basePatientMemberOccurLog.setType((byte) type.intValue());
       basePatientMemberOccurLog.setOccurType((byte) occurType.intValue());
+      if(memberExpendRecord.getTreatmentRecordId() == null) {
+        basePatientMemberOccurLog.setOccurType((byte)22);
+      }
       basePatientMemberOccurLog.setPrincipalAmount(memberExpendRecord.getExpendPrincipal());
       basePatientMemberOccurLog.setBonusAmount(memberExpendRecord.getExpendGift());
       basePatientMemberOccurLog.setOperatorUserId(memberExpendRecord.getCrtId());
