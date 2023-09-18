@@ -619,6 +619,7 @@
         LEFT JOIN base_patient bpin ON bpin.patient_id = bpmin.patient_id
         <where>
             AND bpmol.occur_type = 9 -- 表示转出
+            AND LEFT(bpmol.recharge_card_number, 1) = 'Y'
             <if test="query.orgId != null">
                 AND bpmol.org_id = #{query.orgId}
             </if>
@@ -1201,6 +1202,7 @@
             a.type = bpm.type
             and a.occur_type = 9
             and a.card_id = bpm.card_id
+            AND LEFT(a.recharge_card_number, 1) = 'Y'
             <if test="form.startDate!=null and form.startDate!='' and form.endDate!=null and form.endDate!=''">
                 and DATE_FORMAT(a.occur_date, "%Y-%m-%d") BETWEEN #{form.startDate} AND #{form.endDate}
             </if>
@@ -1211,6 +1213,7 @@
             a.type = bpm.type
             and a.occur_type = 9
             and a.card_id = bpm.card_id
+            AND LEFT(a.recharge_card_number, 1) = 'Y'
             <if test="form.startDate!=null and form.startDate!='' and form.endDate!=null and form.endDate!=''">
                 and DATE_FORMAT(a.occur_date, "%Y-%m-%d") BETWEEN #{form.startDate} AND #{form.endDate}
             </if>
