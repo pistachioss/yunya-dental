@@ -1561,4 +1561,56 @@
             bp.patient_id,
             bc.coupon_id
     </select>
+    <select id="selectDeductionSoldDetailList"
+            resultType="com.yunya.feign.report.domain.vo.StatementDeductionSoldDetailVO">
+        SELECT
+            DATE_FORMAT(cb.bill_date, '%Y-%m-%d') AS soldDate,
+            bc.sold_target AS soldTargetName,
+            bc.sold_phone_number AS soldTargetMobile,
+            bcn.coupon_name AS productName,
+            bcn.coupon_type AS productType,
+            bc.card_id as cardId,
+            bc.card_number AS cardNum,
+            bcn.sold_amount AS soldAmount,
+            bc.seller_user_id AS soldOperatorId,
+            be.employee_name AS soldOperatorName
+        FROM
+        base_coupon_order_virtual cov
+        LEFT JOIN base_coupon_bill cb ON bc.order_id = cov.order_id
+        LEFT JOIN base_coupon_bill_pay_detail cbp ON cbp.order_id = cov.order_id
+        LEFT JOIN base_coupon bcn ON bc.coupon_id = cov.coupon_id
+        LEFT JOIN base_employee be ON cb.checker_id = be.user_id
+        <where>
+            AND bc.`inservice` = 1
+            <if test="query.orgId != null">
+                AND bc.allocate_org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bc.sold_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bc.sold_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bc.sold_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bc.sold_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bc.sold_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bc.sold_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ORDER BY bc.sold_date DESC
+
+    </select>
 </mapper>

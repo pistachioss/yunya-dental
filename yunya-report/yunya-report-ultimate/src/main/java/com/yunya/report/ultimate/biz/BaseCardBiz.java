@@ -73,6 +73,24 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
     return new PageInfo<>(resultList);
   }
 
+    public PageInfo<StatementDeductionSoldDetailVO> deductionSoldDetailList(
+            StatementDeductionSoldDetailQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<StatementDeductionSoldDetailVO> resultList = mapper.selectDeductionSoldDetailList(query);
+        if (StringHelper.isNotEmpty(resultList)) {
+            for (StatementDeductionSoldDetailVO vo : resultList) {
+                StatementPaymentVO statementPaymentVO =
+                        mapper.selectStatementPaymentByCardId(vo.getCardId());
+                if (null != statementPaymentVO) {
+//                    setProductSoldAmountValue(statementPaymentVO, vo);
+                }
+            }
+        }
+        return new PageInfo<>(resultList);
+    }
+
   /**
    * 设置产品售出支付方式金额
    *

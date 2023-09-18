@@ -531,6 +531,14 @@ public class CompanyReportOfFinanceController {
     return ResponseUtil.success(pageInfo);
   }
 
+    @ApiOperation("公司端报表-财务报表-对账单-划扣卡预付款-查看明细")
+    @PostMapping(value = "/product/sold/detail/list", name = "公司端报表-财务报表-对账单-划扣卡预付款-查看明细")
+    public ResponseResult<PageInfo<StatementDeductionSoldDetailVO>> deductionSoldDetailList(
+            @RequestBody @Validated StatementDeductionSoldDetailQuery query) {
+        PageInfo<StatementDeductionSoldDetailVO> pageInfo = baseCardBiz.deductionSoldDetailList(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
   /**
    * 根据条件导出产品售出记录明细
    *

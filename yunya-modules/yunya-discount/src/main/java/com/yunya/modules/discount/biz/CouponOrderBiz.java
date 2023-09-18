@@ -155,31 +155,51 @@ public class CouponOrderBiz {
         int id = Integer.parseInt(BaseContextHandler.getUserID());
         Date date = new Date();
         if (Objects.equals(occurType, 1)) {
-            List<CouponOrderVirtual> cards = listOrderVirtual(orderId, null, true);
-            CouponBillPay billPay = listPay(orderId);
-            if (CollectionUtils.isNotEmpty(cards)) {
-                List<CouponChangeRecord> list = cards.stream().map(t -> {
-                    CouponChangeRecord latest = changeRecordMapper.getLatest(t.getPatientId(), t.getCardId());
-                    BigDecimal curren = Objects.isNull(latest) ? BigDecimal.ZERO : latest.getCurrentAmount();
-                    CouponChangeRecord couponChangeRecord = new CouponChangeRecord();
-                    couponChangeRecord.setOrgId(billPay.getOrgId());
-                    couponChangeRecord.setPatientId(patientId);
-                    couponChangeRecord.setOrderId(orderId);
-                    couponChangeRecord.setCardId(t.getCardId());
-                    couponChangeRecord.setCouponId(t.getCouponId());
-                    couponChangeRecord.setOccurType(occurType);
-                    couponChangeRecord.setOccurAmount(t.getPackageUnitPrice());
-                    couponChangeRecord.setCurrentAmount(curren.add(t.getPackageUnitPrice()));
-                    couponChangeRecord.setOperatorUserId(id);
-                    couponChangeRecord.setCardNumber(t.getCardNumber());
-                    couponChangeRecord.setOccurDate(date);
-                    return couponChangeRecord;
-                }).collect(toList());
-                log.info("划扣结存购买：{}", JSON.toJSONString(list));
-                list.forEach(t -> {
-                    changeRecordMapper.insertSelective(t);
-                    middleServiceFeign.occur(t);
-                });
+            if (Objects.isNull(orderId)) {
+                Card card = cardMapper.selectByPrimaryKey(cardId);
+                CouponCommonInfo couponCommonInfo = couponMapper.selectByPrimaryKey(card.getCouponId());
+                CouponChangeRecord couponChangeRecord = new CouponChangeRecord();
+                couponChangeRecord.setOrgId(card.getActiveOrgId());
+                couponChangeRecord.setPatientId(patientId);
+                couponChangeRecord.setOrderId(orderId);
+                couponChangeRecord.setCardId(cardId);
+                couponChangeRecord.setCouponId(card.getCouponId());
+                couponChangeRecord.setOccurType(occurType);
+                couponChangeRecord.setOccurAmount(couponCommonInfo.getSoldAmount());
+                couponChangeRecord.setCurrentAmount(couponCommonInfo.getSoldAmount());
+                couponChangeRecord.setOperatorUserId(id);
+                couponChangeRecord.setCardNumber(card.getCardNumber());
+                couponChangeRecord.setOccurDate(date);
+                log.info("激活划扣结存购买：{}", JSON.toJSONString(couponChangeRecord));
+                changeRecordMapper.insertSelective(couponChangeRecord);
+                middleServiceFeign.occur(couponChangeRecord);
+            } else {
+                List<CouponOrderVirtual> cards = listOrderVirtual(orderId, null, true);
+                CouponBillPay billPay = listPay(orderId);
+                if (CollectionUtils.isNotEmpty(cards)) {
+                    List<CouponChangeRecord> list = cards.stream().map(t -> {
+                        CouponChangeRecord latest = changeRecordMapper.getLatest(t.getPatientId(), t.getCardId());
+                        BigDecimal curren = Objects.isNull(latest) ? BigDecimal.ZERO : latest.getCurrentAmount();
+                        CouponChangeRecord couponChangeRecord = new CouponChangeRecord();
+                        couponChangeRecord.setOrgId(billPay.getOrgId());
+                        couponChangeRecord.setPatientId(patientId);
+                        couponChangeRecord.setOrderId(orderId);
+                        couponChangeRecord.setCardId(t.getCardId());
+                        couponChangeRecord.setCouponId(t.getCouponId());
+                        couponChangeRecord.setOccurType(occurType);
+                        couponChangeRecord.setOccurAmount(t.getPackageUnitPrice());
+                        couponChangeRecord.setCurrentAmount(curren.add(t.getPackageUnitPrice()));
+                        couponChangeRecord.setOperatorUserId(id);
+                        couponChangeRecord.setCardNumber(t.getCardNumber());
+                        couponChangeRecord.setOccurDate(date);
+                        return couponChangeRecord;
+                    }).collect(toList());
+                    log.info("划扣结存购买：{}", JSON.toJSONString(list));
+                    list.forEach(t -> {
+                        changeRecordMapper.insertSelective(t);
+                        middleServiceFeign.occur(t);
+                    });
+                }
             }
         }
         if (Objects.equals(occurType, 2)) {

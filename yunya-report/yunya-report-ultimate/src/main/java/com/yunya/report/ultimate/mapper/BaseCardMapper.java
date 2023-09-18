@@ -187,4 +187,7 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
      * @return
      */
     List<Coupon365ActivedDetailVO> selectCoupon365ActivedDetail(@Param("query") Coupon365ActivedDetailQuery query);
+
+    List<StatementDeductionSoldDetailVO> selectDeductionSoldDetailList(
+            @Param("query") StatementDeductionSoldDetailQuery query);
 }

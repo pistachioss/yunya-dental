@@ -34,4 +34,7 @@ public class BillItemTollWorkloadQuery extends ClinicEmployeeWorkloadQuery imple
   private Byte itemType;
   /** 项目ID列表 */
   private Collection<Integer> itemIds;
+  @ApiModelProperty(value = "查询类型（0-收费（调用老接口），1-划扣）", required = true)
+  @NotNull(message = "请选择查询类型")
+  private Integer type;
 }

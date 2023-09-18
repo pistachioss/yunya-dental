@@ -192,6 +192,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private DeductionPeriodBiz deductionPeriodBiz;
     @Resource
     private DeductionPeriodBiz periodBiz;
+    @Resource
+    private CouponOrderBiz couponOrderBiz;
 
     /**
      * 加密加密生成卡券密码
@@ -970,6 +972,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             }
             //4. 卡券激活
             card = updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId(), card);
+            couponOrderBiz.occur(null, 1, patientId, cardId, null);
             mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
             log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
             cardActivedSendSms(card);

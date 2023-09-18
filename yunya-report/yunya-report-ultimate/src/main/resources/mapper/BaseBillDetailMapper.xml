@@ -6910,4 +6910,86 @@
                     </where>
         GROUP BY bd.org_id, bd.item_type, bd.item_id
     </select>
+
+     <select id="selectClinicDeductSupplementWorkload"
+             resultType="com.yunya.feign.report.domain.vo.BillItemDeductionAndWorkloadVO">
+        select
+             t1.orgId,
+           t1.itemId,
+           t1.itemType,
+            t1.employeeId,
+           t1.quantity,
+            IFNULL(count(*),0) AS deductionQuantity,
+            t1.deductionWorkload,
+            t1.deductionCouponWorkload
+        from base_benefit bb
+        right join (
+            SELECT
+                bbd.org_id AS orgId,
+                bbd.item_id AS itemId,
+                bbd.item_type AS itemType,
+                IFNULL(bbd.executor_id, -1) AS employeeId,
+                IFNULL(SUM(bbd.quantity), 0) AS quantity,
+                IFNULL(sum(bbd.swipe_workload),0) AS deductionWorkload,
+             IFNULL(sum(bbd.swipe_coupon_workload),0) AS deductionCouponWorkload
+                FROM base_bill_detail bbd
+                INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        <where>
+            <if test="query.itemType != null">
+                and bbd.item_type = #{query.itemType}
+            </if>
+            and bb.bill_date is not null
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') &lt;= #{query.endDate}
+            </if>
+            <if test="query.employeeIds!=null and query.employeeIds.length>0">
+                and bbd.executor_id in
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bbd.item_id in
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            AND bbd.swipe_workload > 0
+        </where>
+        GROUP BY bbd.executor_id,bbd.item_id,bbd.item_type,bbd.org_id
+         ) t1 on t1.item_id = bb.item_id and t1.item_type = bb.item_type
+        <where>
+             <if test="query.itemType != null">
+                and bb.item_type = #{query.itemType}
+            </if>
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT(bb.use_date, '%Y-%m-%d') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT(bb.use_date, '%Y-%m-%d') &lt;= #{query.endDate}
+            </if>
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bb.item_id in
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY bb.item_id,bb.item_type,bb.org_id
+    </select>
 </mapper>

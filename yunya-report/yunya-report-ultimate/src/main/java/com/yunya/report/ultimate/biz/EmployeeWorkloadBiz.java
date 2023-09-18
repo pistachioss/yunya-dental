@@ -451,6 +451,14 @@ public class EmployeeWorkloadBiz {
     return result;
   }
 
+    private Map<String, BillItemDeductionAndWorkloadVO> mapDedcutionEmployeeWorkloadVO(
+            List<BillItemDeductionAndWorkloadVO> deductionAndWorkloadVOS) {
+        Map<String, BillItemDeductionAndWorkloadVO> result = new HashMap<>();
+        deductionAndWorkloadVOS.forEach(
+                vo -> result.put(vo.getExecutorId() + "," + vo.getOrgId() + "." + vo.getItemId(), vo));
+        return result;
+    }
+
     /**
      * 转换为员工工作量map
      *
@@ -646,6 +654,26 @@ public class EmployeeWorkloadBiz {
     // 分页
     return PageUtl.doPage(query.getPageNum(), query.getPageSize(), result, query.getWhetherPage());
   }
+
+    public PageInfo<BillItemDeductionAndWorkloadVO> tariffDeductionWorkloadStatistics(
+            BillItemTollWorkloadQuery query) throws Exception {
+        resolveItemIds(query);
+        List<BillItemDeductionAndWorkloadVO> deductionAndWorkloadVOS = baseBillDetailMapper.selectClinicDeductSupplementWorkload(query);
+        Map<String, BillItemDeductionAndWorkloadVO> map = mapDedcutionEmployeeWorkloadVO(deductionAndWorkloadVOS);
+        // 查询价目or商品表
+        Future<Map<Integer, ItemCategoryVO>> tariffMap = findTariffInfoMap(query.getItemType());
+
+        // 门诊员工
+        Future<List<ClinicEmployeBonusCoefficientVO>> employees =
+                multiFindClinicEmployeeCollection(query);
+        List<BillItemDeductionAndWorkloadVO> result = mergeExecutorDeductionfWorkload(map, employees,
+                tariffMap);
+        // 数据合并组装
+
+        // 分页
+        return PageUtl.doPage(query.getPageNum(), query.getPageSize(), result, query.getWhetherPage());
+    }
+
   //导出统计明细
   public void allExporttariffPaymentWorkloadStatistics(
             HttpServletResponse response,  BillItemTollWorkloadQuery query) throws Exception {
@@ -773,6 +801,37 @@ public class EmployeeWorkloadBiz {
     // 排序
     return SortUtil.sort(new ArrayList<>(resultMap.values()), itemWorkloadCmpList());
   }
+
+    private List<BillItemDeductionAndWorkloadVO> mergeExecutorDeductionfWorkload(
+            Map<String, BillItemDeductionAndWorkloadVO> deductionWordload,
+            Future<List<ClinicEmployeBonusCoefficientVO>> employeeFutrue,
+            Future<Map<Integer, ItemCategoryVO>> tariffFuture)
+            throws Exception {
+        List<ClinicEmployeBonusCoefficientVO> employees = employeeFutrue.get();
+        Map<String, ClinicEmployeBonusCoefficientVO> employeeMap = new HashMap<>(16);
+        employees.forEach(vo -> employeeMap.put(vo.getEmployeeId() + "," + vo.getOrgId(), vo));
+        Map<Integer, ItemCategoryVO> tariffMap = tariffFuture.get();
+        Map<String, BillItemDeductionAndWorkloadVO> resultMap = new HashMap<>(16);
+        deductionWordload.forEach(
+                (key, vo) -> {
+                    Integer quantity = StringHelper.defaultInt(vo.getQuantity());
+                    if (quantity > 0) {
+                        BillItemDeductionAndWorkloadVO entity = resultMap.get(key);
+                        if (ObjectUtils.isEmpty(entity)) {
+                            entity = createDeductionWorkloadBaseInfo(key, employeeMap, tariffMap);
+                        }
+                        if (!ObjectUtils.isEmpty(entity)) {
+                            entity.setQuantity(quantity);
+                            entity.setDeductionWorkload(vo.getDeductionWorkload());
+                            entity.setDeductionCouponWorkload(vo.getDeductionCouponWorkload());
+                            resultMap.put(key, entity);
+                        }
+                    }
+                });
+
+        // 排序
+        return new ArrayList<>(resultMap.values());
+    }
 
   private List<BillItemTollAndWorkloadVO> mergeExecutorTariffWorkload0(
       Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload,
@@ -1073,6 +1132,34 @@ public class EmployeeWorkloadBiz {
     }
     return entity;
   }
+
+    private BillItemDeductionAndWorkloadVO createDeductionWorkloadBaseInfo(
+            String key,
+            Map<String, ClinicEmployeBonusCoefficientVO> employeeMap,
+            Map<Integer, ItemCategoryVO> tariffMap) {
+        String[] keys = key.split("\\.");
+        BillItemDeductionAndWorkloadVO entity = new BillItemDeductionAndWorkloadVO();
+        ClinicEmployeBonusCoefficientVO employee = employeeMap.get(keys[0]);
+        if (!ObjectUtils.isEmpty(employee)) {
+            entity.setAbbreviation(employee.getAbbreviation());
+            entity.setOrgId(employee.getOrgId());
+            entity.setExecutorName(employee.getEmployeeName());
+            entity.setExecutorId(employee.getEmployeeId());
+        } else {
+            return null;
+        }
+        ItemCategoryVO item = tariffMap.get(Integer.parseInt(keys[1]));
+        if (!ObjectUtils.isEmpty(item)) {
+            entity.setItemName(item.getItemName());
+            entity.setItemId(item.getItemId());
+            entity.setItemNum(item.getItemNum());
+            entity.setItemCategoryName(item.getCategoryName());
+            entity.setItemCategoryId(item.getCategoryId());
+        } else {
+            return null;
+        }
+        return entity;
+    }
     /**
      * 填充基础信息
      *
@@ -1251,6 +1338,7 @@ public class EmployeeWorkloadBiz {
             BillItemTollAndWorkloadVO::getRefundWorkload)
         .reversed();
   }
+
 
     private Comparator allExportitemWorkloadCmpList() {
         return SortUtil.comparing(

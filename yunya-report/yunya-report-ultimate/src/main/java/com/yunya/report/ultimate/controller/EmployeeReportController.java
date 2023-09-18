@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillItemInfoQuery;
 import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
+import com.yunya.feign.report.domain.vo.BillItemDeductionAndWorkloadVO;
 import com.yunya.feign.report.domain.vo.BillItemTollAndWorkloadVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfOperationVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfPersonnelVO;
@@ -112,6 +113,15 @@ public class EmployeeReportController {
         employeeWorkloadBiz.findStatisticsTariffPaymentWorkloadList(query);
     return ResponseUtil.success(pageInfo);
   }
+
+    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-划扣收费项目工作量统计")
+    @PostMapping(value = "/operation/tariff/pay/deduction/workload/list", name = "公司端报表-报表统计-运营报表-员工报表-划扣收费项目工作量统计")
+    public ResponseResult<PageInfo<BillItemDeductionAndWorkloadVO>> tariffDeductionWorkloadStatistics(
+            @RequestBody @Validated BillItemTollWorkloadQuery query) throws Exception {
+        PageInfo<BillItemDeductionAndWorkloadVO> pageInfo =
+                employeeWorkloadBiz.tariffDeductionWorkloadStatistics(query);
+        return ResponseUtil.success(pageInfo);
+    }
 
 
   /**
