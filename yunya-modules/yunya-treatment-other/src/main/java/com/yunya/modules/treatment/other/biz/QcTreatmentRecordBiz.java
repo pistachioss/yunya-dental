@@ -4,6 +4,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
+import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
 import com.yunya.feign.treatment_other.domain.form.QcAdviceItemStatusForm;
 import com.yunya.feign.treatment_other.domain.form.QcAdviceStatusForm;
 import com.yunya.feign.treatment_other.domain.form.QcAdviceUploadTreatmentForm;
@@ -12,9 +15,11 @@ import com.yunya.feign.treatment_other.domain.query.QcRecommondInfoQuery;
 import com.yunya.feign.treatment_other.domain.vo.QcAdviceStatusVO;
 import com.yunya.feign.treatment_other.domain.vo.QcDoctorAdviceRecordVO;
 import com.yunya.feign.treatment_other.domain.vo.QcRecommondInfoVO;
+import com.yunya.feign.treatment_other.domain.vo.QcRecommondOrderVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -25,10 +30,15 @@ import com.yunya.modules.treatment.other.mapper.QcTreatmentRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author: chenlin
@@ -149,5 +159,169 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
         forms.forEach(form->{
             QcAdviceStatusVO result = qcWebServiceClientBiz.uploadAdvice2MallPlatform(form);
         });
+    }
+
+    /**
+     * 全程医疗登记单匹配订单
+     *
+     * @param form
+     * @return
+     */
+    public QcRecommondOrderVO orderMatchQcTreatmentList(QcTreatmentImportForm form) {
+        QcRecommondOrderVO result = new QcRecommondOrderVO();
+        List<QcTreatmentVO> qcTreatments = Lists.newArrayList();
+        Map<String, OrderDetailChargeVO> orderDetailMap = form.getOrderDetails().stream().collect(
+                toMap(v->StringHelper.joinWith(",",v.getType(),v.getBillingItemId()), Function.identity()));
+        form.getQcTreatmentIds().forEach(id->{
+            BigDecimal originAmount = BigDecimal.ZERO;
+            List<OrderDetailChargeVO> items = Lists.newArrayList();
+            QcTreatmentRecord qcTreatmentRecord = checkQcTreatmentRecord(id);
+            if (qcTreatmentRecord.getType() ==  1) {
+                List<QcTreatmentItem> qcTreatmentItems = qcTreatmentItemMapper.selectListByQcTreatmentId(id);
+                for (QcTreatmentItem adviceItem : qcTreatmentItems) {
+                    String key = StringHelper.joinWith(",", adviceItem.getItemType(), adviceItem.getItemId());
+                    OrderDetailChargeVO orderDetail = orderDetailMap.get(key);
+                    if (StringHelper.isNotNull(orderDetail)) {
+                        int quantity = orderDetail.getQuantity();
+                        int surplus = quantity - adviceItem.getQuantity();
+                        if (surplus > 0) {
+                            // 艾维项目仍有剩余
+                            orderDetail.setQuantity(surplus);
+                            quantity = adviceItem.getQuantity();
+                        } else {
+                            orderDetailMap.remove(key);
+                        }
+                        BigDecimal itemPrice = BigDecimal.valueOf(quantity).multiply(orderDetail.getPrice());
+                        originAmount = originAmount.add(itemPrice);
+                        items.add(adviceItem2OrderDetail(quantity, orderDetail.getPrice(), orderDetail));
+                    }
+                }
+            }
+            QcTreatmentVO vo = new QcTreatmentVO();
+            vo.setQcTreatmentId(id);
+            vo.setAdmNo(qcTreatmentRecord.getAdmNo());
+            vo.setType(qcTreatmentRecord.getType());
+            vo.setOriginAmount(originAmount);
+            vo.setReceivedAmount(originAmount);
+            vo.setQcAdviceItems(items);
+            qcTreatments.add(vo);
+        });
+        result.setQcTreatments(qcTreatments);
+        result.setOrderDetailIds(orderDetailMap.values().stream()
+                .map(OrderDetailChargeVO::getOrderDetailId).collect(Collectors.toList()));
+        return result;
+    }
+
+    /**
+     * 获取已绑定账单的全程医疗登记单列表
+     *
+     * @param orderRecordId
+     * @return
+     */
+    public List<QcTreatmentVO> findBindingQcTreatmentList(Integer orderRecordId) {
+        List<QcTreatmentVO> qcTreatments = mapper.selectQcTreatmentListByOrderId(orderRecordId);
+        qcTreatments.forEach(treatment->{
+            List<OrderDetailChargeVO> orderDetails = Lists.newArrayList();
+            List<QcTreatmentItem> items = qcTreatmentItemMapper.selectListByQcTreatmentId(treatment.getQcTreatmentId());
+            items.forEach(item->{
+                OrderDetailChargeVO itemVO = BeanCopierUtils.generalCopyBean(item, OrderDetailChargeVO.class);
+                int quantity = itemVO.getQuantity();
+                BigDecimal itemPrice = BigDecimal.valueOf(quantity).multiply(item.getPrice());
+                itemVO.setActualAmount(itemPrice);
+                itemVO.setReceivableAmount(itemPrice);
+                itemVO.setPrivilegeAmount(BigDecimal.ZERO);
+                itemVO.setReceivedAmount(itemPrice);
+                orderDetails.add(adviceItem2OrderDetail(item.getQuantity(), item.getPrice(), item));
+            });
+            if (StringHelper.isNotEmpty(orderDetails)) {
+                treatment.setQcAdviceItems(orderDetails);
+            }
+        });
+        return qcTreatments;
+    }
+
+
+    public OrderDetailChargeVO adviceItem2OrderDetail(int quantity, BigDecimal price, Object source) {
+        OrderDetailChargeVO itemVO = BeanCopierUtils.generalCopyBean(source, OrderDetailChargeVO.class);
+        BigDecimal itemPrice = BigDecimal.valueOf(quantity).multiply(price);
+        itemVO.setActualAmount(itemPrice);
+        itemVO.setReceivableAmount(itemPrice);
+        itemVO.setPrivilegeAmount(BigDecimal.ZERO);
+        itemVO.setReceivedAmount(itemPrice);
+        return itemVO;
+    }
+
+    /**
+     * 查询患者的可用全程医疗就诊记录列表
+     *
+     * @param patientId
+     * @return
+     */
+    public List<QcRecommondInfoVO> findPatientEnableQcTreatmentRecord(Integer patientId) {
+        List<QcRecommondInfoVO> result = mapper.selectPatientEnableQcTreatmentRecord(patientId);
+        PatientBaseInfo patient = patientFeign.findPatientInfoById(patientId);
+        String patientName = null;
+        if (StringHelper.isNotNull(patient)) {
+            patientName = patient.getName();
+        }
+        for (QcRecommondInfoVO recommondInfo : result) {
+            recommondInfo.setPatientName(patientName);
+        }
+        return result;
+    }
+
+    public void billBindingQcTreatment(QcTreatmentImportForm form) {
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        Date now = DateUtil.now();
+        Integer billId = form.getBillRecordId();
+        Integer orderRecordId = form.getOrderRecordId();
+
+        List<OrderDetailChargeVO> orderDetails = form.getOrderDetails();
+        BigDecimal ivyCost = orderDetails.stream().map(OrderDetailChargeVO::getReceivedAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        Map<String, OrderDetailChargeVO> orderDetailMap = orderDetails.stream().collect(
+                toMap(v->StringHelper.joinWith(",",v.getType(),v.getBillingItemId()), Function.identity()));
+        for (Integer id : form.getQcTreatmentIds()) {
+            QcTreatmentRecord qcTreatmentRecord = checkQcTreatmentRecord(id);
+            if (qcTreatmentRecord.getType() ==  1) {
+                List<QcTreatmentItem> qcTreatmentItems = qcTreatmentItemMapper.selectListByQcTreatmentId(id);
+                for (QcTreatmentItem adviceItem : qcTreatmentItems) {
+                    String key = StringHelper.joinWith(",", adviceItem.getItemType(), adviceItem.getItemId());
+                    OrderDetailChargeVO detail = orderDetailMap.get(key);
+                    if (StringHelper.isNotNull(detail)) {
+                        int quantity = detail.getQuantity();
+                        int surplus = quantity - adviceItem.getQuantity();
+                        if (surplus > 0) {
+                            // 艾维项目仍有剩余
+                            detail.setQuantity(surplus);
+                            quantity = adviceItem.getQuantity();
+                        } else {
+                            orderDetailMap.remove(key);
+                        }
+                        // 全程代收并执行的医嘱项费用
+                        BigDecimal itemPrice = BigDecimal.valueOf(quantity).multiply(detail.getPrice());
+                        ivyCost = ivyCost.subtract(itemPrice);
+
+                        // 全程医嘱项绑定艾维项目
+                        adviceItem.setOrderDetailId(detail.getOrderDetailId());
+                        adviceItem.setStatus((byte) 6);
+                        adviceItem.setCollectedAmount(itemPrice);
+                        adviceItem.setReceivedAmount(detail.getReceivedAmount().subtract(itemPrice));
+                        adviceItem.setUptId(userId);
+                        adviceItem.setUptTime(now);
+                        qcTreatmentItemMapper.updateByPrimaryKeySelective(adviceItem);
+                    }
+                }
+            }
+
+            // 全程就诊记录绑定账单
+            qcTreatmentRecord.setOrderRecordId(form.getOrderRecordId());
+            qcTreatmentRecord.setUpdId(userId);
+            qcTreatmentRecord.setUpdTime(now);
+            qcTreatmentRecord.setStatus((byte) 3);
+            qcTreatmentRecord.setOrderRecordId(orderRecordId);
+            qcTreatmentRecord.setBillId(billId);
+            qcTreatmentRecord.setIvyCost(ivyCost);
+            updateSelectiveById(qcTreatmentRecord);
+        }
     }
 }

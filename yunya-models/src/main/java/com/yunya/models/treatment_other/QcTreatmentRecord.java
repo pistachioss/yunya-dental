@@ -1,7 +1,10 @@
 package com.yunya.models.treatment_other;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "qc_treatment_record")
 public class QcTreatmentRecord {
@@ -56,6 +59,11 @@ public class QcTreatmentRecord {
     private Integer verifyId;
 
     /**
+     * 状态：1-未核销（已下载），2-未开单（已核销并绑定患者），3-已开单（已绑定账单），4-已同步（已上传）
+     */
+    private Byte status;
+
+    /**
      * 备注信息
      */
     private String remark;
@@ -82,6 +90,29 @@ public class QcTreatmentRecord {
      */
     @Column(name = "sync_time")
     private Date syncTime;
+
+    /**
+     * 客户姓名
+     */
+    @Column(name = "customer_name")
+    private String customerName;
+
+    /**
+     * 身份证号
+     */
+    @Column(name = "id_card")
+    private String idCard;
+
+    /**
+     * 手机号
+     */
+    private String mobile;
+
+    /**
+     * 艾维开单总实收
+     */
+    @Column(name = "ivy_cost")
+    private BigDecimal ivyCost;
 
     /**
      * 更新人id
@@ -254,6 +285,24 @@ public class QcTreatmentRecord {
     }
 
     /**
+     * 获取状态：1-未核销（已下载），2-未开单（已核销并绑定患者），3-已开单（已绑定账单），4-已同步（已上传）
+     *
+     * @return
+     */
+    public Byte getStatus() {
+        return status;
+    }
+
+    /**
+     * 设置状态：1-未核销（已下载），2-未开单（已核销并绑定患者），3-已开单（已绑定账单），4-已同步（已上传）
+     *
+     * @param status
+     */
+    public void setStatus(Byte status) {
+        this.status = status;
+    }
+
+    /**
      * 获取备注信息
      *
      * @return remark - 备注信息
@@ -269,6 +318,60 @@ public class QcTreatmentRecord {
      */
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    /**
+     * 获取客户姓名
+     *
+     * @return
+     */
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    /**
+     * 设置客户姓名
+     *
+     * @param customerName
+     */
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    /**
+     * 获取 身份证号
+     *
+     * @return
+     */
+    public String getIdCard() {
+        return idCard;
+    }
+
+    /**
+     * 设置身份证号
+     *
+     * @param idCard
+     */
+    public void setIdCard(String idCard) {
+        this.idCard = idCard;
+    }
+
+    /**
+     * 获取手机号码
+     *
+     * @return
+     */
+    public String getMobile() {
+        return mobile;
+    }
+
+    /**
+     * 设置手机号码
+     *
+     * @param mobile
+     */
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
     }
 
     /**
@@ -377,5 +480,23 @@ public class QcTreatmentRecord {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取 艾维开单总实收
+     *
+     * @return
+     */
+    public BigDecimal getIvyCost() {
+        return ivyCost;
+    }
+
+    /**
+     * 设置 艾维开单总实收
+     *
+     * @param ivyCost
+     */
+    public void setIvyCost(BigDecimal ivyCost) {
+        this.ivyCost = ivyCost;
     }
 }

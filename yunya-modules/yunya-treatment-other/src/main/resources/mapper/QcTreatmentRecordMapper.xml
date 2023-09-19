@@ -11,6 +11,9 @@
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
     <result column="bill_id" property="billId" jdbcType="INTEGER" />
     <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="customer_name" property="customerName" jdbcType="VARCHAR" />
+    <result column="id_card" property="idCard" jdbcType="VARCHAR" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
     <result column="verify_code" property="verifyCode" jdbcType="VARCHAR" />
     <result column="verify_date" property="verifyDate" jdbcType="TIMESTAMP" />
     <result column="verify_id" property="verifyId" jdbcType="INTEGER" />
@@ -19,6 +22,7 @@
     <result column="adm_date" property="admDate" jdbcType="TIMESTAMP" />
     <result column="sync_id" property="syncId" jdbcType="INTEGER" />
     <result column="sync_time" property="syncTime" jdbcType="TIMESTAMP" />
+    <result column="ivy_cost" property="ivyCost" jdbcType="DECIMAL" />
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
@@ -26,5 +30,46 @@
     <select id="selectMallRecommondList"
             resultType="com.yunya.feign.treatment_other.domain.vo.QcRecommondInfoVO">
 
+    </select>
+
+    <select id="selectQcTreatmentListByOrderId" resultType="com.yunya.feign.treatment.domain.vo.QcTreatmentVO">
+        SELECT
+            qcr.id AS qcTreatmentId,
+            qcr.adm_no AS admNo,
+            qcr.type,
+            IFNULL(qci.originAmount, 0) AS originAmount,
+            IFNULL(qci.originAmount, 0) AS receivedAmount
+        FROM qc_treatment_record qcr
+        LEFT JOIN (
+            SELECT
+                qc_treatment_id,
+                SUM(quantity * price) AS originAmount
+            FROM qc_treatment_item
+            WHERE inservice = 1
+            GROUP BY qc_treatment_id
+        ) qci ON qcr.id = qci.qc_treatment_id
+        <where>
+            qcr.inservice = 1
+            AND qcr.order_record_id = #{orderRecordId}
+        </where>
+    </select>
+
+    <select id="selectPatientEnableQcTreatmentRecord"
+          resultType="com.yunya.feign.treatment_other.domain.vo.QcRecommondInfoVO">
+        SELECT
+            adm_no AS admNo,
+            customer_name AS customerName,
+            id_card AS idCard,
+            mobile,
+            type,
+            adm_date AS qcAdmDate,
+            patient_id AS patientId
+        FROM qc_treatment_record
+        <where>
+            AND inservice = 1
+            AND status = 2
+            AND patient_id = #{patientId}
+        </where>
+        ORDER BY adm_date DESC
     </select>
 </mapper>

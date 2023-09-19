@@ -12,6 +12,12 @@ public class QcTreatmentItem {
     private Integer id;
 
     /**
+     * 全程就诊记录id
+     */
+    @Column(name = "qc_treatment_id")
+    private Integer qcTreatmentId;
+
+    /**
      * 全程医疗-平台医嘱流水号
      */
     @Column(name = "order_no")
@@ -22,6 +28,12 @@ public class QcTreatmentItem {
      */
     @Column(name = "order_detail_id")
     private Integer orderDetailId;
+
+    /**
+     * 项目类型：0-价目，1-商品
+     */
+    @Column(name = "item_type")
+    private Byte itemType;
 
     /**
      * 平台项目id
@@ -61,6 +73,12 @@ public class QcTreatmentItem {
      * 单价
      */
     private BigDecimal price;
+
+    /**
+     * 全程医疗代收总额or执行医嘱总额
+     */
+    @Column(name = "collected_amount")
+    private BigDecimal collectedAmount;
 
     /**
      * 是否全程代收
@@ -117,6 +135,24 @@ public class QcTreatmentItem {
     }
 
     /**
+     * 获取全程就诊记录id
+     *
+     * @return
+     */
+    public Integer getQcTreatmentId() {
+        return qcTreatmentId;
+    }
+
+    /**
+     * 设置 全程就诊记录id
+     *
+     * @param qcTreatmentId
+     */
+    public void setQcTreatmentId(Integer qcTreatmentId) {
+        this.qcTreatmentId = qcTreatmentId;
+    }
+
+    /**
      * 获取全程医疗-平台医嘱流水号
      *
      * @return order_no - 全程医疗-平台医嘱流水号
@@ -150,6 +186,24 @@ public class QcTreatmentItem {
      */
     public void setOrderDetailId(Integer orderDetailId) {
         this.orderDetailId = orderDetailId;
+    }
+
+    /**
+     * 项目类型：0-价目，1-商品
+     *
+     * @return
+     */
+    public Byte getItemType() {
+        return itemType;
+    }
+
+    /**
+     * 项目类型：0-价目，1-商品
+     *
+     * @param itemType
+     */
+    public void setItemType(Byte itemType) {
+        this.itemType = itemType;
     }
 
     /**
@@ -276,6 +330,24 @@ public class QcTreatmentItem {
      */
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    /**
+     * 获取全程医疗代收总额or执行医嘱总额
+     *
+     * @return
+     */
+    public BigDecimal getCollectedAmount() {
+        return collectedAmount;
+    }
+
+    /**
+     * 设置 全程医疗代收总额or执行医嘱总额
+     *
+     * @param collectedAmount
+     */
+    public void setCollectedAmount(BigDecimal collectedAmount) {
+        this.collectedAmount = collectedAmount;
     }
 
     /**

@@ -6,6 +6,7 @@
       WARNING - @mbg.generated
     -->
     <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="qc_treatment_id" property="qcTreatmentId" jdbcType="INTEGER" />
     <result column="order_no" property="orderNo" jdbcType="VARCHAR" />
     <result column="order_detail_id" property="orderDetailId" jdbcType="INTEGER" />
     <result column="item_id" property="itemId" jdbcType="VARCHAR" />
@@ -17,6 +18,7 @@
     <result column="price" property="price" jdbcType="DECIMAL" />
     <result column="qc_collected" property="qcCollected" jdbcType="BIT" />
     <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+    <result column="collected_amount" property="collectedAmount" jdbcType="DECIMAL" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
     <result column="open_time" property="openTime" jdbcType="TIMESTAMP" />
@@ -25,6 +27,12 @@
   </resultMap>
 
     <select id="selectListByQcTreatmentId" resultType="com.yunya.models.treatment_other.QcTreatmentItem">
+        SELECT
 
+        FROM qc_treatment_item
+        <where>
+            AND inservice = 1
+            AND
+        </where>
     </select>
 </mapper>

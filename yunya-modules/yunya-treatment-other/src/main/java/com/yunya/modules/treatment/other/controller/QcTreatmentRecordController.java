@@ -100,5 +100,16 @@ public class QcTreatmentRecordController {
         return ResponseUtil.success();
     }
 
-
+    /**
+     * 查询患者的可用全程医疗就诊记录列表
+     *
+     * @param patientId
+     * @return
+     */
+    @ApiOperation("查询患者的可用全程医疗就诊记录列表")
+    @GetMapping("/treatment/{patientId}")
+    public ResponseResult<List<QcRecommondInfoVO>> findPatientQcTreatmentRecord(@PathVariable(value = "patientId") Integer patientId) {
+        List<QcRecommondInfoVO> pageInfo = qcTreatmentRecordBiz.findPatientEnableQcTreatmentRecord(patientId);
+        return ResponseUtil.success(pageInfo);
+    }
 }
