@@ -123,6 +123,14 @@ public class EmployeeReportController {
         return ResponseUtil.success(pageInfo);
     }
 
+    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-划扣收费项目工作量统计-导出统计明细")
+    @PostMapping(value = "/operation/tariff/pay/deduction/workload/list/allExport", name = "公司端报表-报表统计-运营报表-员工报表-划扣收费项目工作量统计-导出统计明细")
+    public ResponseResult<Boolean> allExporttariffDeductionWorkloadStatistics(
+            HttpServletResponse response,  @RequestBody @Validated BillItemTollWorkloadQuery query) throws Exception {
+        employeeWorkloadBiz.allExporttariffDeductionWorkloadStatistics(response,query);
+        return ResponseUtil.success();
+    }
+
 
   /**
    * 根据条件导出统计明细

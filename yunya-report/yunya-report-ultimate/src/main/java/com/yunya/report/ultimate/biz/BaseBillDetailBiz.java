@@ -2634,6 +2634,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return new PageInfo<>(resultList);
   }
 
+    public PageInfo<PersonalBillItemSupplyDeductionWorkloadDetailVO>
+    findPersonalBillItemSupplyDeductionWorkloadDetailList(PersonalBillItemDeductionAndWorkloadQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<PersonalBillItemSupplyDeductionWorkloadDetailVO> resultList =
+                mapper.selectPersonalBillItemSupplyDeductionWorkloadDetail(query);
+        return new PageInfo<>(resultList);
+    }
+
   /**
    * 个人收费项目补入工作量明细导出
    *
@@ -2653,6 +2663,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     excelUtil.exportExcel(response, resultList, "个人收费项目补入工作量明细列表", fileName);
   }
+
+    public void exportPersonalBillItemSupplyDeductionWorkloadList(
+            HttpServletResponse response, PersonalBillItemDeductionAndWorkloadQuery query) throws IOException {
+        ExcelUtil<PersonalBillItemSupplyDeductionWorkloadDetailVO> excelUtil =
+                new ExcelUtil<>(PersonalBillItemSupplyDeductionWorkloadDetailVO.class);
+        List<PersonalBillItemSupplyDeductionWorkloadDetailVO> resultList =
+                mapper.selectPersonalBillItemSupplyDeductionWorkloadDetail(query);
+        String fileName = "个人收费项目划扣工作量明细列表";
+        BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+        if (employee != null) {
+            fileName = fileName + "-" + employee.getEmployeeName();
+        }
+        excelUtil.exportExcel(response, resultList, "个人收费项目划扣工作量明细列表", fileName);
+    }
 
   /**
    * 根据条件查询员工个人收费项目退费工作量明细列表

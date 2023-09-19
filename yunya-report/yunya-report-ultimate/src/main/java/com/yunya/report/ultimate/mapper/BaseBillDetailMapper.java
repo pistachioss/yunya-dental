@@ -650,4 +650,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
     List<BillItemDeductionAndWorkloadVO> selectClinicDeductSupplementWorkload(
             @Param("query") BillItemTollWorkloadQuery query);
+
+    List<PersonalBillItemSupplyDeductionWorkloadDetailVO> selectPersonalBillItemSupplyDeductionWorkloadDetail(
+            @Param("query") PersonalBillItemDeductionAndWorkloadQuery query);
 }

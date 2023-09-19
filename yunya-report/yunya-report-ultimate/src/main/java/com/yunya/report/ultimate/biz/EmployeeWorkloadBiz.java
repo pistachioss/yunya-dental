@@ -22,6 +22,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -656,22 +657,36 @@ public class EmployeeWorkloadBiz {
   }
 
     public PageInfo<BillItemDeductionAndWorkloadVO> tariffDeductionWorkloadStatistics(
-            BillItemTollWorkloadQuery query) throws Exception {
+            BillItemTollWorkloadQuery query) {
         resolveItemIds(query);
+        if (query.getWhetherPage()) {
+             PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
         List<BillItemDeductionAndWorkloadVO> deductionAndWorkloadVOS = baseBillDetailMapper.selectClinicDeductSupplementWorkload(query);
-        Map<String, BillItemDeductionAndWorkloadVO> map = mapDedcutionEmployeeWorkloadVO(deductionAndWorkloadVOS);
-        // 查询价目or商品表
-        Future<Map<Integer, ItemCategoryVO>> tariffMap = findTariffInfoMap(query.getItemType());
-
-        // 门诊员工
-        Future<List<ClinicEmployeBonusCoefficientVO>> employees =
-                multiFindClinicEmployeeCollection(query);
-        List<BillItemDeductionAndWorkloadVO> result = mergeExecutorDeductionfWorkload(map, employees,
-                tariffMap);
+//        Map<String, BillItemDeductionAndWorkloadVO> map = mapDedcutionEmployeeWorkloadVO(deductionAndWorkloadVOS);
+//        // 查询价目or商品表
+//        Future<Map<Integer, ItemCategoryVO>> tariffMap = findTariffInfoMap(query.getItemType());
+//
+//        // 门诊员工
+//        Future<List<ClinicEmployeBonusCoefficientVO>> employees =
+//                multiFindClinicEmployeeCollection(query);
+//        List<BillItemDeductionAndWorkloadVO> result = mergeExecutorDeductionfWorkload(map, employees,
+//                tariffMap);
         // 数据合并组装
 
         // 分页
-        return PageUtl.doPage(query.getPageNum(), query.getPageSize(), result, query.getWhetherPage());
+        return new PageInfo<>(deductionAndWorkloadVOS);
+    }
+
+    public void allExporttariffDeductionWorkloadStatistics(HttpServletResponse response,  BillItemTollWorkloadQuery query) throws IOException {
+        query.setWhetherPage(false);
+        List<BillItemDeductionAndWorkloadVO> result =
+                tariffDeductionWorkloadStatistics(query).getList();
+//        BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+        String fileName = "个人划扣工作量明细列表";
+        ExcelUtil<BillItemDeductionAndWorkloadVO> excelUtil =
+                new ExcelUtil<>(BillItemDeductionAndWorkloadVO.class);
+        excelUtil.exportExcel(response, result, "个人划扣工作量明细列表", fileName);
     }
 
   //导出统计明细

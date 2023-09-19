@@ -6914,60 +6914,33 @@
      <select id="selectClinicDeductSupplementWorkload"
              resultType="com.yunya.feign.report.domain.vo.BillItemDeductionAndWorkloadVO">
         select
-             t1.orgId,
-           t1.itemId,
-           t1.itemType,
-            t1.employeeId,
+           bb1.org_id,
+           bo.abbreviation,
+           bti.item_id,
+           bti.item_name,
+           bti.item_num,
+           bti.category_id  as itemCategoryId,
+           bti.category_name    as itemCategoryName,
+           bd.executor_id,
+           be.employee_name as executorName,
+           t1.employeeId,
            t1.quantity,
-            IFNULL(count(*),0) AS deductionQuantity,
-            t1.deductionWorkload,
-            t1.deductionCouponWorkload
-        from base_benefit bb
-        right join (
-            SELECT
-                bbd.org_id AS orgId,
-                bbd.item_id AS itemId,
-                bbd.item_type AS itemType,
-                IFNULL(bbd.executor_id, -1) AS employeeId,
-                IFNULL(SUM(bbd.quantity), 0) AS quantity,
-                IFNULL(sum(bbd.swipe_workload),0) AS deductionWorkload,
-             IFNULL(sum(bbd.swipe_coupon_workload),0) AS deductionCouponWorkload
-                FROM base_bill_detail bbd
-                INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+            IFNULL(sum(t1.deductionQuantity),0) AS deductionQuantity,
+            ifnull(sum(bd.swipe_workload),0)    as deductionWorkload,
+            ifnull(sum(bd.swipe_coupon_workload),0) as deductionCouponWorkload
+        from base_bill_detail bd
+        left join base_bill bb1 on bb1.bill_id = bd.bill_id
+        left join base_organization bo on bo.org_id = bd.org_id
+        LEFT JOIN base_tariff_info bti ON bd.item_type=bti.item_type AND bd.item_id=bti.item_id
+        left join base_employee be on be.user_id = bd.executor_id
+        left join (
+            select bb.order_detail_id,
+                   bb.item_id,
+                   bb.item_type,
+                   count(*) as deductionQuantity
+            from base_benefit bb
         <where>
-            <if test="query.itemType != null">
-                and bbd.item_type = #{query.itemType}
-            </if>
-            and bb.bill_date is not null
-            <if test="query.orgIds!=null and query.orgIds.length>0">
-                and bb.org_id in
-                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.startDate != null and query.startDate != ''">
-                and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') &gt;= #{query.startDate}
-            </if>
-            <if test="query.endDate != null and query.endDate != ''">
-                and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') &lt;= #{query.endDate}
-            </if>
-            <if test="query.employeeIds!=null and query.employeeIds.length>0">
-                and bbd.executor_id in
-                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.itemIds!=null and query.itemIds.size()>0">
-                and bbd.item_id in
-                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            AND bbd.swipe_workload > 0
-        </where>
-        GROUP BY bbd.executor_id,bbd.item_id,bbd.item_type,bbd.org_id
-         ) t1 on t1.item_id = bb.item_id and t1.item_type = bb.item_type
-        <where>
+             bb.coupon_type = 5
              <if test="query.itemType != null">
                 and bb.item_type = #{query.itemType}
             </if>
@@ -6990,6 +6963,121 @@
                 </foreach>
             </if>
         </where>
-        GROUP BY bb.item_id,bb.item_type,bb.org_id
+        group by order_detail_id
+         ) t1 on t1.order_detail_id = bd.order_detail_id
+        <where>
+             bd.swipe_workload > 0
+             <if test="query.itemType != null">
+                and bd.item_type = #{query.itemType}
+            </if>
+            and bb1.bill_date is not null
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bb1.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT(bb1.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT(bb1.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+            </if>
+            <if test="query.employeeIds!=null and query.employeeIds.length>0">
+                and bd.executor_id in
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bd.item_id in
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY bd.item_id,bd.item_type,bd.org_id
     </select>
+    <select id="selectPersonalBillItemSupplyDeductionWorkloadDetail"
+            resultType="com.yunya.feign.report.domain.vo.PersonalBillItemSupplyDeductionWorkloadDetailVO">
+        select
+        bbd.billId,
+        bbd.billDate,
+        bbd.billNum,
+        bbd.patientId,
+        bbd.patientName,
+        bbd.mobile,
+        bbd.regDentistId,
+        be.employee_name as regDentistName,
+        bbd.deductionWorkload,
+        bbd.executorId,
+        bbd.executorName
+        from (
+        select bb.billId,
+        date_format(bb.billDate, '%Y-%m-%d %H:%i') as billDate,
+        bb.billNum,
+        bb.patientId,
+        bb.patientName,
+        bb.pinyinName,
+        bb.mobile,
+        bb.regDentistId,
+        bbd.swipe_workload as deductionWorkload,
+        bbd.executor_id as executorId,
+        be.employee_name as executorName
+        from base_bill_detail bbd
+        inner join (
+        select bb.bill_id as billId,
+        bb.patient_id as patientId,
+        bp.name as patientName,
+        bp.pinyin_name as pinyinName,
+        bp.mobile as mobile,
+        bb.bill_num as billNum,
+        bb.bill_date as billDate,
+        bb.actual_amount as actualAmount,
+        btp.registered_dentist_id as regDentistId
+        from base_bill bb
+        left join base_patient bp on bb.patient_id = bp.patient_id
+        left join base_treatment_process btp on bb.treatment_id = btp.treatment_id
+        <where>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                and date_format(bb.privilege_date, '%Y-%m-%d') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and date_format(bb.privilege_date, '%Y-%m-%d') &lt;= #{query.endDate}
+            </if>
+        </where>
+        ) bb on bbd.bill_id = bb.billId
+        left join base_employee be on bbd.executor_id = be.user_id
+        <where>
+            bbd.coupon_workload > 0
+            <if test="query.executorId != null and query.executorId != -1">
+                and bbd.executor_id = #{query.executorId}
+            </if>
+            <if test="query.itemType != null">
+                and bbd.item_type = #{query.itemType}
+            </if>
+            <if test="query.itemId != null">
+                and bbd.item_id = #{query.itemId}
+            </if>
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
+        </where>
+        ) bbd
+        inner join base_employee be on bbd.regDentistId = be.user_id
+        <where>
+            <if test="query.patientKeyword != null and query.patientKeyword != ''">
+                and concat(IFNULL(bbd.patientName, ''), IFNULL(bbd.pinyinName, ''), IFNULL(bbd.mobile, '')) like
+                concat('%', #{query.patientKeyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and concat(IFNULL(bbd.billNum, '')) like concat('%', #{query.billNum}, '%')
+            </if>
+        </where>
+    </select>
+
+
 </mapper>
