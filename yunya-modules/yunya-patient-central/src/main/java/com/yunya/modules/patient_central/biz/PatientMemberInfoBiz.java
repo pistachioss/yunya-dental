@@ -2205,7 +2205,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     member = mapper.selectOneByPatientId(acceptorId);
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
-    Date now = BaseContextHandler.getCurTime();
+    Date now = DateUtil.now();
     BigDecimal principalAmount = member.getPrincipalAmount();
     BigDecimal bonusAmount = member.getBonusAmount();
 //    if (StringHelper.gtZero(principal)) {
