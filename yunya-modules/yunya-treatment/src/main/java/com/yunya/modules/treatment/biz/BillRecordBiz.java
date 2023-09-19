@@ -22,6 +22,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.PatientDepositAccountTypeEnum;
@@ -103,6 +104,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private BillPayRecordBiz billPayRecordBiz;
   @Autowired private TreatTollBiz treatTollBiz;
   @Autowired private MinorChargeProcessBiz minorChargeProcessBiz;
+  @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
 
   /**
    * 生成账单编号
@@ -204,6 +206,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     if (StringHelper.isNotEmpty(orderDetails)) {
       PatientOrderBenefitVo orderBenefits = discountFeign.getOrderBenefitD(orderRecordId);
       treatTollBiz.orderDetailMatchDiscount(orderDetails, orderBenefits, result);
+      result.setQcTreatmentList(treatmentOtherFeign.findBindingQcTreatmentList(orderRecordId));
     }
     return result;
   }

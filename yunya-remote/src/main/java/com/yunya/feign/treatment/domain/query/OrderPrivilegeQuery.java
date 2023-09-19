@@ -7,8 +7,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简介: 订单优惠匹配查询参数模型
@@ -22,6 +24,10 @@ import java.io.Serializable;
 @Data
 @ToString
 public class OrderPrivilegeQuery implements Serializable {
+  /** 全程就诊记录id列表 */
+  @ApiModelProperty(value = "全程就诊记录id列表")
+  private List<Integer> qcTreatmentIds;
+
   /** 订单记录ID */
   @ApiModelProperty(value = "订单记录ID", required = true)
   @NotNull(message = "订单记录ID不能为空！")

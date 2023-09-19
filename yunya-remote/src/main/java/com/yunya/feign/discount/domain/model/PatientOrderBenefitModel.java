@@ -15,6 +15,8 @@ import java.util.List;
 @Data
 @ApiModel(value = "卡券优惠提交")
 public class PatientOrderBenefitModel implements Serializable {
+    @ApiModelProperty("订单明细id列表")
+    private List<Integer> orderDetailIds;
     @ApiModelProperty(value = "订单id", required = true)
     @NotNull
     private Integer orderId;

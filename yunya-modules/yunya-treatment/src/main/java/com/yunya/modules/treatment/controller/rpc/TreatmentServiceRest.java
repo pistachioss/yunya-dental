@@ -399,12 +399,16 @@ public class TreatmentServiceRest {
    * @param orderRecordId 开单记录ID
    * @return List<OrderDetail>
    */
-  @RequestMapping(value = "/order/detail/list/{orderRecordId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/order/detail/list/{orderRecordId}", method = RequestMethod.POST)
   public List<OrderDetail> findOrderDetailByOrderRecordId(
-      @PathVariable(value = "orderRecordId") Integer orderRecordId) {
-    OrderDetail entity = new OrderDetail();
-    entity.setOrderRecordId(orderRecordId);
-    return orderDetailBiz.selectList(entity);
+      @PathVariable(value = "orderRecordId") Integer orderRecordId,
+      @RequestBody List<Integer> orderDetailIds) {
+    Example example = new Example(OrderDetail.class);
+    Example.Criteria c = example.createCriteria().andEqualTo("orderRecordId", orderRecordId);
+    if (StringHelper.isNotEmpty(orderDetailIds)) {
+      c.andIn("id", orderDetailIds);
+    }
+    return orderDetailBiz.selectByExample(example);
   }
 
   /**

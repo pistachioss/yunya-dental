@@ -10,9 +10,12 @@ import com.yunya.feign.patient_central.domain.model.BillRebate2MemberAccountMode
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
 import com.yunya.feign.treatment.domain.model.*;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.enums.TemplateEnum;
@@ -66,7 +69,7 @@ public class MinorChargeProcessBiz {
     @Autowired private OrderDetailBiz orderDetailBiz;
     @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
     @Autowired private BillRecordMapper billRecordMapper;
-    @Autowired private BillRecordBiz billRecordBiz;
+    @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
     @Value("${sysconfig.memberSystemReleaseDate}")
     private String releaseDate;
 
@@ -113,11 +116,24 @@ public class MinorChargeProcessBiz {
             chargedMQMiddleTable(billPayRecord, isMqTreatment);
             giftFirstVisitPackage(billPayRecord);
             autoUpdateMemberType(totalCharge, billPayRecord.getPatientId());
+            // 账单绑定全程医疗就诊单
+            billBindingQcTreatment(billPayRecord, model.getQcTreatmentIds());
             completedChargeLog(billPayRecord.getId());
         } catch (Exception e) {
             log.error("MinorChargeProcessBize asyncProcessCharge error: {}", e);
             errorChargeLog(billPayRecord.getId(), ExceptionUtils.getFullStackTrace(e));
         }
+    }
+
+    private void billBindingQcTreatment(BillPayRecord billPayRecord, List<Integer> qcTreatmentIds) {
+        Integer billRecordId = billPayRecord.getBillRecordId();
+        Integer orderRecordId = billPayRecord.getOrderRecordId();
+        // 订单明细（项目实收）
+        List<OrderDetailChargeVO> orderDetails = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
+        QcTreatmentImportForm form = new QcTreatmentImportForm();
+        form.setQcTreatmentIds(qcTreatmentIds);
+        form.setOrderDetails(orderDetails);
+        treatmentOtherFeign.billBindingQcTreatment(form);
     }
 
     /**

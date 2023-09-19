@@ -10,9 +10,11 @@ import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -88,6 +90,8 @@ public class TreatTollBiz {
 
   @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
 
+  @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
+
   /**
    * 根据优惠信息匹配订单优惠
    *
@@ -105,16 +109,38 @@ public class TreatTollBiz {
     // 校验优惠参数
     checkPrivilegeParam(discountType, generalDiscountModel);
     TreatOrderRecordVO result = new TreatOrderRecordVO();
+    List<Integer> discountDetailIds = matchQcTreatmentItemInfo(result, detailList, query);
     switch (discountType) {
       case 1:
         // 匹配卡券优惠
-        PatientOrderBenefitVo resultData = findGeneralPrivilege(orderRecordId, null, generalDiscountModel);
+        PatientOrderBenefitVo resultData = findGeneralPrivilege(orderRecordId,
+                null, discountDetailIds, generalDiscountModel);
         orderDetailMatchDiscount(detailList, resultData, result);
         break;
       default:
         break;
     }
     return result;
+  }
+
+  /**
+   * 匹配全程医疗就诊医嘱列表，返回未匹配的订单明细id（可使用优惠）
+   *
+   * @param result
+   * @param detailList
+   * @param query
+   * @return
+   */
+  private List<Integer> matchQcTreatmentItemInfo(TreatOrderRecordVO result, List<OrderDetailChargeVO> detailList, OrderPrivilegeQuery query) {
+    if (StringHelper.isNotEmpty(query.getQcTreatmentIds())) {
+      QcTreatmentImportForm form = new QcTreatmentImportForm();
+      form.setQcTreatmentIds(query.getQcTreatmentIds());
+      form.setOrderDetails(detailList);
+      QcRecommondOrderVO recommondInfo = treatmentOtherFeign.orderMatchQcTreatmentList(form);
+      result.setQcTreatmentList(recommondInfo.getQcTreatments());
+      return recommondInfo.getOrderDetailIds();
+    }
+    return null;
   }
 
   /**
@@ -630,10 +656,11 @@ public class TreatTollBiz {
    *
    * @param orderRecordId
    * @param patientId
+   * @param orderDetailIds
    * @param generalDiscountModel
    * @return
    */
-  private PatientOrderBenefitVo findGeneralPrivilege(Integer orderRecordId, Integer patientId, GeneralDiscountModel generalDiscountModel) {
+  private PatientOrderBenefitVo findGeneralPrivilege(Integer orderRecordId, Integer patientId, List<Integer> orderDetailIds, GeneralDiscountModel generalDiscountModel) {
     PatientChooseBenefitForm form = new PatientChooseBenefitForm();
     if (StringHelper.isNull(patientId)) {
       OrderRecord order = orderRecordBiz.selectById(orderRecordId);
@@ -642,6 +669,7 @@ public class TreatTollBiz {
       }
       patientId = order.getPatientId();
     }
+    form.setOrderDetailIds(orderDetailIds);
     form.setPatientId(patientId);
     form.setOrderId(orderRecordId);
     form.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));

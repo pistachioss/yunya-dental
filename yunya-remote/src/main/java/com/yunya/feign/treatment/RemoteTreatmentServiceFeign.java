@@ -271,12 +271,14 @@ public interface RemoteTreatmentServiceFeign {
   /**
    * 根据开单记录ID查询开单明细列表
    *
-   * @param orderRecordId 开单记录ID
+   * @param orderRecordId  开单记录ID
+   * @param orderDetailIds
    * @return List<OrderDetail>
    */
-  @RequestMapping(value = "/rpc/order/detail/list/{orderRecordId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/rpc/order/detail/list/{orderRecordId}", method = RequestMethod.POST)
   List<OrderDetail> findOrderDetailByOrderRecordId(
-      @PathVariable(value = "orderRecordId") Integer orderRecordId);
+          @PathVariable(value = "orderRecordId") Integer orderRecordId,
+          @RequestBody List<Integer> orderDetailIds);
 
   /**
    * 通过患者ID批量查询患者欠费总额

@@ -1311,7 +1311,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         Integer orgId = form.getOrgId();
         RestErrorBo errorBo;
         //查询患者可用优惠
-        PatientOptionalBenefitVo benefitVo = this.getPatientBenefit(patientId, orderId, orgId);
+        PatientOptionalBenefitVo benefitVo = this.getPatientBenefit(patientId, orderId, orgId, form.getOrderDetailIds());
         log.info("患者可使用的优惠券：[{}]", benefitVo);
         if (CollectionUtils.isEmpty(benefitVo.getDiscountVoList()) && CollectionUtils.isEmpty(benefitVo.getMemberCardVoList()) &&
                 CollectionUtils.isEmpty(benefitVo.getExchangeVoList()) && CollectionUtils.isEmpty(benefitVo.getPackageVoList()) &&
@@ -1331,7 +1331,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 //                return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 //            }
             //获取订单明细
-            List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
+            List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId, form.getOrderDetailIds());
             if (CollectionUtils.isEmpty(orderDetails)) {
                 return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
             }
@@ -1845,18 +1845,18 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             return null;
         }
         OrderRecord record = treatmentServiceFeign.findOrderRecordById(query.getOrderId());
-        return getPatientBenefit(query.getPatientId(), query.getOrderId(), record.getOrgId());
+        return getPatientBenefit(query.getPatientId(), query.getOrderId(), record.getOrgId(), null);
     }
 
     public List<Integer> listPatientAllCard(Integer patientId) {
         return mapper.listPatientAllCard(patientId);
     }
 
-    private PatientOptionalBenefitVo getPatientBenefit(Integer patientId, Integer orderId, Integer orgId) {
+    private PatientOptionalBenefitVo getPatientBenefit(Integer patientId, Integer orderId, Integer orgId, List<Integer> orderDetailIds) {
         //查询患者可用优惠
         List<PatientBenefitBo> benefitBos = mapper.listBenefitByPatientId(patientId, orgId);
         //获取订单明细
-        List<OrderDetail> orderDetail = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
+        List<OrderDetail> orderDetail = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId, orderDetailIds);
         if (CollectionUtils.isEmpty(orderDetail)) {
             return new PatientOptionalBenefitVo();
         }

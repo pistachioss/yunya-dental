@@ -15,6 +15,10 @@ import java.util.List;
 @Data
 @ApiModel(value = "计算患者开单项目的优惠明细")
 public class PatientChooseBenefitForm implements Serializable {
+    /** 订单明细id */
+    @ApiModelProperty("订单明细id")
+    private List<Integer> orderDetailIds;
+
     @ApiModelProperty(value = "患者id", required = true)
     @NotNull
     private Integer patientId;

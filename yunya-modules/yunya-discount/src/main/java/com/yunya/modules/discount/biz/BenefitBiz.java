@@ -218,7 +218,7 @@ public class BenefitBiz {
                 return ResponseUtil.error(DiscountError.EMPLOYEE_NO_AUTH_DISCOUNT);
             }
             //获取订单明细
-            List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
+            List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId, null);
             if (CollectionUtils.isEmpty(orderDetails)) {
                 return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
             }
@@ -896,7 +896,7 @@ public class BenefitBiz {
             return ResponseUtil.error(DiscountError.EMPLOYEE_NO_AUTH_DISCOUNT);
         }
         //获取订单明细
-        List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
+        List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId, null);
         if (CollectionUtils.isEmpty(orderDetails)) {
             return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
         }

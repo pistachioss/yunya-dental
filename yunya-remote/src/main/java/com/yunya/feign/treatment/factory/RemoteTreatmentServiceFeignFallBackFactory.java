@@ -163,7 +163,7 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
-  public List<OrderDetail> findOrderDetailByOrderRecordId(Integer orderRecordId) {
+  public List<OrderDetail> findOrderDetailByOrderRecordId(Integer orderRecordId, List<Integer> orderDetailIds) {
     return null;
   }
 
