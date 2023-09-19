@@ -111,7 +111,7 @@
         t.org_id as orgId,
         t.user_id as userId,
         t.punch_date as date,
-        TIMESTAMPDIFF(MINUTE, DATE_FORMAT(t.end_time,'%Y-%m-%d %H:%i'), DATE_FORMAT(t.punch_time,'%Y-%m-%d %H:%i')) - 60 as minutes,
+        TIMESTAMPDIFF(MINUTE, DATE_FORMAT(t.end_time,'%Y-%m-%d %H:%i'), DATE_FORMAT(t.punch_time,'%Y-%m-%d %H:%i')) as minutes,
         t.punch_time as punchTime,
         t.punch_time as originalPunchTime,
         t.end_time as endTime,

@@ -1482,15 +1482,15 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     }
 
     /**
-     * 超出60分钟后的剩余时长
+     * 超出60分钟后的剩余时长 （待定）
      *
      * @param over60Min
      * @return
      */
     private Long moreThen60Min(Long over60Min) {
-        if (StringHelper.isNotNull(over60Min) && over60Min>0) {
-            over60Min -= 3600000;
-        }
+//        if (StringHelper.isNotNull(over60Min) && over60Min>0) {
+//            over60Min -= 3600000;
+//        }
         return over60Min;
     }
 
