@@ -531,7 +531,7 @@ public class CompanyReportOfFinanceController {
     return ResponseUtil.success(pageInfo);
   }
 
-    @ApiOperation("公司端报表-财务报表-对账单-划扣卡预付款-查看明细")
+    @ApiOperation("公司端报表-财务报表-对账单-划扣卡预付款入账-查看明细")
     @PostMapping(value = "/deduction/sold/detail/list", name = "公司端报表-财务报表-对账单-划扣卡预付款-查看明细")
     public ResponseResult<PageInfo<StatementDeductionSoldDetailVO>> deductionSoldDetailList(
             @RequestBody @Validated StatementDeductionSoldDetailQuery query) {
@@ -539,12 +539,29 @@ public class CompanyReportOfFinanceController {
         return ResponseUtil.success(pageInfo);
     }
 
-    @ApiOperation("公司端报表-财务报表-对账单-划扣卡预付款-导出")
+    @ApiOperation("公司端报表-财务报表-对账单-划扣卡预付款入账-导出")
     @PostMapping(value = "/deduction/sold/detail/list/export", name = "公司端报表-财务报表-对账单-划扣卡预付款-查看明细")
     public ResponseResult<Boolean> exportDeductionSoldDetailList(
             HttpServletResponse response, @RequestBody @Validated StatementDeductionSoldDetailQuery query)
             throws IOException {
         baseCardBiz.exportDeductionSoldDetailList(response, query);
+        return ResponseUtil.success();
+    }
+
+    @ApiOperation("公司端报表-财务报表-对账单-划扣卡预付款出账-查看明细")
+    @PostMapping(value = "/deduction/refund/detail/list", name = "公司端报表-财务报表-对账单-划扣卡预付款出账-查看明细")
+    public ResponseResult<PageInfo<StatementDeductionRefundDetailVO>> deductionRefundDetailList(
+            @RequestBody @Validated StatementDeductionRefundDetailQuery query) {
+        PageInfo<StatementDeductionRefundDetailVO> pageInfo = baseCardBiz.deductionRefundDetailList(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    @ApiOperation("公司端报表-财务报表-对账单-划扣卡预付款出账-导出")
+    @PostMapping(value = "/deduction/refund/detail/list/export", name = "公司端报表-财务报表-对账单-划扣卡预付款出账-查看明细")
+    public ResponseResult<Boolean> exportDeductionRefundDetailList(
+            HttpServletResponse response, @RequestBody @Validated StatementDeductionRefundDetailQuery query)
+            throws IOException {
+        baseCardBiz.exportDeductionRefundDetailList(response, query);
         return ResponseUtil.success();
     }
 

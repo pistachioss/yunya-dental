@@ -190,4 +190,7 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
 
     List<StatementDeductionSoldDetailVO> selectDeductionSoldDetailList(
             @Param("query") StatementDeductionSoldDetailQuery query);
+
+    List<StatementDeductionRefundDetailVO> selectDeductionRefundDetailList(
+            @Param("query") StatementDeductionRefundDetailQuery query);
 }

@@ -1636,10 +1636,91 @@
                     AND cb.bill_date &gt;= #{query.billStartDate}
                 </if>
                 <if test="query.billEndDate != null and query.billEndDate != ''">
-                    AND cb.bill_date &gt;= #{query.billEndDate}
+                    AND cb.bill_date &lt;= #{query.billEndDate}
                 </if>
         </where>
-        ORDER BY cb.bill_date DESC
         group by cb.order_id
+        ORDER BY cb.bill_date DESC
+    </select>
+
+    <select id="selectDeductionRefundDetailList"
+            resultType="com.yunya.feign.report.domain.vo.StatementDeductionRefundDetailVO">
+        select cb.refund_date as refundDate,
+               cb.bill_num  AS billNumber,
+               bp.name      as refundTargetName,
+               bp.mobile    as refundTargetMobile,
+               be.employee_name AS refundOperatorName,
+               sum(case
+                       when cbpd.account_item_name = '会员卡' then cbpd.principal_amount
+                       else 0 end) memberPrincipalAmount,
+               sum(case
+                       when cbpd.account_item_name = '会员卡' then cbpd.bonus_amount
+                       else 0 end) memberBonusAmount,
+               sum(case
+                       when cbpd.account_item_name = '预付款' then cbpd.principal_amount
+                       else 0 end) prepayPrincipalAmount,
+               sum(case
+                       when cbpd.account_item_name = '预付款' then cbpd.bonus_amount
+                       else 0 end) prepayBonusAmount,
+               sum(case
+                       when cbpd.account_item_name = '支付宝' then cbpd.total_amount
+                       else 0 end) aliPayAmount,
+               sum(case
+                       when cbpd.account_item_name = '微信' then cbpd.total_amount
+                       else 0 end) weChatAmount,
+               sum(case
+                       when cbpd.account_item_name = '银行账户' then cbpd.total_amount
+                       else 0 end) bankAmount,
+               sum(case
+                       when cbpd.account_item_name = '现金' then cbpd.total_amount
+                       else 0 end) cashAmount,
+               sum(case
+                       when cbpd.account_item_name = '杭州医保' then cbpd.total_amount
+                       else 0 end) hzInsurance
+        from base_coupon_refund cb
+                 left join base_patient bp on bp.patient_id = cb.patient_id
+                 left join base_coupon_refund_pay cbpd on cb.refund_id = cbpd.refund_id
+                 LEFT JOIN base_employee be ON cb.refund_operator_id = be.user_id
+         <where>
+            <if test="query.orgId != null">
+                AND cb.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(cb.refund_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(cb.refund_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(cb.refund_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(cb.refund_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(cb.refund_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(cb.refund_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.patientKey != null and query.patientKey != ''">
+                    AND concat(IFNULL(bp.name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) like
+                    concat('%', #{query.patientKey}, '%')
+            </if>
+            <if test="query.refundStartDate != null and query.refundStartDate != ''">
+                    AND cb.refund_date &gt;= #{query.refundStartDate}
+                </if>
+                <if test="query.refundEndDate != null and query.refundEndDate != ''">
+                    AND cb.refund_date &lt;= #{query.refundEndDate}
+                </if>
+        </where>
+        group by cb.refund_id
+        ORDER BY cb.refund_date DESC
     </select>
 </mapper>

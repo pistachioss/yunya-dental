@@ -82,6 +82,15 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
         return new PageInfo<>(resultList);
     }
 
+    public PageInfo<StatementDeductionRefundDetailVO> deductionRefundDetailList(
+            StatementDeductionRefundDetailQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<StatementDeductionRefundDetailVO> resultList = mapper.selectDeductionRefundDetailList(query);
+        return new PageInfo<>(resultList);
+    }
+
   /**
    * 设置产品售出支付方式金额
    *
@@ -131,7 +140,16 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
         List<StatementDeductionSoldDetailVO> list = pageInfo.getList();
         ExcelUtil<StatementDeductionSoldDetailVO> excelUtil =
                 new ExcelUtil<>(StatementDeductionSoldDetailVO.class);
-        excelUtil.exportExcel(response, list, "划扣卡预付款明细列表");
+        excelUtil.exportExcel(response, list, "划扣卡预付款入账明细列表");
+    }
+
+    public void exportDeductionRefundDetailList(
+            HttpServletResponse response, StatementDeductionRefundDetailQuery query) throws IOException {
+        PageInfo<StatementDeductionRefundDetailVO> pageInfo = deductionRefundDetailList(query);
+        List<StatementDeductionRefundDetailVO> list = pageInfo.getList();
+        ExcelUtil<StatementDeductionRefundDetailVO> excelUtil =
+                new ExcelUtil<>(StatementDeductionRefundDetailVO.class);
+        excelUtil.exportExcel(response, list, "划扣卡预付款出账明细列表");
     }
 
   public List<BaseCard> findCardCouponSoldStatistics(CardCouponUsedQueryForm query) {
