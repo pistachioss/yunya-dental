@@ -75,7 +75,7 @@ public class BillItemTollAndWorkloadAllExportVO {
     @ApiModelProperty("开单数量")
     private Integer quantity = 0;
 
-    @Excel(name = "开单数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+    @Excel(name = "收费数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
     @ApiModelProperty("收费数量")
     private Integer billQuantity;
 

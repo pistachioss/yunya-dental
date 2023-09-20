@@ -6266,7 +6266,7 @@
              <if test="query.itemType != null">
                 and bb.item_type = #{query.itemType}
             </if>
-            <if test="query.orgIds!=null and query.orgIds.length>0">
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
                 and bb.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
@@ -6444,7 +6444,7 @@
         LEFT JOIN base_tariff_info bti ON bbd.item_type = bti.item_type AND bbd.item_id = bti.item_id
         <where>
             AND bbd.consulter_id is not null
-            <if test="query.orgIds!=null and query.orgIds.length>0">
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
                 AND bb.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
@@ -6976,7 +6976,7 @@
              <if test="query.itemType != null">
                 and bb.item_type = #{query.itemType}
             </if>
-            <if test="query.orgIds!=null and query.orgIds.length>0">
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
                 and bb.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
@@ -7003,7 +7003,7 @@
                 and bd.item_type = #{query.itemType}
             </if>
             and bb1.bill_date is not null
-            <if test="query.orgIds!=null and query.orgIds.length>0">
+            <if test="query.orgIds!=null and query.orgIds..size()>0">
                 and bb1.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
