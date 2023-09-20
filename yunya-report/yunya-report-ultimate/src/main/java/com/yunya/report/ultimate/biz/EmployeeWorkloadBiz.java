@@ -678,7 +678,7 @@ public class EmployeeWorkloadBiz {
         return new PageInfo<>(deductionAndWorkloadVOS);
     }
 
-    public void allExporttariffDeductionWorkloadStatistics(HttpServletResponse response,  BillItemTollWorkloadQuery query) throws IOException {
+    public void exporttariffDeductionWorkloadStatistics(HttpServletResponse response,  BillItemTollWorkloadQuery query) throws IOException {
         query.setWhetherPage(false);
         List<BillItemDeductionAndWorkloadVO> result =
                 tariffDeductionWorkloadStatistics(query).getList();
@@ -733,6 +733,17 @@ public class EmployeeWorkloadBiz {
       excelUtil.exportExcel(response, result, "收费数量及金额全部明细", fileName);
 
     }
+
+    public void allExportTariffPaymentDeductionWorkloadStatistics(
+            HttpServletResponse response,  BillItemTollWorkloadQuery query) throws Exception {
+        List<AllExportDeductionWorkloadVO> result = baseBillPayShareMapper.allExportfindClinicExecutorTariffDeductionWorkload(query);
+        String fileName = query.getStartDate() + "-" + query.getEndDate() + "收费数量及金额划扣全部明细";
+        ExcelUtil<AllExportDeductionWorkloadVO> excelUtil =
+                new ExcelUtil<>(AllExportDeductionWorkloadVO.class);
+        excelUtil.exportExcel(response, result, "收费数量及金额划扣全部明细", fileName);
+
+    }
+
   /**
    * 解析出itemId
    *
