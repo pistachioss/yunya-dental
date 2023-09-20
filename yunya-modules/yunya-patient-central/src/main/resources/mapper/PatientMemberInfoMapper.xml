@@ -330,7 +330,7 @@
             'true' AS remark
         FROM patient_member_relation pmr
         INNER JOIN patient_member_info pmio ON pmio.patient_id = pmr.master_card_id
-        WHERE pmr.bind_type = 1 AND pmr.inservice = 1
+        WHERE pmr.bind_type = 1 AND pmr.inservice = 1 AND pmio.member_type_id !=4
         AND pmr.secondary_card_id = #{patientId}
         ORDER BY pmr.crt_time DESC
         LIMIT 1
