@@ -62,6 +62,10 @@ public class BillItemTollAndWorkloadVO implements Serializable {
   @ApiModelProperty("开单数量")
   private Integer quantity = 0;
 
+  @Excel(name = "收费数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("收费数量")
+  private Integer billQuantity = 0;
+
   /** 实收工作量 */
   @Excel(name = "实收工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("实收工作量")

@@ -6244,7 +6244,8 @@
         bp.name AS patientName,
         bp.patient_id as patientId,
         bp.mobile,
-        bo.abbreviation
+        bo.abbreviation,
+        bbd.quantity - ifnull(t1.deductionQuantity, 0) as billQuantity
         FROM
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
@@ -6254,6 +6255,38 @@
         LEFT JOIN base_employee bem ON btp.registered_dentist_id = bem.user_id
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         LEFT JOIN base_tariff_info bti ON bbd.item_id = bti.item_id AND bbd.item_type = bti.item_type
+        left join (
+            select bb.order_detail_id,
+                   bb.item_id,
+                   bb.item_type,
+                   count(*) as deductionQuantity
+            from base_benefit bb
+        <where>
+             bb.coupon_type = 5
+             <if test="query.itemType != null">
+                and bb.item_type = #{query.itemType}
+            </if>
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT(bb.use_date, '%Y-%m-%d') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT(bb.use_date, '%Y-%m-%d') &lt;= #{query.endDate}
+            </if>
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bb.item_id in
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by order_detail_id
+         ) t1 on t1.order_detail_id = bbd.bill_detail_id
         <where>
             AND bb.bill_date IS NOT NULL
             <if test="query.orgIds!=null and query.orgIds.size()>0">
@@ -6923,8 +6956,7 @@
            bti.category_name    as itemCategoryName,
            bd.executor_id,
            be.employee_name as executorName,
-           t1.employeeId,
-           t1.quantity,
+           ifnull(sum(bd.quantity), 0) as quantity,
             IFNULL(sum(t1.deductionQuantity),0) AS deductionQuantity,
             ifnull(sum(bd.swipe_workload),0)    as deductionWorkload,
             ifnull(sum(bd.swipe_coupon_workload),0) as deductionCouponWorkload
@@ -6964,7 +6996,7 @@
             </if>
         </where>
         group by order_detail_id
-         ) t1 on t1.order_detail_id = bd.order_detail_id
+         ) t1 on t1.order_detail_id = bd.bill_detail_id
         <where>
              bd.swipe_workload > 0
              <if test="query.itemType != null">

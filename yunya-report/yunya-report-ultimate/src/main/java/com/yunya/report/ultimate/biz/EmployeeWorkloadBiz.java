@@ -778,6 +778,7 @@ public class EmployeeWorkloadBiz {
             }
             if (!ObjectUtils.isEmpty(entity)) {
               entity.setQuantity(quantity);
+              entity.setBillQuantity(vo.getBillQuantity());
               entity.setReceivedWorkload(vo.getWorkload());
               entity.setFreePayWorkload(vo.getFreeWorkload());
               resultMap.put(key, entity);
@@ -953,6 +954,7 @@ public class EmployeeWorkloadBiz {
                         }
                         if (!ObjectUtils.isEmpty(entity)) {
                             entity.setQuantity(quantity);
+                            entity.setBillQuantity(vo.getBillQuantity());
                             entity.setReceivedWorkload(vo.getWorkload());
                             entity.setFreePayWorkload(vo.getFreeWorkload());
                             entity.setOrderNum(vo.getOrderNum());

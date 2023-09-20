@@ -1,7 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
 import com.yunya.framework.common.annation.Excel;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -75,6 +74,10 @@ public class BillItemTollAndWorkloadAllExportVO {
     @Excel(name = "开单数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
     @ApiModelProperty("开单数量")
     private Integer quantity = 0;
+
+    @Excel(name = "开单数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+    @ApiModelProperty("收费数量")
+    private Integer billQuantity;
 
     /** 实收工作量 */
     @Excel(name = "实收工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)

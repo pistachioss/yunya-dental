@@ -51,4 +51,7 @@ public class EmployeeTariffWorkloadVO extends ClinicEmployeTariffInfoVO implemen
 
     @ApiModelProperty("账单日期")
     private String billDate;
+
+    @ApiModelProperty("收费数量")
+    private Integer billQuantity;
 }

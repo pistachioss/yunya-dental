@@ -353,7 +353,8 @@
       bbd.executorId AS employeeId,
       SUM(bbd.quantity) AS quantity,
       SUM(bbd.received_amount) AS workload,
-      SUM(bbd.free_amount) AS freeWorkload
+      SUM(bbd.free_amount) AS freeWorkload,
+      SUM(bbd.quantity) - sum(bbd.deductionQuantity) AS billQuantity
     FROM (
       SELECT
         bb.org_id AS orgId,
@@ -361,7 +362,8 @@
         bbd.quantity,
         IFNULL(bbd.executor_id, -1) AS executorId,
         IFNULL(bbps.received_amount, 0) AS received_amount,
-        IFNULL(bbps.free_amount, 0) AS free_amount
+        IFNULL(bbps.free_amount, 0) AS free_amount,
+        IFNULL(t1.deductionQuantity, 0) AS deductionQuantity
       FROM base_bill_detail bbd
       INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
       LEFT JOIN (
@@ -398,6 +400,38 @@
         </where>
         GROUP BY bill_detail_id
       ) bbps ON bbps.bill_detail_id = bbd.bill_detail_id
+      left join (
+            select bb.order_detail_id,
+                   bb.item_id,
+                   bb.item_type,
+                   count(*) as deductionQuantity
+            from base_benefit bb
+        <where>
+             bb.coupon_type = 5
+             <if test="query.itemType != null">
+                and bb.item_type = #{query.itemType}
+            </if>
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT(bb.use_date, '%Y-%m-%d') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT(bb.use_date, '%Y-%m-%d') &lt;= #{query.endDate}
+            </if>
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bb.item_id in
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by order_detail_id
+         ) t1 on t1.order_detail_id = bbd.bill_detail_id
       <where>
         AND bbd.quantity > 0
         <if test="query.itemType != null">
@@ -625,7 +659,8 @@
       bb.bill_num AS orderNum,
       bbd.quantity,
       IFNULL(bbps.received_amount, 0) AS workload,
-      IFNULL(bbps.free_amount, 0) AS freeWorkload
+      IFNULL(bbps.free_amount, 0) AS freeWorkload,
+      bbd.quantity - ifnull(t1.deductionQuantity, 0) as billQuantity
     FROM base_bill_detail bbd
     INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
     LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
@@ -665,6 +700,38 @@
       </where>
       GROUP BY bill_detail_id
     ) bbps ON bbps.bill_detail_id = bbd.bill_detail_id
+    left join (
+            select bb.order_detail_id,
+                   bb.item_id,
+                   bb.item_type,
+                   count(*) as deductionQuantity
+            from base_benefit bb
+        <where>
+             bb.coupon_type = 5
+             <if test="query.itemType != null">
+                and bb.item_type = #{query.itemType}
+            </if>
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT(bb.use_date, '%Y-%m-%d') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT(bb.use_date, '%Y-%m-%d') &lt;= #{query.endDate}
+            </if>
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bb.item_id in
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by order_detail_id
+         ) t1 on t1.order_detail_id = bbd.bill_detail_id
     <where>
       AND bbd.quantity > 0
       <if test="query.itemType != null">
