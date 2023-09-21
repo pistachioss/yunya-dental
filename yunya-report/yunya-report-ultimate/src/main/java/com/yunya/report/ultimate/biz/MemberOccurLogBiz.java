@@ -647,11 +647,11 @@ public class MemberOccurLogBiz
     List<BasePrepaidTransferVO> result = prepaidTransferList(query).getList();
     ExcelUtil<BasePrepaidTransferVO> excelUtil = new ExcelUtil<>(BasePrepaidTransferVO.class);
     BaseOrganization org = baseOrganizationMapper.selectByPrimaryKey(query.getOrgId());
-    String fileName = "预付款退费记录表";
+    String fileName = "预付款转账记录表";
     if (StringHelper.isNotNull(org)) {
       fileName = org.getAbbreviation() + fileName;
     }
-    excelUtil.exportExcel(response, result, "预付款退款记录表", fileName);
+    excelUtil.exportExcel(response, result, "预付款转账记录表", fileName);
   }
 
   /**
