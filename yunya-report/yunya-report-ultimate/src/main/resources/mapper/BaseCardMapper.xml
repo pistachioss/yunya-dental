@@ -1633,10 +1633,10 @@
                     concat('%', #{query.patientKey}, '%')
             </if>
             <if test="query.billStartDate != null and query.billStartDate != ''">
-                    AND cb.bill_date &gt;= #{query.billStartDate}
+                    AND DATE_FORMAT(cb.bill_date, '%Y-%m-%d') &gt;= #{query.billStartDate}
                 </if>
                 <if test="query.billEndDate != null and query.billEndDate != ''">
-                    AND cb.bill_date &lt;= #{query.billEndDate}
+                    AND DATE_FORMAT(cb.bill_date, '%Y-%m-%d') &lt;= #{query.billEndDate}
                 </if>
         </where>
         group by cb.order_id
@@ -1714,10 +1714,10 @@
                     concat('%', #{query.patientKey}, '%')
             </if>
             <if test="query.refundStartDate != null and query.refundStartDate != ''">
-                    AND cb.refund_date &gt;= #{query.refundStartDate}
+                   AND DATE_FORMAT(cb.refund_date, '%Y-%m-%d') &gt;= #{query.refundStartDate}
                 </if>
                 <if test="query.refundEndDate != null and query.refundEndDate != ''">
-                    AND cb.refund_date &lt;= #{query.refundEndDate}
+                    AND DATE_FORMAT(cb.refund_date, '%Y-%m-%d') &lt;= #{query.refundEndDate}
                 </if>
         </where>
         group by cb.refund_id

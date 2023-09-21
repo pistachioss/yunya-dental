@@ -7126,7 +7126,7 @@
         bp.patient_id as patientId,
         bp.mobile,
         bo.abbreviation,
-        t1.deductionQuantity as billQuantity
+        t1.deductionQuantity as deductionQuantity
         FROM
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
@@ -7170,6 +7170,7 @@
          ) t1 on t1.order_detail_id = bbd.bill_detail_id
         <where>
             AND bb.bill_date IS NOT NULL
+            and ISNULL(t1.order_detail_id) = 0
             <if test="query.orgIds!=null and query.orgIds.size()>0">
                 and bbd.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">

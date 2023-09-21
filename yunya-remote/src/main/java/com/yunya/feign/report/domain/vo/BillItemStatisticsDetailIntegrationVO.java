@@ -54,6 +54,9 @@ public class BillItemStatisticsDetailIntegrationVO implements Serializable {
   @Excel(name = "开单数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("开单数量")
   private Integer quantity;
+    @Excel(name = "收费数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+    @ApiModelProperty("收费数量")
+    private Integer billQuantity;
   /** 患者姓名 */
   @Excel(name = "患者姓名")
   @ApiModelProperty("患者姓名")
@@ -62,7 +65,5 @@ public class BillItemStatisticsDetailIntegrationVO implements Serializable {
   @Excel(name = "开单备注")
   @ApiModelProperty("开单备注")
   private String remark;
-    @Excel(name = "收费数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-    @ApiModelProperty("收费数量")
-    private Integer billQuantity;
+
 }
