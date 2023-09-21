@@ -881,7 +881,7 @@
         IFNULL((SELECT sum(a.principal_amount) FROM base_patient_member_occur_log a
         <where>
             a.type = bpm.type
-            and a.occur_type = 2
+            and a.occur_type in (2, 22)
             and a.card_id = bpm.card_id
             <if test="form.startDate!=null and form.startDate!='' and form.endDate!=null and form.endDate!=''">
                 and DATE_FORMAT(a.occur_date, "%Y-%m-%d") BETWEEN #{form.startDate} AND #{form.endDate}
@@ -892,7 +892,7 @@
         IFNULL((SELECT sum(a.bonus_amount) FROM base_patient_member_occur_log a
         <where>
             a.type = bpm.type
-            and a.occur_type = 2
+            and a.occur_type in (2, 22)
             and a.card_id = bpm.card_id
             <if test="form.startDate!=null and form.startDate!='' and form.endDate!=null and form.endDate!=''">
                 and DATE_FORMAT(a.occur_date, "%Y-%m-%d") BETWEEN #{form.startDate} AND #{form.endDate}
