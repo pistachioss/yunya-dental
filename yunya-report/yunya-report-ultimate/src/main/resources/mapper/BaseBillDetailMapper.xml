@@ -7126,7 +7126,7 @@
         bp.patient_id as patientId,
         bp.mobile,
         bo.abbreviation,
-        t1.deductionQuantity as billQuantity
+        t1.deductionQuantity as deductionQuantity
         FROM
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
