@@ -23,8 +23,7 @@ import java.util.List;
 @ApiModel("全程医疗-登记单导入查询模型")
 public class QcTreatmentImportForm implements Serializable {
     /** 全程就诊记录id列表 */
-    @ApiModelProperty(value = "全程就诊记录id列表", required = true)
-    @NotEmpty(message = "全程就诊记录id列表不能为空")
+    @ApiModelProperty(value = "全程就诊记录id列表")
     private List<Integer> qcTreatmentIds;
 
     /** 订单id */
