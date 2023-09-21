@@ -6976,7 +6976,7 @@
              <if test="query.itemType != null">
                 and bb.item_type = #{query.itemType}
             </if>
-            <if test="query.orgIds!=null and query.orgIds.size()>0">
+            <if test="query.orgIds!=null and query.orgIds.length>0">
                 and bb.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
@@ -7003,7 +7003,7 @@
                 and bd.item_type = #{query.itemType}
             </if>
             and bb1.bill_date is not null
-            <if test="query.orgIds!=null and query.orgIds..size()>0">
+            <if test="query.orgIds!=null and query.orgIds.length>0">
                 and bb1.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
@@ -7075,10 +7075,10 @@
                 and bb.org_id = #{query.orgId}
             </if>
             <if test="query.startDate != null and query.startDate != ''">
-                and date_format(bb.privilege_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                and date_format(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
-                and date_format(bb.privilege_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                and date_format(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
             </if>
         </where>
         ) bb on bbd.bill_id = bb.billId
