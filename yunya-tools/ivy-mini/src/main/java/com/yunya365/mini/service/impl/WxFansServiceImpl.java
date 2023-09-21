@@ -22,6 +22,7 @@ import javax.annotation.Resource;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.yunya.framework.common.constant.CommonConstants.EX_USER_PASS_INVALID_CODE;
 import static com.yunya.framework.common.constant.WxMiniUri.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
 
@@ -43,6 +44,9 @@ public class WxFansServiceImpl implements IWxFansService {
     private RemotePatientCentralServiceFeign patientFeign;
     @Value("${wx.mini.name}")
     private String miniName;
+
+    /** 最大重试次数 */
+    private static final int MAX_RETRY_TIMES = 3;
 
     private static final String HEAD_PREFIX = "thirdwx.qlogo.cn";
 
@@ -68,17 +72,12 @@ public class WxFansServiceImpl implements IWxFansService {
         log.info("微信手机授权参数:{}", form);
         String code = form.getCode();
         String phoneNumber;
-        JSONObject result;
         Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         if (StringUtils.isNoneBlank(code)) {
             //获取用户手机号
-            String url = String.format(PHONE_NUMBER_URL, wxApi.getAccessToken());
-            Map<String, String> param = Maps.newHashMap();
-            param.put("code", code);
-            result = wxApi.wxPostObject(url, param);
-            phoneNumber = result.getJSONObject("phone_info").getString("phoneNumber");
+            phoneNumber = getWxPhoneNumber(code, MAX_RETRY_TIMES);
         } else {
-            result = wxApi.decrypt(form.getEncryptedData(), form.getIv());
+            JSONObject result = wxApi.decrypt(form.getEncryptedData(), form.getIv());
             phoneNumber = result.getString("phoneNumber");
         }
         //更新用户
@@ -88,6 +87,30 @@ public class WxFansServiceImpl implements IWxFansService {
         wxFans.setId(userId);
         patientFeign.saveOrUpdate(wxFans);
         return phoneNumber;
+    }
+
+    /**
+     * 获取手机号码
+     *
+     * @param code
+     * @return
+     */
+    private String getWxPhoneNumber(String code, int retryTimes) {
+        String url = String.format(PHONE_NUMBER_URL, wxApi.getAccessToken());
+        Map<String, String> param = Maps.newHashMap();
+        param.put("code", code);
+        try {
+            JSONObject result = wxApi.wxPostObject(url, param);
+            return result.getJSONObject("phone_info").getString("phoneNumber");
+        } catch (ClientServiceException e) {
+            log.error("微信手机授权异常：{}", e);
+            if (retryTimes>=0 && EX_USER_PASS_INVALID_CODE.equals(e.getStatus())) {
+                log.info("微信accessToken失效，即将刷新token后重试");
+                wxApi.refreshToken();
+                return getWxPhoneNumber(code, --retryTimes);
+            }
+        }
+        return null;
     }
 
     @Override
