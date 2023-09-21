@@ -131,6 +131,8 @@ public class MinorChargeProcessBiz {
         // 订单明细（项目实收）
         List<OrderDetailChargeVO> orderDetails = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
         QcTreatmentImportForm form = new QcTreatmentImportForm();
+        form.setBillRecordId(billRecordId);
+        form.setOrderRecordId(orderRecordId);
         form.setQcTreatmentIds(qcTreatmentIds);
         form.setOrderDetails(orderDetails);
         treatmentOtherFeign.billBindingQcTreatment(form);
