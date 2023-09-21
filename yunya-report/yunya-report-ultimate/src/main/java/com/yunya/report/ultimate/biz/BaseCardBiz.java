@@ -140,7 +140,7 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
         List<StatementDeductionSoldDetailVO> list = pageInfo.getList();
         ExcelUtil<StatementDeductionSoldDetailVO> excelUtil =
                 new ExcelUtil<>(StatementDeductionSoldDetailVO.class);
-        excelUtil.exportExcel(response, list, "划扣卡预付款入账明细列表");
+        excelUtil.exportExcel(response, list, "划扣卡预付款入账明细列表","划扣卡预付款入账明细列表");
     }
 
     public void exportDeductionRefundDetailList(
@@ -149,7 +149,7 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
         List<StatementDeductionRefundDetailVO> list = pageInfo.getList();
         ExcelUtil<StatementDeductionRefundDetailVO> excelUtil =
                 new ExcelUtil<>(StatementDeductionRefundDetailVO.class);
-        excelUtil.exportExcel(response, list, "划扣卡预付款出账明细列表");
+        excelUtil.exportExcel(response, list, "划扣卡预付款出账明细列表","划扣卡预付款出账明细列表");
     }
 
   public List<BaseCard> findCardCouponSoldStatistics(CardCouponUsedQueryForm query) {
