@@ -27,6 +27,7 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
         <result column="nonauto" property="nonauto" jdbcType="BIT"/>
         <result column="min_type_id" property="minTypeId" jdbcType="INTEGER"/>
+        <result column="calc_amount_time" property="calcAmountTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Find_Colum_List">

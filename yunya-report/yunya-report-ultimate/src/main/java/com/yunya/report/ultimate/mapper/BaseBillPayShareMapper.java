@@ -106,4 +106,6 @@ public interface BaseBillPayShareMapper extends Mapper<BaseBillPayShare> {
      * @return
      */
     List<NonMonthCategoryVO> selectNonMonthCategoryFreeAmountList(@Param("query") NonMonthCategoryIncomeQuery query);
+
+    List<AllExportDeductionWorkloadVO> allExportfindClinicExecutorTariffDeductionWorkload(@Param("query") BillItemTollWorkloadQuery query);
 }

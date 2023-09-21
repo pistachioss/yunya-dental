@@ -123,11 +123,11 @@ public class EmployeeReportController {
         return ResponseUtil.success(pageInfo);
     }
 
-    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-划扣收费项目工作量统计-导出统计明细")
-    @PostMapping(value = "/operation/tariff/pay/deduction/workload/list/allExport", name = "公司端报表-报表统计-运营报表-员工报表-划扣收费项目工作量统计-导出统计明细")
-    public ResponseResult<Boolean> allExporttariffDeductionWorkloadStatistics(
+    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-划扣收费项目工作量统计-导出")
+    @PostMapping(value = "/operation/tariff/pay/deduction/workload/list/export", name = "公司端报表-报表统计-运营报表-员工报表-划扣收费项目工作量统计-导出")
+    public ResponseResult<Boolean> exporttariffDeductionWorkloadStatistics(
             HttpServletResponse response,  @RequestBody @Validated BillItemTollWorkloadQuery query) throws Exception {
-        employeeWorkloadBiz.allExporttariffDeductionWorkloadStatistics(response,query);
+        employeeWorkloadBiz.exporttariffDeductionWorkloadStatistics(response,query);
         return ResponseUtil.success();
     }
 
@@ -146,6 +146,14 @@ public class EmployeeReportController {
     return ResponseUtil.success(null);
   }
 
+    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目划扣工作量统计-导出统计明细")
+    @PostMapping(value = "/operation/tariff/pay/deduction/workload/list/allExport", name = "公司端报表-报表统计-运营报表-收费项目划扣工作量统计-导出统计明细")
+    public ResponseResult allExporttariffPaymentDeductionWorkloadStatistics(
+            HttpServletResponse response,  @RequestBody @Validated BillItemTollWorkloadQuery query) throws Exception {
+        employeeWorkloadBiz.allExportTariffPaymentDeductionWorkloadStatistics(response,query);
+        return ResponseUtil.success(null);
+    }
+
   /**
    * 根据条件查询收费数量&金额表导出明细一体表
    *
@@ -160,6 +168,15 @@ public class EmployeeReportController {
     billDetailBiz.billItemStatisticsDetailIntegrationAllExport(query, response);
     return ResponseUtil.success(null);
   }
+
+    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目划扣工作量统计-导出明细一体表")
+    @PostMapping(value = "/billItem/statistics/detail/deduction/allExport", name = "开单数量及金额划扣导出明细一体表")
+    public ResponseResult<T> billItemStatisticsDetailDeductionIntegrationAllExport(
+            HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
+            throws Exception {
+        billDetailBiz.billItemStatisticsDeductionDetailIntegrationAllExport(query, response);
+        return ResponseUtil.success(null);
+    }
 
   /**
    * 根据条件导出项目收费及工作量列表

@@ -78,6 +78,12 @@ public class PatientMemberInfo {
     private Date nextExpiredTime;
 
     /**
+     * 开始计算累计充值的时间
+     */
+    @Column(name = "calc_amount_time")
+    private Date calcAmountTime;
+
+    /**
      * 备注 备注
      */
     private String remarks;
@@ -348,6 +354,14 @@ public class PatientMemberInfo {
      */
     public void setNextExpiredTime(Date nextExpiredTime) {
         this.nextExpiredTime = nextExpiredTime;
+    }
+
+    public Date getCalcAmountTime() {
+        return calcAmountTime;
+    }
+
+    public void setCalcAmountTime(Date calcAmountTime) {
+        this.calcAmountTime = calcAmountTime;
     }
 
     /**

@@ -632,7 +632,7 @@ public class CompanyReportOfOperationController {
         return ResponseUtil.success(pageInfo);
     }
 
-    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目划扣工作量-导出")
+    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目划扣工作量明细-导出")
     @PostMapping(value = "/personal/tariff/supply/deduction/workload/export", name = "个人收费项目划扣工作量明细导出")
     public ResponseResult<Boolean> exportPersonalTariffSupplyDeductionWorkloadStatistics(
             HttpServletResponse response,

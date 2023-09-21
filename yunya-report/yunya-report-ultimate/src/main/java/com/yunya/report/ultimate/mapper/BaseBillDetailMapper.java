@@ -653,4 +653,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
     List<PersonalBillItemSupplyDeductionWorkloadDetailVO> selectPersonalBillItemSupplyDeductionWorkloadDetail(
             @Param("query") PersonalBillItemDeductionAndWorkloadQuery query);
+
+    List<BillItemStatisticsDeductionDetailVO> billItemAmountDeductionDetailList(
+            @Param("query") BillItemInfoQuery query);
 }

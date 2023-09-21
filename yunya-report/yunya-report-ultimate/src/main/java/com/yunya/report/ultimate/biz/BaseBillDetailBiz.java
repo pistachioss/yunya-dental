@@ -3008,6 +3008,36 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         excelUtil.exportExcel(response, res, "收费数量及金额明细一体表", fileName);
     }
 
+    public void billItemStatisticsDeductionDetailIntegrationAllExport(
+            BillItemInfoQuery query, HttpServletResponse response) throws Exception {
+        Collection<Integer[]> items = query.getCategoryItems();
+        if (!CollectionUtils.isEmpty(items)) {
+            Set<Integer> categoryIds = new HashSet<>();
+            Set<Integer> itemIds = new HashSet<>();
+            items.forEach(
+                    vo -> {
+                        categoryIds.add(vo[0]);
+                        itemIds.add(vo[1]);
+                    });
+            query.setCategoryIds(categoryIds);
+            query.setItemIds(itemIds);
+        } else {
+            throw new ClientServiceException("请至少选择一个项目", PARAMETERS_IS_ILLEGAL);
+        }
+        List<BillItemStatisticsDeductionDetailVO> result = mapper.billItemAmountDeductionDetailList(query);
+        ExcelUtil<BillItemStatisticsDeductionDetailVO> excelUtil =
+                new ExcelUtil<>(BillItemStatisticsDeductionDetailVO.class);
+        String fileName = query.getStartDate() + "-" + query.getEndDate() + "收费数量及金额划扣明细一体表";
+        List<Integer> orgIds = query.getOrgIds();
+        if (StringHelper.isNotEmpty(orgIds) && orgIds.size() == 1) {
+            BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+            if (null != organization) {
+                fileName = organization.getAbbreviation() + fileName;
+            }
+        }
+        excelUtil.exportExcel(response, result, "收费数量及金额划扣明细一体表", fileName);
+    }
+
   public List<BillDetailtemVO> findBillDetailItemList(ClinicPerformanceBusinessQuery query) {
     setDistinctBillIds(query);
     return mapper.selectBillDetailItemList(query);
