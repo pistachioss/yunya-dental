@@ -135,7 +135,7 @@ public class MinorChargeProcessBiz {
         form.setOrderRecordId(orderRecordId);
         form.setQcTreatmentIds(qcTreatmentIds);
         form.setOrderDetails(orderDetails);
-        treatmentOtherFeign.billBindingQcTreatment(form);
+        treatmentOtherFeign.updateQcTreatmentAndItems(form);
     }
 
     /**

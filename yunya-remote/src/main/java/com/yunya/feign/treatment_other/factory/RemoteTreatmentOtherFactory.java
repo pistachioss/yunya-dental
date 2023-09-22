@@ -1,6 +1,9 @@
 package com.yunya.feign.treatment_other.factory;
 
 import com.yunya.feign.report.domain.form.PullForm;
+import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
+import com.yunya.feign.treatment.domain.vo.QcRecommondOrderVO;
+import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
@@ -75,6 +78,21 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
 
     @Override
     public void tombstoneUploadFile(MedicalRayFilmModel model) {
+
+    }
+
+    @Override
+    public QcRecommondOrderVO orderMatchQcTreatmentList(QcTreatmentImportForm form) {
+        return null;
+    }
+
+    @Override
+    public List<QcTreatmentVO> findBindingQcTreatmentList(Integer orderRecordId) {
+        return null;
+    }
+
+    @Override
+    public void updateQcTreatmentAndItems(QcTreatmentImportForm form) {
 
     }
 

@@ -166,11 +166,11 @@ public interface RemoteTreatmentOtherFeign {
   List<QcTreatmentVO> findBindingQcTreatmentList(@PathVariable(value = "orderRecordId") Integer orderRecordId);
 
   /**
-   * 全程医疗就诊记录绑定账单
+   * 用账单信息更新全程医疗就诊及其明细（绑定或更新实收）
    *
    * @param form
    */
-  @ApiOperation("全程医疗就诊记录绑定账单")
-  @PutMapping("api/treatment/other/qc/treatment/binding/bill")
-  void billBindingQcTreatment(@RequestBody @Validated QcTreatmentImportForm form);
+  @ApiOperation("用账单信息更新全程医疗就诊及其明细（绑定或更新实收）")
+  @PutMapping("api/treatment/other/qc/treatment/items/update")
+  void updateQcTreatmentAndItems(@RequestBody @Validated QcTreatmentImportForm form);
 }
