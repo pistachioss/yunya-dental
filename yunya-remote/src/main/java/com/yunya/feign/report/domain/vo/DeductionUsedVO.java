@@ -31,7 +31,6 @@ public class DeductionUsedVO implements Serializable {
     @ExcelProperty("消耗项目")
     private String itemName;
     @ApiModelProperty("项目类型")
-    @ExcelProperty("项目类型")
     private Integer itemType;
     @ApiModelProperty("消耗数量")
     @ExcelProperty("消耗数量")
