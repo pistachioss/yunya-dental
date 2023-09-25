@@ -540,14 +540,14 @@ public class CouponOrderBiz {
         return couponOrderMapper.selectByExample(example);
     }
 
-    public List<CouponOrderVirtual> listOrderVirtual(Integer orderId, Integer cardId, boolean all) {
+    public List<CouponOrderVirtual> listOrderVirtual(Integer orderId, Integer cardId, Boolean all) {
         Example example = new Example(CouponOrderVirtual.class);
         Example.Criteria criteria = example.createCriteria().andEqualTo("orderId", orderId);
         if (Objects.nonNull(cardId)) {
             criteria.andEqualTo("cardId", cardId);
         }
-        if (!all) {
-            criteria.andEqualTo("inservice", true);
+        if (Objects.nonNull(all)) {
+            criteria.andEqualTo("inservice", all);
         }
         return virtualMapper.selectByExample(example);
     }
@@ -611,7 +611,7 @@ public class CouponOrderBiz {
     }
 
     private List<CouponOrderVirtual> deleteVirtuals(Integer orderId) {
-        List<CouponOrderVirtual> virtuals = listOrderVirtual(orderId, null, false);
+        List<CouponOrderVirtual> virtuals = listOrderVirtual(orderId, null, null);
         virtuals.forEach(t -> {
             virtualMapper.deleteByPrimaryKey(t.getId());
         });

@@ -194,7 +194,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private DeductionPeriodBiz periodBiz;
     @Resource
     private CouponOrderBiz couponOrderBiz;
-
+    @Resource
+    private CouponOrderVirtualMapper virtualMapper;
     /**
      * 加密加密生成卡券密码
      *
@@ -1851,7 +1852,18 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
 
     public List<Integer> listPatientAllCard(Integer patientId) {
-        return mapper.listPatientAllCard(patientId);
+        List<Integer> list = mapper.listPatientAllCard(patientId);
+        if (CollectionUtils.isNotEmpty(list)) {
+            Example example = new Example(CouponOrderVirtual.class);
+            example.createCriteria().andEqualTo("inservice", false)
+                    .andIn("cardId", list);
+            List<CouponOrderVirtual> virtuals = virtualMapper.selectByExample(example);
+            if (CollectionUtils.isNotEmpty(virtuals)) {
+                List<Integer> collect = virtuals.stream().map(CouponOrderVirtual::getCardId).filter(Objects::nonNull).collect(toList());
+                list.removeIf(collect::contains);
+            }
+        }
+        return list;
     }
 
     private PatientOptionalBenefitVo getPatientBenefit(Integer patientId, Integer orderId, Integer orgId) {
