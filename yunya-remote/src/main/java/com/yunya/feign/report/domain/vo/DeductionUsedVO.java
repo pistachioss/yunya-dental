@@ -52,7 +52,7 @@ public class DeductionUsedVO implements Serializable {
     @ApiModelProperty(value = "操作人")
     @ExcelProperty("操作人")
     private String executorName;
-    @ApiModelProperty(value = "备注")
-    @ExcelProperty("备注")
-    private String remark;
+//    @ApiModelProperty(value = "备注")
+//    @ExcelProperty("备注")
+//    private String remark;
 }

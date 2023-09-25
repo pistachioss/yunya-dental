@@ -71,10 +71,10 @@
             cb.item_type,
             count(*)                                      as quantity,
             bp.name                                     as patientName,
-            b.bill_num,
+            b.bill_num  as billNumber,
             date_format(cb.use_date, '%Y-%m-%d %H:%i:%s') as `billDate`,
             cb.org_id                                     as orgName,
-            be.employee_name                            as executorName
+            bo.abbreviation                            as executorName
         from base_benefit cb
                  inner join base_card c on cb.card_id = c.card_id
                  inner join base_coupon cci on c.coupon_id = cci.coupon_id
@@ -84,6 +84,7 @@
                  left join base_patient bp on bp.patient_id = cb.patient_id
                 left join base_employee be on be.user_id = cb.operate_user_id
                 left join base_tariff_info bti on bti.item_id = cb.item_id AND bti.item_type = cb.item_type
+                left join base_organization bo on bo.org_id = cb.org_id
         where cb.coupon_type = 5
         <if test="query.startDate != null and query.endDate != null">
             and (cb.use_date &gt;= #{query.startDate} and cb.use_date &lt; DATE_ADD(#{query.endDate} ,INTERVAL '1'

@@ -157,6 +157,9 @@ public class CouponOrderBiz {
         if (Objects.equals(occurType, 1)) {
             if (Objects.isNull(orderId)) {
                 Card card = cardMapper.selectByPrimaryKey(cardId);
+                if (Objects.nonNull(card.getBuyerId())) {
+                    return;
+                }
                 CouponCommonInfo couponCommonInfo = couponMapper.selectByPrimaryKey(card.getCouponId());
                 CouponChangeRecord couponChangeRecord = new CouponChangeRecord();
                 couponChangeRecord.setOrgId(card.getActiveOrgId());
