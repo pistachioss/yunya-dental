@@ -88,6 +88,10 @@ ADD COLUMN `nonauto` BIT(1) NOT NULL DEFAULT b'0' COMMENT '非自动升级、降
 ADD COLUMN `min_type_id` INT(11) NOT NULL DEFAULT 0 COMMENT '可降级的最低等级会员ID' AFTER `nonauto`,
 ADD UNIQUE INDEX `card_number_UNIQUE` (`card_number` ASC);
 
+ALTER TABLE `test_yunya_patient_central`.`patient_member_info`
+ADD COLUMN `calc_amount_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '开始计算累计充值的时间' AFTER `min_type_id`;
+
+
 ALTER TABLE `test_yunya_patient_central`.`patient_kin_relation`
 ADD COLUMN `type` TINYINT(5) NOT NULL DEFAULT 0 COMMENT '关系区分: 0 亲属关系；1 推荐关系；' AFTER `inservice`,
 COMMENT = '患者亲属关系、推荐关系' ;
@@ -100,7 +104,7 @@ alter table `test_yunya_report`.`base_bill_detail` add column `swipe_coupon_work
 update `test_yunya_report`.`base_bill_detail` set swipe_workload = 0, swipe_coupon_workload = 0;
 alter table `test_yunya_report`.`stat_emp_pay` add column `swipe_workload` decimal(19,4) NOT NULL DEFAULT 0 comment '划扣卡核销工作量';
 alter table `test_yunya_report`.`base_bill_detail` drop column `item_name`;
-alter table `test_yunya_report`.`base_patient_member_occur_log` modify column `occur_type` tinyint(8) NOT NULL comment '发生类型(1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.就诊账单返点 7.礼包账单返点 8.转账转入 9.转账转出，20 赠金转出，21 赠金转入)';
+alter table `test_yunya_report`.`base_patient_member_occur_log` modify column `occur_type` tinyint(8) NOT NULL comment '发生类型(1.充值 2.消费 3.退款 4.撤销收费 5.账单退费 6.就诊账单返点 7.礼包账单返点 8.转账转入 9.转账转出，20 赠金转出，21 赠金转入，22 划扣消费)';
 
 
 

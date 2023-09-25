@@ -194,7 +194,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private DeductionPeriodBiz periodBiz;
     @Resource
     private CouponOrderBiz couponOrderBiz;
-
+    @Resource
+    private CouponOrderVirtualMapper virtualMapper;
     /**
      * 加密加密生成卡券密码
      *
@@ -1055,7 +1056,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             }
             //4. 第三方平台卡券激活
             Card activeCard = insertOtherActiveCard(patientId, form, loginUserId, card);
-            couponOrderBiz.occur(null, 1, patientId, card.getId(), null);
+            if (Objects.equals(couponMapper.selectByPrimaryKey(form.getCouponId()).getType().intValue(), DEDUCTION.getCode())) {
+                couponOrderBiz.occur(null, 1, patientId, card.getId(), null);
+            }
             mqServiceFeign.sendMessage(activeCard.getId(), ADD, BaseCardSingle);
             log.info("【第三方激活发送消息成功】：卡券id[{}]", activeCard.getId());
             cardActivedSendSms(activeCard);
@@ -1849,7 +1852,18 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
 
     public List<Integer> listPatientAllCard(Integer patientId) {
-        return mapper.listPatientAllCard(patientId);
+        List<Integer> list = mapper.listPatientAllCard(patientId);
+        if (CollectionUtils.isNotEmpty(list)) {
+            Example example = new Example(CouponOrderVirtual.class);
+            example.createCriteria().andEqualTo("inservice", false)
+                    .andIn("cardId", list);
+            List<CouponOrderVirtual> virtuals = virtualMapper.selectByExample(example);
+            if (CollectionUtils.isNotEmpty(virtuals)) {
+                List<Integer> collect = virtuals.stream().map(CouponOrderVirtual::getCardId).filter(Objects::nonNull).collect(toList());
+                list.removeIf(collect::contains);
+            }
+        }
+        return list;
     }
 
     private PatientOptionalBenefitVo getPatientBenefit(Integer patientId, Integer orderId, Integer orgId, List<Integer> orderDetailIds) {
@@ -2511,6 +2525,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             insertOtherCard.setUpdTime(null);
             mapper.updateByPrimaryKeySelective(insertOtherCard);
         } else {
+            insertOtherCard.setOrgId(0);
+            insertOtherCard.setCouponAllocateId(0);
             insertOtherCard.setCrtId(loginUserId);
             mapper.insertSelective(insertOtherCard);
         }

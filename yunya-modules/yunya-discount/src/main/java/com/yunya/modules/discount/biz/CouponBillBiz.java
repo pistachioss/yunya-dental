@@ -137,7 +137,7 @@ public class CouponBillBiz {
                 }
             }
             //返点
-            returnGift(billPay);
+            returnGift(billPay,prepaymentAccountModels,memberAccountModels);
             //明细结存
             orderBiz.occur(orderId, 1, order.getPatientId(), null, null);
             rabbitMqServiceFeign.sendMessage(orderId, 1, BaseCouponBill);
@@ -161,7 +161,7 @@ public class CouponBillBiz {
             memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
             memberExpendRecordModel.setPrincipalAmount(memberAccountModel.getPrincipalAmount());
             memberExpendRecordModel.setBonusAmount(memberAccountModel.getBonusAmount());
-            memberExpendRecordModel.setTreatmentRecordId(billPay.getBillId());
+            memberExpendRecordModel.setTreatmentRecordId(0);
             memberExpendRecordModel.setOrderRecordId(billPay.getOrderId());
             memberExpendRecordModel.setBillRecordId(billPay.getBillId());
             memberExpendRecordModel.setBillPayRecordId(billPay.getId());
@@ -184,7 +184,7 @@ public class CouponBillBiz {
                     prepaidExpendRecordModel.setExpendTotal(prepaymentAccountModel.getAmount());
                     prepaidExpendRecordModel.setPrincipalAmount(prepaymentAccountModel.getPrincipalAmount());
                     prepaidExpendRecordModel.setBonusAmount(prepaymentAccountModel.getBonusAmount());
-                    prepaidExpendRecordModel.setTreatmentRecordId(billPay.getBillId());
+                    prepaidExpendRecordModel.setTreatmentRecordId(0);
                     prepaidExpendRecordModel.setOrderRecordId(billPay.getOrderId());
                     prepaidExpendRecordModel.setBillRecordId(billPay.getBillId());
                     prepaidExpendRecordModel.setBillPayRecordId(billPay.getId());
@@ -352,14 +352,19 @@ public class CouponBillBiz {
         return billMapper.selectOneByExample(example);
     }
 
-    private void returnGift(CouponBillPay billPay) {
+    private void returnGift(CouponBillPay billPay,Set<CardPrepaymentModel> prepaymentAccountModels
+            , Set<CardMemberModel> memberAccountModels) {
+        BigDecimal bonus = prepaymentAccountModels.stream().map(CardPrepaymentModel::getBonusAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal bonus1 = memberAccountModels.stream().map(CardMemberModel::getBonusAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         BillRebate2MemberAccountModel model1 = new BillRebate2MemberAccountModel();
         model1.setOrderRecordId(billPay.getOrderId());
         model1.setBillRecordId(billPay.getBillId());
         model1.setBillPayRecordId(billPay.getId());
         model1.setOrgId(billPay.getOrgId());
         model1.setPatientId(billPay.getPatientId());
-        model1.setReceivedAmount(billPay.getReceivedAmount());
+        model1.setReceivedAmount(billPay.getReceivedAmount().subtract(bonus.add(bonus1)));
         patientCentralServiceFeign.billRebate2MemberAccount(model1);
     }
 

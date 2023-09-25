@@ -12,30 +12,30 @@ import java.math.BigDecimal;
 import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
 import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
-@ApiModel("对账单划扣卡售出明细VO")
+@ApiModel("对账单划扣卡退费明细VO")
 @Data
 @ToString
-public class StatementDeductionSoldDetailVO implements Serializable {
+public class StatementDeductionRefundDetailVO implements Serializable {
     /**
      * 售出日期
      */
-    @Excel(name = "收费日期")
-    @ApiModelProperty("收费日期")
-    private String soldDate;
+    @Excel(name = "退费日期")
+    @ApiModelProperty("退费日期")
+    private String refundDate;
 
     @Excel(name = "账单编号")
     @ApiModelProperty("账单编号")
     private String billNumber;
 
-    @Excel(name = "购卡患者姓名")
-    @ApiModelProperty("购卡患者姓名")
-    private String soldTargetName;
+    @Excel(name = "退款患者姓名")
+    @ApiModelProperty("退款患者姓名")
+    private String refundTargetName;
     /**
      * 售出对象手机号
      */
-    @Excel(name = "购卡患者手机号")
-    @ApiModelProperty("购卡患者手机号")
-    private String soldTargetMobile;
+    @Excel(name = "退款患者手机号")
+    @ApiModelProperty("退款患者手机号")
+    private String refundTargetMobile;
 
     @Excel(name = "会员卡本金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
     @ApiModelProperty("会员卡本金")
@@ -78,14 +78,9 @@ public class StatementDeductionSoldDetailVO implements Serializable {
     @ApiModelProperty("杭州医保")
     private BigDecimal hzInsurance;
     /**
-     * 售出人ID
-     */
-    @ApiModelProperty("售出人ID")
-    private Integer soldOperatorId;
-    /**
      * 售出人
      */
-    @Excel(name = "收费人")
-    @ApiModelProperty("收费人")
-    private String soldOperatorName;
+    @Excel(name = "退费人")
+    @ApiModelProperty("退费人")
+    private String refundOperatorName;
 }

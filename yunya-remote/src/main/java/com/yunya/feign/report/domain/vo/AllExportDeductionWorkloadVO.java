@@ -9,17 +9,9 @@ import java.math.BigDecimal;
 
 import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
 import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
-/**
- * 简介:
- *
- * @author: ylx
- * @date: 2023/3/14
- * @description:
- */
 @Data
 @ToString
-public class BillItemTollAndWorkloadAllExportVO {
+public class AllExportDeductionWorkloadVO {
     /** 门诊ID */
     @ApiModelProperty("门诊ID")
     private Integer orgId;
@@ -75,26 +67,14 @@ public class BillItemTollAndWorkloadAllExportVO {
     @ApiModelProperty("开单数量")
     private Integer quantity = 0;
 
-    @Excel(name = "收费数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-    @ApiModelProperty("收费数量")
-    private Integer billQuantity;
-
-    /** 实收工作量 */
-    @Excel(name = "实收工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
-    @ApiModelProperty("实收工作量")
-    private BigDecimal receivedWorkload = BigDecimal.ZERO;
     /** 免单工作量 */
-    @Excel(name = "其中免单工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
-    @ApiModelProperty("免单工作量")
-    private BigDecimal freePayWorkload = BigDecimal.ZERO;
+    @Excel(name = "划扣工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
+    @ApiModelProperty("划扣工作量")
+    private BigDecimal deductionWorkload = BigDecimal.ZERO;
     /** 补入工作量 */
-    @Excel(name = "补入工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
-    @ApiModelProperty("补入工作量")
-    private BigDecimal supplyWorkload = BigDecimal.ZERO;
-    /** 退费工作量 */
-    @Excel(name = "退费工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
-    @ApiModelProperty("退费工作量")
-    private BigDecimal refundWorkload = BigDecimal.ZERO;
+    @Excel(name = "划扣补入工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
+    @ApiModelProperty("划扣补入工作量")
+    private BigDecimal deductionCouponWorkload = BigDecimal.ZERO;
 
     @Excel(name = "开单备注")
     @ApiModelProperty("开单备注")

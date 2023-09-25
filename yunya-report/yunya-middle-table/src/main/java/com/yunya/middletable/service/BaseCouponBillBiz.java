@@ -178,9 +178,7 @@ public class BaseCouponBillBiz extends BaseBiz<BaseCouponBillMapper, BaseCouponB
         CouponBill billRecord = couponBillMapper.selectOne(bill);
         if (null != billRecord) {
             baseBill.setOrderStatus(orderRecord.getStatus());
-            if (Objects.equals(orderRecord.getStatus(), 1)) {
-                record2baseReport(billRecord, baseBill);
-            }
+            record2baseReport(billRecord, baseBill);
         }
     }
 

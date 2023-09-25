@@ -11,11 +11,11 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
-@ApiModel("对账单划扣售出记录明细查询参数模型")
+@ApiModel("对账单划扣退费记录明细查询参数模型")
 @Data
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class StatementDeductionSoldDetailQuery extends PageQuery implements Serializable {
+public class StatementDeductionRefundDetailQuery extends PageQuery implements Serializable {
     /**
      * 组织ID
      */
@@ -42,8 +42,8 @@ public class StatementDeductionSoldDetailQuery extends PageQuery implements Seri
     private String endDate;
     @ApiModelProperty("患者")
     private String patientKey;
-    @ApiModelProperty("收费开始时间")
-    private String billStartDate;
-    @ApiModelProperty("收费结束时间")
-    private String billEndDate;
+    @ApiModelProperty("退费开始时间")
+    private String refundStartDate;
+    @ApiModelProperty("退费结束时间")
+    private String refundEndDate;
 }

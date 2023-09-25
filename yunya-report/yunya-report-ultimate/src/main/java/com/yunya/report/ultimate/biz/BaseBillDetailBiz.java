@@ -2634,6 +2634,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return new PageInfo<>(resultList);
   }
 
+    public PageInfo<PersonalBillItemSupplyDeductionWorkloadDetailVO>
+    findPersonalBillItemSupplyDeductionWorkloadDetailList(PersonalBillItemDeductionAndWorkloadQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<PersonalBillItemSupplyDeductionWorkloadDetailVO> resultList =
+                mapper.selectPersonalBillItemSupplyDeductionWorkloadDetail(query);
+        return new PageInfo<>(resultList);
+    }
+
   /**
    * 个人收费项目补入工作量明细导出
    *
@@ -2653,6 +2663,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     excelUtil.exportExcel(response, resultList, "个人收费项目补入工作量明细列表", fileName);
   }
+
+    public void exportPersonalBillItemSupplyDeductionWorkloadList(
+            HttpServletResponse response, PersonalBillItemDeductionAndWorkloadQuery query) throws IOException {
+        ExcelUtil<PersonalBillItemSupplyDeductionWorkloadDetailVO> excelUtil =
+                new ExcelUtil<>(PersonalBillItemSupplyDeductionWorkloadDetailVO.class);
+        List<PersonalBillItemSupplyDeductionWorkloadDetailVO> resultList =
+                mapper.selectPersonalBillItemSupplyDeductionWorkloadDetail(query);
+        String fileName = "个人收费项目划扣工作量明细列表";
+        BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+        if (employee != null) {
+            fileName = fileName + "-" + employee.getEmployeeName();
+        }
+        excelUtil.exportExcel(response, resultList, "个人收费项目划扣工作量明细列表", fileName);
+    }
 
   /**
    * 根据条件查询员工个人收费项目退费工作量明细列表
@@ -2982,6 +3006,36 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             }
         }
         excelUtil.exportExcel(response, res, "收费数量及金额明细一体表", fileName);
+    }
+
+    public void billItemStatisticsDeductionDetailIntegrationAllExport(
+            BillItemInfoQuery query, HttpServletResponse response) throws Exception {
+        Collection<Integer[]> items = query.getCategoryItems();
+        if (!CollectionUtils.isEmpty(items)) {
+            Set<Integer> categoryIds = new HashSet<>();
+            Set<Integer> itemIds = new HashSet<>();
+            items.forEach(
+                    vo -> {
+                        categoryIds.add(vo[0]);
+                        itemIds.add(vo[1]);
+                    });
+            query.setCategoryIds(categoryIds);
+            query.setItemIds(itemIds);
+        } else {
+            throw new ClientServiceException("请至少选择一个项目", PARAMETERS_IS_ILLEGAL);
+        }
+        List<BillItemStatisticsDeductionDetailVO> result = mapper.billItemAmountDeductionDetailList(query);
+        ExcelUtil<BillItemStatisticsDeductionDetailVO> excelUtil =
+                new ExcelUtil<>(BillItemStatisticsDeductionDetailVO.class);
+        String fileName = query.getStartDate() + "-" + query.getEndDate() + "收费数量及金额划扣明细一体表";
+        List<Integer> orgIds = query.getOrgIds();
+        if (StringHelper.isNotEmpty(orgIds) && orgIds.size() == 1) {
+            BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+            if (null != organization) {
+                fileName = organization.getAbbreviation() + fileName;
+            }
+        }
+        excelUtil.exportExcel(response, result, "收费数量及金额划扣明细一体表", fileName);
     }
 
   public List<BillDetailtemVO> findBillDetailItemList(ClinicPerformanceBusinessQuery query) {

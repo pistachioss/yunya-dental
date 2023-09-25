@@ -74,4 +74,7 @@ public class BillItemStatisticsDetailVO implements Serializable {
   /** 项目名称 */
   @ApiModelProperty("项目名称")
   private String itemName;
+    @Excel(name = "收费数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+    @ApiModelProperty("收费数量")
+    private Integer billQuantity;
 }

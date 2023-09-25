@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -31,7 +32,7 @@ public class DeductionUsedVO implements Serializable {
     @ExcelProperty("消耗项目")
     private String itemName;
     @ApiModelProperty("项目类型")
-    @ExcelProperty("项目类型")
+    @ExcelIgnore
     private Integer itemType;
     @ApiModelProperty("消耗数量")
     @ExcelProperty("消耗数量")

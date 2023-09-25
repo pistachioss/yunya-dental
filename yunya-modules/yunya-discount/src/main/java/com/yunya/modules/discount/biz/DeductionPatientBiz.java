@@ -118,6 +118,8 @@ public class DeductionPatientBiz {
     private CouponBillPayDetailMapper couponBillPayDetailMapper;
     @Resource
     private RemoteMiddleServiceFeign remoteMiddleServiceFeign;
+    @Resource
+    private CouponChangeRecordMapper changeRecordMapper;
 
     public PageInfo<PatientDeductionBaseVO> deductionList(DeductionPatientQuery query) {
         Page<PatientCardBo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
@@ -409,6 +411,10 @@ public class DeductionPatientBiz {
             card.setSoldTarget(null);
             card.setSoldPhoneNumber(null);
             card.setSaleChannelId(null);
+            Example example = new Example(CouponChangeRecord.class);
+            example.createCriteria().andEqualTo("patientId", patientId)
+                    .andEqualTo("cardId", card.getId());
+            changeRecordMapper.deleteByExample(example);
             CouponChangeRecord newBean = new CouponChangeRecord();
             newBean.setPatientId(patientId);
             newBean.setCardId(card.getId());

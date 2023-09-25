@@ -97,10 +97,10 @@
         select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
-        case bpmol.occur_type when 2 then '账单收费' else bpmol.payment_manner end occurName,
+        case bpmol.occur_type when 2 then '账单收费' when 22 then '划扣购买' else bpmol.payment_manner end occurName,
         DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') occurDate,
-        DATE_FORMAT(bb.order_date, '%Y-%m-%d') orderDate,
-        bb.order_num orderNum,
+        DATE_FORMAT(case bpmol.occur_type when 2 then bb.order_date when 22 then bcb.bill_date end, '%Y-%m-%d') orderDate,
+        case bpmol.occur_type when 2 then bb.order_num when 22 then bcb.bill_num end orderNum,
         bpt.patient_id patientId,
         bpt.name,
         bpt.pinyin_name pinyinName,
@@ -122,9 +122,10 @@
         JOIN base_patient bpt ON bpmol.patient_id = bpt.patient_Id
         JOIN base_patient_member bpm ON bpm.card_id = bpmol.card_id
         LEFT JOIN base_bill bb ON bpmol.bill_id = bb.bill_id
+        LEFT JOIN base_coupon_bill bcb ON bpmol.bill_id = bcb.order_id
         <where>
             bpmol.type = 0
-            AND (bpmol.occur_type = 2 or bpmol.occur_type = 20)
+            AND (bpmol.occur_type = 2 or bpmol.occur_type = 20 or bpmol.occur_type = 22)
             <if test="form.occurType != null and form.occurType != ''">
                 AND bpmol.occur_type = #{form.occurType}
             </if>
@@ -880,7 +881,7 @@
         IFNULL((SELECT sum(a.principal_amount) FROM base_patient_member_occur_log a
         <where>
             a.type = bpm.type
-            and a.occur_type = 2
+            and a.occur_type in (2, 22)
             and a.card_id = bpm.card_id
             <if test="form.startDate!=null and form.startDate!='' and form.endDate!=null and form.endDate!=''">
                 and DATE_FORMAT(a.occur_date, "%Y-%m-%d") BETWEEN #{form.startDate} AND #{form.endDate}
@@ -891,7 +892,7 @@
         IFNULL((SELECT sum(a.bonus_amount) FROM base_patient_member_occur_log a
         <where>
             a.type = bpm.type
-            and a.occur_type = 2
+            and a.occur_type in (2, 22)
             and a.card_id = bpm.card_id
             <if test="form.startDate!=null and form.startDate!='' and form.endDate!=null and form.endDate!=''">
                 and DATE_FORMAT(a.occur_date, "%Y-%m-%d") BETWEEN #{form.startDate} AND #{form.endDate}

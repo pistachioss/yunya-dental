@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import cn.hutool.core.date.DateTime;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -337,7 +338,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMember.setUpdName(BaseContextHandler.getName());
       patientMember.setUpdTime(new Date());
-      patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       patientMember.setInservice(true);
       this.mapper.updateByPrimaryKeySelective(patientMember);
       this.cardLog(patientMember, "变更", "更新");
@@ -382,7 +382,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMember.setUpdName(BaseContextHandler.getName());
       patientMember.setUpdTime(new Date());
-      patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       patientMember.setInservice(true);
       this.mapper.updateByPrimaryKeySelective(patientMember);
       this.cardLog(patientMember, "变更", "更新");
@@ -502,7 +501,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMember.setUpdName(BaseContextHandler.getName());
       patientMember.setUpdTime(new Date());
-      patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       this.mapper.updateByPrimaryKeySelective(patientMember);
       this.cardLog(patientMember, "变更", "更新");
       remoteRabbitMqServiceFeign.sendMessage(
@@ -540,7 +538,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientMember.setUpdName(BaseContextHandler.getName());
       patientMember.setUpdTime(new Date());
-      patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       this.mapper.updateByPrimaryKeySelective(patientMember);
       log.info("会员等级变更入库：{}", JSONObject.toJSONString(patientMember));
       this.cardLog(patientMember, "变更", "更新");
@@ -635,6 +632,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
     patientMemberInfo.setInservice(false);
     patientMemberInfo.setMemberTypeId(4);
+    patientMemberInfo.setMinTypeId(0);
+    patientMemberInfo.setCalcAmountTime(DateTime.now());
     patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
     //
     // 删除该患者的亲密付绑定
@@ -700,7 +699,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
             patientMember.setUpdName(BaseContextHandler.getName());
             patientMember.setUpdTime(new Date());
-            patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
             patientMember.setInservice(true);
             this.mapper.updateByPrimaryKeySelective(patientMember);
             this.cardLog(patientMember, "变更", "更新");
@@ -1013,7 +1011,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     patientMember.setUpdTime(new Date());
     patientMember.setInservice(true);
     patientMember.setNonauto(true);
-//    patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     this.mapper.updateByPrimaryKeySelective(patientMember);
 
 
@@ -2205,7 +2202,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     member = mapper.selectOneByPatientId(acceptorId);
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
-    Date now = BaseContextHandler.getCurTime();
+    Date now = DateUtil.now();
     BigDecimal principalAmount = member.getPrincipalAmount();
     BigDecimal bonusAmount = member.getBonusAmount();
 //    if (StringHelper.gtZero(principal)) {

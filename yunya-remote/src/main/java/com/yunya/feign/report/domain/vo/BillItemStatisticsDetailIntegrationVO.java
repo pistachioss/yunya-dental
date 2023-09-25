@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
 import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
@@ -55,6 +54,9 @@ public class BillItemStatisticsDetailIntegrationVO implements Serializable {
   @Excel(name = "开单数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("开单数量")
   private Integer quantity;
+    @Excel(name = "收费数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+    @ApiModelProperty("收费数量")
+    private Integer billQuantity;
   /** 患者姓名 */
   @Excel(name = "患者姓名")
   @ApiModelProperty("患者姓名")
@@ -63,4 +65,5 @@ public class BillItemStatisticsDetailIntegrationVO implements Serializable {
   @Excel(name = "开单备注")
   @ApiModelProperty("开单备注")
   private String remark;
+
 }

@@ -44,6 +44,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
@@ -196,7 +197,7 @@ public class MinorChargeProcessBiz {
      * @param billPayRecord
      * @param totalPrincipal 消费本金总额
      */
-    private void expendRebateReferees(BillPayRecord billPayRecord, BigDecimal totalPrincipal) {
+    private void expendRebateReferees(BillPayRecord billPayRecord, BigDecimal totalPrincipal) throws InterruptedException {
 ////        BillPayRecordLog query = new BillPayRecordLog();
 ////        query.setBillPayRecordId(billPayRecord.getId());
 ////        int count = billPayRecordLogMapper.selectCount(query);
@@ -214,6 +215,8 @@ public class MinorChargeProcessBiz {
                 // 给初诊患者的推荐人返点
                 TreatmentRecordVO treatment = treatmentRecordMapper.selectTreatmentInfoById(billPayRecord.getTreatmentRecordId());
                 if (StringHelper.isNotNull(treatment) && treatment.getFirstVisit() == 0) {
+                    // 睡眠1秒，避免两次返点的发生时间相同
+                    TimeUnit.SECONDS.sleep(1);
                     BeanUtil.copyProperties(billPayRecord, model);
                     model.setBillPayRecordId(billPayRecord.getId());
                     model.setType(6);
