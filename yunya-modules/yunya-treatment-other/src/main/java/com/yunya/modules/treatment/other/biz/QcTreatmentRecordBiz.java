@@ -292,14 +292,15 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
             String admNo = qcTreatmentRecord.getAdmNo();
             if (status != 3) {
                 log.error("全程医疗就诊记录：{}, 状态为：{} 不允许同步医嘱上传", id, status);
-                throw new ClientServiceException("登记单: " + admNo + ", 不能同步" , OPERATION_NOT_ALLOW);
+                String statusMsg = status==1 ? "未核销" : (status==2 ? "未开单" : "已同步");
+                throw new ClientServiceException("登记单【" + admNo + "】的状态为:"+ statusMsg +" ，不能同步" , OPERATION_NOT_ALLOW);
             }
             QcAdviceUploadForm form = new QcAdviceUploadForm();
             QcCustomerInfo customer = customerMap.computeIfAbsent(id,
                     key -> qcCustomerInfoMapper.selectByPrimaryKey(key));
             if (StringHelper.isNull(customer)) {
                 log.error("全程医疗就诊记录：{} 患者信息不存在，不于同步医嘱上传", id);
-                throw new ClientServiceException("登记单: " + admNo + ", 的客户信息不存在，不能同步" , OPERATION_NOT_ALLOW);
+                throw new ClientServiceException("登记单【" + admNo + "】的客户信息不存在，不能同步" , OPERATION_NOT_ALLOW);
             }
             form.setPat_info(converPatientInfo(customer));
             form.setAdm_info(convertAdmInfo(qcTreatmentRecord));
