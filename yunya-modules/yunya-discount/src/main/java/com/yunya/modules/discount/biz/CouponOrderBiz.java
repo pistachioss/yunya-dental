@@ -213,10 +213,14 @@ public class CouponOrderBiz {
                     continue;
                 }
                 List<DeductionItemPeriod> list = periodBiz.list(k);
-                BigDecimal reduce = list.stream().filter(t1 -> {
-                    String join = Joiner.on("-").join(t1.getItemId(), t1.getType());
-                    return v.contains(join);
-                }).map(DeductionItemPeriod::getPackageUnitPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+                Map<String, BigDecimal> collect1 = list.stream().collect(toMap(t1 -> Joiner.on("-").join(t1.getItemId(), t1.getType())
+                        , DeductionItemPeriod::getPackageUnitPrice, (o, n) -> n));
+//                BigDecimal reduce = list.stream().filter(t1 -> {
+//                    String join = Joiner.on("-").join(t1.getItemId(), t1.getType());
+//                    return v.contains(join);
+//                }).map(DeductionItemPeriod::getPackageUnitPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal reduce = v.stream().filter(collect1::containsKey)
+                        .map(collect1::get).reduce(BigDecimal.ZERO, BigDecimal::add);
                 CouponChangeRecord newBean = BeanCopierUtils.generalCopyBean(latest, CouponChangeRecord.class);
                 newBean.setOrderId(orderId);
                 newBean.setOccurType(occurType);
