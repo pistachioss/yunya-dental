@@ -229,7 +229,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 患者id不为空表明,是修改操作
     if (StringHelper.isNotNull(patientBaseInfoModel.getId())) {
       this.updateByPrimaryKeySelective(patientBaseInfo);
-      return patientBaseInfoMapper.selectPatienInfoById(patientBaseInfo.getId());
+      return patientBaseInfoMapper.selectPatientInfoById(patientBaseInfo.getId());
     }
     Integer originType = patientBaseInfo.getOriginType();
     if (null != originType) {

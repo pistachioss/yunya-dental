@@ -99,7 +99,7 @@ public class QcTreatmentWSTest {
         form.setQcTreatmentIds(Lists.newArrayList(qcTreatment.getId()));
         form.setOrderRecordId(orderRecordId);
         form.setBillRecordId(billId);
-        List<OrderDetailChargeVO> orderDetails = treatmentServiceFeign.findOrderDetailAndBillDetailByOrderRecordId(orderRecordId).getOrderDetails();
+        List<OrderDetailChargeVO> orderDetails = treatmentServiceFeign.findOrderDetailAndBillDetailByOrderRecordId(orderRecordId).getItemList();
         form.setOrderDetails(orderDetails);
         qcTreatmentRecordBiz.updateQcTreatmentAndItems(form);
     }

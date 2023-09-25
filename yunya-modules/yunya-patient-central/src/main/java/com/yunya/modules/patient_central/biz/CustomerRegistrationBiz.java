@@ -498,7 +498,7 @@ public class CustomerRegistrationBiz {
     private void addPatientExtInfo(PatientRegistrationModel model, int userId, String userName, int patientId) {
         Integer id = model.getId();
         if (!ObjectUtils.isEmpty(id)) {
-            patientExtInfoMapper.deletePatientExtInfoByPatientId(id);
+            patientExtInfoMapper.deletePatientExtInfoByPatientId(id, Arrays.asList(1, 2));
         }
         Date now = new Date(System.currentTimeMillis());
         // 疾病史

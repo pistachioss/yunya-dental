@@ -50,6 +50,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -281,17 +282,24 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
      *
      * @param qcTreatmentIds
      */
+    @Transactional(rollbackFor = Exception.class)
     public void uploadAdviceItems(List<Integer> qcTreatmentIds) {
         List<QcAdviceUploadForm> forms = Lists.newArrayList();
         Map<Integer, QcCustomerInfo> customerMap = Maps.newHashMapWithExpectedSize(16);
         qcTreatmentIds.forEach(id->{
             QcTreatmentRecord qcTreatmentRecord = checkQcTreatmentRecord(id);
+            int status = qcTreatmentRecord.getStatus().intValue();
+            String admNo = qcTreatmentRecord.getAdmNo();
+            if (status != 3) {
+                log.error("全程医疗就诊记录：{}, 状态为：{} 不允许同步医嘱上传", id, status);
+                throw new ClientServiceException("登记单: " + admNo + ", 不能同步" , OPERATION_NOT_ALLOW);
+            }
             QcAdviceUploadForm form = new QcAdviceUploadForm();
             QcCustomerInfo customer = customerMap.computeIfAbsent(id,
                     key -> qcCustomerInfoMapper.selectByPrimaryKey(key));
             if (StringHelper.isNull(customer)) {
                 log.error("全程医疗就诊记录：{} 患者信息不存在，不于同步医嘱上传", id);
-                return;
+                throw new ClientServiceException("登记单: " + admNo + ", 的客户信息不存在，不能同步" , OPERATION_NOT_ALLOW);
             }
             form.setPat_info(converPatientInfo(customer));
             form.setAdm_info(convertAdmInfo(qcTreatmentRecord));
@@ -299,7 +307,19 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
             forms.add(form);
         });
         if (StringHelper.isNotEmpty(forms)) {
-            forms.forEach(form->qcWebServiceClientBiz.uploadAdvice2MallPlatform(form));
+            forms.forEach(form-> qcWebServiceClientBiz.uploadAdvice2MallPlatform(form));
+            Date now = BaseContextHandler.getCurTime();
+            Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+            qcTreatmentIds.forEach(id->{
+                QcTreatmentRecord entity = new QcTreatmentRecord();
+                entity.setId(id);
+                entity.setStatus((byte) 4);
+                entity.setSyncId(userId);
+                entity.setSyncTime(now);
+                entity.setUpdId(userId);
+                entity.setUpdTime(now);
+                updateSelectiveById(entity);
+            });
         }
     }
 
@@ -314,7 +334,6 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
         List<OrderAdviceItemVO> orderAdviceItems = qcTreatmentItemMapper.selectOrderAdviceItemsByTreatmentId(id);
         orderAdviceItems.forEach(item->{
             QcAdviceUploadItemForm uploadItem = new QcAdviceUploadItemForm();
-            uploadItem.setMall_order_no(item.getOrderNo());
             uploadItem.setOrg_order_no(item.getOrderDetailId().toString());
             uploadItem.setItmMast_Code(item.getItemNum());
             uploadItem.setItmMast_Desc(item.getItemName());
@@ -322,17 +341,12 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
             uploadItem.setPackUOM_Desc(item.getUnitDesc());
             uploadItem.setOEORI_UnitCost(item.getPrice().toString());
             uploadItem.setOEORI_Price(item.getReceivedAmount().toString());
-            String qcCollected = "B";
-            String receiveDeptId = StringHelper.EMPTY;
-            String receiveDeptDesc = StringHelper.EMPTY;
             if (item.getQcCollected()) {
-                qcCollected = "P";
-                receiveDeptId = "3";
-                receiveDeptDesc = "艾维口腔门诊";
+                uploadItem.setMall_order_no(item.getOrderNo());
+                uploadItem.setOEORI_Billed("P");
+                uploadItem.setOEORI_RecDep_DR("3");
+                uploadItem.setRecDep_Desc("艾维口腔门诊");
             }
-            uploadItem.setOEORI_Billed(qcCollected);
-            uploadItem.setOEORI_RecDep_DR(receiveDeptId);
-            uploadItem.setRecDep_Desc(receiveDeptDesc);
             Date openTime = item.getOpenTime();
             uploadItem.setDate_Html(DateUtil.format(openTime));
             uploadItem.setTimeOrd_Html(DateUtil.format(openTime, TIME_FORMAT));

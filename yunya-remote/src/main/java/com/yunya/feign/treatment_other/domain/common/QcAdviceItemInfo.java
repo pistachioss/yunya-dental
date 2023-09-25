@@ -1,6 +1,7 @@
 package com.yunya.feign.treatment_other.domain.common;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.yunya.framework.common.utils.StringHelper;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -22,7 +23,7 @@ public class QcAdviceItemInfo implements Serializable {
     /** Mall平台唯一流水号 */
     @JSONField(name = "Mall_order_no")
     @ApiModelProperty("Mall平台唯一流水号")
-    private String Mall_order_no;
+    private String Mall_order_no = StringHelper.EMPTY;
 
     /** 医嘱项代码 */
     @JSONField(name = "ItmMast_Code")
@@ -57,7 +58,7 @@ public class QcAdviceItemInfo implements Serializable {
     /** 是否收费：P-已收费，流转类医嘱使用；B-未收费，本院项目 */
     @JSONField(name = "OEORI_Billed")
     @ApiModelProperty("是否收费：P-已收费，流转类医嘱使用；B-未收费，本院项目")
-    private String OEORI_Billed;
+    private String OEORI_Billed = "B";
 
     /** 备注 */
     @JSONField(name = "OEORI_DepProcNotes")
@@ -67,12 +68,12 @@ public class QcAdviceItemInfo implements Serializable {
     /** 接收科室：2-全程医疗全科门诊，3-艾维口腔门诊 */
     @JSONField(name = "OEORI_RecDep_DR")
     @ApiModelProperty("接收科室：2-全程医疗全科门诊，3-艾维口腔门诊")
-    private String OEORI_RecDep_DR;
+    private String OEORI_RecDep_DR = StringHelper.EMPTY;
 
     /** 接收科室描述 */
     @JSONField(name = "RecDep_Desc")
     @ApiModelProperty("接收科室描述")
-    private String RecDep_Desc;
+    private String RecDep_Desc = StringHelper.EMPTY;
 
     /** 处方号 */
     @JSONField(name = "OEORI_PrescNo")

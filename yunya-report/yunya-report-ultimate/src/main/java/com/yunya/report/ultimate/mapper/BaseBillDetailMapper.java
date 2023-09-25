@@ -2,11 +2,13 @@ package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.MultiClinicEmloyeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.StatEmpBill;
+import com.yunya.report.ultimate.enums.TreatmentTariffEnum;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -656,4 +658,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
     List<BillItemStatisticsDeductionDetailVO> billItemAmountDeductionDetailList(
             @Param("query") BillItemInfoQuery query);
+
+  List<BasePatientBehaviorTagVO> selectPatientTreatmentTariffTag(@Param("query") DateRangeQueryForm query, @Param("tagEnum") TreatmentTariffEnum tagEnum);
 }
