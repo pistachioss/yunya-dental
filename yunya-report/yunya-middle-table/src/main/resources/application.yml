@@ -179,3 +179,9 @@ hystrix:
                 isolation:
                     thread:
                         timeoutInMilliseconds: 30000
+
+
+# rabbitmq的自定义配置
+rabbitmq:
+    queues:
+        q1: DirectQueue_MiddleSingle

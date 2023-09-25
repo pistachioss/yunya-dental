@@ -130,6 +130,8 @@ public class RedisConstants implements Serializable {
   /** -----------------------------------患者信息--------------------------------------- */
   /** 患者信息 patient_base_info_{患者ID} */
   public static final String PATIENT_BASE_INFO = "patient_base_info_{}";
+  /** 患者推荐人信息 */
+  public static final String PATIENT_REFERRER = "patient:referrer:";
 
   /** 患者来源 */
   public static final String PATIENT_ORIGIN_INFO = "patient_origin:";

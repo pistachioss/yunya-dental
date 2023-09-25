@@ -10,6 +10,8 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientOriginInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginTreeVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
+import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -18,6 +20,7 @@ import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.model.TreeNode;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -44,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.RedisConstants.PATIENT_ORIGIN_INFO;
 
@@ -439,5 +443,45 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       redisUtils.set(key, patientOrigin);
     }
     return patientOrigin;
+  }
+
+  /**
+   * 查询患者的患者来源标签变更情况
+   *
+   * @param query
+   * @return
+   */
+  public List<BasePatientBehaviorTagVO> findPatientOriginChangeTag(DateRangeQueryForm query) {
+    List<BasePatientBehaviorTagVO> result = mapper.selectPatientOriginChangeTag(query);
+    return result.stream().filter(tag->StringHelper.isNotEmpty(tag.getTagName())).collect(Collectors.toList());
+  }
+
+  /**
+   * 查询患者来源的树列表，如果属于固定来源的数据，将拷贝父级来源数据作为其子级
+   *
+   * @return
+   */
+  public List<PatientOriginTreeVo> findPatientOriginTree() {
+    List<PatientOriginInfoVo> patientOriginInfoVos = patientOriginMapper.findAll();
+    List<PatientOriginTreeVo> originTree = initTree(patientOriginInfoVos);
+    originTree.stream().forEach(origin -> {
+      List<TreeNode> childrens = origin.getChildren();
+      if (StringHelper.isEmpty(childrens)) {
+        // 用父级来源构造子级来源
+        PatientOriginTreeVo child = new PatientOriginTreeVo();
+        BeanUtils.copyProperties(origin, child);
+        child.setChildren(null);
+        childrens.add(child);
+      } else {
+        boolean existEqualName = childrens.stream().filter(child -> child.getName().equals(origin.getName())).findAny().isPresent();
+        if (!existEqualName) {
+          PatientOriginTreeVo child = new PatientOriginTreeVo();
+          BeanUtils.copyProperties(origin, child);
+          child.setChildren(null);
+          childrens.add(0, child);
+        }
+      }
+    });
+    return originTree;
   }
 }

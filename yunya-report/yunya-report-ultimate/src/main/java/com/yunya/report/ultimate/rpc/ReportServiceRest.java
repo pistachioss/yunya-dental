@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.rpc;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
+import com.yunya.feign.report.domain.query.PatientFrequencyOfTreatmentQuery;
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
@@ -86,7 +87,7 @@ public class ReportServiceRest {
      * @return
      */
     @PostMapping("/patient/frequency-treatment")
-    public List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(@RequestBody DateRangeQueryForm query) {
+    public List<BasePatientBehaviorTagVO> findPatientFrequencyOfTreatment(@RequestBody PatientFrequencyOfTreatmentQuery query) {
         return patientTreatmentTagBiz.findPatientFrequencyOfTreatment(query);
     }
 
@@ -103,5 +104,16 @@ public class ReportServiceRest {
     @PostMapping(value = "/bill/detail/deduction")
     List<BaseBillDetail> billDeduction(@RequestBody CategoryIncomeQuery query) {
         return billDetailMapper.billDeduction(query);
+    }
+
+    /**
+     * 患者的治疗项目标签
+     *
+     * @param query
+     * @return
+     */
+    @PostMapping("/patient/treatment-tariff")
+    public List<BasePatientBehaviorTagVO> findPatientTreatmentTariffTag(@RequestBody DateRangeQueryForm query) throws InterruptedException {
+        return patientTreatmentTagBiz.findPatientTreatmentTariffTag(query);
     }
 }

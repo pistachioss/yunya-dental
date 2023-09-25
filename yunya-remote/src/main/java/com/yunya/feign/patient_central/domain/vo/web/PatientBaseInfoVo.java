@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -19,7 +18,7 @@ import java.util.List;
 @Data
 @ToString
 @ApiModel("返回患者信息模型")
-public class PatientBaseInfoVo implements Serializable {
+public class PatientBaseInfoVo {
     /**
      * 主键
      */

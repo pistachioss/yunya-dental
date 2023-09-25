@@ -1,0 +1,20 @@
+# 测试环境
+spring:
+  datasource:
+    host: 47.104.167.157
+    port: 3306
+    username: sa
+    password: Admin001!
+    name: test_yunya_clinc_base
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 47.104.167.157:8848
+        ip: 47.122.37.218
+
+  redis:
+    database: 2
+    host: 47.104.167.157
+    port: 6379
+    password: foobared

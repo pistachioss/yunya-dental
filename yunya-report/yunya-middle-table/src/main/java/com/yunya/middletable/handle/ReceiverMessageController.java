@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 @Component
-@RabbitListener(queues = {"DirectQueue_MiddleSingle"})
+@RabbitListener(queues = {"${rabbitmq.queues.q1}"})
 @Slf4j
 public class ReceiverMessageController {
   /** 组织 */

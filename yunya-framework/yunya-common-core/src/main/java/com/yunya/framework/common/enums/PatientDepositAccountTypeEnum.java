@@ -19,7 +19,9 @@ public enum PatientDepositAccountTypeEnum {
     /** 会员卡 */
     MEMBER(false, 0, "会员卡", "H", 5),
     /** 预付款 */
-    NORMAL_PREPAYMENT(false, 1, "预付款", "Y", 6)
+    NORMAL_PREPAYMENT(false, 1, "预付款", "Y", 6),
+    /** 全程医疗支付 */
+    QCYL_PREPAYMENT(false,4, "全程医疗支付", "QCYL", 102),
     ;
 
     /** 是否专项 */

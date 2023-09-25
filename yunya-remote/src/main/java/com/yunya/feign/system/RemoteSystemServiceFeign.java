@@ -489,6 +489,9 @@ public interface RemoteSystemServiceFeign {
   @GetMapping("/bj/company/list")
   List<Company> certBjCompanys();
 
+  @GetMapping("/xhq/company/list")
+  List<Company> xhqCompanys();
+
   /**
    * 根据会员类型id查询次一级的会员类型信息
    *

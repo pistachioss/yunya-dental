@@ -42,6 +42,9 @@
           <if test="queryForm.dictTypeId != null">
             and di.dictionary_type_id = #{queryForm.dictTypeId}
           </if>
+          <if test="queryForm.dictTypeName!=null and queryForm.dictTypeName!=''">
+            and dt.name = #{queryForm.dictTypeName}
+          </if>
           <if test="queryForm.inservice != null">
             and di.inservice = #{queryForm.inservice}
           </if>

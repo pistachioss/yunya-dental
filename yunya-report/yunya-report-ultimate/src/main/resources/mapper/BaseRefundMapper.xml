@@ -800,8 +800,11 @@
                         be.employee_name                             employeeName,
                         bti.item_name                                itemName,
                         TRUNCATE(brd.refund_amount, 2) as            workload
-        from base_refund_detail brd
-                 left join base_bill bb on bb.bill_id = bbd.bill_id
+        from (
+             select brd.*, bbd.bill_id from base_refund_detail brd
+             left join base_bill_detail bbd on bbd.bill_detail_id = brd.bill_detail_id
+         ) brd
+                 left join base_bill bb on bb.bill_id = brd.bill_id
                  left join base_patient bp on bp.patient_id = bb.patient_id
                  left join base_patient_origin_log log on log.patient_id = bp.patient_id
                  left join base_organization bo on bo.org_id = bb.org_id

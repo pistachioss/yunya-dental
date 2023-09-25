@@ -70,6 +70,21 @@ public class DictionaryItemController {
   }
 
   /**
+   * 根据条件查询字典明细列表（对外开放）
+   *
+   * @param queryForm 参数封装
+   * @return list
+   */
+  @ApiOperation("根据条件查询字典明细列表（对外开放）")
+  @ApiImplicitParam(name = "form", value = "字典明细全局查询参数封装模型", dataType = "DictQueryForm")
+  @PostMapping("/white/item/list")
+  public ResponseResult<PageInfo<DictionaryItemVO>> findDictItemList(
+      @RequestBody @Validated DictQueryForm queryForm) {
+    PageInfo<DictionaryItemVO> resultList = dictionaryItemBiz.findList(queryForm);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
    * 根据条件查询字典明细列表
    *
    * @param queryForm 参数封装

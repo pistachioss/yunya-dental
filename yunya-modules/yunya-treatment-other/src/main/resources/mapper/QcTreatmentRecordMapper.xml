@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.other.mapper.QcTreatmentRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.QcTreatmentRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="adm_no" property="admNo" jdbcType="VARCHAR" />
+    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="bill_id" property="billId" jdbcType="INTEGER" />
+    <result column="bill" property="billId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="verify_code" property="verifyCode" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="adm_date" property="admDate" jdbcType="TIMESTAMP" />
+    <result column="sync_id" property="syncId" jdbcType="INTEGER" />
+    <result column="sync_time" property="syncTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+    <insert id="saveByPrimaryKeySelective" keyProperty="id" keyColumn="id" useGeneratedKeys="true" parameterType="com.yunya.models.treatment_other.QcTreatmentRecord">
+            insert into qc_treatment_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="admNo!=null and admNo!=''">adm_no,</if>
+            <if test="orderRecordId!=null">order_record_id,</if>
+            <if test="patientId!=null">patient_id,</if>
+            <if test="billId!=null">bill_id,</if>
+            <if test="type!=null and type!=''">type,</if>
+            <if test="verifyCode!=null and verifyCode!=''">verify_code,</if>
+            <if test="remark!=null and remark!=''">remark,</if>
+            <if test="status!=null">status,</if>
+            <if test="inservice!=null">inservice,</if>
+            <if test="admDate!=null">adm_date,</if>
+            <if test="syncId!=null">sync_id,</if>
+            <if test="syncTime!=null">sync_time,</if>
+            <if test="updId!=null">upd_id,</if>
+            <if test="updTime!=null">upd_time,</if>
+
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="admNo!=null and admNo!=''"> #{admNo},</if>
+            <if test="orderRecordId!=null">#{orderRecordId},</if>
+            <if test="patientId!=null">#{patientId},</if>
+            <if test="billId!=null">#{billId},</if>
+            <if test="type!=null and type!=''">#{type},</if>
+            <if test="verifyCode!=null and verifyCode!=''">#{verifyCode},</if>
+            <if test="remark!=null and remark!=''">#{remark},</if>
+            <if test="status!=null">#{status},</if>
+            <if test="inservice!=null">#{inservice},</if>
+            <if test="admDate!=null">#{admDate},</if>
+            <if test="syncId!=null">#{syncId},</if>
+            <if test="syncTime!=null">#{syncTime},</if>
+            <if test="updId!=null">#{updId},</if>
+            <if test="updTime!=null">#{updTime},</if>
+
+        </trim>
+        ON DUPLICATE KEY UPDATE
+        <trim prefixOverrides="" suffixOverrides=",">
+            <if test="verifyCode!=null and verifyCode!=''"> verify_code= VALUES(verify_code),</if>
+            <if test="admDate!=null"> adm_date= VALUES(adm_date),</if>
+            <if test="updTime!=null"> upd_time= VALUES(upd_time),</if>
+        </trim>
+    </insert>
+
+    <select id="selectMallRecommondList"
+            resultType="com.yunya.feign.treatment_other.domain.vo.QcRecommondInfoVO">
+        SELECT
+            qtr.id,
+            qtr.adm_no AS admNo,
+            qci.customer_name AS customerName,
+            qci.id_card AS idCard,
+            qci.mobile,
+            qtr.type,
+            qtr.adm_date AS admDate,
+            qtr.patient_id AS patientId,
+            qtr.bill_id AS billId,
+            qtr.status
+        FROM qc_treatment_record qtr
+        LEFT JOIN qc_customer_info qci ON qtr.id = qci.qc_treatment_id
+        <where>
+            AND inservice = 1
+            <if test="query.search!=null and query.search!=''">
+                AND CONCAT(IFNULL(qci.customer_name, ''),IFNULL(qci.mobile, '')) LIKE CONCAT('%', #{query.search}, '%' )
+            </if>
+            <if test="query.type != null">
+                AND type = #{query.type}
+            </if>
+            <if test="query.verifyCode!=null and query.verifyCode!=''">
+                AND verify_code = #{query.verifyCode}
+            </if>
+            <if test="query.status != null">
+                AND status = #{query.status}
+            </if>
+            <if test="query.dateType==0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(adm_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(adm_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(adm_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(adm_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(adm_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(adm_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectQcTreatmentBindedByOrderId" resultType="com.yunya.feign.treatment.domain.vo.QcTreatmentVO">
+        SELECT
+            qcr.id AS qcTreatmentId,
+            qcr.adm_no AS admNo,
+            qcr.type,
+            IFNULL(qci.originAmount, 0) AS originAmount,
+            IFNULL(qci.originAmount, 0) AS receivedAmount
+        FROM qc_treatment_record qcr
+        LEFT JOIN (
+            SELECT
+                qc_treatment_id,
+                SUM(quantity * price) AS originAmount
+            FROM qc_treatment_item
+            WHERE inservice = 1
+            GROUP BY qc_treatment_id
+        ) qci ON qcr.id = qci.qc_treatment_id
+        <where>
+            qcr.inservice = 1
+            AND qcr.order_record_id = #{orderRecordId}
+        </where>
+    </select>
+
+    <select id="selectPatientEnableQcTreatmentRecord"
+          resultType="com.yunya.feign.treatment_other.domain.vo.QcRecommondInfoVO">
+        SELECT
+            qtr.adm_no AS admNo,
+            qci.customer_name AS customerName,
+            qci.id_card AS idCard,
+            qci.mobile,
+            qtr.type,
+            qtr.adm_date AS qcAdmDate,
+            qtr.patient_id AS patientId
+        FROM qc_treatment_record qtr
+        LEFT JOIN qc_customer_info qci ON qtr.id = qci.qc_treatment_id
+        <where>
+            AND inservice = 1
+            AND status = 2
+            AND patient_id = #{patientId}
+        </where>
+        ORDER BY adm_date DESC
+    </select>
+
+    <select id="selectPatientTreatmentById"
+            resultType="com.yunya.feign.treatment_other.domain.vo.QcCustomerTreatmentVO">
+        SELECT
+            qtr.id,
+            qtr.adm_no AS admNo,
+            qci.customer_name AS customerName,
+            qci.id_card AS idCard,
+            qci.mobile,
+            qci.sex,
+            qtr.type,
+            qtr.adm_date AS admDate,
+            qtr.patient_id AS patientId,
+            qtr.status,
+            qtr.verify_code AS verifyCode,
+            IFNULL(qti1.adviceItemExecAmount, 0) AS adviceItemExecAmount,
+            IFNULL(qti2.orderItemExecAmount, 0) AS orderItemExecAmount,
+            IFNULL(qti1.adviceItemExecAmount, 0) + IFNULL(qti2.orderItemExecAmount, 0) AS receivedTotalAmount,
+            qtr.sync_time AS syncTime
+        FROM qc_treatment_record qtr
+        LEFT JOIN qc_customer_info qci ON qtr.id = qci.qc_treatment_id
+        LEFT JOIN (
+            SELECT
+                qc_treatment_id,
+                SUM(received_amount) AS adviceItemExecAmount,
+            FROM qc_treatment_item
+            WHERE inservice = 1 AND qc_collected = 1
+            GROUP BY qc_treatment_id
+        ) qti1 ON qtr.id = qti1.qc_treatment_id
+        LEFT JOIN (
+            SELECT
+            qc_treatment_id,
+            SUM(received_amount) AS orderItemExecAmount,
+            FROM qc_treatment_item
+            WHERE inservice = 1 AND qc_collected = 0
+            GROUP BY qc_treatment_id
+        ) qti2 ON qtr.id = qti2.qc_treatment_id
+        <where>
+            AND qtr.id = #{id}
+        </where>
+    </select>
+
+    <select id="selectQcTreatmentListByIds" resultType="com.yunya.models.treatment_other.QcTreatmentRecord">
+        SELECT * FROM qc_treatment_record
+        <where>
+            AND inservice = 1
+            AND id in
+            <foreach collection="ids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+        ORDER BY type ASC, id ASC
+    </select>
+
+    <select id="selectWait4UploadTreatmentList"
+            resultType="com.yunya.feign.treatment_other.domain.vo.Wait4UploadTreatmentVO">
+        SELECT
+            qtr.id AS qcTreatmentId,
+            qtr.bill_id AS billId,
+            qtr.patient_id AS patientId,
+            qtr.adm_no AS admNo,
+            IFNULL(qti1.adviceItemExecAmount, 0) AS adviceItemExecAmount,
+            IFNULL(qti1.adviceItemAmount, 0) - IFNULL(qti1.adviceItemExecAmount, 0) AS unAdviceItemExecAmount,
+            IFNULL(qti2.orderItemExecAmount, 0) AS orderItemExecAmount,
+            IFNULL(qti1.adviceItemExecAmount, 0) + IFNULL(qti2.orderItemExecAmount, 0) AS receivedTotalAmount
+        FROM qc_treatment_record qtr
+        LEFT JOIN (
+            SELECT
+            qc_treatment_id,
+            SUM(quantity * price) AS adviceItemAmount,
+            SUM(received_amount) AS adviceItemExecAmount,
+            FROM qc_treatment_item
+            WHERE inservice = 1 AND qc_collected = 1
+            GROUP BY qc_treatment_id
+        ) qti1 ON qtr.id = qti1.qc_treatment_id
+        LEFT JOIN (
+            SELECT
+            qc_treatment_id,
+            SUM(received_amount) AS orderItemExecAmount,
+            FROM qc_treatment_item
+            WHERE inservice = 1 AND qc_collected = 0
+            GROUP BY qc_treatment_id
+        ) qti2 ON qtr.id = qti2.qc_treatment_id
+        <where>
+            AND qtr.inservice = 1
+            AND qtr.status = 3
+            <if test="query.billIds!=null and query.billIds.size()>0">
+                and qtr.bill_id in
+                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER qtr.id DESC
+    </select>
+</mapper>

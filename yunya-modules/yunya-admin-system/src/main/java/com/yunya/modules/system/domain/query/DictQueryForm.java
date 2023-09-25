@@ -36,6 +36,9 @@ public class DictQueryForm implements Serializable {
   /** 字典类型ID */
   @ApiModelProperty("字典类型ID（查询字典数据传入）")
   private Integer dictTypeId;
+
+  @ApiModelProperty("字典类型名称（精确查询）")
+  private String dictTypeName;
   /** 字典名称 */
   @ApiModelProperty("字典名称")
   private String name;

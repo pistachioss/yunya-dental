@@ -1,14 +1,12 @@
 package com.yunya.feign.treatment.domain.form;
 
-import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
@@ -27,7 +25,8 @@ public class QcTreatmentImportForm implements Serializable {
     private List<Integer> qcTreatmentIds;
 
     /** 订单id */
-    @ApiModelProperty("订单id")
+    @ApiModelProperty(value = "订单id", required = true)
+    @NotNull(message = "订单id不能为空")
     private Integer orderRecordId;
 
     /** 账单id */

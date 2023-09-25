@@ -327,6 +327,11 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
     return null;
   }
 
+    @Override
+    public List<Company> xhqCompanys() {
+        return null;
+    }
+
   @Override
   public MemberType findSecondaryMemberTypeById(Integer id) {
     return null;

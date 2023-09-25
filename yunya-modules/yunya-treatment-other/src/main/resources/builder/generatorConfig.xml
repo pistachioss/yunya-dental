@@ -14,7 +14,7 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_treatment_other?useUnicode=true"
+                        connectionURL="jdbc:mysql://47.104.167.157:3306/test_yunya_treatment_other?useUnicode=true"
                         userId="sa"
                         password="Admin001!">
         </jdbcConnection>
@@ -32,6 +32,6 @@
         <!--<table tableName="visiting_record" domainObjectName="VisitingRecord"/>-->
         <!--<table tableName="visiting_remind" domainObjectName="VisitingRemind"/>-->
         <!--<table tableName="x_ray_film" domainObjectName="XRayFilm"/>-->
-        <table tableName="periodontal_records" domainObjectName="PeriodontalRecords"/>
+        <table tableName="qc_customer_info" domainObjectName="QcCustomerInfo"/>
     </context>
 </generatorConfiguration>
