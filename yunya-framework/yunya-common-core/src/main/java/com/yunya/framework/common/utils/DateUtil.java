@@ -1308,4 +1308,41 @@ public class DateUtil {
       throw new UnsupportedOperationException("unsupported level");
     }
   }
+
+  /**
+   * 判断给定值是否在指定范围内闭区间[lower, upper]
+   *
+   * @param val
+   * @param lowwer 为null，则表示无下限
+   * @param upper 为null，则表示无上限
+   * @return
+   */
+  public static boolean betweenAnd(String val, String lowwer, String upper) {
+    if (StringHelper.isNull(val)) {
+      return false;
+    }
+    boolean between = false;
+    boolean and = false;
+    if (StringHelper.isNull(lowwer)) {
+      between = true;
+    } else if (cmpYearMonthDate(val, lowwer) >= 0) {
+      between = true;
+    }
+
+    if (StringHelper.isNull(upper)) {
+      and = true;
+    } else if (cmpYearMonthDate(val, upper) <= 0) {
+      and = true;
+    }
+    return between && and;
+  }
+
+  public static int cmpYearMonthDate(String d1, String d2) {
+    if (d1.matches(MONTH_REGEX)) { // 月
+      return dateFieldDiff(d1, d2, Calendar.MONTH);
+    } else if (d1.matches(YEAR_REGEX)) { // 年
+      return dateFieldDiff(d1, d2, Calendar.YEAR);
+    }
+    return parse2Date(d1).compareTo(parse2Date(d2));
+  }
 }

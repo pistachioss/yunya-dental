@@ -1,11 +1,13 @@
 package com.yunya.feign.treatment_other.factory;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
 import com.yunya.feign.treatment.domain.vo.QcRecommondOrderVO;
 import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
+import com.yunya.feign.treatment_other.domain.query.TariffPackageDetailQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
@@ -79,6 +81,11 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
     @Override
     public void tombstoneUploadFile(MedicalRayFilmModel model) {
 
+    }
+
+    @Override
+    public PageInfo<TariffPackageDetailVO> findPackageList(TariffPackageDetailQuery query) {
+        return null;
     }
 
     @Override

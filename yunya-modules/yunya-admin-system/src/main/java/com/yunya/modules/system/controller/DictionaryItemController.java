@@ -9,8 +9,8 @@ import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.system.biz.DictionaryItemBiz;
 import com.yunya.modules.system.domain.form.DictForm;
 import com.yunya.modules.system.domain.model.DictionaryItemModel;
-import com.yunya.modules.system.domain.query.DictQueryForm;
-import com.yunya.modules.system.vo.DictionaryItemVO;
+import com.yunya.feign.system.query.DictQueryForm;
+import com.yunya.feign.system.vo.DictionaryItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -64,21 +64,6 @@ public class DictionaryItemController {
   @ApiImplicitParam(name = "form", value = "字典明细全局查询参数封装模型", dataType = "DictQueryForm")
   @PostMapping("/item/list")
   public ResponseResult<PageInfo<DictionaryItemVO>> findList(
-      @RequestBody @Validated DictQueryForm queryForm) {
-    PageInfo<DictionaryItemVO> resultList = dictionaryItemBiz.findList(queryForm);
-    return ResponseUtil.success(resultList);
-  }
-
-  /**
-   * 根据条件查询字典明细列表（对外开放）
-   *
-   * @param queryForm 参数封装
-   * @return list
-   */
-  @ApiOperation("根据条件查询字典明细列表（对外开放）")
-  @ApiImplicitParam(name = "form", value = "字典明细全局查询参数封装模型", dataType = "DictQueryForm")
-  @PostMapping("/white/item/list")
-  public ResponseResult<PageInfo<DictionaryItemVO>> findDictItemList(
       @RequestBody @Validated DictQueryForm queryForm) {
     PageInfo<DictionaryItemVO> resultList = dictionaryItemBiz.findList(queryForm);
     return ResponseUtil.success(resultList);

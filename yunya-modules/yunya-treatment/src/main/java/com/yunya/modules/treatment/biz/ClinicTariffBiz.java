@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.form.ClinicItemMemberPriceForm;
@@ -12,14 +13,16 @@ import com.yunya.feign.treatment.domain.form.MemberUniteDiscountForm;
 import com.yunya.feign.treatment.domain.model.ClinicTariffSwitchModel;
 import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
-import com.yunya.feign.treatment.domain.vo.BaseCategoryInfoVO;
-import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
-import com.yunya.feign.treatment.domain.vo.BaseTariffVO;
-import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
+import com.yunya.feign.treatment.domain.query.TariffPackageQueryForm;
+import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
+import com.yunya.feign.treatment_other.domain.query.TariffPackageDetailQuery;
+import com.yunya.feign.treatment_other.domain.vo.TariffPackageDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -27,6 +30,7 @@ import com.yunya.models.system.MemberType;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicTariff;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
+import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
 import com.yunya.modules.treatment.mapper.BaseTariffMapper;
 import com.yunya.modules.treatment.mapper.ClinicTariffMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +74,10 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
   @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
   /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
+  /** 基础商品表 */
+  private BaseOralTariffMapper baseOralTariffMapper;
+  /** 就诊其他 */
+  @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
   /** 线程池 */
   @Resource(name = "treatmentThreadPool")
   private ExecutorService executorService;
@@ -579,5 +587,66 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
           });
       latch.await();
     }
+  }
+
+  public PageInfo<ClinicTariffVO> findPackageDetail(TariffPackageQueryForm queryForm) {
+    Integer orgId = queryForm.getOrgId();
+    TariffPackageDetailQuery query = BeanCopierUtils.generalCopyBean(queryForm, TariffPackageDetailQuery.class);
+    PageInfo pageInfo = treatmentOtherFeign.findPackageList(query);
+    List<TariffPackageDetailVO> packageList = pageInfo.getList();
+    List<ClinicTariffVO> result = Lists.newArrayList();
+    List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+    if (StringHelper.isNotEmpty(memberTypes)) {
+      packageList.forEach(item -> {
+        ClinicTariffVO vo = new ClinicTariffVO();
+        Byte itemType = item.getItemType();
+        Integer itemId = item.getItemId();
+        String englishName = null;
+        String name = null;
+        BigDecimal price = null;
+        String number = null;
+        String unit = null;
+        String categoryName = null;
+        Integer categoryId = null;
+        String categoryNumber = null;
+        if (itemType.intValue() == 0) {
+          BaseTariffInfoVO tariffInfo = baseTariffMapper.selectBaseTariffInfoById(itemId);
+          englishName = tariffInfo.getEnglishName();
+          name = tariffInfo.getName();
+          price = tariffInfo.getPrice();
+          number = tariffInfo.getItemNumber();
+          unit = tariffInfo.getUnit();
+          categoryName = tariffInfo.getTariffCategoryNumber();
+          categoryId = tariffInfo.getTariffCategoryId();
+          categoryNumber = tariffInfo.getTariffCategoryNumber();
+        } else {
+          BaseOralTariffInfoVO tariffInfo = baseOralTariffMapper.selectBaseOralTariffInfoById(itemId);
+          englishName = tariffInfo.getEnglishName();
+          name = tariffInfo.getName();
+          price = tariffInfo.getPrice();
+          number = tariffInfo.getItemNumber();
+          unit = tariffInfo.getUnit();
+          categoryName = tariffInfo.getOralTariffCategoryName();
+          categoryId = tariffInfo.getOralTariffCategoryId();
+          categoryNumber = tariffInfo.getOralTariffCategoryNumber();
+        }
+        vo.setTariffId(itemId);
+        vo.setEnglishName(englishName);
+        vo.setName(name);
+        vo.setPrice(price);
+        vo.setNumber(number);
+        vo.setUnit(unit);
+        vo.setTariffCategoryName(categoryName);
+        vo.setOrgId(orgId);
+        vo.setInservice(true);
+        vo.setQuantity(item.getQuantity());
+        vo.setTariffCategoryId(categoryId);
+        vo.setTariffCategoryNumber(categoryNumber);
+        setClinicTariffMemberPrice(Maps.newHashMapWithExpectedSize(16), memberTypes, orgId, vo);
+        result.add(vo);
+      });
+    }
+    pageInfo.setList(result);
+    return pageInfo;
   }
 }

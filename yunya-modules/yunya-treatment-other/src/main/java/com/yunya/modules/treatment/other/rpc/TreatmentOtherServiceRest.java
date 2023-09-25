@@ -1,9 +1,11 @@
 package com.yunya.modules.treatment.other.rpc;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
 import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
+import com.yunya.feign.treatment_other.domain.query.TariffPackageDetailQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
@@ -14,6 +16,7 @@ import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.other.biz.QcTreatmentRecordBiz;
+import com.yunya.modules.treatment.other.biz.TariffPackageBiz;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import com.yunya.modules.treatment.other.biz.XRayFilmBiz;
 import com.yunya.modules.treatment.other.biz.XUploadFileBiz;
@@ -50,6 +53,7 @@ public class TreatmentOtherServiceRest {
   @Autowired private XRayFilmBiz xRayFilmBiz;
 
   @Autowired private XUploadFileBiz xUploadFileBiz;
+  @Autowired private TariffPackageBiz tariffPackageBiz;
   @Autowired private QcTreatmentRecordBiz qcTreatmentRecordBiz;
 
   /**
@@ -224,6 +228,18 @@ public class TreatmentOtherServiceRest {
   @PutMapping(value = "/xUploadFile/tombstone")
   public void tombstoneUploadFile(@RequestBody @Validated MedicalRayFilmModel model) {
     xUploadFileBiz.tombstone(model);
+  }
+
+  /**
+   * 条件查询项目组合明细
+   *
+   * @param query
+   * @return
+   */
+  @ApiOperation("条件查询项目组合明细")
+  @PostMapping("/package/detail")
+  public PageInfo<TariffPackageDetailVO> findPackageList(@RequestBody @Validated TariffPackageDetailQuery query) {
+    return tariffPackageBiz.findPackageDetailList(query);
   }
 
   /**

@@ -29,8 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
-import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BasePatient;
 
 /**
  * 简单介绍:</br>
@@ -144,12 +143,10 @@ public class PatientServiceRest {
     return patientMemberInfoBiz.selectList(patientMemberInfo);
   }
 
-  @ApiOperation("修改患者信息")
-  @RequestMapping(value = "/updatePatientInfo", method = RequestMethod.POST)
-  public void updatePatientInfo(@RequestBody PatientBaseInfo patientBaseInfo) {
-    patientBaseInfoBiz.updateSelectiveById(patientBaseInfo);
-    rabbitMqServiceFeign.sendMessage(patientBaseInfo.getId(), 1, BasePatient);
-    redisUtils.delete(PATIENT_BASE_INFO + patientBaseInfo.getId());
+  @ApiOperation("初始化患者病历号")
+  @RequestMapping(value = "/generateMedicalNumber", method = RequestMethod.POST)
+  public String generateMedicalNumber(@RequestBody PatientBaseInfo patientBaseInfo) {
+    return patientBaseInfoBiz.generateMedicalNumber(patientBaseInfo.getOrgId(), patientBaseInfo);
   }
 
   @ApiOperation("查询患者信息")
@@ -162,12 +159,6 @@ public class PatientServiceRest {
   @RequestMapping(value = "/findPatientInfoList", method = RequestMethod.POST)
   public List<PatientBaseInfo> findPatientInfoList(@RequestBody PatientBaseInfo patientBaseInfo) {
     return patientBaseInfoBiz.selectList(patientBaseInfo);
-  }
-
-  @ApiOperation("根据门诊id获取病历号后六位")
-  @RequestMapping(value = "/medical/{orgId}", method = RequestMethod.GET)
-  public String findMedicalNumberByOrgId(@PathVariable(value = "orgId") Integer orgId) {
-    return patientBaseInfoBiz.findMedicalNumberByOrgId(orgId);
   }
 
   @ApiOperation("根据门诊编号获取可用的病历号后六位")

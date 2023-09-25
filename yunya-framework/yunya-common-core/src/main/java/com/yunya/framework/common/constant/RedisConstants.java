@@ -136,6 +136,8 @@ public class RedisConstants implements Serializable {
   /** 患者来源 */
   public static final String PATIENT_ORIGIN_INFO = "patient_origin:";
 
+  /** 患者病历号生成锁 */
+  public static final String MEDICAL_GENERAT_LOCK = "lock:medical:generate:";
   /** 会员卡卡号生成锁 */
   public static final String MEMBER_GENERAT_LOCK = "lock:member:generate:";
   /** 预付款卡号生成锁 */
@@ -182,7 +184,7 @@ public class RedisConstants implements Serializable {
   /** 会员授权码 */
   public static final String MEMBER_AUTH_CODE = "member:auth:code";
 
-    /**
+  /**
    * 设置key中的占位符
    *
    * @param keyPrefix key前缀

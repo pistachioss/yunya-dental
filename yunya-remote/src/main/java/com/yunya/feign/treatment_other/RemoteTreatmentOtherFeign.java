@@ -1,10 +1,12 @@
 package com.yunya.feign.treatment_other;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
 import com.yunya.feign.treatment.domain.vo.QcRecommondOrderVO;
 import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
+import com.yunya.feign.treatment_other.domain.query.TariffPackageDetailQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
@@ -145,6 +147,16 @@ public interface RemoteTreatmentOtherFeign {
   @ApiOperation(value = "根据条件逻辑删除上传文件")
   @PutMapping(value = "api/treatment/other/xUploadFile/tombstone")
   void tombstoneUploadFile(@RequestBody @Validated MedicalRayFilmModel model);
+
+  /**
+   * 条件查询项目组合明细
+   *
+   * @param query
+   * @return
+   */
+  @ApiOperation("条件查询项目组合明细")
+  @PostMapping("api/treatment/other/package/detail")
+  PageInfo<TariffPackageDetailVO> findPackageList(@RequestBody @Validated TariffPackageDetailQuery query);
 
   /**
    * 全程医疗登记单导入
