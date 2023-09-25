@@ -28,9 +28,9 @@ public class QcTreatmentVO implements Serializable {
     @ApiModelProperty("登记号")
     private String admNo;
 
-    /** 类型：1-医嘱单，2-引导单 */
-    @ApiModelProperty("类型：1-医嘱单，2-引导单")
-    private Byte type;
+    /** 类型：O-医嘱单，L-引导单 */
+    @ApiModelProperty("类型：O-医嘱单，L-引导单")
+    private String type;
 
     /** 原价总计 */
     @ApiModelProperty("原价总计")

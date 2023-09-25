@@ -1,6 +1,7 @@
 package com.yunya.feign.treatment_other.domain.form;
 
 import com.yunya.feign.treatment_other.domain.common.QcPatientInfo;
+import com.yunya.feign.treatment_other.domain.common.QcTreatmentInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -23,11 +24,11 @@ public class QcAdviceUploadForm implements Serializable {
 
     /** 患者信息 */
     @ApiModelProperty("患者信息")
-    private QcPatientInfo patient_info;
+    private QcPatientInfo pat_info;
 
     /** 就诊信息 */
     @ApiModelProperty("就诊信息")
-    private QcAdviceUploadTreatmentForm adm_info;
+    private QcTreatmentInfo adm_info;
 
     /** 医嘱信息列表 */
     @ApiModelProperty("医嘱信息列表")

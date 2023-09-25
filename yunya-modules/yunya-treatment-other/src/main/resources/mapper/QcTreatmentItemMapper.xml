@@ -9,7 +9,6 @@
     <result column="qc_treatment_id" property="qcTreatmentId" jdbcType="INTEGER" />
     <result column="order_no" property="orderNo" jdbcType="VARCHAR" />
     <result column="order_detail_id" property="orderDetailId" jdbcType="INTEGER" />
-    <result column="item_id" property="itemId" jdbcType="VARCHAR" />
     <result column="item_desc" property="itemDesc" jdbcType="VARCHAR" />
     <result column="item_num" property="itemNum" jdbcType="VARCHAR" />
     <result column="quantity" property="quantity" jdbcType="INTEGER" />
@@ -18,21 +17,124 @@
     <result column="price" property="price" jdbcType="DECIMAL" />
     <result column="qc_collected" property="qcCollected" jdbcType="BIT" />
     <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
-    <result column="collected_amount" property="collectedAmount" jdbcType="DECIMAL" />
+    <result column="executor_id" property="executorId" jdbcType="INTEGER" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
     <result column="open_time" property="openTime" jdbcType="TIMESTAMP" />
-    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
-    <select id="selectListByQcTreatmentId" resultType="com.yunya.models.treatment_other.QcTreatmentItem">
-        SELECT
 
+    <insert id="saveByPrimaryKeySelective" keyProperty="id" keyColumn="id" useGeneratedKeys="true" parameterType="com.yunya.models.treatment_other.QcTreatmentRecord">
+        insert into qc_treatment_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="qcTreatmentId!=null">qc_treatment_id,</if>
+            <if test="orderNo!=null and orderNo!=''">order_no,</if>
+            <if test="orderDetailId!=null">order_detail_id,</if>
+            <if test="itemDesc!=null and itemDesc!=''">item_desc,</if>
+            <if test="itemNum!=null and itemNum!=''">item_num,</if>
+            <if test="quantity!=null">quantity,</if>
+            <if test="unitDesc!=null and unitDesc!=''">unit_desc,</if>
+            <if test="status!=null">status,</if>
+            <if test="price!=null">price,</if>
+            <if test="qcCollected!=null">qc_collected,</if>
+            <if test="receivedAmount!=null">received_amount,</if>
+            <if test="executorId!=null">executor_id,</if>
+            <if test="remark!=null and remark!=''">remark,</if>
+            <if test="inservice!=null">inservice,</if>
+            <if test="openTime!=null">open_time,</if>
+            <if test="updId!=null">upd_id,</if>
+            <if test="updTime!=null">upd_time,</if>
+
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="qcTreatmentId!=null">#{qcTreatmentId},</if>
+            <if test="orderNo!=null and orderNo!=''"> #{orderNo},</if>
+            <if test="orderDetailId!=null">#{orderDetailId},</if>
+            <if test="itemDesc!=null and itemDesc!=''">#{itemDesc},</if>
+            <if test="itemNum!=null and itemNum!=''">#{itemNum},</if>
+            <if test="quantity!=null">#{quantity},</if>
+            <if test="unitDesc!=null and unitDesc!=''">#{unitDesc},</if>
+            <if test="status!=null">#{status},</if>
+            <if test="price!=null">#{price},</if>
+            <if test="qcCollected!=null">#{qcCollected},</if>
+            <if test="receivedAmount!=null">#{receivedAmount},</if>
+            <if test="executorId!=null">#{executorId},</if>
+            <if test="remark!=null and remark!=''">#{remark},</if>
+            <if test="inservice!=null">#{inservice},</if>
+            <if test="openTime!=null">#{openTime},</if>
+            <if test="updId!=null">#{updId},</if>
+            <if test="updTime!=null">#{updTime},</if>
+
+        </trim>
+        ON DUPLICATE KEY UPDATE
+        <trim prefixOverrides="" suffixOverrides=",">
+            <if test="itemDesc!=null and itemDesc!=''"> item_desc= VALUES(item_desc),</if>
+            <if test="quantity!=null"> quantity= VALUES(quantity),</if>
+            <if test="unitDesc!=null and unitDesc!=''"> unit_desc= VALUES(unit_desc),</if>
+            <if test="price!=null"> price= VALUES(price),</if>
+            <if test="remark!=null and remark!=''"> remark= VALUES(remark),</if>
+            <if test="openTime!=null"> open_time= VALUES(open_time),</if>
+        </trim>
+    </insert>
+
+    <select id="selectAdviceItemsByTreatmentId" resultType="com.yunya.models.treatment_other.QcTreatmentItem">
+        SELECT
+            id,
+            qc_treatment_id AS qcTreatmentId,
+            order_no AS orderNo,
+            item_desc AS itemDesc,
+            item_num AS itemNum,
+            quantity,
+            price,
+            received_amount AS receivedAmount,
+            open_time AS openTime,
+            status,
+            remark,
+            qc_collected AS qcCollected
+        FROM qc_treatment_item
+        <where>
+            AND qc_collected = 1
+            AND qc_treatment_id = #{qcTreatmentId}
+        </where>
+    </select>
+
+    <select id="selectOrderAdviceItemsByTreatmentId"
+            resultType="com.yunya.feign.treatment_other.domain.vo.OrderAdviceItemVO">
+        SELECT
+            order_no AS orderNo,
+            order_detail_id AS orderDetailId,
+            unit_desc AS unitDesc,
+            open_time AS openTime,
+            item_num,
+            item_desc AS itemName,
+            quantity,
+            price,
+            quantity * price AS originAmount,
+            received_amount AS receivedAmount,
+            remark,
+            qc_collected AS qcCollected,
+            IF(executor_id IS NULL, 0, 1) AS isExec,
+            executor_id AS executorId
         FROM qc_treatment_item
         <where>
             AND inservice = 1
-            AND
+            AND qc_treatment_id = #{qcTreatmentId}
+        </where>
+    </select>
+
+    <select id="selectQcTreatmentItemsByTreatmentId"
+            resultType="com.yunya.models.treatment_other.QcTreatmentItem">
+        SELECT
+            *
+        FROM qc_treatment_item
+        <where>
+            AND inservice = 1
+            AND qc_treatment_id = #{qcTreatmentId}
+            <if test="qcCollected != null">
+                AND qc_collected = #{qcCollected}
+            </if>
         </where>
     </select>
 </mapper>

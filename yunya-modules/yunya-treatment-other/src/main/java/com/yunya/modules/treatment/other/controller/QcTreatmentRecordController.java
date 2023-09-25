@@ -1,8 +1,11 @@
 package com.yunya.modules.treatment.other.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.treatment.domain.query.BillBindingQcTreatmentQuery;
 import com.yunya.feign.treatment_other.domain.query.QcRecommondInfoQuery;
+import com.yunya.feign.treatment_other.domain.vo.QcRecommondDetailVO;
 import com.yunya.feign.treatment_other.domain.vo.QcRecommondInfoVO;
+import com.yunya.feign.treatment_other.domain.vo.Wait4UploadTreatmentVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -35,24 +38,36 @@ public class QcTreatmentRecordController {
      * @return
      */
     @ApiOperation("条件查询mall推荐列表")
-    @PostMapping("/recommond/list")
-    public ResponseResult<PageInfo<QcRecommondInfoVO>> findMallRecommondList(QcRecommondInfoQuery query) {
+    @PostMapping("/treatment/list")
+    public ResponseResult<PageInfo<QcRecommondInfoVO>> findQcTreatmentList(@RequestBody @Validated QcRecommondInfoQuery query) {
         PageInfo<QcRecommondInfoVO> pageInfo = qcTreatmentRecordBiz.findMallRecommondList(query);
         return ResponseUtil.success(pageInfo);
     }
 
     /**
-     * mall平台医嘱核销
+     * 根据全程就诊记录id查询详情
      *
-     * @param id
+     * @return
+     */
+    @ApiOperation("根据全程就诊记录id查询详情")
+    @GetMapping("/treatment/{id}")
+    public ResponseResult<QcRecommondDetailVO> findById(@PathVariable(value = "id") Integer id) {
+        return ResponseUtil.success(qcTreatmentRecordBiz.findById(id));
+    }
+
+
+
+    /**
+     * 医嘱单核销：根据核销码拉取全程就诊记录隐藏数据
+     *
      * @param verifyCode
      * @return
      */
     @CurrentUser
-    @ApiOperation("mall平台医嘱核销")
-    @PutMapping("/verify/{id}/{verifyCode}")
-    public ResponseResult verify(@PathVariable(value = "id") Integer id, @PathVariable(value = "verifyCode") String verifyCode) {
-        qcTreatmentRecordBiz.verify(id, verifyCode);
+    @ApiOperation("医嘱单核销：根据核销码拉取全程就诊记录隐藏数据")
+    @PutMapping("/verify/{verifyCode}")
+    public ResponseResult verify(@PathVariable(value = "verifyCode") String verifyCode) {
+        qcTreatmentRecordBiz.verify(verifyCode);
         return ResponseUtil.success();
     }
 
@@ -72,21 +87,6 @@ public class QcTreatmentRecordController {
     }
 
     /**
-     * 医嘱执行
-     *
-     * @param id
-     * @return
-     */
-    @CurrentUser
-    @ApiOperation("医嘱执行")
-    @PutMapping("/execute/{id}")
-    public ResponseResult execute(@PathVariable(value = "id") Integer id) {
-        qcTreatmentRecordBiz.execute(id);
-        return ResponseUtil.success();
-    }
-
-
-    /**
      * 同步医嘱上传
      *
      * @param qcTreatmentIds
@@ -96,7 +96,7 @@ public class QcTreatmentRecordController {
     @ApiOperation("同步医嘱上传")
     @PostMapping("/adviceUpload")
     public ResponseResult doctorAdviceUpload(@RequestBody @Validated List<Integer> qcTreatmentIds) {
-        qcTreatmentRecordBiz.doctorAdviceUpload(qcTreatmentIds);
+        qcTreatmentRecordBiz.uploadAdviceItems(qcTreatmentIds);
         return ResponseUtil.success();
     }
 
@@ -110,6 +110,18 @@ public class QcTreatmentRecordController {
     @GetMapping("/treatment/{patientId}")
     public ResponseResult<List<QcRecommondInfoVO>> findPatientQcTreatmentRecord(@PathVariable(value = "patientId") Integer patientId) {
         List<QcRecommondInfoVO> pageInfo = qcTreatmentRecordBiz.findPatientEnableQcTreatmentRecord(patientId);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 查询待同步账单记录列表
+     *
+     * @return
+     */
+    @ApiOperation("查询待同步账单记录列表")
+    @PostMapping("/treatment/wait4Upload")
+    public ResponseResult<PageInfo<Wait4UploadTreatmentVO>> findWait4UploadTreatmentList(@RequestBody @Validated BillBindingQcTreatmentQuery query) {
+        PageInfo<Wait4UploadTreatmentVO> pageInfo = qcTreatmentRecordBiz.findWait4UploadTreatmentList(query);
         return ResponseUtil.success(pageInfo);
     }
 }

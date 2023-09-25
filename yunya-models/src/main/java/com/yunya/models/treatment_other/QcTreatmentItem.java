@@ -30,18 +30,6 @@ public class QcTreatmentItem {
     private Integer orderDetailId;
 
     /**
-     * 项目类型：0-价目，1-商品
-     */
-    @Column(name = "item_type")
-    private Byte itemType;
-
-    /**
-     * 平台项目id
-     */
-    @Column(name = "item_id")
-    private String itemId;
-
-    /**
      * 医嘱项描述
      */
     @Column(name = "item_desc")
@@ -65,7 +53,7 @@ public class QcTreatmentItem {
     private String unitDesc;
 
     /**
-     * 医嘱项状态：0-开立，1-核实，2-作废，4-停止，6-执行，12-撤销
+     * 医嘱项状态：1-核实，2-作废，4-停止，6-执行，12-撤销
      */
     private Byte status;
 
@@ -75,10 +63,10 @@ public class QcTreatmentItem {
     private BigDecimal price;
 
     /**
-     * 全程医疗代收总额or执行医嘱总额
+     * 执行人id
      */
-    @Column(name = "collected_amount")
-    private BigDecimal collectedAmount;
+    @Column(name = "executor_id")
+    private Integer executorId;
 
     /**
      * 是否全程代收
@@ -111,14 +99,14 @@ public class QcTreatmentItem {
     /**
      * 更新人id
      */
-    @Column(name = "upt_id")
-    private Integer uptId;
+    @Column(name = "upd_id")
+    private Integer updId;
 
     /**
      * 更新时间
      */
-    @Column(name = "upt_time")
-    private Date uptTime;
+    @Column(name = "upd_time")
+    private Date updTime;
 
     /**
      * @return id
@@ -186,42 +174,6 @@ public class QcTreatmentItem {
      */
     public void setOrderDetailId(Integer orderDetailId) {
         this.orderDetailId = orderDetailId;
-    }
-
-    /**
-     * 项目类型：0-价目，1-商品
-     *
-     * @return
-     */
-    public Byte getItemType() {
-        return itemType;
-    }
-
-    /**
-     * 项目类型：0-价目，1-商品
-     *
-     * @param itemType
-     */
-    public void setItemType(Byte itemType) {
-        this.itemType = itemType;
-    }
-
-    /**
-     * 获取平台项目id
-     *
-     * @return item_id - 平台项目id
-     */
-    public String getItemId() {
-        return itemId;
-    }
-
-    /**
-     * 设置平台项目id
-     *
-     * @param itemId 平台项目id
-     */
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
     }
 
     /**
@@ -297,18 +249,18 @@ public class QcTreatmentItem {
     }
 
     /**
-     * 获取医嘱项状态：0-开立，1-核实，2-作废，4-停止，6-执行，12-撤销
+     * 获取医嘱项状态：1-核实，2-作废，4-停止，6-执行，12-撤销
      *
-     * @return status - 医嘱项状态：0-开立，1-核实，2-作废，4-停止，6-执行，12-撤销
+     * @return status - 医嘱项状态：1-核实，2-作废，4-停止，6-执行，12-撤销
      */
     public Byte getStatus() {
         return status;
     }
 
     /**
-     * 设置医嘱项状态：0-开立，1-核实，2-作废，4-停止，6-执行，12-撤销
+     * 设置医嘱项状态：1-核实，2-作废，4-停止，6-执行，12-撤销
      *
-     * @param status 医嘱项状态：0-开立，1-核实，2-作废，4-停止，6-执行，12-撤销
+     * @param status 医嘱项状态：1-核实，2-作废，4-停止，6-执行，12-撤销
      */
     public void setStatus(Byte status) {
         this.status = status;
@@ -330,24 +282,6 @@ public class QcTreatmentItem {
      */
     public void setPrice(BigDecimal price) {
         this.price = price;
-    }
-
-    /**
-     * 获取全程医疗代收总额or执行医嘱总额
-     *
-     * @return
-     */
-    public BigDecimal getCollectedAmount() {
-        return collectedAmount;
-    }
-
-    /**
-     * 设置 全程医疗代收总额or执行医嘱总额
-     *
-     * @param collectedAmount
-     */
-    public void setCollectedAmount(BigDecimal collectedAmount) {
-        this.collectedAmount = collectedAmount;
     }
 
     /**
@@ -384,6 +318,24 @@ public class QcTreatmentItem {
      */
     public void setReceivedAmount(BigDecimal receivedAmount) {
         this.receivedAmount = receivedAmount;
+    }
+
+    /**
+     * 获取执行人id
+     *
+     * @return
+     */
+    public Integer getExecutorId() {
+        return executorId;
+    }
+
+    /**
+     * 设置执行人id
+     *
+     * @param executorId
+     */
+    public void setExecutorId(Integer executorId) {
+        this.executorId = executorId;
     }
 
     /**
@@ -445,17 +397,17 @@ public class QcTreatmentItem {
      *
      * @return upt_id - 更新人id
      */
-    public Integer getUptId() {
-        return uptId;
+    public Integer getUpdId() {
+        return updId;
     }
 
     /**
      * 设置更新人id
      *
-     * @param uptId 更新人id
+     * @param updId 更新人id
      */
-    public void setUptId(Integer uptId) {
-        this.uptId = uptId;
+    public void setUpdId(Integer updId) {
+        this.updId = updId;
     }
 
     /**
@@ -463,16 +415,16 @@ public class QcTreatmentItem {
      *
      * @return upt_time - 更新时间
      */
-    public Date getUptTime() {
-        return uptTime;
+    public Date getUpdTime() {
+        return updTime;
     }
 
     /**
      * 设置更新时间
      *
-     * @param uptTime 更新时间
+     * @param updTime 更新时间
      */
-    public void setUptTime(Date uptTime) {
-        this.uptTime = uptTime;
+    public void setUpdTime(Date updTime) {
+        this.updTime = updTime;
     }
 }

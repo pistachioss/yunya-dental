@@ -252,14 +252,14 @@ public class TreatmentOtherServiceRest {
   }
 
   /**
-   * 全程医疗就诊记录绑定账单
+   * 用账单信息更新全程医疗就诊及其明细（绑定或更新实收）
    *
    * @param form
    */
   @CurrentUser
-  @ApiOperation("全程医疗就诊记录绑定账单")
-  @PutMapping("/qc/treatment/binding/bill")
-  public void billBindingQcTreatment(@RequestBody @Validated QcTreatmentImportForm form) {
-    qcTreatmentRecordBiz.billBindingQcTreatment(form);
+  @ApiOperation("用账单信息更新全程医疗就诊及其明细（绑定或更新实收）")
+  @PutMapping("/qc/treatment/items/update")
+  public void updateQcTreatmentAndItems(@RequestBody @Validated QcTreatmentImportForm form) {
+    qcTreatmentRecordBiz.updateQcTreatmentAndItems(form);
   }
 }

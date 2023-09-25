@@ -16,9 +16,6 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @ApiModel("WebService入参模型")
 public class WebServiceParam implements Serializable {
 

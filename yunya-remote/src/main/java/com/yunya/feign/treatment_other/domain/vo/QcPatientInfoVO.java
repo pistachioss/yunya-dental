@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.List;
+
 /**
  * @author: chenlin
  * @date: 2023/8/31 15:22
@@ -19,5 +21,5 @@ public class QcPatientInfoVO extends QcPatientInfo {
 
     /** 就诊信息 */
     @ApiModelProperty("就诊信息")
-    private QcTreatmentInfoVO adm_info;
+    private List<QcTreatmentInfoVO> adm_info;
 }

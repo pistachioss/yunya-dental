@@ -1,14 +1,15 @@
 package com.yunya.models.treatment_other;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "qc_treatment_record")
 public class QcTreatmentRecord {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
@@ -36,27 +37,15 @@ public class QcTreatmentRecord {
     private Integer billId;
 
     /**
-     * 类型：1-医嘱单，2-引导单
+     * 类型：O-医嘱单，L-引导单
      */
-    private Byte type;
+    private String type;
 
     /**
      * mall平台-核销码
      */
     @Column(name = "verify_code")
     private String verifyCode;
-
-    /**
-     * 核销时间
-     */
-    @Column(name = "verify_date")
-    private Date verifyDate;
-
-    /**
-     * 核销操作人id
-     */
-    @Column(name = "verify_id")
-    private Integer verifyId;
 
     /**
      * 状态：1-未核销（已下载），2-未开单（已核销并绑定患者），3-已开单（已绑定账单），4-已同步（已上传）
@@ -90,29 +79,6 @@ public class QcTreatmentRecord {
      */
     @Column(name = "sync_time")
     private Date syncTime;
-
-    /**
-     * 客户姓名
-     */
-    @Column(name = "customer_name")
-    private String customerName;
-
-    /**
-     * 身份证号
-     */
-    @Column(name = "id_card")
-    private String idCard;
-
-    /**
-     * 手机号
-     */
-    private String mobile;
-
-    /**
-     * 艾维开单总实收
-     */
-    @Column(name = "ivy_cost")
-    private BigDecimal ivyCost;
 
     /**
      * 更新人id
@@ -213,20 +179,20 @@ public class QcTreatmentRecord {
     }
 
     /**
-     * 获取类型：1-医嘱单，2-引导单
+     * 获取类型：O-医嘱单，L-引导单
      *
-     * @return type - 类型：1-医嘱单，2-引导单
+     * @return type - 类型：O-医嘱单，L-引导单
      */
-    public Byte getType() {
+    public String getType() {
         return type;
     }
 
     /**
-     * 设置类型：1-医嘱单，2-引导单
+     * 设置类型：O-医嘱单，L-引导单
      *
-     * @param type 类型：1-医嘱单，2-引导单
+     * @param type 类型：O-医嘱单，L-引导单
      */
-    public void setType(Byte type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -246,42 +212,6 @@ public class QcTreatmentRecord {
      */
     public void setVerifyCode(String verifyCode) {
         this.verifyCode = verifyCode;
-    }
-
-    /**
-     * 获取核销时间
-     *
-     * @return verify_date - 核销时间
-     */
-    public Date getVerifyDate() {
-        return verifyDate;
-    }
-
-    /**
-     * 设置核销时间
-     *
-     * @param verifyDate 核销时间
-     */
-    public void setVerifyDate(Date verifyDate) {
-        this.verifyDate = verifyDate;
-    }
-
-    /**
-     * 获取核销操作人id
-     *
-     * @return verify_id - 核销操作人id
-     */
-    public Integer getVerifyId() {
-        return verifyId;
-    }
-
-    /**
-     * 设置核销操作人id
-     *
-     * @param verifyId 核销操作人id
-     */
-    public void setVerifyId(Integer verifyId) {
-        this.verifyId = verifyId;
     }
 
     /**
@@ -318,60 +248,6 @@ public class QcTreatmentRecord {
      */
     public void setRemark(String remark) {
         this.remark = remark;
-    }
-
-    /**
-     * 获取客户姓名
-     *
-     * @return
-     */
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    /**
-     * 设置客户姓名
-     *
-     * @param customerName
-     */
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-    /**
-     * 获取 身份证号
-     *
-     * @return
-     */
-    public String getIdCard() {
-        return idCard;
-    }
-
-    /**
-     * 设置身份证号
-     *
-     * @param idCard
-     */
-    public void setIdCard(String idCard) {
-        this.idCard = idCard;
-    }
-
-    /**
-     * 获取手机号码
-     *
-     * @return
-     */
-    public String getMobile() {
-        return mobile;
-    }
-
-    /**
-     * 设置手机号码
-     *
-     * @param mobile
-     */
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
     }
 
     /**
@@ -480,23 +356,5 @@ public class QcTreatmentRecord {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
-    }
-
-    /**
-     * 获取 艾维开单总实收
-     *
-     * @return
-     */
-    public BigDecimal getIvyCost() {
-        return ivyCost;
-    }
-
-    /**
-     * 设置 艾维开单总实收
-     *
-     * @param ivyCost
-     */
-    public void setIvyCost(BigDecimal ivyCost) {
-        this.ivyCost = ivyCost;
     }
 }

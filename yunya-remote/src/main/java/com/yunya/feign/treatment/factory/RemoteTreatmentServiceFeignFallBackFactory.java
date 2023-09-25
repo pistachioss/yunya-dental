@@ -16,10 +16,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
-import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
+import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
@@ -317,6 +314,11 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
 
   @Override
   public List<BaseTariff> listTariffByIds(Collection<Integer> ids) {
+    return null;
+  }
+
+  @Override
+  public List<TreatBillRecordVO> findTreatBillRecordList(BillBindingQcTreatmentQuery query) {
     return null;
   }
 }

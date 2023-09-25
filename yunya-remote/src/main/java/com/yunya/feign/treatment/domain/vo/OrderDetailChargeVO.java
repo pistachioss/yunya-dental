@@ -28,6 +28,9 @@ public class OrderDetailChargeVO implements Serializable {
   /** 开单类型（0-价目表；1-商品；） */
   @ApiModelProperty("开单类型（0-价目表；1-商品；）")
   private Byte type;
+  /** 项目编号 */
+  @ApiModelProperty("项目编号")
+  private String itemNum;
   /** 开单项目ID */
   @ApiModelProperty("开单项目ID")
   private Integer billingItemId;

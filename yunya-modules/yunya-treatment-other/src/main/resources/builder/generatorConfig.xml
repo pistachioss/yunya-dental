@@ -32,7 +32,6 @@
         <!--<table tableName="visiting_record" domainObjectName="VisitingRecord"/>-->
         <!--<table tableName="visiting_remind" domainObjectName="VisitingRemind"/>-->
         <!--<table tableName="x_ray_film" domainObjectName="XRayFilm"/>-->
-        <table tableName="qc_treatment_record" domainObjectName="QcTreatmentRecord"/>
-        <table tableName="qc_treatment_item" domainObjectName="QcTreatmentItem"/>
+        <table tableName="qc_customer_info" domainObjectName="QcCustomerInfo"/>
     </context>
 </generatorConfiguration>

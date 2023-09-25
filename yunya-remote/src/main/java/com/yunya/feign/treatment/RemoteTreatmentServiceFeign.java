@@ -15,10 +15,7 @@ import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
-import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
+import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
@@ -520,4 +517,7 @@ public interface RemoteTreatmentServiceFeign {
 
   @RequestMapping(value = "/rpc/tariff/ids", method = RequestMethod.POST)
   public List<BaseTariff> listTariffByIds(@RequestBody Collection<Integer> ids);
+
+  @PostMapping("/rpc/treat/bill/list")
+  List<TreatBillRecordVO> findTreatBillRecordList(@RequestBody @Validated BillBindingQcTreatmentQuery query);
 }

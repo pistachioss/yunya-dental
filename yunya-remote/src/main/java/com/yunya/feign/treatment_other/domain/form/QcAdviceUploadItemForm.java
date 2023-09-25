@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment_other.domain.form;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.yunya.feign.treatment_other.domain.common.QcAdviceItemInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -18,6 +19,7 @@ import lombok.ToString;
 public class QcAdviceUploadItemForm extends QcAdviceItemInfo {
 
     /** 医疗机构医嘱流水号 */
+    @JSONField(name = "Org_order_no")
     @ApiModelProperty("医疗机构医嘱流水号")
     private String Org_order_no;
 }
