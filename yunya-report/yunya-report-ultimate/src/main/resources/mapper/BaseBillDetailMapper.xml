@@ -7028,7 +7028,7 @@
                 </foreach>
             </if>
         </where>
-        GROUP BY bd.item_id,bd.item_type,bd.org_id
+        GROUP BY bd.item_id,bd.item_type,bd.org_id,bd.executor_id
     </select>
     <select id="selectPersonalBillItemSupplyDeductionWorkloadDetail"
             resultType="com.yunya.feign.report.domain.vo.PersonalBillItemSupplyDeductionWorkloadDetailVO">
