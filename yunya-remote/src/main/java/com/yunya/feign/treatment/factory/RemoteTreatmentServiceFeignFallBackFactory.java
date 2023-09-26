@@ -19,10 +19,7 @@ import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.Registered;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -318,7 +315,7 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
-  public List<TreatBillRecordVO> findTreatBillRecordList(BillBindingQcTreatmentQuery query) {
+  public BillRecord findBillRecordByOrderRecordId(Integer orderRecordId) {
     return null;
   }
 

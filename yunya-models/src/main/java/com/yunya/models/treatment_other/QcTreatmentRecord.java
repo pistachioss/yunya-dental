@@ -31,10 +31,10 @@ public class QcTreatmentRecord {
     private Integer patientId;
 
     /**
-     * 就诊账单id
+     * 账单收费id
      */
-    @Column(name = "bill_id")
-    private Integer billId;
+    @Column(name = "bill_pay_id")
+    private Integer billPayId;
 
     /**
      * 类型：O-医嘱单，L-引导单
@@ -161,21 +161,21 @@ public class QcTreatmentRecord {
     }
 
     /**
-     * 获取就诊账单id
+     * 获取账单收费id
      *
-     * @return bill_id - 就诊账单id
+     * @return bill_pay_id - 账单收费id
      */
-    public Integer getBillId() {
-        return billId;
+    public Integer getBillPayId() {
+        return billPayId;
     }
 
     /**
-     * 设置就诊账单id
+     * 设置账单收费id
      *
-     * @param billId 就诊账单id
+     * @param billPayId 账单收费id
      */
-    public void setBillId(Integer billId) {
-        this.billId = billId;
+    public void setBillPayId(Integer billPayId) {
+        this.billPayId = billPayId;
     }
 
     /**

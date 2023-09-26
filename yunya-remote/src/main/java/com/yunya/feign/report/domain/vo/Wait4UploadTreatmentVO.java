@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment_other.domain.vo;
+package com.yunya.feign.report.domain.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -25,18 +25,10 @@ public class Wait4UploadTreatmentVO implements Serializable {
     @ApiModelProperty("全程就诊记录id")
     private Integer qcTreatmentId;
 
-    /** 账单id */
-    @ApiModelProperty("账单id")
-    private Integer billId;
-    
     /** 账单日期 */
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @ApiModelProperty("账单日期")
     private Date billDate;
-
-    /** 患者id */
-    @ApiModelProperty("患者id")
-    private Integer patientId;
 
     /** 患者姓名 */
     @ApiModelProperty("患者姓名")

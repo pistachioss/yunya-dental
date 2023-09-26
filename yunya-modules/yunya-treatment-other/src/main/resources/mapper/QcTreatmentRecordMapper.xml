@@ -9,8 +9,7 @@
     <result column="adm_no" property="admNo" jdbcType="VARCHAR" />
     <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="bill_id" property="billId" jdbcType="INTEGER" />
-    <result column="bill" property="billId" jdbcType="INTEGER" />
+    <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER" />
     <result column="type" property="type" jdbcType="VARCHAR" />
     <result column="verify_code" property="verifyCode" jdbcType="VARCHAR" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />
@@ -29,7 +28,7 @@
             <if test="admNo!=null and admNo!=''">adm_no,</if>
             <if test="orderRecordId!=null">order_record_id,</if>
             <if test="patientId!=null">patient_id,</if>
-            <if test="billId!=null">bill_id,</if>
+            <if test="billPayId!=null">bill_pay_id,</if>
             <if test="type!=null and type!=''">type,</if>
             <if test="verifyCode!=null and verifyCode!=''">verify_code,</if>
             <if test="remark!=null and remark!=''">remark,</if>
@@ -46,7 +45,7 @@
             <if test="admNo!=null and admNo!=''"> #{admNo},</if>
             <if test="orderRecordId!=null">#{orderRecordId},</if>
             <if test="patientId!=null">#{patientId},</if>
-            <if test="billId!=null">#{billId},</if>
+            <if test="billPayId!=null">#{billPayId},</if>
             <if test="type!=null and type!=''">#{type},</if>
             <if test="verifyCode!=null and verifyCode!=''">#{verifyCode},</if>
             <if test="remark!=null and remark!=''">#{remark},</if>
@@ -78,7 +77,7 @@
             qtr.type,
             qtr.adm_date AS admDate,
             qtr.patient_id AS patientId,
-            qtr.bill_id AS billId,
+            qtr.order_record_id AS orderRecordId,
             qtr.status
         FROM qc_treatment_record qtr
         LEFT JOIN qc_customer_info qci ON qtr.id = qci.qc_treatment_id
@@ -216,47 +215,5 @@
             </foreach>
         </where>
         ORDER BY type ASC, id ASC
-    </select>
-
-    <select id="selectWait4UploadTreatmentList"
-            resultType="com.yunya.feign.treatment_other.domain.vo.Wait4UploadTreatmentVO">
-        SELECT
-            qtr.id AS qcTreatmentId,
-            qtr.bill_id AS billId,
-            qtr.patient_id AS patientId,
-            qtr.adm_no AS admNo,
-            IFNULL(qti1.adviceItemExecAmount, 0) AS adviceItemExecAmount,
-            IFNULL(qti1.adviceItemAmount, 0) - IFNULL(qti1.adviceItemExecAmount, 0) AS unAdviceItemExecAmount,
-            IFNULL(qti2.orderItemExecAmount, 0) AS orderItemExecAmount,
-            IFNULL(qti1.adviceItemExecAmount, 0) + IFNULL(qti2.orderItemExecAmount, 0) AS receivedTotalAmount
-        FROM qc_treatment_record qtr
-        LEFT JOIN (
-            SELECT
-            qc_treatment_id,
-            SUM(quantity * price) AS adviceItemAmount,
-            SUM(received_amount) AS adviceItemExecAmount,
-            FROM qc_treatment_item
-            WHERE inservice = 1 AND qc_collected = 1
-            GROUP BY qc_treatment_id
-        ) qti1 ON qtr.id = qti1.qc_treatment_id
-        LEFT JOIN (
-            SELECT
-            qc_treatment_id,
-            SUM(received_amount) AS orderItemExecAmount,
-            FROM qc_treatment_item
-            WHERE inservice = 1 AND qc_collected = 0
-            GROUP BY qc_treatment_id
-        ) qti2 ON qtr.id = qti2.qc_treatment_id
-        <where>
-            AND qtr.inservice = 1
-            AND qtr.status = 3
-            <if test="query.billIds!=null and query.billIds.size()>0">
-                and qtr.bill_id in
-                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-        ORDER qtr.id DESC
     </select>
 </mapper>

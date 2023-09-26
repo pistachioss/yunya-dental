@@ -1,11 +1,9 @@
 package com.yunya.modules.treatment.other.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.treatment.domain.query.BillBindingQcTreatmentQuery;
 import com.yunya.feign.treatment_other.domain.query.QcRecommondInfoQuery;
 import com.yunya.feign.treatment_other.domain.vo.QcRecommondDetailVO;
 import com.yunya.feign.treatment_other.domain.vo.QcRecommondInfoVO;
-import com.yunya.feign.treatment_other.domain.vo.Wait4UploadTreatmentVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -110,18 +108,6 @@ public class QcTreatmentRecordController {
     @GetMapping("/treatment/{patientId}")
     public ResponseResult<List<QcRecommondInfoVO>> findPatientQcTreatmentRecord(@PathVariable(value = "patientId") Integer patientId) {
         List<QcRecommondInfoVO> pageInfo = qcTreatmentRecordBiz.findPatientEnableQcTreatmentRecord(patientId);
-        return ResponseUtil.success(pageInfo);
-    }
-
-    /**
-     * 查询待同步账单记录列表
-     *
-     * @return
-     */
-    @ApiOperation("查询待同步账单记录列表")
-    @PostMapping("/treatment/wait4Upload")
-    public ResponseResult<PageInfo<Wait4UploadTreatmentVO>> findWait4UploadTreatmentList(@RequestBody @Validated BillBindingQcTreatmentQuery query) {
-        PageInfo<Wait4UploadTreatmentVO> pageInfo = qcTreatmentRecordBiz.findWait4UploadTreatmentList(query);
         return ResponseUtil.success(pageInfo);
     }
 }

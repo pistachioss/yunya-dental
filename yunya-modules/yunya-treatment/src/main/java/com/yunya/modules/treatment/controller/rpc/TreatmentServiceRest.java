@@ -22,10 +22,7 @@ import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedIn
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.Registered;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.biz.*;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -697,5 +694,20 @@ public class TreatmentServiceRest {
   @PostMapping(value = "/bill/cashinfo/{patientId}")
   PatientCostInfoVO exportMemberBalanceList(@PathVariable(value = "patientId") Integer patientId) throws IOException {
     return billRecordBiz.findCashAmountByPatientId(patientId);
+  }
+
+
+  /**
+   * 根据订单id查询账单信息
+   *
+   * @param orderRecordId
+   * @return
+   */
+  @PostMapping("/treat/bill/{orderRecordId}")
+  public BillRecord findBillRecordByOrderRecordId(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    BillRecord query = new BillRecord();
+    query.setOrderRecordId(orderRecordId);
+    query.setInservice(true);
+    return billRecordBiz.selectOne(query);
   }
 }

@@ -20,10 +20,7 @@ import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.Registered;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -524,6 +521,6 @@ public interface RemoteTreatmentServiceFeign {
   @RequestMapping(value = "/rpc/bill/cashinfo/{patientId}",method = RequestMethod.POST)
   PatientCostInfoVO getCashInfo(@PathVariable(value = "patientId") Integer patientId);
 
-  @PostMapping("/rpc/treat/bill/list")
-  List<TreatBillRecordVO> findTreatBillRecordList(@RequestBody @Validated BillBindingQcTreatmentQuery query);
+  @PostMapping("/rpc/treat/bill/{orderRecordId}")
+  BillRecord findBillRecordByOrderRecordId(@PathVariable(value = "orderRecordId") Integer orderRecordId);
 }

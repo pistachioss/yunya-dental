@@ -59,9 +59,9 @@ public class QcRecommondInfoVO implements Serializable {
     @ApiModelProperty("绑定患者姓名")
     private String patientName;
     
-    /** 账单id */
-    @ApiModelProperty("账单id")
-    private Integer billId;
+    /** 订单id */
+    @ApiModelProperty("订单id")
+    private Integer orderRecordId;
 
     /** 关联账单编号 */
     @ApiModelProperty("关联账单编号")

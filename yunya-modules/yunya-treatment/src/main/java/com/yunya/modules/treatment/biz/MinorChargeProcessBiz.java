@@ -127,12 +127,11 @@ public class MinorChargeProcessBiz {
     }
 
     private void billBindingQcTreatment(BillPayRecord billPayRecord, List<Integer> qcTreatmentIds) {
-        Integer billRecordId = billPayRecord.getBillRecordId();
         Integer orderRecordId = billPayRecord.getOrderRecordId();
         // 订单明细（项目实收）
         List<OrderDetailChargeVO> orderDetails = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
         QcTreatmentImportForm form = new QcTreatmentImportForm();
-        form.setBillRecordId(billRecordId);
+        form.setBillPayId(billPayRecord.getId());
         form.setOrderRecordId(orderRecordId);
         form.setQcTreatmentIds(qcTreatmentIds);
         form.setOrderDetails(orderDetails);

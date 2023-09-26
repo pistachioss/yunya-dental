@@ -12,6 +12,7 @@ import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.models.treatment_other.XRayFilm;

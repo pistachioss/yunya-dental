@@ -8,10 +8,8 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
-import com.yunya.feign.treatment.domain.query.BillBindingQcTreatmentQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
-import com.yunya.feign.treatment.domain.vo.TreatBillRecordVO;
 import com.yunya.feign.treatment_other.domain.common.QcPatientInfo;
 import com.yunya.feign.treatment_other.domain.common.QcTreatmentInfo;
 import com.yunya.feign.treatment_other.domain.form.QcAdviceItemStatusForm;
@@ -27,11 +25,11 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.SysEmployee;
+import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment_other.QcCustomerInfo;
 import com.yunya.models.treatment_other.QcTreatmentItem;
 import com.yunya.models.treatment_other.QcTreatmentRecord;
@@ -101,6 +99,14 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
                     vo.setPatientName(patient.getName());
                 }
             }
+            Integer orderRecordId = vo.getOrderRecordId();
+            if (StringHelper.isNotNull(orderRecordId)) {
+                BillRecord billRecord = treatmentServiceFeign.findBillRecordByOrderRecordId(orderRecordId);
+                if (StringHelper.isNotNull(billRecord)) {
+                    vo.setBillNum(billRecord.getBillNumber());
+                }
+            }
+
         });
         return new PageInfo<>(result);
     }
@@ -512,7 +518,7 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
     public void updateQcTreatmentAndItems(QcTreatmentImportForm form) {
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         Date now = DateUtil.now();
-        Integer billId = form.getBillRecordId();
+        Integer billPayId = form.getBillPayId();
         Integer orderRecordId = form.getOrderRecordId();
         List<Integer> qcTreatmentIds = form.getQcTreatmentIds();
         Map<String, OrderDetailChargeVO> orderDetailMap = form.getOrderDetails().stream()
@@ -557,7 +563,7 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
             // 全程就诊记录绑定账单
             qcTreatment.setStatus((byte) 3);
             qcTreatment.setOrderRecordId(orderRecordId);
-            qcTreatment.setBillId(billId);
+            qcTreatment.setBillPayId(billPayId);
             qcTreatment.setUpdId(userId);
             qcTreatment.setUpdTime(now);
             updateSelectiveById(qcTreatment);
@@ -658,31 +664,5 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
         result.setQcAdviceItems(adviceItems);
         result.setOrderDetails(orderDetails);
         return result;
-    }
-
-    /**
-     * 查询待同步账单记录列表
-     *
-     * @param query
-     * @return
-     */
-    public PageInfo<Wait4UploadTreatmentVO> findWait4UploadTreatmentList(BillBindingQcTreatmentQuery query) {
-        List<TreatBillRecordVO> bills = treatmentServiceFeign.findTreatBillRecordList(query);
-        if (StringHelper.isNotEmpty(bills)) {
-            query.setBillIds(bills.stream().map(TreatBillRecordVO::getBillId).collect(Collectors.toList()));
-            List<Wait4UploadTreatmentVO> result = mapper.selectWait4UploadTreatmentList(query);
-            result.forEach(vo->{
-                Integer patientId = vo.getPatientId();
-                if (StringHelper.isNotNull(patientId)) {
-                    PatientBaseInfo patient = patientFeign.findPatientInfoById(patientId);
-                    if (StringHelper.isNotNull(patient)) {
-                        vo.setPatientName(patient.getName());
-                        vo.setMobile(patient.getMobile());
-                    }
-                }
-            });
-            PageUtl.doPage(query, result);
-        }
-        return new PageInfo<>();
     }
 }

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.treatment_other.QcTreatmentRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.QcTreatmentRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="adm_no" property="admNo" jdbcType="VARCHAR" />
+    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="verify_code" property="verifyCode" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="adm_date" property="admDate" jdbcType="TIMESTAMP" />
+    <result column="sync_id" property="syncId" jdbcType="INTEGER" />
+    <result column="sync_time" property="syncTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="selectQcylTreatmentRecordList" resultType="com.yunya.models.report.BaseQcylTreatment">
+    SELECT
+        qtr.id AS qcTreatmentId,
+        qtr.adm_no AS admNo,
+        qci.customer_name AS customerName,
+        qci.mobile AS customerMobile,
+        qtr.patient_id AS patientId,
+        qtr.type,
+        qtr.status,
+        qtr.order_record_id AS billId,
+        qtr.bill_pay_id AS billPayId,
+        qtr.upd_id AS updId,
+        qtr.upd_time AS updTime,
+        IFNULL(qti.executeAmount, 0) AS executeAmount,
+        IFNULL(qti.unExecuteAmount, 0) AS unExecuteAmount
+    FROM qc_treatment_record qtr
+    LEFT JOIN qc_customer_info qci ON qtr.id = qci.qc_treatment_id
+    LEFT JOIN (
+        SELECT
+            qc_treatment_id,
+            received_amount AS executeAmount,
+            price * quantity - received_amount AS unExecuteAmount
+        FROM qc_treatment_item
+        WHERE qc_collected = 1 AND inservice = 1
+        GROUP BY qc_treatment_id
+    ) qti ON qti.qc_treatment_id = qtr.id
+    <where>
+        AND qtr.status in(3, 4)
+        AND qtr.inservice = 1
+        <if test="id != null">
+            AND qtr.id = #{id}
+        </if>
+        <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
+            AND DATE_FORMAT(qtr.upd_time, '%Y-%m-%d') BETWEEN #{startDate} AND #{endDate}
+        </if>
+    </where>
+  </select>
+</mapper>
