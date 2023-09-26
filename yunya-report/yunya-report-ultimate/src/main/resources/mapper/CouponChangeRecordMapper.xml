@@ -144,7 +144,7 @@
                  left join base_organization bo on bo.org_id = cb.org_id
                  left join base_coupon_bill_pay_detail cbbp on cbbp.order_id = cov.order_id
                  left join base_employee be on be.user_id = cb.checker_id
-        where cb.order_status = 1
+        <where>
             <if test="query.startDate != null and query.endDate != null">
                 and (cb.bill_date &gt;= #{query.startDate} and cb.bill_date &lt; DATE_ADD(#{query.endDate} ,INTERVAL '1'
                 DAY))
@@ -172,6 +172,7 @@
                     #{item}
                 </foreach>
             </if>
+        </where>
         group by cov.order_id, cov.card_id
     </select>
     <select id="deductionRefund" resultType="com.yunya.feign.report.domain.vo.DeductionRefundVO">
@@ -244,6 +245,7 @@
         coupon_change_record bpmol
         <where>
             AND bpmol.occur_type = 1
+            and ISNULL(bpmol.order_id) = 0
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
