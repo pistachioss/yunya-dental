@@ -162,4 +162,6 @@ public class BaseCard {
     @Column(name = "first_use_date")
     private LocalDateTime firstUseDate;
 
+    @Column(name = "buyer_id")
+    private Integer buyerId;
 }

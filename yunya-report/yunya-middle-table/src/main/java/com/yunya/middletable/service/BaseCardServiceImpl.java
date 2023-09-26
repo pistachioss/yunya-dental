@@ -258,6 +258,7 @@ public class BaseCardServiceImpl{
 				baseCard.setSaleChannelName(salesChannel.getName());
 			}
 		}
+        baseCard.setBuyerId(card.getBuyerId());
 		return baseCard;
 	}
 

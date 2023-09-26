@@ -274,6 +274,7 @@ public class BaseCardServiceNewImpl {
         if (card.getSaleChannelId() != null) {
             baseCard.setSaleChannelName(saleChannelMap.get(card.getSaleChannelId()));
         }
+        baseCard.setBuyerId(card.getBuyerId());
         return baseCard;
     }
 
