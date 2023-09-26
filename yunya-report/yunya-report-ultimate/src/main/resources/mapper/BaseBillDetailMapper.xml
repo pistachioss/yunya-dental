@@ -7027,6 +7027,12 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="query.workStatus!=null and query.workStatus.length > 0">
+                    and be.work_status in
+                    <foreach collection="query.workStatus" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+             </if>
         </where>
         GROUP BY bd.item_id,bd.item_type,bd.org_id,bd.executor_id
     </select>

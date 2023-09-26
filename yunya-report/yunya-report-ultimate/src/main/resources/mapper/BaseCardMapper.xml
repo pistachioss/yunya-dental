@@ -457,57 +457,55 @@
     </select>
 
     <select id="listAllCardSoldParam" resultType="com.yunya.feign.report.domain.vo.CardSoldStatisticsVo">
-        select
-        date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
-        `b`.`coupon_name`,
-        `b`.`sold_amount`,
-        case
-        when `b`.`coupon_type` = 0 then '代金券'
-        when `b`.`coupon_type` = 1 then '折扣券'
-        when `b`.`coupon_type` = 2 then '兑换券'
-        when `b`.`coupon_type` = 3 then '套餐券'
-        when `b`.`coupon_type` = 4 then '充值卡'
-        when `b`.`coupon_type` = 5 then '划扣卡'
-        else null
-        end as `coupon_type`,
-        `bc`.`card_number`,
-        (select
-        `abbreviation`
-        from `base_organization`
-        where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
-        `bc`.`sold_target`,
-        `bc`.`sold_phone_number`,
-        case
-        when `bc`.`sold_type` = 0 then '售卖'
-        when `bc`.`sold_type` = 1 then '置换'
-        when `bc`.`sold_type` = 2 then '赠送'
-        else null
-        end as `sold_type`,
-        case
-        when  `bc`.`remark` = '小程序虚拟服务售卖' then '小程序订单'
-        when `bc`.`sold_way` = 0 then '线上'
-        when `bc`.`sold_way` = 1 then '线下'
-        else null
-        end as `sold_way`,
-        case
-        when `bc`.`charge_status` = 0 then '未收费'
-        when `bc`.`charge_status` = 1 then '已收费'
-        else null
-        end as `charge_status`,
-        (select
-        `employee_name`
+        (
+            select
+            date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
+            `b`.`coupon_name`,
+            `b`.`sold_amount`,
+            case
+            when `b`.`coupon_type` = 0 then '代金券'
+            when `b`.`coupon_type` = 1 then '折扣券'
+            when `b`.`coupon_type` = 2 then '兑换券'
+            when `b`.`coupon_type` = 3 then '套餐券'
+            when `b`.`coupon_type` = 4 then '充值卡'
+            when `b`.`coupon_type` = 5 then '划扣卡'
+            else null
+            end as `coupon_type`,
+            `bc`.`card_number`,
+            (select
+            `abbreviation`
+            from `base_organization`
+            where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            case
+            when `bc`.`sold_type` = 0 then '售卖'
+            when `bc`.`sold_type` = 1 then '置换'
+            when `bc`.`sold_type` = 2 then '赠送'
+            else null
+            end as `sold_type`,
+            case
+            when  `bc`.`remark` = '小程序虚拟服务售卖' then '小程序订单'
+            when `bc`.`sold_way` = 0 then '线上'
+            when `bc`.`sold_way` = 1 then '线下'
+            else null
+            end as `sold_way`,
+            case
+            when `bc`.`charge_status` = 0 then '未收费'
+            when `bc`.`charge_status` = 1 then '已收费'
+            else null
+            end as `charge_status`,
+            (select
+            `employee_name`
         from `base_employee`
         where `user_id` = `bc`.`seller_user_id`) as `soldUser`,
-        ifnull(t1.account_item_name, null) as payName
+        bc.pay_name
         from `base_card` `bc`
         inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
-        left join `base_coupon_order_virtual` `cov` on `cov`.`card_id` = `bc`.`card_id`
-        left join (
-            select order_id,GROUP_CONCAT(account_item_name) as account_item_name
-            from base_coupon_bill_pay_detail group by order_id
-        ) t1 on t1.order_id = cov.order_id
         where
         `bc`.`status` != 0
+        and isnull(bc.buyer_id) = 1
+        and  isnull(bc.sold_date) = 0
         and `bc`.`allocate_org_id` != 0
         <if test="couponName !=null and couponName != ''">
             and `b`.`coupon_name` like concat('%', #{couponName}, '%')
@@ -557,10 +555,120 @@
             </foreach>
         </if>
         order by `bc`.`sold_date` desc
+        )
+        union all
+        (
+            select
+        date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
+        `b`.`coupon_name`,
+        `b`.`sold_amount`,
+        case
+        when `b`.`coupon_type` = 0 then '代金券'
+        when `b`.`coupon_type` = 1 then '折扣券'
+        when `b`.`coupon_type` = 2 then '兑换券'
+        when `b`.`coupon_type` = 3 then '套餐券'
+        when `b`.`coupon_type` = 4 then '充值卡'
+        when `b`.`coupon_type` = 5 then '划扣卡'
+        else null
+        end as `coupon_type`,
+        `bc`.`card_number`,
+        (select
+        `abbreviation`
+        from `base_organization`
+        where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
+        bp.name     as `soldTarget`,
+        `bc`.`sold_phone_number`,
+        case
+        when `bc`.`sold_type` = 0 then '售卖'
+        when `bc`.`sold_type` = 1 then '置换'
+        when `bc`.`sold_type` = 2 then '赠送'
+        else null
+        end as `sold_type`,
+        case
+        when  `bc`.`remark` = '小程序虚拟服务售卖' then '小程序订单'
+        when `bc`.`sold_way` = 0 then '线上'
+        when `bc`.`sold_way` = 1 then '线下'
+        else null
+        end as `sold_way`,
+        case
+        when `bc`.`charge_status` = 0 then '未收费'
+        when `bc`.`charge_status` = 1 then '已收费'
+        else null
+        end as `charge_status`,
+        (select
+        `employee_name`
+        from `base_employee`
+        where `user_id` = `bc`.`seller_user_id`) as `soldUser`,
+        ifnull(t1.account_item_name, null) as payName
+        from `base_card` `bc`
+        inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        left join `base_patient` `bp` on `bp`.`patient_id` = `bc`.`sold_target`
+        left join `base_coupon_order_virtual` `cov` on `cov`.`card_id` = `bc`.`card_id`
+        left join (
+            select order_id,GROUP_CONCAT(account_item_name) as account_item_name
+            from base_coupon_bill_pay_detail group by order_id
+        ) t1 on t1.order_id = cov.order_id
+        where
+        `bc`.`status` != 0
+        and isnull(t1.account_item_name) = 0
+        and b.coupon_type = 5
+        and isnull(bc.buyer_id) = 0
+        and `bc`.`allocate_org_id` != 0
+        <if test="couponName !=null and couponName != ''">
+            and `b`.`coupon_name` like concat('%', #{couponName}, '%')
+        </if>
+        <if test="couponTypes != null and couponTypes.size() > 0">
+            and `b`.`coupon_type` in
+            <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="cardNumber !=null and cardNumber != ''">
+            and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+        </if>
+        <if test="soldTarget !=null and soldTarget != ''">
+                and concat(IFNULL(bp.`name`,''), IFNULL(bp.pinyin_name,''), IFNULL(bp.mobile,''),
+                IFNULL(bp.medical_number,'')) like
+                concat(concat('%',#{soldTarget}),'%')
+        </if>
+        <if test="allocateOrgIds != null and allocateOrgIds.size() > 0">
+            and `bc`.`allocate_org_id` in
+            <foreach collection="allocateOrgIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="soldTypes != null and soldTypes.size() > 0">
+            and `bc`.`sold_type` in
+            <foreach collection="soldTypes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="soldStartDate != null and soldEndDate != null">
+            and (DATE_FORMAT(`bc`.`sold_date`,'%Y-%m-%d') between DATE_FORMAT(#{soldStartDate},'%Y-%m-%d') and
+            DATE_FORMAT(#{soldEndDate},'%Y-%m-%d'))
+        </if>
+        <if test="soldWays != null and soldWays.size() > 0">
+            and (`bc`.`sold_way` in
+            <foreach collection="soldWays" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            <if test="remark != null and remark != ''">
+                or `bc`.remark = #{remark}
+            </if>
+            )
+        </if>
+        <if test="chargeStatus != null and chargeStatus.size() > 0">
+            and `bc`.`charge_status` in
+            <foreach collection="chargeStatus" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by `bc`.`sold_date` desc
+        )
     </select>
 
     <select id="listCardSoldRecord" resultType="com.yunya.feign.report.domain.vo.CouponSoldRecordVo">
-        select
+        (select
         date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
         `bc`.`sold_target`,
         `bc`.`sold_phone_number`,
@@ -571,6 +679,7 @@
         when `b`.`coupon_type` = 2 then '兑换券'
         when `b`.`coupon_type` = 3 then '套餐券'
         when `b`.`coupon_type` = 4 then '充值卡'
+        when `b`.`coupon_type` = 5 then '划扣卡'
         else null
         end as `coupon_type`,
         `bc`.`card_number`,
@@ -593,6 +702,8 @@
         left join `base_employee` `be` on `be`.`user_id` = `bc`.`seller_user_id`
         where
         `bc`.`status` != 0
+        and isnull(bc.buyer_id) = 1
+        and  isnull(bc.sold_date) = 0
         and `bc`.`allocate_org_id` != 0
         <if test="orgId != null">
             and `bc`.`allocate_org_id` = #{orgId}
@@ -619,7 +730,82 @@
                 #{item}
             </foreach>
         </if>
+        order by `bc`.`sold_date` desc)
+        union all
+        (
+        select
+            date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
+            bp.name as soldTarget,
+            `bc`.`sold_phone_number`,
+            `b`.`coupon_name`,
+        case
+        when `b`.`coupon_type` = 0 then '代金券'
+        when `b`.`coupon_type` = 1 then '折扣券'
+        when `b`.`coupon_type` = 2 then '兑换券'
+        when `b`.`coupon_type` = 3 then '套餐券'
+        when `b`.`coupon_type` = 4 then '充值卡'
+        when `b`.`coupon_type` = 5 then '划扣卡'
+        else null
+        end as `coupon_type`,
+        `bc`.`card_number`,
+        `b`.`sold_amount`,
+        case
+        when `bc`.`sold_type` = 0 then '售卖'
+        when `bc`.`sold_type` = 1 then '置换'
+        when `bc`.`sold_type` = 2 then '赠送'
+        else null
+        end as `sold_type`,
+        case
+        when `bc`.`charge_status` = 0 then '未收费'
+        when `bc`.`charge_status` = 1 then '已收费'
+        else null
+        end as `charge_status`,
+        ifnull(t1.account_item_name, null) as payName,
+        `be`.`employee_name` as `sellerUserName`
+        from `base_card` `bc`
+        left join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        left join `base_employee` `be` on `be`.`user_id` = `bc`.`seller_user_id`
+         left join `base_patient` `bp` on `bp`.`patient_id` = `bc`.`sold_target`
+        left join `base_coupon_order_virtual` `cov` on `cov`.`card_id` = `bc`.`card_id`
+        left join (
+            select order_id,GROUP_CONCAT(account_item_name) as account_item_name
+            from base_coupon_bill_pay_detail group by order_id
+        ) t1 on t1.order_id = cov.order_id
+        where
+        `bc`.`status` != 0
+         and isnull(t1.account_item_name) = 0
+        and b.coupon_type = 5
+        and isnull(bc.buyer_id) = 0
+        and `bc`.`allocate_org_id` != 0
+        <if test="orgId != null">
+            and `bc`.`allocate_org_id` = #{orgId}
+        </if>
+        <if test="soldStartDate != null and soldEndDate != null">
+            and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; date_add(#{soldEndDate}, interval 1
+            day))
+        </if>
+        <if test="couponName !=null and couponName != ''">
+            and `b`.`coupon_name` like concat('%', #{couponName}, '%')
+        </if>
+        <if test="cardNumber !=null and cardNumber != ''">
+            and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+        </if>
+       <if test="soldTarget !=null and soldTarget != ''">
+                and concat(IFNULL(bp.`name`,''), IFNULL(bp.pinyin_name,''), IFNULL(bp.mobile,''),
+                IFNULL(bp.medical_number,'')) like
+                concat(concat('%',#{soldTarget}),'%')
+        </if>
+        <if test="soldPhoneNumber !=null and soldPhoneNumber != ''">
+            and `bc`.`sold_phone_number` like concat('%', #{soldPhoneNumber}, '%')
+        </if>
+        <if test="couponTypes != null and couponTypes.size() > 0">
+            and `b`.`coupon_type` in
+            <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         order by `bc`.`sold_date` desc
+        )
     </select>
 
     <select id="listRechargeDetailByParam" resultType="com.yunya.feign.report.domain.vo.RechargeDetailVo">

@@ -6,7 +6,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
@@ -30,7 +29,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
-import java.util.function.Function;
 
 import static com.yunya.feign.wechat.enums.TemplateEnum.*;
 import static java.util.stream.Collectors.*;
@@ -192,18 +190,18 @@ public class DiscountBiz {
                 query.getSoldWays(),
                 query.getRemark(),
                 query.getChargeStatus());
-        List<Integer> collect = list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).map( bo -> Integer.valueOf(bo.getSoldTarget())).collect(toList());
-        if (CollectionUtils.isNotEmpty(collect)) {
-            List<PatientBaseInfoVo> patientInfos = patientCentralServiceFeign.findPatientInfoByIds(collect);
-            Map<Integer, PatientBaseInfoVo> collect1 = patientInfos.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity(), (o, v) -> o));
-            list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).forEach(t -> {
-                PatientBaseInfoVo baseInfoVo = collect1.get(Integer.valueOf(t.getSoldTarget()));
-                if (Objects.nonNull(baseInfoVo)) {
-                    t.setSoldTarget(baseInfoVo.getName());
-                    t.setSoldPhoneNumber(baseInfoVo.getMobile());
-                }
-            });
-        }
+//        List<Integer> collect = list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).map( bo -> Integer.valueOf(bo.getSoldTarget())).collect(toList());
+//        if (CollectionUtils.isNotEmpty(collect)) {
+//            List<PatientBaseInfoVo> patientInfos = patientCentralServiceFeign.findPatientInfoByIds(collect);
+//            Map<Integer, PatientBaseInfoVo> collect1 = patientInfos.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity(), (o, v) -> o));
+//            list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).forEach(t -> {
+//                PatientBaseInfoVo baseInfoVo = collect1.get(Integer.valueOf(t.getSoldTarget()));
+//                if (Objects.nonNull(baseInfoVo)) {
+//                    t.setSoldTarget(baseInfoVo.getName());
+//                    t.setSoldPhoneNumber(baseInfoVo.getMobile());
+//                }
+//            });
+//        }
         return new PageInfo<>(page);
     }
 
@@ -481,18 +479,18 @@ public class DiscountBiz {
                 query.getSoldWays(),
                 query.getRemark(),
                 query.getChargeStatus());
-        List<Integer> collect = list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).map( bo -> Integer.valueOf(bo.getSoldTarget())).collect(toList());
-        if (CollectionUtils.isNotEmpty(collect)) {
-            List<PatientBaseInfoVo> patientInfos = patientCentralServiceFeign.findPatientInfoByIds(collect);
-            Map<Integer, PatientBaseInfoVo> collect1 = patientInfos.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity(), (o, v) -> o));
-            list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).forEach(t -> {
-                PatientBaseInfoVo baseInfoVo = collect1.get(Integer.valueOf(t.getSoldTarget()));
-                if (Objects.nonNull(baseInfoVo)) {
-                    t.setSoldTarget(baseInfoVo.getName());
-                    t.setSoldPhoneNumber(baseInfoVo.getMobile());
-                }
-            });
-        }
+//        List<Integer> collect = list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).map( bo -> Integer.valueOf(bo.getSoldTarget())).collect(toList());
+//        if (CollectionUtils.isNotEmpty(collect)) {
+//            List<PatientBaseInfoVo> patientInfos = patientCentralServiceFeign.findPatientInfoByIds(collect);
+//            Map<Integer, PatientBaseInfoVo> collect1 = patientInfos.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity(), (o, v) -> o));
+//            list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).forEach(t -> {
+//                PatientBaseInfoVo baseInfoVo = collect1.get(Integer.valueOf(t.getSoldTarget()));
+//                if (Objects.nonNull(baseInfoVo)) {
+//                    t.setSoldTarget(baseInfoVo.getName());
+//                    t.setSoldPhoneNumber(baseInfoVo.getMobile());
+//                }
+//            });
+//        }
         return list;
     }
 

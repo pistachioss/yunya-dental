@@ -116,7 +116,7 @@ public class BaseCardServiceImpl{
 					}
 					else
 					{
-						baseCardMapper.updateByPrimaryKeySelective(updateCards.get(0));
+						baseCardMapper.updateByPrimaryKey(updateCards.get(0));
 					}
 				}
 			}

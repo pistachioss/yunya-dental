@@ -77,6 +77,8 @@ public class CouponOrderBiz {
     private RemoteRabbitMqServiceFeign mqServiceFeign;
     @Resource
     private RemoteMiddleServiceFeign middleServiceFeign;
+    @Resource
+    private CouponRefundMapper refundMapper;
 
     @Transactional(rollbackFor = Exception.class)
     public CouponOrderVO soldCard(CouponOrderModel model) {
@@ -207,6 +209,7 @@ public class CouponOrderBiz {
         }
         if (Objects.equals(occurType, 2)) {
             List<CardBenefit> orderBenefit = getOrderBenefit(orderId);
+            Integer orgId = CollectionUtils.isNotEmpty( orderBenefit) ? orderBenefit.get(0).getOrgId() : 0;
             Map<Integer, List<String>> collect = orderBenefit.stream().collect(groupingBy(CardBenefit::getCardId, mapping(t -> Joiner.on("-").join(t.getItemId(), t.getItemType()), toList())));
             for (Map.Entry<Integer, List<String>> entry : collect.entrySet()) {
                 Integer k = entry.getKey();
@@ -225,6 +228,7 @@ public class CouponOrderBiz {
                 BigDecimal reduce = v.stream().filter(collect1::containsKey)
                         .map(collect1::get).reduce(BigDecimal.ZERO, BigDecimal::add);
                 CouponChangeRecord newBean = BeanCopierUtils.generalCopyBean(latest, CouponChangeRecord.class);
+                newBean.setOrgId(orgId);
                 newBean.setOrderId(orderId);
                 newBean.setOccurType(occurType);
                 newBean.setOccurAmount(reduce);
@@ -242,8 +246,10 @@ public class CouponOrderBiz {
             if (Objects.isNull(latest)) {
                 return;
             }
+            CouponRefund couponRefund = refundMapper.selectByPrimaryKey(orderId);
             CouponChangeRecord newBean = BeanCopierUtils.generalCopyBean(latest, CouponChangeRecord.class);
-            newBean.setOrderId(orderId);
+            newBean.setOrgId(couponRefund.getOrgId());
+            newBean.setOrderId(couponRefund.getOrderId());
             newBean.setOccurType(occurType);
             newBean.setOccurAmount(amount);
             newBean.setCurrentAmount(newBean.getCurrentAmount().subtract(newBean.getOccurAmount()));

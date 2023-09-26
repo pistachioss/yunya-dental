@@ -27,12 +27,52 @@
             ccr.card_id,
             if(isnull(bc.sold_date) , null, bp.name)    as buyer,
             bp1.name    as activator,
-            max(ccr.current_amount) as beginDeduction,
-            sum(case when ccr.occur_type = 2 then ccr.occur_amount
-            else 0 end)     as thisDeduction,
-            sum(case when ccr.occur_type = 3 then ccr.occur_amount
-            else 0 end)     as thisDeductionRefund,
-            min(ccr.current_amount)     as endDeduction
+            IFNULL((SELECT sum(a.current_amount)
+               FROM coupon_change_record a
+               <where>
+                   a.card_id = ccr.card_id
+                  <if test="query.startDate != null and query.startDate != ''">
+                     AND a.occur_date =
+                         (select max(occur_date)
+                          from coupon_change_record
+                          where date_format(occur_date, '%Y-%m-%d') &lt;= #{query.startDate}
+                            AND card_id = ccr.card_id)
+                    </if>
+                 </where>
+               GROUP BY a.occur_date
+               LIMIT 0,1), 0)                  as beginDeduction,
+            IFNULL((SELECT sum(a.occur_amount) FROM coupon_change_record a
+                <where>
+                     a.occur_type = 2
+                    and a.card_id = ccr.card_id
+                    <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                        and DATE_FORMAT(a.occur_date, "%Y-%m-%d") BETWEEN #{query.startDate} AND #{query.endDate}
+                    </if>
+                </where>
+            ),0) AS thisDeduction,
+            IFNULL((SELECT sum(a.occur_amount) FROM coupon_change_record a
+                <where>
+                     a.occur_type = 3
+                    and a.card_id = ccr.card_id
+                    <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                        and DATE_FORMAT(a.occur_date, "%Y-%m-%d") BETWEEN #{query.startDate} AND #{query.endDate}
+                    </if>
+                </where>
+            ),0) AS thisDeductionRefund,
+           IFNULL((SELECT sum(a.current_amount)
+               FROM coupon_change_record a
+               <where>
+                   a.card_id = ccr.card_id
+                 <if test="query.endDate != null and query.endDate != ''">
+                     AND a.occur_date =
+                         (select max(occur_date)
+                          from coupon_change_record
+                          where date_format(occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                            AND card_id = ccr.card_id)
+                </if>
+             </where>
+               GROUP BY a.occur_date
+               LIMIT 0,1), 0)                  AS endDeduction
         from coupon_change_record ccr
         inner join base_card bc on bc.card_id = ccr.card_id
         inner join base_coupon bc1 on bc1.coupon_id = ccr.coupon_id
@@ -44,10 +84,6 @@
                 <foreach collection="query.couponIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
-            </if>
-            <if test="query.startDate != null and query.endDate != null">
-                and (ccr.occur_date &gt;= #{query.startDate} and ccr.occur_date &lt; DATE_ADD(#{query.endDate} ,INTERVAL '1'
-                DAY))
             </if>
             <if test="query.patientKeyword !=null and query.patientKeyword != ''">
                 and (`bp`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp`.`mobile` like concat('%',
@@ -124,6 +160,7 @@
                               where coupon_id = cci.coupon_id
                                 and crt_time &lt;= ifnull(c.sold_date, c.active_date))
         group by cb.card_id, cb.order_id, cb.item_id,cb.item_type
+        order by cb.use_date desc
     </select>
 
     <select id="deductionBuy" resultType="com.yunya.feign.report.domain.vo.DeductionBuyVO">
