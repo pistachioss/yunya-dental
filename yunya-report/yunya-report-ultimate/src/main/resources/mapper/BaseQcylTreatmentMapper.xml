@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseQcylTreatmentMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseQcylTreatment" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="qc_treatment_id" property="qcTreatmentId" jdbcType="INTEGER" />
+    <result column="adm_no" property="admNo" jdbcType="VARCHAR" />
+    <result column="customer_name" property="customerName" jdbcType="VARCHAR" />
+    <result column="customer_mobile" property="customerMobile" jdbcType="VARCHAR" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="CHAR" />
+    <result column="bill_id" property="billId" jdbcType="INTEGER" />
+    <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER" />
+    <result column="executed_amount" property="executedAmount" jdbcType="DECIMAL" />
+    <result column="un_executed_amount" property="unExecutedAmount" jdbcType="DECIMAL" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="selectQcCollectedAdviceItemList"
+          resultType="com.yunya.feign.report.domain.vo.QcCollectedAdviceTollVO">
+    SELECT
+        bb.qc_treatment_id AS qcTreatmentId,
+        bb.adm_no AS admNo,
+        bb.customer_name AS customerName,
+        bb.customer_mobile AS customerMobile,
+        bb.name AS patientName,
+        bb.type,
+        bb.bill_num AS billNum,
+        bbp.payee_date AS payeeDate,
+        IFNULL(bb.received_amount, 0) AS billReceivedAmount,
+        IFNULL(bqt.executed_amount, 0) AS adviceItemExecAmount,
+        IFNULL(bqt.un_executed_amount, 0) AS adviceItemUnExecAmount
+    FROM base_bill_pay bbp
+    INNER JOIN (
+        SELECT
+            bb.bill_id,
+            bb.bill_num,
+            bb.received_amount,
+            bqt.qc_treatment_id,
+            bqt.adm_no,
+            bqt.customer_name,
+            bqt.customer_mobile,
+            bqt.type,
+            bp.name,
+            bp.pinyin_name,
+            bp.mobile
+        FROM base_bill bb
+        LEFT JOIN base_qcyl_treatment bqt ON bb.bill_id=bb.bill_id
+        LEFT JOIN base_patient bp ON bp.patient_id=bqt.patient_id
+    ) bb ON bb.bill_id = bbp.bill_id
+    LEFT JOIN base_qcyl_treatment bqt ON bqt.bill_pay_id=bbp.bill_pay_id
+    <where>
+        <if test="query.keyword!=null and query.keyword!=''">
+            AND CONCAT(IFNULL(bb.name, ''),IFNULL(bb.pinyin_name, ''), IFNULL(bp.mobile, '')) LIKE CONCAT('%', #{query.keyWord}, '%')
+        </if>
+        <if test="query.dateType == 0">
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+        </if>
+        <if test="query.dateType == 1">
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+            </if>
+        </if>
+        <if test="query.dateType == 2">
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+            </if>
+        </if>
+    </where>
+  </select>
+
+  <select id="selectQcUnCollectedAdviceItemList"
+            resultType="com.yunya.feign.report.domain.vo.QcUnCollectedAdviceTollVO">
+      SELECT
+          bb.qc_treatment_id AS qcTreatmentId,
+          bb.adm_no AS admNo,
+          bb.customer_name AS customerName,
+          bb.customer_mobile AS customerMobile,
+          bb.name AS patientName,
+          bb.type,
+          bb.bill_num AS billNum,
+          bbp.payee_date AS payeeDate,
+          bbp.received_amount - IFNULL(bqt.executed_amount, 0) AS receivedAmount
+      FROM base_bill_pay bbp
+      INNER JOIN (
+          SELECT
+              bb.bill_id,
+              bb.bill_num,
+              bb.received_amount,
+              bqt.qc_treatment_id,
+              bqt.adm_no,
+              bqt.customer_name,
+              bqt.customer_mobile,
+              bp.name
+          FROM base_bill bb
+          LEFT JOIN base_qcyl_treatment bqt ON bb.bill_id=bb.bill_id
+          LEFT JOIN base_patient bp ON bp.patient_id=bqt.patient_id
+      ) bb ON bb.bill_id = bbp.bill_id
+      LEFT JOIN base_qcyl_treatment bqt ON bqt.bill_pay_id=bbp.bill_pay_id
+      <where>
+          <if test="query.keyword!=null and query.keyword!=''">
+              AND IFNULL(bb.customer_name, '') LIKE CONCAT('%', #{query.keyWord}, '%')
+          </if>
+          <if test="query.dateType == 0">
+              <if test="query.startDate != null and query.startDate != ''">
+                  and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+              </if>
+              <if test="query.endDate != null and query.endDate != ''">
+                  and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+              </if>
+          </if>
+          <if test="query.dateType == 1">
+              <if test="query.startDate != null and query.startDate != ''">
+                  and DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+              </if>
+              <if test="query.endDate != null and query.endDate != ''">
+                  and DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+              </if>
+          </if>
+          <if test="query.dateType == 2">
+              <if test="query.startDate != null and query.startDate != ''">
+                  and DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+              </if>
+              <if test="query.endDate != null and query.endDate != ''">
+                  and DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+              </if>
+          </if>
+      </where>
+  </select>
+
+  <select id="selectWait4UploadQcTreatmentList"
+            resultType="com.yunya.feign.report.domain.vo.Wait4UploadTreatmentVO">
+    SELECT
+        bqt.qc_treatment_id AS qcTreatmentId,
+        bqt.adm_no AS admNo,
+        bb.bill_date AS billDate,
+        bp.name AS patientName,
+        bp.mobile,
+        IFNULL(bb.received_amount, 0) AS receivedTotalAmount,
+        bqt.execute_amount AS adviceItemExecAmount,
+        bqt.un_execute_amount AS unAdviceItemExecAmount,
+        IFNULL(bb.received_amount, 0) - bqt.execute_amount AS orderItemExecAmount
+    FROM base_qcyl_treatment bqt
+    LEFT JOIN base_bill bb ON bqt.bill_id = bb.bill_id
+    LEFT JOIN base_patient bp ON bp.patient_id = bqt.patient_id
+    <where>
+        AND status = 3
+        <if test="query.dateType == 0">
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+        </if>
+        <if test="query.dateType == 1">
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+            </if>
+        </if>
+        <if test="query.dateType == 2">
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT( bb.bill_date, '%Y' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt;= #{query.endDate}
+            </if>
+        </if>
+    </where>
+  </select>
+</mapper>
