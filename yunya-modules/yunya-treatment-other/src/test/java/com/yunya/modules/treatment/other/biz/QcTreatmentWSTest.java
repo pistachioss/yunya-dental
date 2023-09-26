@@ -52,7 +52,7 @@ public class QcTreatmentWSTest {
         queryForm.setStart_date("2023-09-01");
         queryForm.setEnd_date("2023-10-01");
         queryForm.setAdm_no("72");
-        queryForm.setWerif_code("2484");
+//        queryForm.setWerif_code("2484");
         List<QcPatientInfoVO> patientTreatments = qcWebServiceClientBiz.findDoctorAdviceRecommondList(queryForm);
         System.out.println(JSONObject.toJSONString(patientTreatments));
     }

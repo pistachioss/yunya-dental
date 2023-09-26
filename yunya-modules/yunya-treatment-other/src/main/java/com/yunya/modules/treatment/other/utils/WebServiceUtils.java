@@ -42,7 +42,7 @@ public class WebServiceUtils {
                  Service service = new Service();
                  Call call = (Call) service.createCall();
                  call.setTargetEndpointAddress(endpoint);
-                 call.setOperationName("HIPMessageServer");//WSDL里面描述的接口名称
+                 call.setOperationName(methodName);//WSDL里面描述的接口名称
                  call.addParameter("input1", org.apache.axis.encoding.XMLType.XSD_STRING,
                                javax.xml.rpc.ParameterMode.IN);//接口的参数
                  call.addParameter("input2", org.apache.axis.encoding.XMLType.XSD_STRING,
@@ -79,46 +79,8 @@ public class WebServiceUtils {
         WebServiceParam param2 = new WebServiceParam();
         param2.setInName("input2");
         param2.setData(data);
-        String result = callWebService(methodName, param1, param2);
+        String result = callWebService(url, namespace, methodName, param1, param2);
         QcDoctorAdviceRecordVO vo = JSONObject.parseObject(result, QcDoctorAdviceRecordVO.class);
-    }
-
-    public static void main2(String[] args) {
-        String param = "";
-        QcAdviceUploadForm data = new QcAdviceUploadForm();
-        data.setPat_info(JSONObject.parseObject("{\"Address\":\"\",\"Age\":\"39\",\"DOB_Html\":\"1983-11-08\",\"DVACardType_Desc\":\"居民户口簿\",\"PAPER_Country_DR\":\"1\",\"PAPER_Nation_DR\":\"\",\"PAPER_TelH\":\"17800000000\",\"PAPMI_CardType_DR\":\"21\",\"PAPMI_DVAnumber\":\"330106198311080076\",\"PAPMI_MobPhone\":\"17800000000\",\"PAPMI_Name\":\"罗宏伟\",\"PAPMI_Sex_DR\":\"1\"}",
-                QcPatientInfo.class));
-        data.setAdm_info(JSONObject.parseObject("{\"AdmDate_Html\":\"2023-09-20\",\"AdmDocCodeDesc\":\"\",\"AdmTime_Html\":\"14:11:03\",\"AppFlag\":\"\",\"DepCode_Desc\":\"全科门诊\",\"PAADM_Type\":\"O\",\"TypeDisplay\":\"门诊\",\"VerifCode\":\"\",\"adm_no\":\"50\"}",
-                QcTreatmentInfo.class));
-        data.setOrder_infos(JSONArray.parseArray("[{\"Date_Html\":\"2023-09-20\",\"ItmMast_Code\":\"QCZDY001\",\"ItmMast_Desc\":\"自定义医嘱\",\"Mall_order_no\":\"31||1\",\"OEORI_Billed\":\"P\",\"OEORI_DepProcNotes\":\"普通超声波洁牙\",\"OEORI_Price\":\"0\",\"OEORI_QtyPackUOM\":\"1\",\"OEORI_RecDep_DR\":\"60\",\"OEORI_UnitCost\":\"0.0000\",\"PackUOM_Desc\":\"\",\"SttDat_Html\":\"2023-09-20\",\"SttTim_Html\":\"14:12:22\",\"TimeOrd_Html\":\"00:00:00\"}]",
-                QcAdviceUploadItemForm.class));
-        String input1 = "MES0083"; //医嘱上传
-        System.out.println("参数：" + data);
-        WebServiceParam param1 = new WebServiceParam();
-        param1.setInName("input1");
-        param1.setData(input1);
-        WebServiceParam param2 = new WebServiceParam();
-        param2.setInName("input2");
-        param2.setData(data);
-        String result = callWebService(methodName, param1, param2);
-        QcAdviceStatusVO vo = JSONObject.parseObject(result, QcAdviceStatusVO.class);
-    }
-
-    public static void main3(String[] args) {
-        String param = "";
-        QcAdviceStatusForm data = new QcAdviceStatusForm();
-        data.setOrder_infos(JSONArray.parseArray("[{\"Org_order_no\":\"QCZDY001\",\"Mall_order_no\":\"34||1\",\"VerifCode\":\"2472\",\"Remark\":\"\",\"Org_Code\":\"20\",\"status\":\"1\",\"ForceFlag\":\"Y\"}]",
-                QcAdviceItemStatusForm.class));
-        String input1 = "MES0090"; //医嘱状态变更
-        System.out.println("参数：" + data);
-        WebServiceParam param1 = new WebServiceParam();
-        param1.setInName("input1");
-        param1.setData(input1);
-        WebServiceParam param2 = new WebServiceParam();
-        param2.setInName("input2");
-        param2.setData(data);
-        String result = callWebService(methodName, param1, param2);
-        QcAdviceStatusVO vo = JSONObject.parseObject(result, QcAdviceStatusVO.class);
     }
 
     /**
@@ -128,11 +90,15 @@ public class WebServiceUtils {
      * @param params
      * @return json字符串
      */
-    public static String callWebService(String methodName, WebServiceParam...params){
+    public static String callWebService(String wsdlUrl, String namespace, String methodName, WebServiceParam...params){
+        return callWebService(wsdlUrl, namespace, methodName, methodName, params);
+    }
+
+    public static String callWebService(String wsdlUrl, String namespace, String methodName, String soapAction, WebServiceParam...params){
         String result = null;
         try {
             // 服务端的url，需要根据情况更改。
-            String endpointURL = url;
+            String endpointURL = wsdlUrl;
             Service service = new Service();
             Call call = (Call) service.createCall();
             call.setTimeout(timeout);

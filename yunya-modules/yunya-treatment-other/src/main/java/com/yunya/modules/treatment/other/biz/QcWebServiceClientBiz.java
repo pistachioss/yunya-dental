@@ -136,7 +136,7 @@ public class QcWebServiceClientBiz {
         WebServiceParam input2 = new WebServiceParam();
         input2.setInName(INPUT2);
         input2.setData(data);
-        String result = WebServiceUtils.callWebService(METHOD_NAME, input1, input2);
+        String result = WebServiceUtils.callWebService(wsdlUrl, targetNamespace, METHOD_NAME, input1, input2);
         return JSONObject.parseObject(result, clzz);
     }
 
