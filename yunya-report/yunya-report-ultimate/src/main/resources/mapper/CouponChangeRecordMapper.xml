@@ -89,7 +89,7 @@
                 and (`bp`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp`.`mobile` like concat('%',
                 #{query.patientKeyword}, '%')
                 or `bp`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
-                and (`bp1`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp1`.`mobile` like concat('%',
+                or (`bp1`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp1`.`mobile` like concat('%',
                 #{query.patientKeyword}, '%')
                 or `bp1`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
             </if>
@@ -116,7 +116,7 @@
                  inner join base_coupon cci on c.coupon_id = cci.coupon_id
                  left join deduction_item dip on dip.item_id = cb.item_id and dip.coupon_id = cb.coupon_id and dip.type = cb.item_type
                  left join base_coupon_order_virtual cov on c.card_id = cov.card_id
-                 left join base_coupon_bill b on cov.order_id = b.order_id
+                 left join base_bill b on cb.order_id = b.bill_id
                  left join base_patient bp on bp.patient_id = cb.patient_id
                 left join base_employee be on be.user_id = cb.operate_user_id
                 left join base_tariff_info bti on bti.item_id = cb.item_id AND bti.item_type = cb.item_type
