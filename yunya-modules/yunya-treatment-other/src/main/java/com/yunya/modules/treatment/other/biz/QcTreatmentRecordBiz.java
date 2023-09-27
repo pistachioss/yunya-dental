@@ -248,8 +248,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
         Date now = DateUtil.now();
         qcTreatmentRecord.setPatientId(patientId);
         String remark = "实际使用人:" + patient.getName();
-        qcTreatmentRecord.setStatus((byte) 2);
         qcTreatmentRecord.setRemark(remark);
+        qcTreatmentRecord.setStatus((byte) 2);
         qcTreatmentRecord.setUpdId(userId);
         qcTreatmentRecord.setUpdTime(now);
         updateSelectiveById(qcTreatmentRecord);
@@ -258,6 +258,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
     public void executorAdviceItem(QcTreatmentRecord treatment) {
         List<QcTreatmentItem> items = qcTreatmentItemMapper.selectQcTreatmentItemsByTreatmentId(treatment.getId(), true);
         executorAdviceItem(treatment.getVerifyCode(), treatment.getRemark(), items);
+        treatment.setStatus((byte) 3);
+        updateById(treatment);
     }
 
     /**
@@ -272,7 +274,10 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
             items.forEach(item -> {
                 QcAdviceItemStatusForm form = new QcAdviceItemStatusForm();
                 form.setMall_order_no(item.getOrderNo());
-                form.setOrg_order_no(item.getOrderDetailId().toString());
+                Integer orderDetailId = item.getOrderDetailId();
+                if (StringHelper.isNotNull(orderDetailId)) {
+                    form.setOrg_order_no(String.valueOf(orderDetailId));
+                }
                 form.setStatus("6");
                 form.setVerifCode(verifyCode);
                 form.setRemark(remark);
@@ -340,7 +345,10 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
         List<OrderAdviceItemVO> orderAdviceItems = qcTreatmentItemMapper.selectOrderAdviceItemsByTreatmentId(id);
         orderAdviceItems.forEach(item->{
             QcAdviceUploadItemForm uploadItem = new QcAdviceUploadItemForm();
-            uploadItem.setOrg_order_no(item.getOrderDetailId().toString());
+            Integer orderDetailId = item.getOrderDetailId();
+            if (StringHelper.isNotNull(orderDetailId)) {
+                uploadItem.setOrg_order_no(String.valueOf(orderDetailId));
+            }
             uploadItem.setItmMast_Code(item.getItemNum());
             uploadItem.setItmMast_Desc(item.getItemName());
             uploadItem.setOEORI_QtyPackUOM(item.getQuantity());

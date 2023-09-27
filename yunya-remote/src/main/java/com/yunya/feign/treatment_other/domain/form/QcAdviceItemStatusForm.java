@@ -28,7 +28,7 @@ public class QcAdviceItemStatusForm implements Serializable {
     /** 医疗机构医嘱流水号 */
     @JSONField(name = "Org_order_no")
     @ApiModelProperty("医疗机构医嘱流水号")
-    private String Org_order_no;
+    private String Org_order_no = StringHelper.EMPTY;
 
     /** 核销码 */
     @JSONField(name = "VerifCode")

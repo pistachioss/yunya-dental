@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * 患者储蓄账号（会员卡or预付款）分类枚举
+ * 特殊入账方式枚举
  *
  * @author: chenlin
  * @date: 2023/2/3 19:48
@@ -83,13 +83,17 @@ public enum PatientDepositAccountTypeEnum {
      */
     public static PatientDepositAccountTypeEnum getTypeEnumRelId(Integer accountItemId) {
         if (StringHelper.isNotNull(accountItemId)) {
-            for (PatientDepositAccountTypeEnum item : values()) {
+            for (PatientDepositAccountTypeEnum item : depositAccounts()) {
                 if (accountItemId.equals(item.getAccountItemId())) {
                     return item;
                 }
             }
         }
         return null;
+    }
+
+    public static List<PatientDepositAccountTypeEnum> depositAccounts() {
+        return Stream.of(MEMBER, NORMAL_PREPAYMENT).collect(Collectors.toList());
     }
 
     /**
@@ -100,7 +104,7 @@ public enum PatientDepositAccountTypeEnum {
      */
     public static Boolean isRelTypeId(Integer accountItemId) {
         if (StringHelper.isNotNull(accountItemId)) {
-            for (PatientDepositAccountTypeEnum item : values()) {
+            for (PatientDepositAccountTypeEnum item : depositAccounts()) {
                 if (accountItemId.equals(item.getAccountItemId())) {
                     return true;
                 }

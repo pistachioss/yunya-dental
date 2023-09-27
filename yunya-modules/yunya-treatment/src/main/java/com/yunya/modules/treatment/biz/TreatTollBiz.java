@@ -47,6 +47,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM
 import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.framework.common.enums.PatientDepositAccountTypeEnum.QCYL_PREPAYMENT;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -272,14 +273,31 @@ public class TreatTollBiz {
     BigDecimal privilegeAmount = calculatePrivilegeAmount(model);
     // 计算入账总额、应收总额
     BigDecimal actualReceivableAmount = orderRecord.getTotalAmount().subtract(privilegeAmount);
+    if (StringHelper.isNotEmpty(model.getQcTreatmentIds())) {
+      actualReceivableAmount = actualReceivableAmount.subtract(findQcCollectedAmount(model));
+    }
     if (StringHelper.leZero(actualReceivableAmount)) {
       throw new ClientServiceException("收费失败，应收金额合计为0，不能挂账！", OPERATION_NOT_ALLOW);
     }
-    model.setPaymentModels(null);
+//    model.setPaymentModels(null);
     model.setPrepaymentAccountModels(null);
     model.setMemberAccountModels(null);
     model.setOutstandingAmount(actualReceivableAmount);
     return confirmCharge(model, (byte) 1);
+  }
+
+  private BigDecimal findQcCollectedAmount(TreatTollModel model) {
+    BigDecimal qcCollected = BigDecimal.ZERO;
+    Set<PaymentModel> paymentModels = model.getPaymentModels();
+    if (StringHelper.isNotEmpty(paymentModels)) {
+      for (PaymentModel paymentModel : paymentModels) {
+        PatientDepositAccountTypeEnum qcyl = PatientDepositAccountTypeEnum.getTypeEnumRelId(paymentModel.getAccountItemId());
+        if (StringHelper.isNotNull(qcyl)) {
+          qcCollected = qcCollected.add(paymentModel.getAmount());
+        }
+      }
+    }
+    return qcCollected;
   }
 
   /**

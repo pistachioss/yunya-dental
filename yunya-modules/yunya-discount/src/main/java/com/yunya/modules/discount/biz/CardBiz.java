@@ -1848,7 +1848,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             return null;
         }
         OrderRecord record = treatmentServiceFeign.findOrderRecordById(query.getOrderId());
-        return getPatientBenefit(query.getPatientId(), query.getOrderId(), record.getOrgId(), null);
+        return getPatientBenefit(query.getPatientId(), query.getOrderId(), record.getOrgId(), Lists.newArrayList());
     }
 
     public List<Integer> listPatientAllCard(Integer patientId) {
