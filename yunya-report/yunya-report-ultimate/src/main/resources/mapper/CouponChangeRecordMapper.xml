@@ -89,7 +89,7 @@
                 and (`bp`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp`.`mobile` like concat('%',
                 #{query.patientKeyword}, '%')
                 or `bp`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
-                and (`bp1`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp1`.`mobile` like concat('%',
+                or (`bp1`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp1`.`mobile` like concat('%',
                 #{query.patientKeyword}, '%')
                 or `bp1`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
             </if>
