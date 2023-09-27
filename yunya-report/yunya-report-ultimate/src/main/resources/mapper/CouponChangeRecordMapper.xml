@@ -76,7 +76,7 @@
         from coupon_change_record ccr
         inner join base_card bc on bc.card_id = ccr.card_id
         inner join base_coupon bc1 on bc1.coupon_id = ccr.coupon_id
-        left join base_patient bp on bp.patient_id = bc.sold_target
+        left join base_patient bp on bp.patient_id = bc.buyer_id
         left join base_patient bp1 on bp1.patient_id = bc.patient_id
         <where>
             <if test="query.couponIds != null and query.couponIds.size() > 0">
