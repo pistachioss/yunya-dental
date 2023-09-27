@@ -22,7 +22,7 @@ public class CouponStatisticsVo {
 	private String couponCategoryName;
 	@ApiModelProperty(value = "创建时间")
 	private LocalDate crtDate;
-	@ApiModelProperty(value = "产品类型")
+	@ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券；5-划扣卡）")
 	private Integer couponType;
 	@ApiModelProperty(value = "售出金额")
 	private BigDecimal soldAmount;

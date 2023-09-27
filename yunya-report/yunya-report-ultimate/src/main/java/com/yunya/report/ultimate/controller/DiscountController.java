@@ -35,7 +35,7 @@ public class DiscountController {
 		return ResponseUtil.success(discountBiz.getCouponStatisticsPage(query));
 	}
 
-	@ApiOperation(value = "产品售出激活统计-售出激活统计（代金、折扣、兑换、套餐）")
+	@ApiOperation(value = "产品售出激活统计-售出激活统计（代金、折扣、兑换、套餐、划扣）")
 	@PostMapping("/{couponId}/card/statistics")
 	public ResponseResult<PageInfo<CardStatisticsVo>> getCardStatistics(@PathVariable(value = "couponId") Integer couponId,
 	                                                                    @Valid @RequestBody CardStatisticsQuery query) {
