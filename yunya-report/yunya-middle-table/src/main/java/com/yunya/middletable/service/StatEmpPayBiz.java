@@ -371,7 +371,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         String endDate = form.getEndDate();
         deleteData(startDate, endDate);
         List<StatEmpPay> details = baseBillPayShareMapper.statisitcsItemPayShareDetails(
-                63, startDate, endDate, 734, (byte) 0, null);
+                null, startDate, endDate, null, (byte) 0, null);
         if (StringHelper.isNotEmpty(details)) {
             List<StatEmpPay> datas = new ArrayList<>();
             details.forEach(entity -> {
