@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
@@ -57,6 +58,10 @@ public class DiscountBiz {
     private BasePatientMapper patientMapper;
     @Resource
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
+    @Resource
+    private RemotePatientCentralServiceFeign patientCentralServiceFeign;
+    @Resource
+    private BaseCouponOrderVirtualMapper virtualMapper;
 
     /**
      * 产品售出激活统计
@@ -144,12 +149,21 @@ public class DiscountBiz {
     public PageInfo<CouponSoldStatisticsVo> getCouponSoldPage(CouponSoldStatisticsQuery query) {
         Page<CouponSoldStatisticsVo> page =
                 PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        couponMapper.listCouponSold(
+        List<CouponSoldStatisticsVo> list = couponMapper.listCouponSold(
                 query.getCouponName(),
                 query.getCouponCategoryIds(),
                 query.getCouponTypes(),
                 query.getCrtStartDate(),
                 query.getCrtEndDate());
+        if (CollectionUtils.isNotEmpty(list)) {
+            Set<Integer> collect = list.stream().map(CouponSoldStatisticsVo::getCouponId).collect(toSet());
+            List<UnChargeCouponVO> unChargeCouponVOS = virtualMapper.listUnChargeCoupon(collect);
+            Map<Integer, Integer> map = CollectionUtils.isNotEmpty(unChargeCouponVOS) ? unChargeCouponVOS.stream()
+                    .collect(toMap(UnChargeCouponVO::getCouponId, UnChargeCouponVO::getUnCharge, (o, n) -> o)) : Maps.newHashMap();
+            list.stream().filter(t -> map.containsKey(t.getCouponId()))
+                    .forEach(t -> t.setOwnPlatformSoldQuantity(t.getOwnPlatformSoldQuantity() - map.get(t.getCouponId())));
+        }
+
         return new PageInfo<>(page);
     }
 
@@ -164,7 +178,7 @@ public class DiscountBiz {
         if (query.getSoldWays().contains(2)) {
             query.setRemark("小程序虚拟服务售卖");
         }
-        cardMapper.listAllCardSoldParam(
+        List<CardSoldStatisticsVo> list = cardMapper.listAllCardSoldParam(
                 query.getCouponName(),
                 query.getCouponTypes(),
                 query.getCardNumber(),
@@ -176,6 +190,18 @@ public class DiscountBiz {
                 query.getSoldWays(),
                 query.getRemark(),
                 query.getChargeStatus());
+//        List<Integer> collect = list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).map( bo -> Integer.valueOf(bo.getSoldTarget())).collect(toList());
+//        if (CollectionUtils.isNotEmpty(collect)) {
+//            List<PatientBaseInfoVo> patientInfos = patientCentralServiceFeign.findPatientInfoByIds(collect);
+//            Map<Integer, PatientBaseInfoVo> collect1 = patientInfos.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity(), (o, v) -> o));
+//            list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).forEach(t -> {
+//                PatientBaseInfoVo baseInfoVo = collect1.get(Integer.valueOf(t.getSoldTarget()));
+//                if (Objects.nonNull(baseInfoVo)) {
+//                    t.setSoldTarget(baseInfoVo.getName());
+//                    t.setSoldPhoneNumber(baseInfoVo.getMobile());
+//                }
+//            });
+//        }
         return new PageInfo<>(page);
     }
 
@@ -441,7 +467,7 @@ public class DiscountBiz {
         if (query.getSoldWays().contains(2)) {
             query.setRemark("小程序虚拟服务售卖");
         }
-        return cardMapper.listAllCardSoldParam(
+        List<CardSoldStatisticsVo> list = cardMapper.listAllCardSoldParam(
                 query.getCouponName(),
                 query.getCouponTypes(),
                 query.getCardNumber(),
@@ -453,6 +479,19 @@ public class DiscountBiz {
                 query.getSoldWays(),
                 query.getRemark(),
                 query.getChargeStatus());
+//        List<Integer> collect = list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).map( bo -> Integer.valueOf(bo.getSoldTarget())).collect(toList());
+//        if (CollectionUtils.isNotEmpty(collect)) {
+//            List<PatientBaseInfoVo> patientInfos = patientCentralServiceFeign.findPatientInfoByIds(collect);
+//            Map<Integer, PatientBaseInfoVo> collect1 = patientInfos.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity(), (o, v) -> o));
+//            list.stream().filter(t -> Objects.equals("划扣卡", t.getCouponType()) && Objects.nonNull(t.getSoldDate())).forEach(t -> {
+//                PatientBaseInfoVo baseInfoVo = collect1.get(Integer.valueOf(t.getSoldTarget()));
+//                if (Objects.nonNull(baseInfoVo)) {
+//                    t.setSoldTarget(baseInfoVo.getName());
+//                    t.setSoldPhoneNumber(baseInfoVo.getMobile());
+//                }
+//            });
+//        }
+        return list;
     }
 
     /**

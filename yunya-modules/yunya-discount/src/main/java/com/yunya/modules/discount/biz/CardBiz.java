@@ -2503,11 +2503,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             insertOtherCard.setSoldPhoneNumber(form.getSoldPhoneNumber());
             insertOtherCard.setSharer(form.getSharerIdStr());
         }
-//        insertOtherCard.setOrgId(0);
+        insertOtherCard.setOrgId(0);
         insertOtherCard.setThirdCardNumber(form.getThirdCardNumber());
         insertOtherCard.setActiveOrgId(activeOrgId);
         insertOtherCard.setActiveUserId(loginUserId);
-//        insertOtherCard.setCouponAllocateId(0);
+        insertOtherCard.setCouponAllocateId(0);
         insertOtherCard.setPatientId(patientId);
         insertOtherCard.setStatus(ACTIVATED.getCode());
         insertOtherCard.setSharer(form.getSharerIdStr());
@@ -2520,10 +2520,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             insertOtherCard.setActiveDate(LocalDateTime.now());
         }
         if (form.getThirdCardNumber().startsWith("HK")) {
-            insertOtherCard.setCardNumber(null);
+//            insertOtherCard.setCardNumber(null);
             insertOtherCard.setCardPassword(null);
-            insertOtherCard.setUpdTime(null);
-            mapper.updateByPrimaryKeySelective(insertOtherCard);
+//            insertOtherCard.setUpdTime(null);
+            mapper.updateByPrimaryKey(insertOtherCard);
         } else {
             insertOtherCard.setOrgId(0);
             insertOtherCard.setCouponAllocateId(0);

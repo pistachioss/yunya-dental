@@ -55,12 +55,12 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponBill;
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCouponRefund;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.modules.discount.enums.CardStatusEnum.USE_ALL;
 import static com.yunya.modules.discount.enums.CouponOrderError.*;
@@ -377,7 +377,7 @@ public class DeductionPatientBiz {
         virtual.setInservice(false);
         couponOrderBiz.refundVirtual(details, detail, virtuals, virtual, order);
         refundCard(cardId);
-        couponOrderBiz.occur(orderId, 3, order.getPatientId(), cardId, refundTotalAmount);
+        couponOrderBiz.occur(refundId, 3, order.getPatientId(), cardId, refundTotalAmount);
         mqServiceFeign.sendMessage(couponRefund.getId(), 0, BaseCouponRefund);
         mqServiceFeign.sendMessage(couponRefund.getOrderId(), 0, BaseCouponBill);
     }
@@ -404,6 +404,7 @@ public class DeductionPatientBiz {
         card.setActiveUserId(null);
         card.setSharer(null);
         card.setActiveDate(null);
+        card.setUpdTime(LocalDateTime.now());
         if (Objects.nonNull(card.getThirdCardNumber())
                 && Objects.equals(card.getCardNumber(), card.getThirdCardNumber())) {
             card.setStatus(0);
@@ -422,6 +423,7 @@ public class DeductionPatientBiz {
             remoteMiddleServiceFeign.occurDelete(newBean);
         }
         cardMapper.updateByPrimaryKey(card);
+        mqServiceFeign.sendMessage(card.getId(), UPDATE, BaseCardSingle);
     }
 
     @Transactional(rollbackFor = Exception.class)

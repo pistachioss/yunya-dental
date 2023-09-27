@@ -2,4 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.yunya.report.ultimate.mapper.BaseCouponOrderVirtualMapper">
 
-</mapper>
+    <select id="listUnChargeCoupon" resultType="com.yunya.feign.report.domain.vo.UnChargeCouponVO">
+        select cov.coupon_id,
+               count(*) as unCharge
+        from base_coupon_order_virtual cov
+                 left join base_coupon_bill bcb on cov.order_id = bcb.order_id
+        where
+            bcb.order_status = 0
+            <if test="couponIds != null and couponIds.size() > 0">
+                and `cov`.`coupon_id` in
+                <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        group by cov.coupon_id
+    </select></mapper>

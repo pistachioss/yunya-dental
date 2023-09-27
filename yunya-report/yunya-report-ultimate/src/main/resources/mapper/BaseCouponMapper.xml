@@ -62,7 +62,7 @@
             `bc`.`coupon_type`,
             `bc`.`sold_amount`,
             `be`.`employee_name`                as `crtUser`,
-            ifnull(sum(`b`.`status` in (1, 2, 3, 4) and b.allocate_org_id != 0),0)  as `ownPlatformSoldQuantity`,
+            ifnull(sum(`b`.`status` in (1, 2, 3, 4) and b.allocate_org_id != 0 and isnull(b.sold_date) = 0),0)  as `ownPlatformSoldQuantity`,
             case
                 when bc.coupon_type = 4 then null
                 else ifnull(sum(`b`.`status` in (2, 3, 4)

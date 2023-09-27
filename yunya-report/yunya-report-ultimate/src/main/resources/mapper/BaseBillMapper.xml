@@ -1018,6 +1018,7 @@
         when bc.coupon_type=1 then '折扣券'
         when bc.coupon_type=2 then '兑换券'
         when bc.coupon_type=3 then '套餐券'
+        when bc.coupon_type=5 then '划扣券'
         end AS couponType,
         bb.bill_num AS billNum,
         bb.bill_date AS billDate,
@@ -1028,19 +1029,20 @@
         be.employee_name AS executor,
         bcd.card_number AS cardNumber,
         bcd.sale_channel_name AS saleChannelName
-        FROM(SELECT
-        bbf.org_id as orgId,
-        bbf.coupon_id AS couponId,
-        bbf.order_id AS orderId,
-        bbf.card_id AS cardId,
-        bbf.item_id AS itemId,
-        bbf.item_type AS itemType,
-        sum(ifnull(bbf.benefit_amount,0)) benefitAmount,
-        count(1) AS quantity,
-        bbf.order_detail_id AS orderDetailId
-        FROM base_benefit bbf
-        WHERE bbf.choice_benefit_type = 0 and bbf.coupon_type in (0,1,2,3)
-        GROUP BY bbf.org_id,bbf.order_id,bbf.coupon_id,bbf.order_detail_id,bbf.card_id,bbf.item_id,bbf.item_type
+        FROM(
+            SELECT
+                bbf.org_id as orgId,
+                bbf.coupon_id AS couponId,
+                bbf.order_id AS orderId,
+                bbf.card_id AS cardId,
+                bbf.item_id AS itemId,
+                bbf.item_type AS itemType,
+                sum(ifnull(bbf.benefit_amount,0)) benefitAmount,
+                count(1) AS quantity,
+                bbf.order_detail_id AS orderDetailId
+            FROM base_benefit bbf
+            WHERE bbf.choice_benefit_type = 0 and bbf.coupon_type in (0,1,2,3,5)
+            GROUP BY bbf.org_id,bbf.order_id,bbf.coupon_id,bbf.order_detail_id,bbf.card_id,bbf.item_id,bbf.item_type
         ) bbf
         LEFT JOIN base_bill bb ON bb.bill_id = bbf.orderId
         LEFT JOIN base_bill_detail bbd ON bbd.bill_detail_id = bbf.orderDetailId
