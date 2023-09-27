@@ -245,6 +245,10 @@ public class DeductionItemServiceImpl extends BaseBiz<DeductionItemMapper, Deduc
         changeRecordMapper.insertSelective(newBean);
     }
 
+    public void occurUpdate(CouponChangeRecord newBean) {
+        changeRecordMapper.updateByPrimaryKeySelective(newBean);
+    }
+
     public void occurDelete(CouponChangeRecord newBean) {
         Example example = new Example(CouponChangeRecord.class);
         example.createCriteria().andEqualTo("patientId", newBean.getPatientId())

@@ -216,7 +216,16 @@ public class CouponOrderBiz {
                 List<String> v = entry.getValue();
                 CouponChangeRecord latest = changeRecordMapper.getLatest(patientId, k);
                 if (Objects.isNull(latest)) {
-                    continue;
+                    CouponChangeRecord latest1 = changeRecordMapper.getLatest(null, k);
+                    //转赠
+                    if (Objects.nonNull(latest1)) {
+                        latest1.setPatientId(patientId);
+                        changeRecordMapper.updateByPrimaryKeySelective(latest1);
+                        middleServiceFeign.occurUpdate(latest1);
+                        latest = latest1;
+                    } else {
+                        continue;
+                    }
                 }
                 List<DeductionItemPeriod> list = periodBiz.list(k);
                 Map<String, BigDecimal> collect1 = list.stream().collect(toMap(t1 -> Joiner.on("-").join(t1.getItemId(), t1.getType())

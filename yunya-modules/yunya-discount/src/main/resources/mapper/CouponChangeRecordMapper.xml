@@ -23,8 +23,11 @@
     <select id="getLatest" resultType="com.yunya.models.discount.CouponChangeRecord">
         select *
         from coupon_change_record
-        where patient_id = #{patientId}
-          and card_id = #{cardId}
+        where
+            card_id = #{cardId}
+            <if test="patientId != null">
+               and  patient_id = #{patientId}
+            </if>
         order by occur_date desc
             limit 1
     </select>

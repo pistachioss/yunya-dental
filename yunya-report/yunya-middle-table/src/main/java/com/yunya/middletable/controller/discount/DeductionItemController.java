@@ -51,4 +51,9 @@ public class DeductionItemController {
         return ResponseUtil.success();
     }
 
+    @PostMapping("/deduction/occur/update")
+    public ResponseResult<Boolean> occurUpdate(@RequestBody CouponChangeRecord newBean) {
+        deductionItemService.occurUpdate(newBean);
+        return ResponseUtil.success();
+    }
 }

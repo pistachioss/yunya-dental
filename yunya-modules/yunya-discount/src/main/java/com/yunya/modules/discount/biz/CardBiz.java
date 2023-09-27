@@ -466,7 +466,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             if (StringHelper.isNotEmpty(collect)) {
                 List<PatientBaseInfoVo> infoVos = patientFeign.findPatientInfoByIds(collect);
                 Map<Integer, String> collect1 = infoVos.stream().collect(toMap(PatientBaseInfoVo::getId, PatientBaseInfoVo::getName, (o, n) -> n));
-                result.stream().filter(t -> StringUtils.isNotBlank(t.getSoldTarget()) && collect1.containsKey(Integer.valueOf(t.getSoldTarget())))
+                result.stream().filter(t -> StringUtils.isNotBlank(t.getSoldTarget()) && StringUtils.isNumeric(t.getSoldTarget())
+                                && collect1.containsKey(Integer.valueOf(t.getSoldTarget())))
                         .forEach(t -> t.setSoldTarget(collect1.get(Integer.valueOf(t.getSoldTarget()))));
             }
         }
