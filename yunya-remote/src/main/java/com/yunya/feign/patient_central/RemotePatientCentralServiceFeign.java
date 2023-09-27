@@ -118,12 +118,13 @@ import java.util.List;
   List<PatientMemberInfo> findPatientMemberInfo(@RequestBody PatientMemberInfo patientMemberInfo);
 
   /**
-   * 修改患者信息
+   * 初始化患者病历号
    *
    * @param patientBaseInfo 条件
+   * @return 病历号
    */
-  @RequestMapping(value = "/api/updatePatientInfo", method = RequestMethod.POST)
-  void updatePatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
+  @RequestMapping(value = "/api/generateMedicalNumber", method = RequestMethod.POST)
+  String generateMedicalNumber(@RequestBody PatientBaseInfo patientBaseInfo);
 
   /**
    * 查询患者信息
@@ -142,15 +143,6 @@ import java.util.List;
    */
   @RequestMapping(value = "/api/findPatientInfoList", method = RequestMethod.POST)
   List<PatientBaseInfo> findPatientInfoList(@RequestBody PatientBaseInfo patientBaseInfo);
-
-  /**
-   * 根据门诊id获取病历号后六位
-   *
-   * @param orgId 条件
-   * @return String
-   */
-  @RequestMapping(value = "/api/medical/{orgId}", method = RequestMethod.GET)
-  String findMedicalNumberByOrgId(@PathVariable(value = "orgId") Integer orgId);
 
   /**
    * 根据门诊编号获取可用病历号后六位

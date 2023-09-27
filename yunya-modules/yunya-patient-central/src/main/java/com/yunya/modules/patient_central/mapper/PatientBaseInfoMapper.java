@@ -130,7 +130,7 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @param orgId 门诊id
    * @return String
    */
-  String findMedicalNumberByOrgId(@Param("orgId") Integer orgId);
+  Integer findMedicalNumberByOrgId(@Param("orgId") Integer orgId);
 
   /**
    * 根据门诊编号获取病历号后六位

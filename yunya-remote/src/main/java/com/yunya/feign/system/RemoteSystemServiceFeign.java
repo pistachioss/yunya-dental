@@ -497,4 +497,7 @@ public interface RemoteSystemServiceFeign {
    */
   @GetMapping("/api/memberType/secondary/{id}")
   MemberType findSecondaryMemberTypeById(@PathVariable(value = "id") Integer id);
+
+  @GetMapping("/xhq/company/list")
+  List<Company> xhqCompanys();
 }

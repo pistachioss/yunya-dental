@@ -126,3 +126,5 @@ management:
         include: '*'
   security:
     enabled: false
+
+domainUrl:

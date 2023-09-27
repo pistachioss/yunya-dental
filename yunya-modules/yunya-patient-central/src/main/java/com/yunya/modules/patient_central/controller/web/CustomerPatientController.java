@@ -3,10 +3,7 @@ package com.yunya.modules.patient_central.controller.web;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.CustomerPatientQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleInfoVO;
-import com.yunya.feign.patient_central.domain.vo.web.PatientSimpleRefererVO;
-import com.yunya.feign.patient_central.domain.vo.web.PatientTrajectoryVO;
-import com.yunya.feign.patient_central.domain.vo.web.PatientVipRightInterestVO;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -92,6 +89,13 @@ public class CustomerPatientController {
     public ResponseResult<PatientVipRightInterestVO> findPatientVipRightInterest(@PathVariable(value = "patientId") Integer patientId) {
         PatientVipRightInterestVO result = customerPatientBiz.findPatientVipRightInterest(patientId);
         return ResponseUtil.success(result);
+    }
+
+
+    @ApiOperation("查询患者转介绍人信息")
+    @GetMapping("/white/referrer")
+    public PatientReferrerInfoVO findPatientReferrerInfo(@RequestParam(value = "patientId") Integer patientId) {
+        return customerPatientBiz.findPatientReferrerInfo(patientId);
     }
 
     @Autowired

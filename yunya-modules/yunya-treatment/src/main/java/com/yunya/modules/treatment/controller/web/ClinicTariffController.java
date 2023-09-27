@@ -5,6 +5,7 @@ import com.yunya.feign.treatment.domain.form.ClinicTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicTariffUniteDiscountForm;
 import com.yunya.feign.treatment.domain.model.ClinicTariffSwitchModel;
 import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
+import com.yunya.feign.treatment.domain.query.TariffPackageQueryForm;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -66,6 +67,20 @@ public class ClinicTariffController {
   public ResponseResult<PageInfo<ClinicTariffVO>> findList(
       @RequestBody @Validated ClinicTariffQueryForm queryForm) {
     PageInfo<ClinicTariffVO> resultList = clinicTariffBiz.findList(queryForm);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件查询快捷开单项目信息列表（可分页）
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  @ApiOperation("根据条件查询快捷开单项目信息列表（可分页）")
+  @PostMapping("/package/list")
+  public ResponseResult<PageInfo<ClinicTariffVO>> findPackageDetail(
+      @RequestBody @Validated TariffPackageQueryForm queryForm) {
+    PageInfo<ClinicTariffVO> resultList = clinicTariffBiz.findPackageDetail(queryForm);
     return ResponseUtil.success(resultList);
   }
 

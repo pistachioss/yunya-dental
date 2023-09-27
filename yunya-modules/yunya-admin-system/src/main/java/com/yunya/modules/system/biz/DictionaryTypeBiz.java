@@ -10,7 +10,7 @@ import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.DictionaryType;
 import com.yunya.modules.system.domain.form.DictForm;
 import com.yunya.modules.system.domain.model.DictionaryTypeModel;
-import com.yunya.modules.system.domain.query.DictQueryForm;
+import com.yunya.feign.system.query.DictQueryForm;
 import com.yunya.modules.system.mapper.DictionaryItemMapper;
 import com.yunya.modules.system.mapper.DictionaryTypeMapper;
 import com.yunya.modules.system.vo.DictionaryTypeVO;

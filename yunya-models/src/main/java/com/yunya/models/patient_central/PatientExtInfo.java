@@ -160,18 +160,18 @@ public class PatientExtInfo {
     }
 
     /**
-     * 获取数据类型 0-标签；1-疾病史；2-过敏原
+     * 获取数据类型 0-标签；1-疾病史；2-过敏原；3-患者诊疗需求
      *
-     * @return type - 数据类型 0-标签；1-疾病史；2-过敏原
+     * @return type - 数据类型 0-标签；1-疾病史；2-过敏原；3-患者诊疗需求
      */
     public Byte getType() {
         return type;
     }
 
     /**
-     * 设置数据类型 0-标签；1-疾病史；2-过敏原
+     * 设置数据类型 0-标签；1-疾病史；2-过敏原；3-患者诊疗需求
      *
-     * @param type 数据类型 0-标签；1-疾病史；2-过敏原
+     * @param type 数据类型 0-标签；1-疾病史；2-过敏原；3-患者诊疗需求
      */
     public void setType(Byte type) {
         this.type = type;

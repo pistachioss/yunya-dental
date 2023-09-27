@@ -1283,43 +1283,51 @@
     </select>
 
 
-    <select id="selectPatientRegisteredList" resultType="com.yunya.models.report.BaseTreatmentProcess">
+    <select id="selectPatientFrequencyOfTreatment" resultType="com.yunya.feign.report.domain.vo.BasePatientBehaviorTagVO">
         SELECT
             bp.patient_id AS patientId,
-            btp.registered_date AS registeredDate
+            IFNULL(btp.times, 0) AS times
         FROM base_patient bp
         LEFT JOIN (
-            SELECT
-                patient_id,
-                registered_date
-            FROM base_treatment_process btp
-        <where>
-            btp.registered_dentist_id > 0
-            <if test="query.dateType==0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.registered_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.registered_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType==1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.registered_date, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.registered_date, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType==2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.registered_date, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.registered_date, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
+            SELECT patient_id,
+                   SUM(times) AS times
+            FROM (
+                SELECT
+                    patient_id,
+                    DATE_FORMAT(registered_date,'%Y-%m-%d') AS registeredDate,
+                    1 times
+                FROM base_treatment_process btp
+                <where>btp.registered_dentist_id > 0
+                <if test="query.dateType==0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.registered_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.registered_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType==1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.registered_date, '%Y-%m' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.registered_date, '%Y-%m' ) &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType==2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.registered_date, '%Y' ) &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.registered_date, '%Y' ) &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY patient_id, registeredDate
+            ) btp GROUP BY patient_id
         ) btp ON bp.patient_id=btp.patient_id
+        <if test="!query.isFull">
+            where btp.times > 2
+        </if>
     </select>
 </mapper>

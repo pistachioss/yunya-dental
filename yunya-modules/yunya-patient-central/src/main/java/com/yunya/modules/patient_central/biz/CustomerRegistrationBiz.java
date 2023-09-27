@@ -22,6 +22,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.patient_central.mapper.*;
@@ -83,6 +84,8 @@ public class CustomerRegistrationBiz {
     private String domainUrl;
     @Autowired
     private PatientMemberInfoBiz patientMemberInfoBiz;
+    @Autowired
+    private RedisUtils redisUtil;
 
     /**
      * 添加客户登记
@@ -401,7 +404,7 @@ public class CustomerRegistrationBiz {
         Integer id = model.getId();
         if (!ObjectUtils.isEmpty(id)) {
             baseInfo.setId(id);
-            patientBaseInfoBiz.updateSelectiveById(baseInfo);
+            patientBaseInfoBiz.updateByPrimaryKeySelective(baseInfo);
         } else {
             baseInfo.setCrtId(userId);
             baseInfo.setCrtName(userName);
@@ -498,7 +501,7 @@ public class CustomerRegistrationBiz {
     private void addPatientExtInfo(PatientRegistrationModel model, int userId, String userName, int patientId) {
         Integer id = model.getId();
         if (!ObjectUtils.isEmpty(id)) {
-            patientExtInfoMapper.deletePatientExtInfoByPatientId(id);
+            patientExtInfoMapper.deletePatientExtInfoByPatientId(id, Arrays.asList(1, 2));
         }
         Date now = new Date(System.currentTimeMillis());
         // 疾病史

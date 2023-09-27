@@ -52,4 +52,9 @@ public class QztController {
     public List<Company> certCompanys() {
         return doctorBiz.certCompanys();
     }
+
+    @GetMapping("/xhq/company/list")
+    public List<Company> xhqCompanys() {
+        return doctorBiz.certXhqCompanys();
+    }
 }

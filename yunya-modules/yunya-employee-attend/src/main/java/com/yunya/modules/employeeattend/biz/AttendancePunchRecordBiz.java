@@ -1482,6 +1482,19 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     }
 
     /**
+     * 超出60分钟后的剩余时长 （待定）
+     *
+     * @param over60Min
+     * @return
+     */
+    private Long moreThen60Min(Long over60Min) {
+//        if (StringHelper.isNotNull(over60Min) && over60Min>0) {
+//            over60Min -= 3600000;
+//        }
+        return over60Min;
+    }
+
+    /**
      * 离职员工及其离职时间
      *
      * @param userList
@@ -1795,7 +1808,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                             incrMinute(workDateOvertimeMinuteMap, userId, orgId, workOvertimeDiff);
                             if (DateUtil.micro2Min(workOvertimeDiff) >= 60) {
                                 // 加班时长60分钟以上
-                                incrMinute(workDateOvertime30MinuteMap, userId, orgId, workOvertimeDiff);
+                                incrMinute(workDateOvertime30MinuteMap, userId, orgId, moreThen60Min(workOvertimeDiff));
                             }
                         }
                     }
@@ -1833,7 +1846,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                             incrMinute(workDateOvertimeMinuteMap, userId, orgId, workOvertimeDiff);
                             if (DateUtil.micro2Min(workOvertimeDiff) >= 60) {
                                 // 加班时长60分钟以上
-                                incrMinute(workDateOvertime30MinuteMap, userId, orgId, workOvertimeDiff);
+                                incrMinute(workDateOvertime30MinuteMap, userId, orgId, moreThen60Min(workOvertimeDiff));
                             }
                         }
                     }
@@ -1850,7 +1863,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 diff = 0;
                 isFullMap.put(userId, orgId, false);
             }
-            System.out.println(DateUtil.micro2Min(diff));
             incrMinute(workDateMinuteMap,userId,orgId,diff);
         }
         return workDateMinuteMap;
