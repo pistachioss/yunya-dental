@@ -223,7 +223,7 @@ public class PatientReportController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-根据条件查询全程医嘱收费表")
-  @PostMapping(value = "/qcCollected/adviceItems", name = "公司端报表-报表统计-根据条件查询全程医嘱收费表")
+  @PostMapping(value = "/qcCollected/list", name = "公司端报表-报表统计-根据条件查询全程医嘱收费表")
   public ResponseResult<PageInfo<QcCollectedAdviceTollVO>> findQcCollectedAdviceItemList(
           @RequestBody @Validated KeywordDateRangeQueryForm query) {
     PageInfo<QcCollectedAdviceTollVO> pageInfo = patientReportBiz.findQcCollectedAdviceItemList(query);
@@ -237,7 +237,7 @@ public class PatientReportController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-根据条件导出全程医嘱收费表")
-  @PostMapping(value = "/originConsumption/list/export", name = "公司端报表-报表统计-根据条件导出全程医嘱收费表")
+  @PostMapping(value = "/qcCollected/list/export", name = "公司端报表-报表统计-根据条件导出全程医嘱收费表")
   public ResponseResult exportQcCollectedAdviceItemList(
           HttpServletResponse response, @RequestBody @Validated KeywordDateRangeQueryForm query)
           throws Exception {
