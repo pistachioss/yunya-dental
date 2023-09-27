@@ -642,6 +642,26 @@ public class CompanyReportOfOperationController {
         return ResponseUtil.success();
     }
 
+    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目划扣补入工作量-查看明细")
+    @PostMapping(value = "/personal/tariff/supply/deduction/coupon/workload/detail", name = "个人收费项目划扣补入工作量明细")
+    public ResponseResult<PageInfo<PersonalBillItemSupplyDeductionCouponWorkloadDetailVO>>
+    personalTariffSupplyDeductionCouponWorkloadStatistics(
+            @RequestBody @Validated PersonalBillItemDeductionAndWorkloadQuery query) {
+        PageInfo<PersonalBillItemSupplyDeductionCouponWorkloadDetailVO> pageInfo =
+                billDetailBiz.findPersonalBillItemSupplyDeductionCouponWorkloadDetailList(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目划扣补入工作量明细-导出")
+    @PostMapping(value = "/personal/tariff/supply/deduction/coupon/workload/export", name = "个人收费项目划扣补入工作量明细导出")
+    public ResponseResult<Boolean> exportPersonalTariffSupplyDeductionCouponWorkloadStatistics(
+            HttpServletResponse response,
+            @RequestBody @Validated PersonalBillItemDeductionAndWorkloadQuery query)
+            throws IOException {
+        billDetailBiz.exportPersonalBillItemSupplyDeductionCouponWorkloadList(response, query);
+        return ResponseUtil.success();
+    }
+
   /**
    * 根据条件查询员工个人收费项目已收工作量明细列表导出
    *
