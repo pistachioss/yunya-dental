@@ -154,16 +154,20 @@ public class CouponOrderBiz {
     }
 
     public void occur(Integer orderId, Integer occurType, Integer patientId, Integer cardId, BigDecimal amount) {
+        log.info("划扣结存参数，患者:{}",patientId);
         int id = Integer.parseInt(BaseContextHandler.getUserID());
         Date date = new Date();
         if (Objects.equals(occurType, 1)) {
             if (Objects.isNull(orderId)) {
                 Card card = cardMapper.selectByPrimaryKey(cardId);
-                if (Objects.nonNull(card.getBuyerId())) {
-                    CouponChangeRecord latest = changeRecordMapper.getLatest(card.getBuyerId(), cardId);
-                    latest.setPatientId(patientId);
-                    changeRecordMapper.updateByPrimaryKeySelective(latest);
-                    middleServiceFeign.occurUpdate(latest);
+                CouponChangeRecord latest = changeRecordMapper.getLatest(null, cardId);
+                if (Objects.nonNull(latest)) {
+                    if (!Objects.equals(patientId, latest.getPatientId())) {
+                        log.info("激活转赠划扣结存购买：{}", JSON.toJSONString(latest));
+                        latest.setPatientId(patientId);
+                        changeRecordMapper.updateByPrimaryKeySelective(latest);
+                        middleServiceFeign.occurUpdate(latest);
+                    }
                     return;
                 }
                 CouponCommonInfo couponCommonInfo = couponMapper.selectByPrimaryKey(card.getCouponId());
@@ -223,6 +227,7 @@ public class CouponOrderBiz {
                     CouponChangeRecord latest1 = changeRecordMapper.getLatest(null, k);
                     //转赠
                     if (Objects.nonNull(latest1)) {
+                        log.info("激活转赠划扣结存消费：{}", JSON.toJSONString(latest));
                         latest1.setPatientId(patientId);
                         changeRecordMapper.updateByPrimaryKeySelective(latest1);
                         middleServiceFeign.occurUpdate(latest1);
