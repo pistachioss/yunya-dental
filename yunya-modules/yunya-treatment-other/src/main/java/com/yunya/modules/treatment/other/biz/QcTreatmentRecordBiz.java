@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
@@ -47,6 +48,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseQcylTreatment;
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
 import static java.util.stream.Collectors.toMap;
@@ -75,6 +77,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
     private QcCustomerInfoMapper qcCustomerInfoMapper;
     @Autowired
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
+    @Autowired
+    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
     private static final String TIME_FORMAT = "HH:mm:ss";
 
@@ -533,7 +537,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
                 .collect(toMap(OrderDetailChargeVO::getItemNum, Function.identity()));
         List<QcTreatmentRecord> qcTreatments = findQcTreatmentByIdOrOrderId(qcTreatmentIds, orderRecordId);
         qcTreatments.forEach(qcTreatment->{
-            List<QcTreatmentItem> qcTreatmentItems = qcTreatmentItemMapper.selectQcTreatmentItemsByTreatmentId(qcTreatment.getId(), null);
+            Integer id = qcTreatment.getId();
+            List<QcTreatmentItem> qcTreatmentItems = qcTreatmentItemMapper.selectQcTreatmentItemsByTreatmentId(id, null);
             for (QcTreatmentItem adviceItem : qcTreatmentItems) {
                 String itemNum = adviceItem.getItemNum();
                 OrderDetailChargeVO detail = orderDetailMap.get(itemNum);
@@ -566,6 +571,7 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
             if (StringHelper.isNotEmpty(qcTreatmentIds)) {
                 // 账单首次收费时需要调用医嘱执行
                 executorAdviceItem(qcTreatment.getVerifyCode(), qcTreatment.getRemark(), qcTreatmentItems);
+                rabbitMqServiceFeign.sendMessage(id, 0, BaseQcylTreatment);
             }
 
             // 全程就诊记录绑定账单
