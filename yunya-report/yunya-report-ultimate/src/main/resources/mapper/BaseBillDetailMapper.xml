@@ -7240,4 +7240,84 @@
         bb.bill_num desc
     </select>
 
+    <select id="selectPersonalBillItemSupplyDeductionCouponWorkloadDetail"
+            resultType="com.yunya.feign.report.domain.vo.PersonalBillItemSupplyDeductionCouponWorkloadDetailVO">
+        select
+            bbd.billId,
+            bbd.billDate,
+            bbd.billNum,
+            bbd.patientId,
+            bbd.patientName,
+            bbd.mobile,
+            bbd.regDentistId,
+            be.employee_name as regDentistName,
+            bbd.deductionWorkload,
+            bbd.executorId,
+            bbd.executorName
+            from (
+            select bb.billId,
+            date_format(bb.billDate, '%Y-%m-%d %H:%i') as billDate,
+            bb.billNum,
+            bb.patientId,
+            bb.patientName,
+            bb.pinyinName,
+            bb.mobile,
+            bb.regDentistId,
+            bbd.swipe_coupon_workload as deductionCouponWorkload,
+            bbd.executor_id as executorId,
+            be.employee_name as executorName
+            from base_bill_detail bbd
+            inner join (
+            select bb.bill_id as billId,
+            bb.patient_id as patientId,
+            bp.name as patientName,
+            bp.pinyin_name as pinyinName,
+            bp.mobile as mobile,
+            bb.bill_num as billNum,
+            bb.bill_date as billDate,
+            bb.actual_amount as actualAmount,
+            btp.registered_dentist_id as regDentistId
+        from base_bill bb
+        left join base_patient bp on bb.patient_id = bp.patient_id
+        left join base_treatment_process btp on bb.treatment_id = btp.treatment_id
+        <where>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                and date_format(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and date_format(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+            </if>
+        </where>
+        ) bb on bbd.bill_id = bb.billId
+        left join base_employee be on bbd.executor_id = be.user_id
+        <where>
+            bbd.coupon_workload > 0
+            <if test="query.executorId != null and query.executorId != -1">
+                and bbd.executor_id = #{query.executorId}
+            </if>
+            <if test="query.itemType != null">
+                and bbd.item_type = #{query.itemType}
+            </if>
+            <if test="query.itemId != null">
+                and bbd.item_id = #{query.itemId}
+            </if>
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
+        </where>
+        ) bbd
+        inner join base_employee be on bbd.regDentistId = be.user_id
+        <where>
+            <if test="query.patientKeyword != null and query.patientKeyword != ''">
+                and concat(IFNULL(bbd.patientName, ''), IFNULL(bbd.pinyinName, ''), IFNULL(bbd.mobile, '')) like
+                concat('%', #{query.patientKeyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and concat(IFNULL(bbd.billNum, '')) like concat('%', #{query.billNum}, '%')
+            </if>
+        </where>
+    </select>
 </mapper>

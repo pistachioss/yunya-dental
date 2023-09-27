@@ -12,10 +12,10 @@ import java.math.BigDecimal;
 import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
 import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
-@ApiModel("收费项目划扣工作量明细VO")
+@ApiModel("收费项目划扣补入工作量明细VO")
 @Data
 @ToString
-public class PersonalBillItemSupplyDeductionWorkloadDetailVO implements Serializable {
+public class PersonalBillItemSupplyDeductionCouponWorkloadDetailVO implements Serializable {
   /** 账单ID */
   @ApiModelProperty("账单ID")
   private Integer billId;
@@ -35,9 +35,9 @@ public class PersonalBillItemSupplyDeductionWorkloadDetailVO implements Serializ
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 免单工作量 */
-  @Excel(name = "划扣工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("划扣工作量")
-  private BigDecimal deductionWorkload;
+  @Excel(name = "划扣工补入作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("划扣补入工作量")
+  private BigDecimal deductionCouponWorkload;
   /** 执行人ID */
   @ApiModelProperty("执行人ID")
   private Integer executorId;
