@@ -1037,10 +1037,11 @@
                 bbf.card_id AS cardId,
                 bbf.item_id AS itemId,
                 bbf.item_type AS itemType,
-                SUM(IF(bbf.coupon_type=5, 0, bbf.benefit_amount)) benefitAmount,
+                SUM(IF(bbf.coupon_type=5, bbd.price, bbf.benefit_amount)) benefitAmount,
                 count(1) AS quantity,
                 bbf.order_detail_id AS orderDetailId
             FROM base_benefit bbf
+            LEFT JOIN base_bill_detail bbd ON bbd.bill_detail_id=bbf.order_detail_id
             WHERE bbf.choice_benefit_type = 0 and bbf.coupon_type in (0,1,2,3,5)
             GROUP BY bbf.org_id,bbf.order_id,bbf.coupon_id,bbf.order_detail_id,bbf.card_id,bbf.item_id,bbf.item_type
         ) bbf
