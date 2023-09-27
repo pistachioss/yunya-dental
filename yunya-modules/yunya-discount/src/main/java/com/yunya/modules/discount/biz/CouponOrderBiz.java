@@ -160,6 +160,10 @@ public class CouponOrderBiz {
             if (Objects.isNull(orderId)) {
                 Card card = cardMapper.selectByPrimaryKey(cardId);
                 if (Objects.nonNull(card.getBuyerId())) {
+                    CouponChangeRecord latest = changeRecordMapper.getLatest(card.getBuyerId(), cardId);
+                    latest.setPatientId(patientId);
+                    changeRecordMapper.updateByPrimaryKeySelective(latest);
+                    middleServiceFeign.occurUpdate(latest);
                     return;
                 }
                 CouponCommonInfo couponCommonInfo = couponMapper.selectByPrimaryKey(card.getCouponId());
