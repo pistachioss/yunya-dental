@@ -291,18 +291,16 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     // 查询该账单下所有的使用了产品优惠
     List<BaseBenefitInfoVO> benefits = mapper.selectBaseBenefitInfoByBillId(billId);
     Map<String, BaseBenefitInfoVO> benefitMap = new HashMap<>(16);
-    Map<String, BigDecimal> amountMap = new HashMap<>(16);
+    Map<String, BigDecimal[]> total = new HashMap<>(16);
     if (StringHelper.isNotEmpty(benefits)) {
       benefits.forEach(
           benefit -> {
             Integer orderDetailId = benefit.getOrderDetailId();
             Integer cardId = benefit.getCardId();
             String key = orderDetailId + "," + cardId;
-            BigDecimal amount = amountMap.get(key);
-            if (amount == null) {
-              amount = BigDecimal.ZERO;
-            }
-            amountMap.put(key, amount.add(benefit.getBenefitAmount()));
+            BigDecimal[] amount = total.computeIfAbsent(key, k->new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+            amount[0] = amount[0].add(benefit.getBenefitAmount());
+            amount[1] = amount[1].add(BigDecimal.ONE);
             if (!benefitMap.containsKey(key)) {
               benefitMap.put(key, benefit);
             }
@@ -312,9 +310,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
             }
           });
     }
-    if (StringHelper.isNotEmpty(amountMap)) {
-      amountMap.forEach(
-          (key, amount) -> {
+    if (StringHelper.isNotEmpty(total)) {
+      total.forEach(
+          (key, amounts) -> {
             BillDiscountDetailInifoVO vo = new BillDiscountDetailInifoVO();
             BaseBenefitInfoVO benefitInfoVO = benefitMap.get(key);
             if (benefitInfoVO != null) {
@@ -323,17 +321,17 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
               vo.setCardNumber(benefitInfoVO.getCardNumber());
             }
 
-            vo.setBenefitAmount(amount);
+            vo.setBenefitAmount(amounts[0]);
             Integer orderDetailId = Integer.parseInt(key.split(",")[0]);
             BaseBillDetailVO detailVO = details.get(orderDetailId);
-            BigDecimal quantity = BigDecimal.ZERO;
+            BigDecimal quantity = amounts[1];
             if (detailVO != null) {
               BigDecimal price = detailVO.getPrice();
               vo.setItemName(detailVO.getItemName());
               vo.setUnit(detailVO.getUnit());
               vo.setEmployeeName(detailVO.getOperateUserName());
               vo.setPrice(price);
-              quantity = compute(price, amount);
+//              quantity = compute(price, amount);
               vo.setOriginPrice(quantity.multiply(price));
             }
             vo.setQuantity(quantity.intValue());
