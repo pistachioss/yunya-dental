@@ -658,8 +658,14 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
                 treatment.setPatientName(patient.getName());
             }
         }
+        Integer orderRecordId = treatment.getOrderRecordId();
+        if (StringHelper.isNotNull(orderRecordId)) {
+            BillRecord billRecord = treatmentServiceFeign.findBillRecordByOrderRecordId(orderRecordId);
+            if (StringHelper.isNotNull(billRecord)) {
+                treatment.setBillNum(billRecord.getBillNumber());
+            }
+        }
         result.setQcCustomerInfoVO(treatment);
-
         List<OrderAdviceItemVO> adviceItems = qcTreatmentItemMapper.selectOrderAdviceItemsByTreatmentId(id);
         Iterator<OrderAdviceItemVO> it = adviceItems.iterator();
         List<OrderAdviceItemVO> orderDetails = Lists.newArrayList();

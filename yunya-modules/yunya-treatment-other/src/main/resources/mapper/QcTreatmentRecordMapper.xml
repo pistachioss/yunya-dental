@@ -168,6 +168,7 @@
             resultType="com.yunya.feign.treatment_other.domain.vo.QcCustomerTreatmentVO">
         SELECT
             qtr.id,
+            qtr.order_record_id AS orderRecordId,
             qtr.adm_no AS admNo,
             qci.customer_name AS customerName,
             qci.id_card AS idCard,
@@ -187,7 +188,7 @@
         LEFT JOIN (
             SELECT
                 qc_treatment_id,
-                SUM(received_amount) AS adviceItemExecAmount,
+                SUM(received_amount) AS adviceItemExecAmount
             FROM qc_treatment_item
             WHERE inservice = 1 AND qc_collected = 1
             GROUP BY qc_treatment_id
@@ -195,7 +196,7 @@
         LEFT JOIN (
             SELECT
             qc_treatment_id,
-            SUM(received_amount) AS orderItemExecAmount,
+            SUM(received_amount) AS orderItemExecAmount
             FROM qc_treatment_item
             WHERE inservice = 1 AND qc_collected = 0
             GROUP BY qc_treatment_id
