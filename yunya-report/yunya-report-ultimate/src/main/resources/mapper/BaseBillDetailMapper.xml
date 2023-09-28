@@ -7295,7 +7295,7 @@
             bbd.mobile,
             bbd.regDentistId,
             be.employee_name as regDentistName,
-            bbd.deductionWorkload,
+            bbd.deductionCouponWorkload,
             bbd.executorId,
             bbd.executorName
             from (
