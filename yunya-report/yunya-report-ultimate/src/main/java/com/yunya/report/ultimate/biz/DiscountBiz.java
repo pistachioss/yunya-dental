@@ -643,7 +643,7 @@ public class DiscountBiz {
             example1.createCriteria().andEqualTo("billDetailId", orderDetailId);
             BaseBillDetail baseBillDetail = detailMapper.selectOneByExample(example1);
             BigDecimal benefitAmount = onceCardUseVo.getBenefitAmount();
-            BigDecimal price = baseBillDetail.getPrice().multiply(BigDecimal.valueOf(baseBillDetail.getQuantity()));
+            BigDecimal price = baseBillDetail.getPrice().multiply(BigDecimal.valueOf(baseBenefits.size()));
             onceCardUseVo.setBenefitAmount(benefitAmount.subtract(reduce).add(price));
         }
     }
