@@ -943,7 +943,8 @@
         LEFT JOIN base_coupon_item bci ON bb.coupon_id=bci.coupon_id AND bb.item_type=bci.type AND bb.item_id=bci.item_id
         LEFT JOIN base_patient_member bpm ON bpm.patient_id=bb.patient_id AND bpm.member_level_id=bb.card_id
         LEFT JOIN base_employee be ON be.user_id = bb.authorized_id
-        WHERE bb.benefit_amount > 0 AND bb.order_id = #{billId}
+        WHERE IF(bb.coupon_type=5, bci.sale_unit_price + bb.benefit_amount,bb.benefit_amount) > 0
+        AND bb.order_id = #{billId}
         ORDER BY bb.benefit_type, bb.order_detail_id
     </select>
 
