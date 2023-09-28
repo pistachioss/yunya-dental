@@ -1,9 +1,11 @@
 package com.yunya.feign.discount.domain.model;
 
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
@@ -15,8 +17,10 @@ import java.util.List;
 @Data
 @ApiModel(value = "卡券优惠提交")
 public class PatientOrderBenefitModel implements Serializable {
-    @ApiModelProperty("订单明细id列表")
-    private List<Integer> orderDetailIds;
+    /** 可匹配优惠的订单明细列表 */
+    @ApiModelProperty(value = "可匹配优惠的订单明细列表", required = true)
+    @NotEmpty(message = "可匹配优惠的订单明细列表不能为空")
+    private List<OrderDetailChargeVO> orderDetail;
     @ApiModelProperty(value = "订单id", required = true)
     @NotNull
     private Integer orderId;

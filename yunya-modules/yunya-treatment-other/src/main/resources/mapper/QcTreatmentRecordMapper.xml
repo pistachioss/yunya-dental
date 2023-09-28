@@ -152,7 +152,7 @@
             qci.id_card AS idCard,
             qci.mobile,
             qtr.type,
-            qtr.adm_date AS qcAdmDate,
+            qtr.adm_date AS admDate,
             qtr.patient_id AS patientId
         FROM qc_treatment_record qtr
         LEFT JOIN qc_customer_info qci ON qtr.id = qci.qc_treatment_id

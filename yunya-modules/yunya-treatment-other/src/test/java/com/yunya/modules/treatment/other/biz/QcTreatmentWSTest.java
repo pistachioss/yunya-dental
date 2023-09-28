@@ -64,8 +64,8 @@ public class QcTreatmentWSTest {
     public void testAdviceDownload() {
         QcRecommondInfoQuery query = new QcRecommondInfoQuery();
         query.setStartDate("2023-09-27");
-        query.setEndDate("2023-09-27");
-//        query.setVerifyCode("2491");
+        query.setEndDate("2023-09-30");
+        query.setVerifyCode("350292495");
         qcTreatmentRecordBiz.syncPatientTreatmentList(query);
     }
 

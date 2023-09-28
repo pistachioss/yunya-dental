@@ -3,7 +3,9 @@ package com.yunya.modules.treatment.other.rpc;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
+import com.yunya.feign.treatment.domain.vo.TreatOrderRecordVO;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.TariffPackageDetailQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
@@ -251,7 +253,7 @@ public class TreatmentOtherServiceRest {
    */
   @ApiOperation("全程医疗登记单导入")
   @PostMapping("/qc/treatment/match")
-  public QcRecommondOrderVO orderMatchQcTreatmentList(@RequestBody @Validated QcTreatmentImportForm form) {
+  public TreatOrderRecordVO orderMatchQcTreatmentList(@RequestBody @Validated QcTreatmentImportForm form) {
     return qcTreatmentRecordBiz.orderMatchQcTreatmentList(form);
   }
 
@@ -276,7 +278,7 @@ public class TreatmentOtherServiceRest {
   @CurrentUser
   @ApiOperation("用账单信息更新全程医疗就诊及其明细（绑定或更新实收）")
   @PutMapping("/qc/treatment/items/update")
-  public void updateQcTreatmentAndItems(@RequestBody @Validated QcTreatmentImportForm form) {
-    qcTreatmentRecordBiz.updateQcTreatmentAndItems(form);
+  public List<OrderDetailChargeVO> updateQcTreatmentAndItems(@RequestBody @Validated QcTreatmentImportForm form) {
+    return qcTreatmentRecordBiz.updateQcTreatmentAndItems(form);
   }
 }

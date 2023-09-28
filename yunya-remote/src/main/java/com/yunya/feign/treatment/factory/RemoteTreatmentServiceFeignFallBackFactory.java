@@ -27,6 +27,7 @@ import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -157,7 +158,7 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
-  public List<OrderDetail> findOrderDetailByOrderRecordId(Integer orderRecordId, List<Integer> orderDetailIds) {
+  public List<OrderDetailChargeVO> findOrderDetailByOrderRecordId(Integer orderRecordId) {
     return null;
   }
 

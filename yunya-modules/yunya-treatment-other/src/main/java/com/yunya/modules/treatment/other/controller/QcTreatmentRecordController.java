@@ -35,6 +35,7 @@ public class QcTreatmentRecordController {
      *
      * @return
      */
+    @CurrentUser
     @ApiOperation("条件查询mall推荐列表")
     @PostMapping("/treatment/list")
     public ResponseResult<PageInfo<QcRecommondInfoVO>> findQcTreatmentList(@RequestBody @Validated QcRecommondInfoQuery query) {
@@ -58,14 +59,14 @@ public class QcTreatmentRecordController {
     /**
      * 医嘱单核销：根据核销码拉取全程就诊记录隐藏数据
      *
-     * @param verifyCode
+     * @param query
      * @return
      */
     @CurrentUser
     @ApiOperation("医嘱单核销：根据核销码拉取全程就诊记录隐藏数据")
-    @PutMapping("/verify/{verifyCode}")
-    public ResponseResult verify(@PathVariable(value = "verifyCode") String verifyCode) {
-        qcTreatmentRecordBiz.verify(verifyCode);
+    @PutMapping("/treatment/verify")
+    public ResponseResult verify(@RequestBody @Validated QcRecommondInfoQuery query) {
+        qcTreatmentRecordBiz.verify(query);
         return ResponseUtil.success();
     }
 
@@ -105,7 +106,7 @@ public class QcTreatmentRecordController {
      * @return
      */
     @ApiOperation("查询患者的可用全程医疗就诊记录列表")
-    @GetMapping("/treatment/{patientId}")
+    @GetMapping("/bindTreatment/{patientId}")
     public ResponseResult<List<QcRecommondInfoVO>> findPatientQcTreatmentRecord(@PathVariable(value = "patientId") Integer patientId) {
         List<QcRecommondInfoVO> pageInfo = qcTreatmentRecordBiz.findPatientEnableQcTreatmentRecord(patientId);
         return ResponseUtil.success(pageInfo);

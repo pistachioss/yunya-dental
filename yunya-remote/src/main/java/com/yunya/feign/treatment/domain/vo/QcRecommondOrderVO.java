@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author: chenlin
@@ -23,7 +24,7 @@ public class QcRecommondOrderVO implements Serializable {
     @ApiModelProperty("全程医疗就诊记录列表")
     private List<QcTreatmentVO> qcTreatments;
     
-    /** 可使用优惠的订单明细id列表 */
-    @ApiModelProperty("可使用优惠的订单明细id列表")
-    private List<Integer> orderDetailIds;
+    /** 可使用优惠的订单明细Map【id,数量】 */
+    @ApiModelProperty("可使用优惠的订单Map【id,数量】")
+    private Map<Integer, Integer> orderDetailMap;
 }

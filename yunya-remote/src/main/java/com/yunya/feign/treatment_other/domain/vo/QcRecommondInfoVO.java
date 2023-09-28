@@ -43,7 +43,7 @@ public class QcRecommondInfoVO implements Serializable {
     private String type;
 
     /** 全程收费时间 */
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
     @ApiModelProperty("全程收费时间")
     private Date admDate;
 

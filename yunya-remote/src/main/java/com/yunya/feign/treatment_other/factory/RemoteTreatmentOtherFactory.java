@@ -3,8 +3,8 @@ package com.yunya.feign.treatment_other.factory;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment.domain.vo.QcRecommondOrderVO;
-import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.TariffPackageDetailQuery;
@@ -89,7 +89,7 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
     }
 
     @Override
-    public QcRecommondOrderVO orderMatchQcTreatmentList(QcTreatmentImportForm form) {
+    public TreatOrderRecordVO orderMatchQcTreatmentList(QcTreatmentImportForm form) {
         return null;
     }
 
@@ -99,8 +99,8 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
     }
 
     @Override
-    public void updateQcTreatmentAndItems(QcTreatmentImportForm form) {
-
+    public List<OrderDetailChargeVO> updateQcTreatmentAndItems(QcTreatmentImportForm form) {
+        return null;
     }
 
 }

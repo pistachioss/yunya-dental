@@ -151,9 +151,9 @@
         bp.name AS patientName,
         bp.mobile,
         IFNULL(bb.received_amount, 0) AS receivedTotalAmount,
-        bqt.execute_amount AS adviceItemExecAmount,
-        bqt.un_execute_amount AS unAdviceItemExecAmount,
-        IFNULL(bb.received_amount, 0) - bqt.execute_amount AS orderItemExecAmount
+        bqt.executed_amount AS adviceItemExecAmount,
+        bqt.un_executed_amount AS unAdviceItemExecAmount,
+        IFNULL(bb.received_amount, 0) - bqt.executed_amount AS orderItemExecAmount
     FROM base_qcyl_treatment bqt
     LEFT JOIN base_bill bb ON bqt.bill_id = bb.bill_id
     LEFT JOIN base_patient bp ON bp.patient_id = bqt.patient_id

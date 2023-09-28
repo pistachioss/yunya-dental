@@ -34,10 +34,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 简介: 价目表、诊疗服务接口暴露
@@ -397,15 +394,8 @@ public class TreatmentServiceRest {
    * @return List<OrderDetail>
    */
   @RequestMapping(value = "/order/detail/list/{orderRecordId}", method = RequestMethod.POST)
-  public List<OrderDetail> findOrderDetailByOrderRecordId(
-      @PathVariable(value = "orderRecordId") Integer orderRecordId,
-      @RequestBody List<Integer> orderDetailIds) {
-    Example example = new Example(OrderDetail.class);
-    Example.Criteria c = example.createCriteria().andEqualTo("orderRecordId", orderRecordId);
-    if (StringHelper.isNotEmpty(orderDetailIds)) {
-      c.andIn("id", orderDetailIds);
-    }
-    return orderDetailBiz.selectByExample(example);
+  public List<OrderDetailChargeVO> findOrderDetailByOrderRecordId(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    return orderDetailBiz.findChargeOrderDetailList(orderRecordId);
   }
 
   /**

@@ -11,6 +11,7 @@ import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
+import com.yunya.feign.treatment.domain.vo.TreatOrderRecordVO;
 import com.yunya.feign.treatment_other.domain.common.QcPatientInfo;
 import com.yunya.feign.treatment_other.domain.common.QcTreatmentInfo;
 import com.yunya.feign.treatment_other.domain.form.QcAdviceItemStatusForm;
@@ -49,8 +50,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseQcylTreatment;
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -220,11 +220,13 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
     /**
      * 医嘱单核销：根据核销码拉取全程就诊记录隐藏数据
      *
-     * @param verifyCode
+     * @param query
      */
-    public void verify(String verifyCode) {
-        QcRecommondInfoQuery query = new QcRecommondInfoQuery();
-        query.setVerifyCode(verifyCode);
+    public void verify(QcRecommondInfoQuery query) {
+        String verifyCode = query.getVerifyCode();
+        if (StringHelper.isEmpty(verifyCode)) {
+            throw new ClientServiceException("核销码不能为空", PARAMETERS_IS_ILLEGAL);
+        }
         syncPatientTreatmentList(query);
     }
 
@@ -413,8 +415,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
      * @param form
      * @return
      */
-    public QcRecommondOrderVO orderMatchQcTreatmentList(QcTreatmentImportForm form) {
-        QcRecommondOrderVO result = new QcRecommondOrderVO();
+    public TreatOrderRecordVO orderMatchQcTreatmentList(QcTreatmentImportForm form) {
+        TreatOrderRecordVO result = new TreatOrderRecordVO();
         List<QcTreatmentVO> qcTreatments = Lists.newArrayList();
         Map<String, OrderDetailChargeVO> orderDetailMap = form.getOrderDetails().stream()
                 .collect(toMap(OrderDetailChargeVO::getItemNum, Function.identity()));
@@ -458,9 +460,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
             vo.setQcAdviceItems(items);
             qcTreatments.add(vo);
         }
-        result.setQcTreatments(qcTreatments);
-        result.setOrderDetailIds(orderDetailMap.values().stream()
-                .map(OrderDetailChargeVO::getOrderDetailId).collect(Collectors.toList()));
+        result.setQcTreatmentList(qcTreatments);
+        result.setItemList(Lists.newArrayList(orderDetailMap.values()));
         return result;
     }
 
@@ -527,7 +528,7 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
      *
      * @param form
      */
-    public void updateQcTreatmentAndItems(QcTreatmentImportForm form) {
+    public List<OrderDetailChargeVO> updateQcTreatmentAndItems(QcTreatmentImportForm form) {
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         Date now = DateUtil.now();
         Integer billPayId = form.getBillPayId();
@@ -591,6 +592,7 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
                 qcTreatmentItemMapper.insertSelective(adviceItem);
             });
         }
+        return Lists.newArrayList(orderDetailMap.values());
     }
 
     /**
@@ -601,7 +603,7 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
      * @return
      */
     private List<QcTreatmentRecord> findQcTreatmentByIdOrOrderId(List<Integer> qcTreatmentIds, Integer orderRecordId) {
-        if (StringHelper.isEmpty(qcTreatmentIds)) {
+        if (StringHelper.isNotEmpty(qcTreatmentIds)) {
             return mapper.selectQcTreatmentListByIds(qcTreatmentIds);
         } else {
             Example example = new Example(QcTreatmentRecord.class);
