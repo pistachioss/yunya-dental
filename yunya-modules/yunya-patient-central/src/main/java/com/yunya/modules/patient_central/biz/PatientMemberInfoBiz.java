@@ -762,7 +762,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             // 获取门诊简称
             OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
             String cnum = "000";  // 无门诊时，默认值
-            if (StringHelper.isNotNull(org) && StringHelper.isNotNull(org.getClinicNumber())) {
+            if (StringHelper.isNotNull(org) && StringHelper.isNotEmpty(org.getClinicNumber())) {
               cnum = org.getClinicNumber();
             }
             // 生成规则：Y + 门诊编号 + 6位递增值（数据库）
