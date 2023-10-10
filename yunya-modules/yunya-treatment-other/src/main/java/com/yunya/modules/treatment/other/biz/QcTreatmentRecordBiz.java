@@ -220,14 +220,20 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
     /**
      * 医嘱单核销：根据核销码拉取全程就诊记录隐藏数据
      *
+     * @param qcTreatmentId
      * @param query
      */
-    public void verify(QcRecommondInfoQuery query) {
+    public void verify(Integer qcTreatmentId, QcRecommondInfoQuery query) {
+        QcTreatmentRecord qcTreatment = checkQcTreatmentRecord(qcTreatmentId);
         String verifyCode = query.getVerifyCode();
         if (StringHelper.isEmpty(verifyCode)) {
             throw new ClientServiceException("核销码不能为空", PARAMETERS_IS_ILLEGAL);
         }
         syncPatientTreatmentList(query);
+        qcTreatment.setStatus((byte) 2);
+        qcTreatment.setUpdTime(BaseContextHandler.getCurTime());
+        qcTreatment.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
+        updateById(qcTreatment);
     }
 
     private QcTreatmentRecord checkQcTreatmentRecord(Integer id) {

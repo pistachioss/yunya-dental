@@ -59,14 +59,15 @@ public class QcTreatmentRecordController {
     /**
      * 医嘱单核销：根据核销码拉取全程就诊记录隐藏数据
      *
+     * @param qcTreatmentId
      * @param query
      * @return
      */
     @CurrentUser
     @ApiOperation("医嘱单核销：根据核销码拉取全程就诊记录隐藏数据")
-    @PutMapping("/treatment/verify")
-    public ResponseResult verify(@RequestBody @Validated QcRecommondInfoQuery query) {
-        qcTreatmentRecordBiz.verify(query);
+    @PutMapping("/treatment/verify/{qcTreatmentId}")
+    public ResponseResult verify(@PathVariable(value = "qcTreatmentId") Integer qcTreatmentId, @RequestBody @Validated QcRecommondInfoQuery query) {
+        qcTreatmentRecordBiz.verify(qcTreatmentId, query);
         return ResponseUtil.success();
     }
 
