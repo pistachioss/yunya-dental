@@ -621,6 +621,7 @@ public class WXService extends AbstractWxBaseApi {
             wxVipInfoVo.setRegisterMobile(patientInfo.getMobile());
             wxVipInfoVo.setHeadImgUrl(patientInfo.getFaceUrl());
             wxVipInfoVo.setMemberType(patientInfo.getMemberTypeId());
+            wxVipInfoVo.setMemberName(patientInfo.getInservice()?patientInfo.getMemberCardName():patientInfo.getMemberCardOldName());
             wxVipInfoVo.setExistPrePayment(false);
             wxVipInfoVo.setExistMemberCard(false);
             //是否有预付款账号

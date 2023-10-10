@@ -42,6 +42,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
@@ -1309,12 +1310,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      */
     public ResponseResult<List<OrderItemUseBo>> choiceBenefitBo(PatientChooseBenefitForm form) {
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
-        Integer orderId = form.getOrderId();
         Integer patientId = form.getPatientId();
         Integer orgId = form.getOrgId();
         RestErrorBo errorBo;
         //查询患者可用优惠
-        PatientOptionalBenefitVo benefitVo = this.getPatientBenefit(patientId, orderId, orgId, form.getOrderDetailIds());
+        PatientOptionalBenefitVo benefitVo = this.getPatientBenefit(patientId, orgId, form.getOrderDetail());
         log.info("患者可使用的优惠券：[{}]", benefitVo);
         if (CollectionUtils.isEmpty(benefitVo.getDiscountVoList()) && CollectionUtils.isEmpty(benefitVo.getMemberCardVoList()) &&
                 CollectionUtils.isEmpty(benefitVo.getExchangeVoList()) && CollectionUtils.isEmpty(benefitVo.getPackageVoList()) &&
@@ -1334,7 +1334,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 //                return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 //            }
             //获取订单明细
-            List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId, form.getOrderDetailIds());
+            List<OrderDetailChargeVO> orderDetails = form.getOrderDetail();
             if (CollectionUtils.isEmpty(orderDetails)) {
                 return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
             }
@@ -1848,7 +1848,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             return null;
         }
         OrderRecord record = treatmentServiceFeign.findOrderRecordById(query.getOrderId());
-        return getPatientBenefit(query.getPatientId(), query.getOrderId(), record.getOrgId(), null);
+        List<OrderDetailChargeVO> orderDetail = treatmentServiceFeign.findOrderDetailByOrderRecordId(query.getOrderId());
+        return getPatientBenefit(query.getPatientId(), record.getOrgId(), orderDetail);
     }
 
     public List<Integer> listPatientAllCard(Integer patientId) {
@@ -1866,17 +1867,16 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return list;
     }
 
-    private PatientOptionalBenefitVo getPatientBenefit(Integer patientId, Integer orderId, Integer orgId, List<Integer> orderDetailIds) {
+    private PatientOptionalBenefitVo getPatientBenefit(Integer patientId, Integer orgId, List<OrderDetailChargeVO> orderDetail) {
         //查询患者可用优惠
         List<PatientBenefitBo> benefitBos = mapper.listBenefitByPatientId(patientId, orgId);
         //获取订单明细
-        List<OrderDetail> orderDetail = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId, orderDetailIds);
         if (CollectionUtils.isEmpty(orderDetail)) {
             return new PatientOptionalBenefitVo();
         }
         //订单的项目明细映射
         Map<Integer, Set<Integer>> itemMap = orderDetail.stream().collect(groupingBy(obj -> obj.getType().intValue(),
-                mapping(OrderDetail::getBillingItemId, toSet())));
+                mapping(OrderDetailChargeVO::getBillingItemId, toSet())));
         for (PatientBenefitBo benefitBo : benefitBos) {
             if (VOUCHER.equals(benefitBo.getCouponType()) || DISCOUNT.equals(benefitBo.getCouponType())) {
                 //订单中项目分类集合
@@ -2503,11 +2503,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             insertOtherCard.setSoldPhoneNumber(form.getSoldPhoneNumber());
             insertOtherCard.setSharer(form.getSharerIdStr());
         }
-//        insertOtherCard.setOrgId(0);
+        insertOtherCard.setOrgId(0);
         insertOtherCard.setThirdCardNumber(form.getThirdCardNumber());
         insertOtherCard.setActiveOrgId(activeOrgId);
         insertOtherCard.setActiveUserId(loginUserId);
-//        insertOtherCard.setCouponAllocateId(0);
+        insertOtherCard.setCouponAllocateId(0);
         insertOtherCard.setPatientId(patientId);
         insertOtherCard.setStatus(ACTIVATED.getCode());
         insertOtherCard.setSharer(form.getSharerIdStr());
@@ -2520,10 +2520,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             insertOtherCard.setActiveDate(LocalDateTime.now());
         }
         if (form.getThirdCardNumber().startsWith("HK")) {
-            insertOtherCard.setCardNumber(null);
+//            insertOtherCard.setCardNumber(null);
             insertOtherCard.setCardPassword(null);
-            insertOtherCard.setUpdTime(null);
-            mapper.updateByPrimaryKeySelective(insertOtherCard);
+//            insertOtherCard.setUpdTime(null);
+            mapper.updateByPrimaryKey(insertOtherCard);
         } else {
             insertOtherCard.setOrgId(0);
             insertOtherCard.setCouponAllocateId(0);
@@ -3231,10 +3231,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return errorBo;
     }
 
-    public List<OrderItemUseBo> assignedItemVos(List<OrderDetail> orderDetail) {
+    public List<OrderItemUseBo> assignedItemVos(List<OrderDetailChargeVO> orderDetail) {
         return orderDetail.stream().map(order -> {
             OrderItemUseBo bo = OrderItemUseBo.getInstance(order.getQuantity());
-            bo.setOrderDetailId(order.getId());
+            bo.setOrderDetailId(order.getOrderDetailId());
             bo.setItemId(order.getBillingItemId());
             bo.setReceivableAmount(order.getReceivableAmount());
             bo.setQuantity(order.getQuantity());

@@ -27,12 +27,52 @@
             ccr.card_id,
             if(isnull(bc.sold_date) , null, bp.name)    as buyer,
             bp1.name    as activator,
-            max(ccr.current_amount) as beginDeduction,
-            sum(case when ccr.occur_type = 2 then ccr.occur_amount
-            else 0 end)     as thisDeduction,
-            sum(case when ccr.occur_type = 3 then ccr.occur_amount
-            else 0 end)     as thisDeductionRefund,
-            min(ccr.current_amount)     as endDeduction
+            IFNULL((SELECT sum(a.current_amount)
+               FROM coupon_change_record a
+               <where>
+                   a.card_id = ccr.card_id
+                  <if test="query.startDate != null and query.startDate != ''">
+                     AND a.occur_date =
+                         (select max(occur_date)
+                          from coupon_change_record
+                          where date_format(occur_date, '%Y-%m-%d') &lt;= #{query.startDate}
+                            AND card_id = ccr.card_id)
+                    </if>
+                 </where>
+               GROUP BY a.occur_date
+               LIMIT 0,1), 0)                  as beginDeduction,
+            IFNULL((SELECT sum(a.occur_amount) FROM coupon_change_record a
+                <where>
+                     a.occur_type = 2
+                    and a.card_id = ccr.card_id
+                    <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                        and DATE_FORMAT(a.occur_date, "%Y-%m-%d") BETWEEN #{query.startDate} AND #{query.endDate}
+                    </if>
+                </where>
+            ),0) AS thisDeduction,
+            IFNULL((SELECT sum(a.occur_amount) FROM coupon_change_record a
+                <where>
+                     a.occur_type = 3
+                    and a.card_id = ccr.card_id
+                    <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                        and DATE_FORMAT(a.occur_date, "%Y-%m-%d") BETWEEN #{query.startDate} AND #{query.endDate}
+                    </if>
+                </where>
+            ),0) AS thisDeductionRefund,
+           IFNULL((SELECT sum(a.current_amount)
+               FROM coupon_change_record a
+               <where>
+                   a.card_id = ccr.card_id
+                 <if test="query.endDate != null and query.endDate != ''">
+                     AND a.occur_date =
+                         (select max(occur_date)
+                          from coupon_change_record
+                          where date_format(occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                            AND card_id = ccr.card_id)
+                </if>
+             </where>
+               GROUP BY a.occur_date
+               LIMIT 0,1), 0)                  AS endDeduction
         from coupon_change_record ccr
         inner join base_card bc on bc.card_id = ccr.card_id
         inner join base_coupon bc1 on bc1.coupon_id = ccr.coupon_id
@@ -45,15 +85,11 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="query.startDate != null and query.endDate != null">
-                and (ccr.occur_date &gt;= #{query.startDate} and ccr.occur_date &lt; DATE_ADD(#{query.endDate} ,INTERVAL '1'
-                DAY))
-            </if>
             <if test="query.patientKeyword !=null and query.patientKeyword != ''">
                 and (`bp`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp`.`mobile` like concat('%',
                 #{query.patientKeyword}, '%')
                 or `bp`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
-                and (`bp1`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp1`.`mobile` like concat('%',
+                or (`bp1`.`name` like concat('%', #{query.patientKeyword}, '%') or `bp1`.`mobile` like concat('%',
                 #{query.patientKeyword}, '%')
                 or `bp1`.`pinyin_name` like concat('%', #{query.patientKeyword}, '%'))
             </if>
@@ -71,19 +107,20 @@
             cb.item_type,
             count(*)                                      as quantity,
             bp.name                                     as patientName,
-            b.bill_num,
+            b.bill_num  as billNumber,
             date_format(cb.use_date, '%Y-%m-%d %H:%i:%s') as `billDate`,
-            cb.org_id                                     as orgName,
-            be.employee_name                            as executorName
+            bo.abbreviation                                     as orgName,
+            be.employee_name                             as executorName
         from base_benefit cb
                  inner join base_card c on cb.card_id = c.card_id
                  inner join base_coupon cci on c.coupon_id = cci.coupon_id
                  left join deduction_item dip on dip.item_id = cb.item_id and dip.coupon_id = cb.coupon_id and dip.type = cb.item_type
                  left join base_coupon_order_virtual cov on c.card_id = cov.card_id
-                 left join base_coupon_bill b on cov.order_id = b.order_id
+                 left join base_bill b on cb.order_id = b.bill_id
                  left join base_patient bp on bp.patient_id = cb.patient_id
                 left join base_employee be on be.user_id = cb.operate_user_id
                 left join base_tariff_info bti on bti.item_id = cb.item_id AND bti.item_type = cb.item_type
+                left join base_organization bo on bo.org_id = cb.org_id
         where cb.coupon_type = 5
         <if test="query.startDate != null and query.endDate != null">
             and (cb.use_date &gt;= #{query.startDate} and cb.use_date &lt; DATE_ADD(#{query.endDate} ,INTERVAL '1'
@@ -123,6 +160,7 @@
                               where coupon_id = cci.coupon_id
                                 and crt_time &lt;= ifnull(c.sold_date, c.active_date))
         group by cb.card_id, cb.order_id, cb.item_id,cb.item_type
+        order by cb.use_date desc
     </select>
 
     <select id="deductionBuy" resultType="com.yunya.feign.report.domain.vo.DeductionBuyVO">
@@ -144,7 +182,7 @@
                  left join base_organization bo on bo.org_id = cb.org_id
                  left join base_coupon_bill_pay_detail cbbp on cbbp.order_id = cov.order_id
                  left join base_employee be on be.user_id = cb.checker_id
-        where cb.order_status = 1
+        <where>
             <if test="query.startDate != null and query.endDate != null">
                 and (cb.bill_date &gt;= #{query.startDate} and cb.bill_date &lt; DATE_ADD(#{query.endDate} ,INTERVAL '1'
                 DAY))
@@ -172,6 +210,7 @@
                     #{item}
                 </foreach>
             </if>
+        </where>
         group by cov.order_id, cov.card_id
     </select>
     <select id="deductionRefund" resultType="com.yunya.feign.report.domain.vo.DeductionRefundVO">
@@ -244,6 +283,7 @@
         coupon_change_record bpmol
         <where>
             AND bpmol.occur_type = 1
+            and ISNULL(bpmol.order_id) = 0
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}

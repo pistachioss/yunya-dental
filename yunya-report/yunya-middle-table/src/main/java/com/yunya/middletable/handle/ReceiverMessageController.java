@@ -6,6 +6,7 @@ import com.yunya.middletable.service.*;
 import com.yunya.middletable.service.emr.TreatPlanDetailBiz;
 import com.yunya.middletable.service.patient.*;
 import com.yunya.middletable.service.treatment_other.BaseEmployeeScheduleBiz;
+import com.yunya.middletable.service.treatment_other.BaseQcylTreatmentBiz;
 import com.yunya.middletable.service.treatment_other.BaseReturnVisitBiz;
 import com.yunya.middletable.service.treatment_other.BaseVisitRemindBiz;
 import lombok.extern.slf4j.Slf4j;
@@ -75,8 +76,10 @@ public class ReceiverMessageController {
   private BaseCouponBillPayBiz baseCouponBillPayBiz;
   @Resource
   private BaseCouponRefundBiz baseCouponRefundBiz;
-    @Resource
-    private DeductionItemServiceImpl deductionItemService;
+  @Resource
+  private DeductionItemServiceImpl deductionItemService;
+  @Resource
+  private BaseQcylTreatmentBiz baseQcylTreatmentBiz;
 
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
@@ -177,6 +180,9 @@ public class ReceiverMessageController {
           break;
       case DeductionItem:
           deductionItemService.operateBaseCouponItem(messageModel);
+          break;
+       case BaseQcylTreatment:
+          baseQcylTreatmentBiz.operateData(messageModel);
           break;
     default:
       log.info("消息中没有对应的枚举类型[{}]！", messageModel.getMsgCategoryEnum());

@@ -91,8 +91,10 @@ public class MinorChargeProcessBiz {
         Set<PaymentModel> payments = model.getPaymentModels();
         Byte discountType = model.getDiscountType();
         try {
+            // 账单绑定全程医疗就诊单
+            List<OrderDetailChargeVO> orderDetail = updateQcTreatmentAndItems(billPayRecord, model.getQcTreatmentIds());
             // 调用保存优惠明细接口
-            savePrivilegeDetail(discountType, billPayRecord.getPatientId(), orderRecordId, model);
+            savePrivilegeDetail(discountType, billPayRecord.getPatientId(), orderRecordId, model, orderDetail);
             // 保存订单项目收费分摊明细
             billPayShareDetailBiz.saveItemPaySharedAmount(totalCharge, payments, billPayRecord);
             // 调用预付款消费接口
@@ -117,8 +119,6 @@ public class MinorChargeProcessBiz {
             chargedMQMiddleTable(billPayRecord, isMqTreatment);
             giftFirstVisitPackage(billPayRecord);
             autoUpdateMemberType(totalCharge, billPayRecord.getPatientId());
-            // 账单绑定全程医疗就诊单
-            billBindingQcTreatment(billPayRecord, model.getQcTreatmentIds());
             completedChargeLog(billPayRecord.getId());
         } catch (Exception e) {
             log.error("MinorChargeProcessBize asyncProcessCharge error: {}", e);
@@ -126,17 +126,23 @@ public class MinorChargeProcessBiz {
         }
     }
 
-    private void billBindingQcTreatment(BillPayRecord billPayRecord, List<Integer> qcTreatmentIds) {
-        Integer billRecordId = billPayRecord.getBillRecordId();
+    /**
+     * 用账单信息更新全程医疗就诊及其明细（绑定或更新实收）
+     *
+     * @param billPayRecord
+     * @param qcTreatmentIds
+     * @return
+     */
+    private List<OrderDetailChargeVO> updateQcTreatmentAndItems(BillPayRecord billPayRecord, List<Integer> qcTreatmentIds) {
         Integer orderRecordId = billPayRecord.getOrderRecordId();
         // 订单明细（项目实收）
         List<OrderDetailChargeVO> orderDetails = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
         QcTreatmentImportForm form = new QcTreatmentImportForm();
-        form.setBillRecordId(billRecordId);
+        form.setBillPayId(billPayRecord.getId());
         form.setOrderRecordId(orderRecordId);
         form.setQcTreatmentIds(qcTreatmentIds);
         form.setOrderDetails(orderDetails);
-        treatmentOtherFeign.updateQcTreatmentAndItems(form);
+        return treatmentOtherFeign.updateQcTreatmentAndItems(form);
     }
 
     /**
@@ -378,21 +384,22 @@ public class MinorChargeProcessBiz {
     /**
      * 保存优惠明细
      *
-     * @param discountType 优惠类型
-     * @param patientId 患者ID
+     * @param discountType  优惠类型
+     * @param patientId     患者ID
      * @param orderRecordId 订单记录ID
-     * @param model 收费添加模型
+     * @param model         收费添加模型
+     * @param orderDetail
      */
     public void savePrivilegeDetail(
             Byte discountType,
             Integer patientId,
             Integer orderRecordId,
-            TreatTollModel model) {
+            TreatTollModel model, List<OrderDetailChargeVO> orderDetail) {
         switch (discountType) {
             case 1:
                 GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
                 if (StringHelper.isNotNull(generalDiscount)) {
-                    saveCouponPrivilege(patientId, orderRecordId, generalDiscount);
+                    saveCouponPrivilege(patientId, orderRecordId, generalDiscount, orderDetail);
                 }
                 break;
             default:
@@ -403,14 +410,16 @@ public class MinorChargeProcessBiz {
     /**
      * 保存优惠券使用优惠明细
      *
-     * @param patientId 患者ID
-     * @param orderRecordId 订单记录ID
+     * @param patientId       患者ID
+     * @param orderRecordId   订单记录ID
      * @param generalDiscount 优惠列表
+     * @param orderDetail 可优惠的订单明细
      */
     private void saveCouponPrivilege(
-            Integer patientId, Integer orderRecordId, GeneralDiscountModel generalDiscount) {
+            Integer patientId, Integer orderRecordId, GeneralDiscountModel generalDiscount, List<OrderDetailChargeVO> orderDetail) {
         PatientOrderBenefitModel benefitModel = new PatientOrderBenefitModel();
         benefitModel.setOrderId(orderRecordId);
+        benefitModel.setOrderDetail(orderDetail);
         benefitModel.setPatientId(patientId);
         benefitModel.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
         benefitModel.setMemberCardId(generalDiscount.getMemberTypeId());

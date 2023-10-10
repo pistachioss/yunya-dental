@@ -204,8 +204,9 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BillDetailGroupVO result = new BillDetailGroupVO();
     List<OrderDetailChargeVO> orderDetails = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
     if (StringHelper.isNotEmpty(orderDetails)) {
+      result.setItemList(orderDetails);
       PatientOrderBenefitVo orderBenefits = discountFeign.getOrderBenefitD(orderRecordId);
-      treatTollBiz.orderDetailMatchDiscount(orderDetails, orderBenefits, result);
+      treatTollBiz.orderDetailMatchDiscount(orderBenefits, result);
       result.setQcTreatmentList(treatmentOtherFeign.findBindingQcTreatmentList(orderRecordId));
     }
     return result;

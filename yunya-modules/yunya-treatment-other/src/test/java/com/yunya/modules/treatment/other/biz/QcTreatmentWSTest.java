@@ -49,10 +49,10 @@ public class QcTreatmentWSTest {
     @Test
     public void testAdviceQuery() {
         QcDoctorAdviceQuery queryForm = new QcDoctorAdviceQuery();
-        queryForm.setStart_date("2023-09-01");
-        queryForm.setEnd_date("2023-10-01");
-        queryForm.setAdm_no("72");
-        queryForm.setWerif_code("2484");
+        queryForm.setStart_date("2023-09-27");
+        queryForm.setEnd_date("2023-09-27");
+//        queryForm.setAdm_no("72");
+//        queryForm.setWerif_code("2484");
         List<QcPatientInfoVO> patientTreatments = qcWebServiceClientBiz.findDoctorAdviceRecommondList(queryForm);
         System.out.println(JSONObject.toJSONString(patientTreatments));
     }
@@ -63,9 +63,9 @@ public class QcTreatmentWSTest {
     @Test
     public void testAdviceDownload() {
         QcRecommondInfoQuery query = new QcRecommondInfoQuery();
-        query.setStartDate("2023-09-01");
-        query.setEndDate("2023-10-01");
-        query.setVerifyCode("");
+        query.setStartDate("2023-09-27");
+        query.setEndDate("2023-09-30");
+        query.setVerifyCode("350292495");
         qcTreatmentRecordBiz.syncPatientTreatmentList(query);
     }
 
@@ -74,7 +74,7 @@ public class QcTreatmentWSTest {
      */
     @Test
     public void testBindPatient() {
-        String admNo = "73";
+        String admNo = "84";
         Integer patientId = 137;
         QcTreatmentRecord qcTreatment = getQcTreatmentIdByAdmNo(admNo);
         qcTreatmentRecordBiz.bindPatient(qcTreatment.getId(), patientId);
@@ -85,7 +85,7 @@ public class QcTreatmentWSTest {
      */
     @Test
     public void testAdviceExecEasy() {
-        String admNo = "72";
+        String admNo = "84";
         QcTreatmentRecord treatment = getQcTreatmentIdByAdmNo(admNo);
         qcTreatmentRecordBiz.executorAdviceItem(treatment);
     }
@@ -98,7 +98,7 @@ public class QcTreatmentWSTest {
         QcTreatmentRecord qcTreatment = getQcTreatmentIdByAdmNo(admNo);
         form.setQcTreatmentIds(Lists.newArrayList(qcTreatment.getId()));
         form.setOrderRecordId(orderRecordId);
-        form.setBillRecordId(billId);
+        form.setBillPayId(billId);
         List<OrderDetailChargeVO> orderDetails = treatmentServiceFeign.findOrderDetailAndBillDetailByOrderRecordId(orderRecordId).getItemList();
         form.setOrderDetails(orderDetails);
         qcTreatmentRecordBiz.updateQcTreatmentAndItems(form);
@@ -117,7 +117,7 @@ public class QcTreatmentWSTest {
      */
     @Test
     public void testAdviceUpload() {
-        String admNo = "71";
+        String admNo = "84";
         QcTreatmentRecord treatment = getQcTreatmentIdByAdmNo(admNo);
         List<Integer> qcTreatmentIds = Lists.newArrayList(treatment.getId());
         qcTreatmentRecordBiz.uploadAdviceItems(qcTreatmentIds);

@@ -184,6 +184,6 @@ public class BillRecordBizTest {
     Integer orderRecordId = 624711;
     String param = "{\"discountType\":1,\"generalDiscountModel\":{\"couponDiscountInfoModels\":[{\"couponCommonInfoId\":40045,\"couponType\":5}],\"memberTypeId\":1},\"invoiceModel\":{\"invoice\":false},\"memberAccountModels\":[],\"orderRecordId\":624711,\"outstandingAmount\":0,\"paymentModels\":[],\"prepaymentAccountModels\":[]}";
     TreatTollModel model = JSONObject.parseObject(param, TreatTollModel.class);
-    minorChargeProcessBiz.savePrivilegeDetail(discountType, patientId, orderRecordId, model);
+    minorChargeProcessBiz.savePrivilegeDetail(discountType, patientId, orderRecordId, model, null);
   }
 }

@@ -43,8 +43,9 @@
                  inner join coupon_refund_pay cfp on cfp.refund_id = crd.refund_id
                  inner join coupon_order_virtual cov on cov.id = crd.order_virtual_id
                  inner join coupon_refund cr on crd.refund_id = cr.id
+                 INNER JOIN card c on c.id = cov.card_id
         where cov.inservice = 0
-          and cov.patient_id = #{query.patientId}
+          and c.sold_target = #{query.patientId}
         GROUP BY crd.refund_id
     </select>
 

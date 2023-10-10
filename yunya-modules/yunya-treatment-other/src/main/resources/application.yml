@@ -81,5 +81,5 @@ netty:
 qc:
   mall:
     webservice:
-      wsdlUrl: http://60.191.117.126:8088/csp/hsb/DHC.Published.PUB0013.BS.PUB0013.CLS?WSDL=1
+      wsdlUrl: http://60.191.117.126:8088/csp/hsb/DHC.Published.PUB0013.BS.PUB0013.CLS
       targetNamespace: http://www.dhcc.com.cn

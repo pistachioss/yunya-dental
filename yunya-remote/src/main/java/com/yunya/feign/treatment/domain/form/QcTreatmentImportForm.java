@@ -29,9 +29,9 @@ public class QcTreatmentImportForm implements Serializable {
     @NotNull(message = "订单id不能为空")
     private Integer orderRecordId;
 
-    /** 账单id */
-    @ApiModelProperty("账单id")
-    private Integer billRecordId;
+    /** 账单收费id */
+    @ApiModelProperty("账单收费id")
+    private Integer billPayId;
 
     /** 订单明细列表 */
     @ApiModelProperty(value = "订单明细列表")

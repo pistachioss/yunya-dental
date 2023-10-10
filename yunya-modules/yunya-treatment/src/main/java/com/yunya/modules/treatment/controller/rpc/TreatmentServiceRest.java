@@ -22,10 +22,7 @@ import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedIn
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.Registered;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.biz.*;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +34,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 简介: 价目表、诊疗服务接口暴露
@@ -400,15 +394,8 @@ public class TreatmentServiceRest {
    * @return List<OrderDetail>
    */
   @RequestMapping(value = "/order/detail/list/{orderRecordId}", method = RequestMethod.POST)
-  public List<OrderDetail> findOrderDetailByOrderRecordId(
-      @PathVariable(value = "orderRecordId") Integer orderRecordId,
-      @RequestBody List<Integer> orderDetailIds) {
-    Example example = new Example(OrderDetail.class);
-    Example.Criteria c = example.createCriteria().andEqualTo("orderRecordId", orderRecordId);
-    if (StringHelper.isNotEmpty(orderDetailIds)) {
-      c.andIn("id", orderDetailIds);
-    }
-    return orderDetailBiz.selectByExample(example);
+  public List<OrderDetailChargeVO> findOrderDetailByOrderRecordId(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    return orderDetailBiz.findChargeOrderDetailList(orderRecordId);
   }
 
   /**
@@ -697,5 +684,20 @@ public class TreatmentServiceRest {
   @PostMapping(value = "/bill/cashinfo/{patientId}")
   PatientCostInfoVO exportMemberBalanceList(@PathVariable(value = "patientId") Integer patientId) throws IOException {
     return billRecordBiz.findCashAmountByPatientId(patientId);
+  }
+
+
+  /**
+   * 根据订单id查询账单信息
+   *
+   * @param orderRecordId
+   * @return
+   */
+  @PostMapping("/treat/bill/{orderRecordId}")
+  public BillRecord findBillRecordByOrderRecordId(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    BillRecord query = new BillRecord();
+    query.setOrderRecordId(orderRecordId);
+    query.setInservice(true);
+    return billRecordBiz.selectOne(query);
   }
 }

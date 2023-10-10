@@ -5,13 +5,13 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
-import com.yunya.feign.treatment.domain.query.BillBindingQcTreatmentQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
-import com.yunya.feign.treatment.domain.vo.TreatBillRecordVO;
+import com.yunya.feign.treatment.domain.vo.TreatOrderRecordVO;
 import com.yunya.feign.treatment_other.domain.common.QcPatientInfo;
 import com.yunya.feign.treatment_other.domain.common.QcTreatmentInfo;
 import com.yunya.feign.treatment_other.domain.form.QcAdviceItemStatusForm;
@@ -27,11 +27,11 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.SysEmployee;
+import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment_other.QcCustomerInfo;
 import com.yunya.models.treatment_other.QcTreatmentItem;
 import com.yunya.models.treatment_other.QcTreatmentRecord;
@@ -49,8 +49,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseQcylTreatment;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -77,6 +77,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
     private QcCustomerInfoMapper qcCustomerInfoMapper;
     @Autowired
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
+    @Autowired
+    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
     private static final String TIME_FORMAT = "HH:mm:ss";
 
@@ -101,6 +103,14 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
                     vo.setPatientName(patient.getName());
                 }
             }
+            Integer orderRecordId = vo.getOrderRecordId();
+            if (StringHelper.isNotNull(orderRecordId)) {
+                BillRecord billRecord = treatmentServiceFeign.findBillRecordByOrderRecordId(orderRecordId);
+                if (StringHelper.isNotNull(billRecord)) {
+                    vo.setBillNum(billRecord.getBillNumber());
+                }
+            }
+
         });
         return new PageInfo<>(result);
     }
@@ -210,11 +220,13 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
     /**
      * 医嘱单核销：根据核销码拉取全程就诊记录隐藏数据
      *
-     * @param verifyCode
+     * @param query
      */
-    public void verify(String verifyCode) {
-        QcRecommondInfoQuery query = new QcRecommondInfoQuery();
-        query.setVerifyCode(verifyCode);
+    public void verify(QcRecommondInfoQuery query) {
+        String verifyCode = query.getVerifyCode();
+        if (StringHelper.isEmpty(verifyCode)) {
+            throw new ClientServiceException("核销码不能为空", PARAMETERS_IS_ILLEGAL);
+        }
         syncPatientTreatmentList(query);
     }
 
@@ -242,8 +254,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
         Date now = DateUtil.now();
         qcTreatmentRecord.setPatientId(patientId);
         String remark = "实际使用人:" + patient.getName();
-        qcTreatmentRecord.setStatus((byte) 2);
         qcTreatmentRecord.setRemark(remark);
+        qcTreatmentRecord.setStatus((byte) 2);
         qcTreatmentRecord.setUpdId(userId);
         qcTreatmentRecord.setUpdTime(now);
         updateSelectiveById(qcTreatmentRecord);
@@ -252,6 +264,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
     public void executorAdviceItem(QcTreatmentRecord treatment) {
         List<QcTreatmentItem> items = qcTreatmentItemMapper.selectQcTreatmentItemsByTreatmentId(treatment.getId(), true);
         executorAdviceItem(treatment.getVerifyCode(), treatment.getRemark(), items);
+        treatment.setStatus((byte) 3);
+        updateById(treatment);
     }
 
     /**
@@ -266,7 +280,10 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
             items.forEach(item -> {
                 QcAdviceItemStatusForm form = new QcAdviceItemStatusForm();
                 form.setMall_order_no(item.getOrderNo());
-                form.setOrg_order_no(item.getOrderDetailId().toString());
+                Integer orderDetailId = item.getOrderDetailId();
+                if (StringHelper.isNotNull(orderDetailId)) {
+                    form.setOrg_order_no(String.valueOf(orderDetailId));
+                }
                 form.setStatus("6");
                 form.setVerifCode(verifyCode);
                 form.setRemark(remark);
@@ -335,7 +352,10 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
         List<OrderAdviceItemVO> orderAdviceItems = qcTreatmentItemMapper.selectOrderAdviceItemsByTreatmentId(id);
         orderAdviceItems.forEach(item->{
             QcAdviceUploadItemForm uploadItem = new QcAdviceUploadItemForm();
-            uploadItem.setOrg_order_no(item.getOrderDetailId().toString());
+            Integer orderDetailId = item.getOrderDetailId();
+            if (StringHelper.isNotNull(orderDetailId)) {
+                uploadItem.setOrg_order_no(String.valueOf(orderDetailId));
+            }
             uploadItem.setItmMast_Code(item.getItemNum());
             uploadItem.setItmMast_Desc(item.getItemName());
             uploadItem.setOEORI_QtyPackUOM(item.getQuantity());
@@ -396,8 +416,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
      * @param form
      * @return
      */
-    public QcRecommondOrderVO orderMatchQcTreatmentList(QcTreatmentImportForm form) {
-        QcRecommondOrderVO result = new QcRecommondOrderVO();
+    public TreatOrderRecordVO orderMatchQcTreatmentList(QcTreatmentImportForm form) {
+        TreatOrderRecordVO result = new TreatOrderRecordVO();
         List<QcTreatmentVO> qcTreatments = Lists.newArrayList();
         Map<String, OrderDetailChargeVO> orderDetailMap = form.getOrderDetails().stream()
                 .collect(toMap(OrderDetailChargeVO::getItemNum, Function.identity()));
@@ -441,9 +461,8 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
             vo.setQcAdviceItems(items);
             qcTreatments.add(vo);
         }
-        result.setQcTreatments(qcTreatments);
-        result.setOrderDetailIds(orderDetailMap.values().stream()
-                .map(OrderDetailChargeVO::getOrderDetailId).collect(Collectors.toList()));
+        result.setQcTreatmentList(qcTreatments);
+        result.setItemList(Lists.newArrayList(orderDetailMap.values()));
         return result;
     }
 
@@ -510,17 +529,18 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
      *
      * @param form
      */
-    public void updateQcTreatmentAndItems(QcTreatmentImportForm form) {
+    public List<OrderDetailChargeVO> updateQcTreatmentAndItems(QcTreatmentImportForm form) {
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         Date now = DateUtil.now();
-        Integer billId = form.getBillRecordId();
+        Integer billPayId = form.getBillPayId();
         Integer orderRecordId = form.getOrderRecordId();
         List<Integer> qcTreatmentIds = form.getQcTreatmentIds();
         Map<String, OrderDetailChargeVO> orderDetailMap = form.getOrderDetails().stream()
                 .collect(toMap(OrderDetailChargeVO::getItemNum, Function.identity()));
         List<QcTreatmentRecord> qcTreatments = findQcTreatmentByIdOrOrderId(qcTreatmentIds, orderRecordId);
         qcTreatments.forEach(qcTreatment->{
-            List<QcTreatmentItem> qcTreatmentItems = qcTreatmentItemMapper.selectQcTreatmentItemsByTreatmentId(qcTreatment.getId(), null);
+            Integer id = qcTreatment.getId();
+            List<QcTreatmentItem> qcTreatmentItems = qcTreatmentItemMapper.selectQcTreatmentItemsByTreatmentId(id, null);
             for (QcTreatmentItem adviceItem : qcTreatmentItems) {
                 String itemNum = adviceItem.getItemNum();
                 OrderDetailChargeVO detail = orderDetailMap.get(itemNum);
@@ -553,12 +573,13 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
             if (StringHelper.isNotEmpty(qcTreatmentIds)) {
                 // 账单首次收费时需要调用医嘱执行
                 executorAdviceItem(qcTreatment.getVerifyCode(), qcTreatment.getRemark(), qcTreatmentItems);
+                rabbitMqServiceFeign.sendMessage(id, 0, BaseQcylTreatment);
             }
 
             // 全程就诊记录绑定账单
             qcTreatment.setStatus((byte) 3);
             qcTreatment.setOrderRecordId(orderRecordId);
-            qcTreatment.setBillId(billId);
+            qcTreatment.setBillPayId(billPayId);
             qcTreatment.setUpdId(userId);
             qcTreatment.setUpdTime(now);
             updateSelectiveById(qcTreatment);
@@ -572,6 +593,7 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
                 qcTreatmentItemMapper.insertSelective(adviceItem);
             });
         }
+        return Lists.newArrayList(orderDetailMap.values());
     }
 
     /**
@@ -582,7 +604,7 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
      * @return
      */
     private List<QcTreatmentRecord> findQcTreatmentByIdOrOrderId(List<Integer> qcTreatmentIds, Integer orderRecordId) {
-        if (StringHelper.isEmpty(qcTreatmentIds)) {
+        if (StringHelper.isNotEmpty(qcTreatmentIds)) {
             return mapper.selectQcTreatmentListByIds(qcTreatmentIds);
         } else {
             Example example = new Example(QcTreatmentRecord.class);
@@ -637,8 +659,14 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
                 treatment.setPatientName(patient.getName());
             }
         }
+        Integer orderRecordId = treatment.getOrderRecordId();
+        if (StringHelper.isNotNull(orderRecordId)) {
+            BillRecord billRecord = treatmentServiceFeign.findBillRecordByOrderRecordId(orderRecordId);
+            if (StringHelper.isNotNull(billRecord)) {
+                treatment.setBillNum(billRecord.getBillNumber());
+            }
+        }
         result.setQcCustomerInfoVO(treatment);
-
         List<OrderAdviceItemVO> adviceItems = qcTreatmentItemMapper.selectOrderAdviceItemsByTreatmentId(id);
         Iterator<OrderAdviceItemVO> it = adviceItems.iterator();
         List<OrderAdviceItemVO> orderDetails = Lists.newArrayList();
@@ -659,31 +687,5 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
         result.setQcAdviceItems(adviceItems);
         result.setOrderDetails(orderDetails);
         return result;
-    }
-
-    /**
-     * 查询待同步账单记录列表
-     *
-     * @param query
-     * @return
-     */
-    public PageInfo<Wait4UploadTreatmentVO> findWait4UploadTreatmentList(BillBindingQcTreatmentQuery query) {
-        List<TreatBillRecordVO> bills = treatmentServiceFeign.findTreatBillRecordList(query);
-        if (StringHelper.isNotEmpty(bills)) {
-            query.setBillIds(bills.stream().map(TreatBillRecordVO::getBillId).collect(Collectors.toList()));
-            List<Wait4UploadTreatmentVO> result = mapper.selectWait4UploadTreatmentList(query);
-            result.forEach(vo->{
-                Integer patientId = vo.getPatientId();
-                if (StringHelper.isNotNull(patientId)) {
-                    PatientBaseInfo patient = patientFeign.findPatientInfoById(patientId);
-                    if (StringHelper.isNotNull(patient)) {
-                        vo.setPatientName(patient.getName());
-                        vo.setMobile(patient.getMobile());
-                    }
-                }
-            });
-            PageUtl.doPage(query, result);
-        }
-        return new PageInfo<>();
     }
 }

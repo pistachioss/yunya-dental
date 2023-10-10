@@ -116,7 +116,7 @@ public class BaseCardServiceImpl{
 					}
 					else
 					{
-						baseCardMapper.updateByPrimaryKeySelective(updateCards.get(0));
+						baseCardMapper.updateByPrimaryKey(updateCards.get(0));
 					}
 				}
 			}
@@ -258,6 +258,7 @@ public class BaseCardServiceImpl{
 				baseCard.setSaleChannelName(salesChannel.getName());
 			}
 		}
+        baseCard.setBuyerId(card.getBuyerId());
 		return baseCard;
 	}
 

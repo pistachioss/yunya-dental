@@ -24,6 +24,8 @@ public class WxVipInfoVo {
     private String headImgUrl;
     @ApiModelProperty(value = "会员卡类型（1-金藤卡，2-银藤卡，3-青藤卡，4-艾维会员）")
     private Integer memberType;
+    @ApiModelProperty(value = "会员卡名称")
+    private String memberName;
     @ApiModelProperty(value = "会员卡余额")
     private BigDecimal memberBalance;
     @ApiModelProperty(value = "是否有会员卡（返回值为null或者false代表没有会员卡）")
