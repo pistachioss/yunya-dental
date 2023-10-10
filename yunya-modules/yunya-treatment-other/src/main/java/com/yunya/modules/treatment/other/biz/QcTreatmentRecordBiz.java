@@ -150,7 +150,13 @@ public class QcTreatmentRecordBiz extends BaseBiz<QcTreatmentRecordMapper, QcTre
 //                        continue;
 //                    }
                     QcTreatmentRecord treatment = new QcTreatmentRecord();
-                    treatment.setType(adm.getModeType());
+                    String modeType = adm.getModeType();
+                    byte status = 1;
+                    if ("O".equals(modeType)) {
+                        status = 2;
+                    }
+                    treatment.setType(modeType);
+                    treatment.setStatus(status);
                     treatment.setAdmNo(admNo);
                     String admDate = StringHelper.joinWith(" ", adm.getAdmDate_Html(), adm.getAdmTime_Html());
                     treatment.setAdmDate(DateUtil.parse(admDate));
