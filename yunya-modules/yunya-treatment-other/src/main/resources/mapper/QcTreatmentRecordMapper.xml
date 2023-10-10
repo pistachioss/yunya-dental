@@ -86,7 +86,7 @@
             <if test="query.search!=null and query.search!=''">
                 AND CONCAT(IFNULL(qci.customer_name, ''),IFNULL(qci.mobile, '')) LIKE CONCAT('%', #{query.search}, '%' )
             </if>
-            <if test="query.type != null">
+            <if test="query.type!=null and query.type!=''">
                 AND type = #{query.type}
             </if>
             <if test="query.verifyCode!=null and query.verifyCode!=''">
