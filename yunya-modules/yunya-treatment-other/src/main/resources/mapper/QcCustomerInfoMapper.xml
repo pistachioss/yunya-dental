@@ -41,11 +41,11 @@
     </trim>
     ON DUPLICATE KEY UPDATE
     <trim prefixOverrides="" suffixOverrides=",">
-      <if test="idCard!=null"> id_card= VALUES(id_card),</if>
+      <if test="@com.yunya.framework.common.utils.RegexUtl@matchIdCard(idCard)"> id_card= VALUES(id_card),</if>
       <if test="idCardType!=null"> id_card_type= VALUES(id_card_type),</if>
       <if test="idCardTypeDesc!=null"> id_card_type_desc= VALUES(id_card_type_desc),</if>
       <if test="customerName!=null and customerName!=''"> customer_name= VALUES(customer_name),</if>
-      <if test="mobile!=null"> mobile= VALUES(mobile),</if>
+      <if test="@com.yunya.framework.common.utils.RegexUtl@matchMobile(mobile)"> mobile= VALUES(mobile),</if>
       <if test="birthday!=null"> birthday= VALUES(birthday),</if>
       <if test="sex!=null"> sex= VALUES(sex),</if>
     </trim>

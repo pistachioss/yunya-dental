@@ -49,10 +49,10 @@ public class QcTreatmentWSTest {
     @Test
     public void testAdviceQuery() {
         QcDoctorAdviceQuery queryForm = new QcDoctorAdviceQuery();
-        queryForm.setStart_date("2023-09-27");
-        queryForm.setEnd_date("2023-09-27");
+        queryForm.setStart_date("2023-10-10");
+        queryForm.setEnd_date("2023-10-10");
 //        queryForm.setAdm_no("72");
-//        queryForm.setWerif_code("2484");
+        queryForm.setWerif_code("355142504");
         List<QcPatientInfoVO> patientTreatments = qcWebServiceClientBiz.findDoctorAdviceRecommondList(queryForm);
         System.out.println(JSONObject.toJSONString(patientTreatments));
     }

@@ -153,6 +153,9 @@ public class BusinessConstants {
   public static final String CN_EN_NAME_REGEXP = "^[\\u4E00-\\u9FA5A-Za-z0-9_]+$";
   /** 拼音名字正则表达式 */
   public static final String PINYIN_REGEXP = "^[A-Za-z]+$";
+  /** 身份证号正则表达式 */
+  public static final String ID_CARD_REGEXP = 
+          "(^[1-9]\\d{5}(18|19|20)\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx]$)|(^[1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}$)";
   /** mini token 前缀 */
   public static final String MINI_TOKEN_PREFIX = "mini ";
 
