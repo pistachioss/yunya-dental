@@ -100,12 +100,13 @@
             od.consulter_id as consulterId,
             od.source_type AS sourceType,
             od.remarks,
-            IF(IFNULL(brod.refund_Amount,0)>=IFNULL(odpr.received_amount,0), 0, IFNULL(odpr.received_amount,0)-IFNULL(brod.refund_Amount,0)) AS refundableAmount
+            IF(IFNULL(brod.refund_Amount,0)>=IFNULL(odpr.shuldRefund_amount,0), 0, IFNULL(odpr.shuldRefund_amount,0)-IFNULL(brod.refund_Amount,0)) AS refundableAmount
         FROM order_detail od
         LEFT JOIN (
             SELECT
             odpr.order_detail_id,
-            odpr.received_amount
+            odpr.received_amount,
+            odpr.received_amount-odpr.free_amount AS shuldRefund_amount
             FROM order_detail_pay_record odpr
             WHERE
             odpr.order_record_id = #{orderRecordId}
