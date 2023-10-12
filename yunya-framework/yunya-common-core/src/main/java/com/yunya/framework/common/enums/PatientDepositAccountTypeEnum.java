@@ -99,7 +99,7 @@ public enum PatientDepositAccountTypeEnum {
     }
 
     public static List<PatientDepositAccountTypeEnum> depositAccounts() {
-        return Stream.of(MEMBER, NORMAL_PREPAYMENT).collect(Collectors.toList());
+        return Stream.of(MEMBER, NORMAL_PREPAYMENT, ORTHADANTIC_PREPAYMENT, WHITENING_PREPAYMENT).collect(Collectors.toList());
     }
 
     /**
@@ -108,7 +108,7 @@ public enum PatientDepositAccountTypeEnum {
      * @param accountItemId
      * @return
      */
-    public static Boolean isRelTypeId(Integer accountItemId) {
+    public static Boolean isPrepaymentRelId(Integer accountItemId) {
         if (StringHelper.isNotNull(accountItemId)) {
             for (PatientDepositAccountTypeEnum item : values()) {
                 if (accountItemId.equals(item.getAccountItemId())) {
