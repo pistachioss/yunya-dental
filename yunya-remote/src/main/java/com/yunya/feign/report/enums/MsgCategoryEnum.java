@@ -38,4 +38,5 @@ public enum MsgCategoryEnum {
     BaseCouponBillPayDetail,
     BaseCouponRefund,
     DeductionItem,
+    BaseQcylTreatment,
 }

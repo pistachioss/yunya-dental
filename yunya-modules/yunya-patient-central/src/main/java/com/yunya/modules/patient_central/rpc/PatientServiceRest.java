@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BasePatient;
-
 /**
  * 简单介绍:</br>
  *
@@ -102,7 +100,6 @@ public class PatientServiceRest {
     return patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm);
   }
 
-  @CurrentUser
   @ApiOperation("根据患者id查询患者信息")
   @RequestMapping(value = "/findPatientInfoById/{id}", method = RequestMethod.GET)
   public PatientBaseInfo findPatientInfoById(@PathVariable Integer id) {

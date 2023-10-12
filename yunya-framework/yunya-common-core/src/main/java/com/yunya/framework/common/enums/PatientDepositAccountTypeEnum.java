@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * 患者储蓄账号（会员卡or预付款）分类枚举
+ * 特殊入账方式枚举
  *
  * @author: chenlin
  * @date: 2023/2/3 19:48
@@ -26,6 +26,8 @@ public enum PatientDepositAccountTypeEnum {
     WHITENING_PREPAYMENT(true, 3, "美白预付款", "MY", 101),
 //    /** 种植预付款 */
 //    IMPLANT_PREPAYMENT(true,4, "种植预付款", "ZZY", null),
+    /** 全程医疗支付 */
+    QCYL_PREPAYMENT(false,4, "全程医疗支付", "QCYL", 102),
     ;
 
     /** 是否专项 */
@@ -87,7 +89,7 @@ public enum PatientDepositAccountTypeEnum {
      */
     public static PatientDepositAccountTypeEnum getTypeEnumRelId(Integer accountItemId) {
         if (StringHelper.isNotNull(accountItemId)) {
-            for (PatientDepositAccountTypeEnum item : values()) {
+            for (PatientDepositAccountTypeEnum item : depositAccounts()) {
                 if (accountItemId.equals(item.getAccountItemId())) {
                     return item;
                 }
@@ -96,16 +98,20 @@ public enum PatientDepositAccountTypeEnum {
         return null;
     }
 
+    public static List<PatientDepositAccountTypeEnum> depositAccounts() {
+        return Stream.of(MEMBER, NORMAL_PREPAYMENT).collect(Collectors.toList());
+    }
+
     /**
      * 判断给定的accountItemId是否关联预付款类型type
      *
      * @param accountItemId
      * @return
      */
-    public static Boolean isPrepaymentRelId(Integer accountItemId) {
+    public static Boolean isRelTypeId(Integer accountItemId) {
         if (StringHelper.isNotNull(accountItemId)) {
-            for (PatientDepositAccountTypeEnum item : prepaymentValues()) {
-                if (item.getAccountItemId().equals(accountItemId)) {
+            for (PatientDepositAccountTypeEnum item : values()) {
+                if (accountItemId.equals(item.getAccountItemId())) {
                     return true;
                 }
             }

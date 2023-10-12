@@ -2,16 +2,23 @@ package com.yunya.modules.treatment.other.rpc;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PullForm;
+import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
+import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
+import com.yunya.feign.treatment.domain.vo.TreatOrderRecordVO;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.TariffPackageDetailQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.feign.treatment_other.domain.vo.*;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.models.treatment_other.XRayFilm;
+import com.yunya.modules.treatment.other.biz.QcTreatmentRecordBiz;
 import com.yunya.modules.treatment.other.biz.TariffPackageBiz;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import com.yunya.modules.treatment.other.biz.XRayFilmBiz;
@@ -50,6 +57,7 @@ public class TreatmentOtherServiceRest {
 
   @Autowired private XUploadFileBiz xUploadFileBiz;
   @Autowired private TariffPackageBiz tariffPackageBiz;
+  @Autowired private QcTreatmentRecordBiz qcTreatmentRecordBiz;
 
   /**
    * 根据条件查询随访记录
@@ -235,5 +243,42 @@ public class TreatmentOtherServiceRest {
   @PostMapping("/package/detail")
   public PageInfo<TariffPackageDetailVO> findPackageList(@RequestBody @Validated TariffPackageDetailQuery query) {
     return tariffPackageBiz.findPackageDetailList(query);
+  }
+
+  /**
+   * 全程医疗登记单导入
+   *
+   * @param form
+   * @return
+   */
+  @ApiOperation("全程医疗登记单导入")
+  @PostMapping("/qc/treatment/match")
+  public TreatOrderRecordVO orderMatchQcTreatmentList(@RequestBody @Validated QcTreatmentImportForm form) {
+    return qcTreatmentRecordBiz.orderMatchQcTreatmentList(form);
+  }
+
+
+  /**
+   * 获取已绑定账单的全程医疗登记单列表
+   *
+   * @param orderRecordId
+   * @return
+   */
+  @ApiOperation("获取已绑定账单的全程医疗登记单列表")
+  @GetMapping("/qc/treatment/binding/{orderRecordId}")
+  public List<QcTreatmentVO> findBindingQcTreatmentList(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    return qcTreatmentRecordBiz.findBindingQcTreatmentList(orderRecordId);
+  }
+
+  /**
+   * 用账单信息更新全程医疗就诊及其明细（绑定或更新实收）
+   *
+   * @param form
+   */
+  @CurrentUser
+  @ApiOperation("用账单信息更新全程医疗就诊及其明细（绑定或更新实收）")
+  @PutMapping("/qc/treatment/items/update")
+  public List<OrderDetailChargeVO> updateQcTreatmentAndItems(@RequestBody @Validated QcTreatmentImportForm form) {
+    return qcTreatmentRecordBiz.updateQcTreatmentAndItems(form);
   }
 }

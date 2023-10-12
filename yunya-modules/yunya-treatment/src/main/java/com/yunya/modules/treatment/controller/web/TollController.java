@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.controller.web;
 
+import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
 import com.yunya.feign.treatment.domain.model.TollDebtModel;
 import com.yunya.feign.treatment.domain.model.TollModel;
 import com.yunya.feign.treatment.domain.model.TreatTollModel;

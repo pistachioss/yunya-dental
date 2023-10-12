@@ -21,6 +21,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.ChoiceBenefitTypeEnum;
@@ -218,7 +219,7 @@ public class BenefitBiz {
                 return ResponseUtil.error(DiscountError.EMPLOYEE_NO_AUTH_DISCOUNT);
             }
             //获取订单明细
-            List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
+            List<OrderDetailChargeVO> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
             if (CollectionUtils.isEmpty(orderDetails)) {
                 return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
             }
@@ -656,11 +657,11 @@ public class BenefitBiz {
         return supplyWorkload;
     }
 
-    private RestErrorBo checkAuthItem(List<OrderDetail> orderDetails, List<AuthItemBenefitModel> itemBenefits) {
+    private RestErrorBo checkAuthItem(List<OrderDetailChargeVO> orderDetails, List<AuthItemBenefitModel> itemBenefits) {
         RestErrorBo errorBo = RestErrorBo.getInstance();
-        Map<Integer, OrderDetail> orderDetailMap = orderDetails.stream().collect(toMap(OrderDetail::getId, Function.identity(), (v1, v2) -> v2));
+        Map<Integer, OrderDetailChargeVO> orderDetailMap = orderDetails.stream().collect(toMap(OrderDetailChargeVO::getOrderDetailId, Function.identity(), (v1, v2) -> v2));
         for (AuthItemBenefitModel item : itemBenefits) {
-            OrderDetail detail = orderDetailMap.get(item.getOrderDetailId());
+            OrderDetailChargeVO detail = orderDetailMap.get(item.getOrderDetailId());
             if (detail == null) {
                 errorBo.setError(DiscountError.ORDER_ITEM_NOT_EXIST);
                 errorBo.setMsg(item.getItemId());
@@ -896,7 +897,7 @@ public class BenefitBiz {
             return ResponseUtil.error(DiscountError.EMPLOYEE_NO_AUTH_DISCOUNT);
         }
         //获取订单明细
-        List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
+        List<OrderDetailChargeVO> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
         if (CollectionUtils.isEmpty(orderDetails)) {
             return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
         }

@@ -184,7 +184,7 @@ public class RedisConstants implements Serializable {
   /** 会员授权码 */
   public static final String MEMBER_AUTH_CODE = "member:auth:code";
 
-    /**
+  /**
    * 设置key中的占位符
    *
    * @param keyPrefix key前缀

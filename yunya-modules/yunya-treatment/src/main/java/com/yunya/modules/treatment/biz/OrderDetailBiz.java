@@ -538,6 +538,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         }
         vo.setBillingItemEnglishName(tariff.getEnglishName());
         vo.setUnit(tariff.getUnit());
+        vo.setItemNum(tariff.getItemNumber());
         break;
       case 1:
         BaseOralTariff oralTariff = redisUtils.get(itemKey, BaseOralTariff.class);
@@ -550,6 +551,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         }
         vo.setBillingItemEnglishName(oralTariff.getEnglishName());
         vo.setUnit(oralTariff.getUnit());
+        vo.setItemNum(oralTariff.getItemNumber());
         break;
       default:
         break;

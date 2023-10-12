@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.vo.DeductionItemBenefitVo;
@@ -10,9 +11,11 @@ import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -88,6 +91,8 @@ public class TreatTollBiz {
 
   @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
 
+  @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
+
   /**
    * 根据优惠信息匹配订单优惠
    *
@@ -103,13 +108,16 @@ public class TreatTollBiz {
     Byte discountType = query.getDiscountType();
     GeneralDiscountModel generalDiscountModel = query.getGeneralDiscountModel();
     // 校验优惠参数
-    checkPrivilegeParam(discountType, generalDiscountModel);
-    TreatOrderRecordVO result = new TreatOrderRecordVO();
+    checkPrivilegeParam(query);
+    TreatOrderRecordVO result = matchQcTreatmentItemInfo(detailList, query);
     switch (discountType) {
       case 1:
         // 匹配卡券优惠
-        PatientOrderBenefitVo resultData = findGeneralPrivilege(orderRecordId, null, generalDiscountModel);
-        orderDetailMatchDiscount(detailList, resultData, result);
+        PatientOrderBenefitVo resultData = new PatientOrderBenefitVo();
+        if (StringHelper.isNotNull(generalDiscountModel)) {
+          resultData = findGeneralPrivilege(orderRecordId,null, result.getItemList(), generalDiscountModel);
+        }
+        orderDetailMatchDiscount(resultData, result);
         break;
       default:
         break;
@@ -118,16 +126,34 @@ public class TreatTollBiz {
   }
 
   /**
+   * 匹配全程医疗就诊医嘱列表，返回未匹配的订单明细id（可使用优惠）
+   *
+   * @param orderDetail
+   * @param query
+   * @return
+   */
+  private TreatOrderRecordVO matchQcTreatmentItemInfo(List<OrderDetailChargeVO> orderDetail, OrderPrivilegeQuery query) {
+    if (StringHelper.isNotEmpty(query.getQcTreatmentIds())) {
+      QcTreatmentImportForm form = new QcTreatmentImportForm();
+      form.setQcTreatmentIds(query.getQcTreatmentIds());
+      form.setOrderDetails(orderDetail);
+      form.setOrderRecordId(query.getOrderRecordId());
+      return treatmentOtherFeign.orderMatchQcTreatmentList(form);
+    }
+    TreatOrderRecordVO result = new TreatOrderRecordVO();
+    result.setItemList(orderDetail);
+    return result;
+  }
+
+  /**
    * 订单明细匹配优惠信息列表
    *
-   * @param detailList 订单详情列表
    * @param privilege  优惠项目列表
    * @param result 总优惠
    */
   public void orderDetailMatchDiscount(
-          List<OrderDetailChargeVO> detailList,
           PatientOrderBenefitVo privilege, TreatOrderRecordVO result) {
-    Map<Integer, OrderDetailChargeVO> detailMap = detailList.stream().collect(toMap(OrderDetailChargeVO::getOrderDetailId, Function.identity(),
+    Map<Integer, OrderDetailChargeVO> detailMap = result.getItemList().stream().collect(toMap(OrderDetailChargeVO::getOrderDetailId, Function.identity(),
             (u,v)->{ throw new IllegalStateException(String.format("Duplicate key %s", u));}, LinkedHashMap::new));
     List<OrderDetailChargeVO> swipeItemList = Lists.newArrayList();
     List<PatientItemBenefitVo> itemList = privilege.getItemList();
@@ -246,14 +272,31 @@ public class TreatTollBiz {
     BigDecimal privilegeAmount = calculatePrivilegeAmount(model);
     // 计算入账总额、应收总额
     BigDecimal actualReceivableAmount = orderRecord.getTotalAmount().subtract(privilegeAmount);
+    if (StringHelper.isNotEmpty(model.getQcTreatmentIds())) {
+      actualReceivableAmount = actualReceivableAmount.subtract(findQcCollectedAmount(model));
+    }
     if (StringHelper.leZero(actualReceivableAmount)) {
       throw new ClientServiceException("收费失败，应收金额合计为0，不能挂账！", OPERATION_NOT_ALLOW);
     }
-    model.setPaymentModels(null);
+//    model.setPaymentModels(null);
     model.setPrepaymentAccountModels(null);
     model.setMemberAccountModels(null);
     model.setOutstandingAmount(actualReceivableAmount);
     return confirmCharge(model, (byte) 1);
+  }
+
+  private BigDecimal findQcCollectedAmount(TreatTollModel model) {
+    BigDecimal qcCollected = BigDecimal.ZERO;
+    Set<PaymentModel> paymentModels = model.getPaymentModels();
+    if (StringHelper.isNotEmpty(paymentModels)) {
+      for (PaymentModel paymentModel : paymentModels) {
+        PatientDepositAccountTypeEnum qcyl = PatientDepositAccountTypeEnum.getTypeEnumRelId(paymentModel.getAccountItemId());
+        if (StringHelper.isNotNull(qcyl)) {
+          qcCollected = qcCollected.add(paymentModel.getAmount());
+        }
+      }
+    }
+    return qcCollected;
   }
 
   /**
@@ -266,17 +309,13 @@ public class TreatTollBiz {
   public TollConfirmVO confirmCharge(TreatTollModel model, byte type) {
     OrderRecord orderRecord = checkChargeParam(model);
     Integer orderRecordId = orderRecord.getId();
-    Byte discountType = model.getDiscountType();
     BigDecimal privilegeAmount = calculatePrivilegeAmount(model);
     // 计算入账总额、应收总额
     BigDecimal[] totalAmount = calculateTotalCharge(model);
     BigDecimal totalCharge = totalAmount[0];
     BigDecimal actualReceivableAmount = orderRecord.getTotalAmount().subtract(privilegeAmount);
     // 比较实际应收与总入账金额
-    BigDecimal outstandingAmount = model.getOutstandingAmount();
-    if (discountType != 0) {
-      checkTotalChargeAndDebtAmount(totalCharge, actualReceivableAmount, outstandingAmount);
-    }
+    checkTotalChargeAndDebtAmount(totalCharge, actualReceivableAmount, model.getOutstandingAmount());
     // 生成账单记录
     BillRecord billRecord =
             generateBillRecord(orderRecord, model, totalCharge, actualReceivableAmount, privilegeAmount);
@@ -388,7 +427,27 @@ public class TreatTollBiz {
    */
   private OrderRecord checkChargeParam(TreatTollModel model) {
     checkPrepayments(model.getPrepaymentAccountModels());
-    return checkParam(model.getOrderRecordId(), model.getDiscountType(), model.getGeneralDiscountModel(), model.getInvoiceModel());
+    Integer orderRecordId = model.getOrderRecordId();
+    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
+    if (null == orderRecord) {
+      throw new ClientServiceException("收费失败，当前未选择正确的就诊记录或传入参数有误！", PARAMETERS_IS_ILLEGAL);
+    }
+    Byte status = orderRecord.getStatus();
+    // 检查收费订单状态
+    checkOrderRecordStatus(status);
+    String resultRecordId = redisUtils.get(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
+    if (StringHelper.isNotBlank(resultRecordId)) {
+      throw new ClientServiceException("收费失败，当前账单已解锁！请联系开单人员提交账单！", PARAMETERS_IS_ILLEGAL);
+    }
+    // 校验优惠参数
+    checkPrivilegeParam(model);
+    InvoiceModel invoiceModel = model.getInvoiceModel();
+    if (invoiceModel.getInvoice()) {
+      if (StringHelper.isBlank(invoiceModel.getInvoiceNumber())) {
+        throw new ClientServiceException("收费失败，未填写发票编号！", PARAMETERS_IS_ILLEGAL);
+      }
+    }
+    return orderRecord;
   }
 
   /**
@@ -630,10 +689,11 @@ public class TreatTollBiz {
    *
    * @param orderRecordId
    * @param patientId
+   * @param detailMap
    * @param generalDiscountModel
    * @return
    */
-  private PatientOrderBenefitVo findGeneralPrivilege(Integer orderRecordId, Integer patientId, GeneralDiscountModel generalDiscountModel) {
+  private PatientOrderBenefitVo findGeneralPrivilege(Integer orderRecordId, Integer patientId, List<OrderDetailChargeVO> orderDetail, GeneralDiscountModel generalDiscountModel) {
     PatientChooseBenefitForm form = new PatientChooseBenefitForm();
     if (StringHelper.isNull(patientId)) {
       OrderRecord order = orderRecordBiz.selectById(orderRecordId);
@@ -642,6 +702,7 @@ public class TreatTollBiz {
       }
       patientId = order.getPatientId();
     }
+    form.setOrderDetail(orderDetail);
     form.setPatientId(patientId);
     form.setOrderId(orderRecordId);
     form.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
@@ -668,41 +729,6 @@ public class TreatTollBiz {
   }
 
   /**
-   * 收费参数校验
-   *
-   * @param orderRecordId 订单记录ID
-   * @param discountType 优惠类型
-   * @param generalDiscountModel 卡券优惠
-   * @param invoiceModel 发票
-   * @return
-   */
-  private OrderRecord checkParam(
-      Integer orderRecordId,
-      Byte discountType,
-      GeneralDiscountModel generalDiscountModel,
-      InvoiceModel invoiceModel) {
-    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
-    if (null == orderRecord) {
-      throw new ClientServiceException("收费失败，当前未选择正确的就诊记录或传入参数有误！", PARAMETERS_IS_ILLEGAL);
-    }
-    Byte status = orderRecord.getStatus();
-    // 检查收费订单状态
-    checkOrderRecordStatus(status);
-    String resultRecordId = redisUtils.get(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
-    if (StringHelper.isNotBlank(resultRecordId)) {
-      throw new ClientServiceException("收费失败，当前账单已解锁！请联系开单人员提交账单！", PARAMETERS_IS_ILLEGAL);
-    }
-    // 校验优惠参数
-    checkPrivilegeParam(discountType, generalDiscountModel);
-    if (invoiceModel.getInvoice()) {
-      if (StringHelper.isBlank(invoiceModel.getInvoiceNumber())) {
-        throw new ClientServiceException("收费失败，未填写发票编号！", PARAMETERS_IS_ILLEGAL);
-      }
-    }
-    return orderRecord;
-  }
-
-  /**
    * 校验订单状态
    *
    * @param status 订单状态
@@ -723,15 +749,15 @@ public class TreatTollBiz {
   /**
    * 校验优惠参数
    *
-   * @param discountType 优惠类型
-   * @param generalDiscountModel 卡券优惠
+   * @param model 优惠类型
    */
-  private void checkPrivilegeParam(
-      Byte discountType,
-      GeneralDiscountModel generalDiscountModel) {
-    switch (discountType) {
+  private void checkPrivilegeParam(OrderPrivilegeQuery model) {
+    GeneralDiscountModel generalDiscountModel = model.getGeneralDiscountModel();
+    switch (model.getDiscountType()) {
       case 1:
-        checkCardDiscount(generalDiscountModel);
+        if (StringHelper.isNotNull(generalDiscountModel)) {
+          checkCardDiscount(generalDiscountModel);
+        }
         break;
       default:
         break;
@@ -1108,7 +1134,7 @@ public class TreatTollBiz {
         throw new ClientServiceException("仅支持整单挂账，不再支持部分挂账", PARAMETERS_IS_ILLEGAL);
       }
     }
-    if (totalCharge.add(outstandingAmount).compareTo(debtAmount) != 0) {
+    if (!StringHelper.eq(totalCharge.add(outstandingAmount), debtAmount)) {
       log.info(
           "========com.yunya.modules.treatment.biz.TollBiz.checkTotalChargeAndDebtAmount ================== ");
       log.info(

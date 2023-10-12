@@ -15,18 +15,12 @@ import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
-import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
+import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.Registered;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +30,7 @@ import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -271,12 +266,11 @@ public interface RemoteTreatmentServiceFeign {
   /**
    * 根据开单记录ID查询开单明细列表
    *
-   * @param orderRecordId 开单记录ID
+   * @param orderRecordId  开单记录ID
    * @return List<OrderDetail>
    */
-  @RequestMapping(value = "/rpc/order/detail/list/{orderRecordId}", method = RequestMethod.GET)
-  List<OrderDetail> findOrderDetailByOrderRecordId(
-      @PathVariable(value = "orderRecordId") Integer orderRecordId);
+  @RequestMapping(value = "/rpc/order/detail/list/{orderRecordId}", method = RequestMethod.POST)
+  List<OrderDetailChargeVO> findOrderDetailByOrderRecordId(@PathVariable(value = "orderRecordId") Integer orderRecordId);
 
   /**
    * 通过患者ID批量查询患者欠费总额
@@ -524,4 +518,7 @@ public interface RemoteTreatmentServiceFeign {
 
   @RequestMapping(value = "/rpc/bill/cashinfo/{patientId}",method = RequestMethod.POST)
   PatientCostInfoVO getCashInfo(@PathVariable(value = "patientId") Integer patientId);
+
+  @PostMapping("/rpc/treat/bill/{orderRecordId}")
+  BillRecord findBillRecordByOrderRecordId(@PathVariable(value = "orderRecordId") Integer orderRecordId);
 }
