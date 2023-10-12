@@ -22,11 +22,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -62,6 +64,8 @@ public class DiscountBiz {
     private RemotePatientCentralServiceFeign patientCentralServiceFeign;
     @Resource
     private BaseCouponOrderVirtualMapper virtualMapper;
+    @Resource
+    private BaseBillDetailMapper detailMapper;
 
     /**
      * 产品售出激活统计
@@ -609,7 +613,11 @@ public class DiscountBiz {
     public MultiCardUseVo getMultiCardUsePage(Integer cardId, MultiCardUseQuery query) {
         MultiCardUseVo vo = new MultiCardUseVo();
         Page<OnceCardUseVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        benefitMapper.listCardUseById(cardId);
+        List<OnceCardUseVo> onceCardUseVos = benefitMapper.listCardUseById(cardId);
+        for (OnceCardUseVo onceCardUseVo : onceCardUseVos) {
+            Integer orderDetailId = onceCardUseVo.getOrderDetailId();
+            calDeduction(orderDetailId, cardId, onceCardUseVo);
+        }
         vo.setUseVos(new PageInfo<>(page));
         BaseCard baseCard = cardMapper.selectByPrimaryKey(cardId);
         List<BenefitItemVo> itemVos;
@@ -621,6 +629,23 @@ public class DiscountBiz {
         vo.setItemVos(itemVos);
         checkItemStatus(itemVos);
         return vo;
+    }
+
+    private void calDeduction(Integer orderDetailId, Integer cardId,OnceCardUseVo onceCardUseVo) {
+        Example example = new Example(BaseBenefit.class);
+        example.createCriteria().andEqualTo("orderDetailId", orderDetailId)
+                .andEqualTo("couponType", 5)
+                .andEqualTo("cardId", cardId);
+        List<BaseBenefit> baseBenefits = benefitMapper.selectByExample(example);
+        if (CollectionUtils.isNotEmpty(baseBenefits)) {
+            BigDecimal reduce = baseBenefits.stream().map(BaseBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+            Example example1 = new Example(BaseBillDetail.class);
+            example1.createCriteria().andEqualTo("billDetailId", orderDetailId);
+            BaseBillDetail baseBillDetail = detailMapper.selectOneByExample(example1);
+            BigDecimal benefitAmount = onceCardUseVo.getBenefitAmount();
+            BigDecimal price = baseBillDetail.getPrice().multiply(BigDecimal.valueOf(baseBenefits.size()));
+            onceCardUseVo.setBenefitAmount(benefitAmount.subtract(reduce).add(price));
+        }
     }
 
     public List<BenefitItemVo> listWxCouponsUseItem(Integer cardId) {

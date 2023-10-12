@@ -265,7 +265,8 @@
                `bo`.`abbreviation`                      AS `usedClinicName`,
                `bp`.`name`                              AS `usedPatientName`,
                `be`.`employee_name`                     AS `dentistName`,
-               ifnull(sum(`bf`.`benefit_amount`), 0)    AS `benefitAmount`
+               ifnull(sum(`bf`.`benefit_amount`), 0)    AS `benefitAmount`,
+               bf.order_detail_id                       as  `orderDetailId`
         FROM `base_benefit` `bf`
                  LEFT JOIN `base_bill` `bb` ON `bb`.`bill_id` = `bf`.`order_id`
                  LEFT JOIN `base_treatment_process` `btp` ON `btp`.`treatment_id` = `bb`.`treatment_id`
