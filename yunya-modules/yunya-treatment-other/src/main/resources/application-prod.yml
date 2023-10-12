@@ -30,6 +30,13 @@ logging:
 
 # netty配置
 netty:
-  protocol: ws://ivy2.yunya365.com/api/treatment-netty
+  protocol: wss://ivy2.yunya365.com/api/treatment-netty
   discovery:
     server-addr: 172.16.17.181:8848
+
+# 全程医疗配置
+qc:
+  mall:
+    webservice:
+#      wsdlUrl: http://60.191.117.126:8088/csp/hsb/DHC.Published.PUB0013.BS.PUB0013.CLS
+      targetNamespace: http://www.dhcc.com.cn
