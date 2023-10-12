@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PatientNotSeenForm;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.FuchaForm;
+import com.yunya.feign.report.domain.query.base.KeywordDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
@@ -49,6 +50,8 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   @Resource private BaseBillDetailBiz baseBillDetailBiz;
 
   @Resource private BaseOrganizationMapper baseOrganizationMapper;
+
+  @Resource private BaseQcylTreatmentMapper baseQcylTreatmentMapper;
 
   /**
    * 复查患者报表
@@ -396,5 +399,77 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     ExcelUtil<EmployeeReceptionPatientVO> excelUtil = new ExcelUtil<>(EmployeeReceptionPatientVO.class);
     String name = "个人接诊患者列表";
     excelUtil.exportExcel(response, data, name, name);
+  }
+
+  /**
+   * 根据条件查询全程医嘱收费表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<QcCollectedAdviceTollVO> findQcCollectedAdviceItemList(KeywordDateRangeQueryForm query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<QcCollectedAdviceTollVO> result = baseQcylTreatmentMapper.selectQcCollectedAdviceItemList(query);
+    return new PageInfo<>(result);
+  }
+
+  /**
+   * 根据条件导出全程医嘱收费表
+   *
+   * @param query
+   * @param response
+   * @throws IOException
+   */
+  public void exportQcCollectedAdviceItemList(KeywordDateRangeQueryForm query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<QcCollectedAdviceTollVO> result = findQcCollectedAdviceItemList(query).getList();
+    ExcelUtil<QcCollectedAdviceTollVO> excelUtil = new ExcelUtil<>(QcCollectedAdviceTollVO.class);
+    String name = "全程医嘱收费表" + query.getStartDate() + "至" + query.getEndDate();
+    excelUtil.exportExcel(response, result, name, name);
+  }
+
+  /**
+   * 根据条件查询全程非医嘱收费表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<QcUnCollectedAdviceTollVO> findQcUnCollectedAdviceItemList(KeywordDateRangeQueryForm query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<QcUnCollectedAdviceTollVO> result = baseQcylTreatmentMapper.selectQcUnCollectedAdviceItemList(query);
+    return new PageInfo<>(result);
+  }
+
+  /**
+   * 根据条件导出全程非医嘱收费表
+   *
+   * @param query
+   * @param response
+   * @throws IOException
+   */
+  public void exportQcUnCollectedAdviceItemList(KeywordDateRangeQueryForm query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<QcUnCollectedAdviceTollVO> result = findQcUnCollectedAdviceItemList(query).getList();
+    ExcelUtil<QcUnCollectedAdviceTollVO> excelUtil = new ExcelUtil<>(QcUnCollectedAdviceTollVO.class);
+    String name = "全程非医嘱收费表" + query.getStartDate() + "至" + query.getEndDate();
+    excelUtil.exportExcel(response, result, name, name);
+  }
+
+  /**
+   * 查询待同步全程就诊账单记录列表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<Wait4UploadTreatmentVO> findWait4UploadTreatmentList(KeywordDateRangeQueryForm query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<Wait4UploadTreatmentVO> result = baseQcylTreatmentMapper.selectWait4UploadQcTreatmentList(query);
+    return new PageInfo<>(result);
   }
 }

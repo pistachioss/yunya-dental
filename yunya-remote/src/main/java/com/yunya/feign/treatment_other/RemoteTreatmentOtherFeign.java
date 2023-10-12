@@ -2,6 +2,11 @@ package com.yunya.feign.treatment_other;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PullForm;
+import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
+import com.yunya.feign.treatment.domain.vo.QcRecommondOrderVO;
+import com.yunya.feign.treatment.domain.vo.QcTreatmentVO;
+import com.yunya.feign.treatment.domain.vo.TreatOrderRecordVO;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.TariffPackageDetailQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
@@ -145,7 +150,6 @@ public interface RemoteTreatmentOtherFeign {
   @PutMapping(value = "api/treatment/other/xUploadFile/tombstone")
   void tombstoneUploadFile(@RequestBody @Validated MedicalRayFilmModel model);
 
-
   /**
    * 条件查询项目组合明细
    *
@@ -155,4 +159,32 @@ public interface RemoteTreatmentOtherFeign {
   @ApiOperation("条件查询项目组合明细")
   @PostMapping("api/treatment/other/package/detail")
   PageInfo<TariffPackageDetailVO> findPackageList(@RequestBody @Validated TariffPackageDetailQuery query);
+
+  /**
+   * 全程医疗登记单导入
+   *
+   * @param form
+   * @return
+   */
+  @PostMapping("api/treatment/other/qc/treatment/match")
+  TreatOrderRecordVO orderMatchQcTreatmentList(@RequestBody @Validated QcTreatmentImportForm form);
+
+  /**
+   * 获取已绑定账单的全程医疗登记单列表
+   *
+   * @param orderRecordId
+   * @return
+   */
+  @ApiOperation("获取已绑定账单的全程医疗登记单列表")
+  @GetMapping("api/treatment/other/qc/treatment/binding/{orderRecordId}")
+  List<QcTreatmentVO> findBindingQcTreatmentList(@PathVariable(value = "orderRecordId") Integer orderRecordId);
+
+  /**
+   * 用账单信息更新全程医疗就诊及其明细（绑定或更新实收）
+   *
+   * @param form
+   */
+  @ApiOperation("用账单信息更新全程医疗就诊及其明细（绑定或更新实收）")
+  @PutMapping("api/treatment/other/qc/treatment/items/update")
+  List<OrderDetailChargeVO> updateQcTreatmentAndItems(@RequestBody @Validated QcTreatmentImportForm form);
 }

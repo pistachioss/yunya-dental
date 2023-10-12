@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * 患者储蓄账号（会员卡or预付款）分类枚举
+ * 特殊入账方式枚举
  *
  * @author: chenlin
  * @date: 2023/2/3 19:48
@@ -19,7 +19,15 @@ public enum PatientDepositAccountTypeEnum {
     /** 会员卡 */
     MEMBER(false, 0, "会员卡", "H", 5),
     /** 预付款 */
-    NORMAL_PREPAYMENT(false, 1, "预付款", "Y", 6)
+    NORMAL_PREPAYMENT(false, 1, "预付款", "Y", 6),
+    /** 正畸预付款 */
+    ORTHADANTIC_PREPAYMENT(true, 2, "正畸预付款", "ZY", 100),
+    /** 美白预付款 */
+    WHITENING_PREPAYMENT(true, 3, "美白预付款", "MY", 101),
+//    /** 种植预付款 */
+//    IMPLANT_PREPAYMENT(true,4, "种植预付款", "ZZY", null),
+    /** 全程医疗支付 */
+    QCYL_PREPAYMENT(false,4, "全程医疗支付", "QCYL", 102),
     ;
 
     /** 是否专项 */
@@ -33,7 +41,7 @@ public enum PatientDepositAccountTypeEnum {
 
     /** 生成编号时使用的前缀 */
     private String prefix;
-    
+
     /** 关联入账方式id */
     private Integer accountItemId;
 
@@ -50,7 +58,7 @@ public enum PatientDepositAccountTypeEnum {
     }
 
     public static List<PatientDepositAccountTypeEnum> prepaymentValues() {
-        return Stream.of(values()).filter(item-> !MEMBER.equals(item.getType())).collect(Collectors.toList());
+        return Stream.of(NORMAL_PREPAYMENT, ORTHADANTIC_PREPAYMENT, WHITENING_PREPAYMENT).collect(Collectors.toList());
     }
 
     /**
@@ -60,7 +68,7 @@ public enum PatientDepositAccountTypeEnum {
      * @return
      */
     public static boolean isPrepaymentType(Integer type) {
-        return Stream.of(values()).filter(item-> !MEMBER.equals(type) && item.equals(type)).findAny().isPresent();
+        return prepaymentValues().stream().filter(item->item.equals(type)).findAny().isPresent();
     }
 
     /**
@@ -81,13 +89,17 @@ public enum PatientDepositAccountTypeEnum {
      */
     public static PatientDepositAccountTypeEnum getTypeEnumRelId(Integer accountItemId) {
         if (StringHelper.isNotNull(accountItemId)) {
-            for (PatientDepositAccountTypeEnum item : values()) {
+            for (PatientDepositAccountTypeEnum item : depositAccounts()) {
                 if (accountItemId.equals(item.getAccountItemId())) {
                     return item;
                 }
             }
         }
         return null;
+    }
+
+    public static List<PatientDepositAccountTypeEnum> depositAccounts() {
+        return Stream.of(MEMBER, NORMAL_PREPAYMENT).collect(Collectors.toList());
     }
 
     /**

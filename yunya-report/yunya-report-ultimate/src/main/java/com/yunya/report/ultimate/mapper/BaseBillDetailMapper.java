@@ -608,9 +608,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   List<EmployeeTariffWorkloadVO> selectExecutorTariffItemStatistics(@Param("query") MultiClinicEmloyeeDateRangeQueryForm query);
 
-  List<BasePatientBehaviorTagVO> selectPatientTreatmentTariffTag(@Param("query") DateRangeQueryForm query, @Param("tagEnum") TreatmentTariffEnum tagEnum);
-
   /**
+   * 根据条件查询员工免单工作量明细列表
    * 根据条件查询员工免单工作量明细列表
    *
    * @param query
@@ -660,6 +659,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
     List<BillItemStatisticsDeductionDetailVO> billItemAmountDeductionDetailList(
             @Param("query") BillItemInfoQuery query);
+
+  List<BasePatientBehaviorTagVO> selectPatientTreatmentTariffTag(@Param("query") DateRangeQueryForm query, @Param("tagEnum") TreatmentTariffEnum tagEnum);
 
     List<PersonalBillItemSupplyDeductionCouponWorkloadDetailVO> selectPersonalBillItemSupplyDeductionCouponWorkloadDetail(
             @Param("query") PersonalBillItemDeductionAndWorkloadQuery query);

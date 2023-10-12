@@ -16,10 +16,10 @@ import java.io.Serializable;
 @Data
 @ToString
 @ApiModel("全程医疗返回对象")
-public class QcMedicalResult implements Serializable {
+public class QcResult implements Serializable {
 
-    /** 成功标识 */
-    @ApiModelProperty("成功标识")
+    /** 成功标志：0：成功，其它：失败*/
+    @ApiModelProperty("成功标志：0-成功，其它-失败")
     private String code;
 
     /** 提示信息 */

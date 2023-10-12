@@ -101,6 +101,11 @@ public class ReportServiceRest {
         return baseBillMapper.selectPatientBillItemList();
     }
 
+    @PostMapping(value = "/bill/detail/deduction")
+    List<BaseBillDetail> billDeduction(@RequestBody CategoryIncomeQuery query) {
+        return billDetailMapper.billDeduction(query);
+    }
+
     /**
      * 患者的治疗项目标签
      *
@@ -110,10 +115,5 @@ public class ReportServiceRest {
     @PostMapping("/patient/treatment-tariff")
     public List<BasePatientBehaviorTagVO> findPatientTreatmentTariffTag(@RequestBody DateRangeQueryForm query) throws InterruptedException {
         return patientTreatmentTagBiz.findPatientTreatmentTariffTag(query);
-    }
-
-    @PostMapping(value = "/bill/detail/deduction")
-    List<BaseBillDetail> billDeduction(@RequestBody CategoryIncomeQuery query) {
-        return billDetailMapper.billDeduction(query);
     }
 }

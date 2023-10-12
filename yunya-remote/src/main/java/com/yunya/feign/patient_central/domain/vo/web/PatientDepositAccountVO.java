@@ -23,8 +23,8 @@ public class PatientDepositAccountVO implements Serializable {
     @ApiModelProperty("账户编号")
     private String cardNumber;
     
-    /** 账户类型: 0-会员卡，1-预付款 */
-    @ApiModelProperty("账户类型: 0-会员卡，1-预付款")
+    /** 账户类型: 0-预付款, 1-会员卡 */
+    @ApiModelProperty("账户类型: 0-预付款, 1-会员卡")
     private Integer type;
 
     /** 归属患者id */

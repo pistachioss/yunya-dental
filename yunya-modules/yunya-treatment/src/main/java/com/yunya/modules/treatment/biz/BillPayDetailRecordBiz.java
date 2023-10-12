@@ -446,7 +446,7 @@ public class BillPayDetailRecordBiz
     List<BillPayAccountVO> result = new ArrayList<>();
     List<BillPayDetailRecordVO> details = mapper.selectBillRefundableAccountItemList(orderRecordId);
     List<PatientDepositAccountVO> patientDepositAccounts = remotePatientCentralServiceFeign.findDepositAccountBillPayExpendList(orderRecordId);
-    Map<String, PatientDepositAccountVO> accountMap = patientDepositAccounts.stream().collect(toMap(PatientDepositAccountVO::getCardNumber, Function.identity()));
+    Map<Integer, PatientDepositAccountVO> accountMap = patientDepositAccounts.stream().collect(toMap(PatientDepositAccountVO::getType, Function.identity()));
 
 //    int memberIndex = -1;
 //    BigDecimal totalPrincipal = BigDecimal.ZERO;
@@ -459,7 +459,7 @@ public class BillPayDetailRecordBiz
       BigDecimal principal = detail.getAmount();
       BigDecimal bonus = BigDecimal.ZERO;
       BigDecimal principalRatio = null;
-      PatientDepositAccountVO depositAccount = accountMap.get(detail.getRemark());
+      PatientDepositAccountVO depositAccount = accountMap.get(detail.getType());
       if (StringHelper.isNotNull(depositAccount)) {
         cardNumber = depositAccount.getCardNumber();
         belonger = depositAccount.getPatientName();
@@ -473,11 +473,9 @@ public class BillPayDetailRecordBiz
 
       Integer accountItemId = detail.getAccountItemId();
       String accountItemName = "其他";
-      if (PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId)!=null) {
-        AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
-        if (StringHelper.isNotNull(accountItem)) {
-          accountItemName = accountItem.getName();
-        }
+      PatientDepositAccountTypeEnum accountType = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+      if (StringHelper.isNotNull(accountType)) {
+        accountItemName = accountType.getName();
       }
       result.add(BillPayAccountVO.builder()
               .accountItemName(accountItemName)

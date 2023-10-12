@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.form.PatientNotSeenForm;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.FuchaForm;
+import com.yunya.feign.report.domain.query.base.KeywordDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -213,5 +214,75 @@ public class PatientReportController {
   public ResponseResult exportEmployeeReceptionPatientList(@RequestBody @Validated EmployeeReceptionPatientQueryForm query, HttpServletResponse response) throws Exception{
     patientReportBiz.exportEmployeeReceptionPatientList(query, response);
     return ResponseUtil.success();
+  }
+
+  /**
+   * 根据条件查询全程医嘱收费表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-根据条件查询全程医嘱收费表")
+  @PostMapping(value = "/qcCollected/list", name = "公司端报表-报表统计-根据条件查询全程医嘱收费表")
+  public ResponseResult<PageInfo<QcCollectedAdviceTollVO>> findQcCollectedAdviceItemList(
+          @RequestBody @Validated KeywordDateRangeQueryForm query) {
+    PageInfo<QcCollectedAdviceTollVO> pageInfo = patientReportBiz.findQcCollectedAdviceItemList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出全程医嘱收费表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-根据条件导出全程医嘱收费表")
+  @PostMapping(value = "/qcCollected/list/export", name = "公司端报表-报表统计-根据条件导出全程医嘱收费表")
+  public ResponseResult exportQcCollectedAdviceItemList(
+          HttpServletResponse response, @RequestBody @Validated KeywordDateRangeQueryForm query)
+          throws Exception {
+    patientReportBiz.exportQcCollectedAdviceItemList(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询全程非医嘱收费表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-根据条件查询全程非医嘱收费表")
+  @PostMapping(value = "/qcUnCollected/list", name = "公司端报表-报表统计-根据条件查询全程非医嘱收费表")
+  public ResponseResult<PageInfo<QcUnCollectedAdviceTollVO>> findQcUnCollectedAdviceItemList(
+          @RequestBody @Validated KeywordDateRangeQueryForm query) {
+    PageInfo<QcUnCollectedAdviceTollVO> pageInfo = patientReportBiz.findQcUnCollectedAdviceItemList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出渠道来源患者消费数据
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-市场报表-渠道来源消费报表导出")
+  @PostMapping(value = "/qcUnCollected/list/export", name = "公司端报表-报表统计-市场报表-渠道来源消费报表导出")
+  public ResponseResult exportQcUnCollectedAdviceItemList(
+          HttpServletResponse response, @RequestBody @Validated KeywordDateRangeQueryForm query)
+          throws Exception {
+    patientReportBiz.exportQcUnCollectedAdviceItemList(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 查询待同步全程就诊账单记录列表
+   *
+   * @return
+   */
+  @ApiOperation("查询待同步全程就诊账单记录列表")
+  @PostMapping("/qcTreatment/wait4Upload")
+  public ResponseResult<PageInfo<Wait4UploadTreatmentVO>> findWait4UploadTreatmentList(@RequestBody @Validated KeywordDateRangeQueryForm query) {
+    PageInfo<Wait4UploadTreatmentVO> pageInfo = patientReportBiz.findWait4UploadTreatmentList(query);
+    return ResponseUtil.success(pageInfo);
   }
 }

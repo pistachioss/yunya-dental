@@ -30,4 +30,8 @@ public class TreatOrderRecordVO implements Serializable {
     /** 非划扣项目订单明细 */
     @ApiModelProperty("非划扣项目订单明细")
     private List<OrderDetailChargeVO> itemList;
+
+    /** 全程医疗代收就诊医嘱列表 */
+    @ApiModelProperty("全程医疗代收就诊医嘱列表")
+    private List<QcTreatmentVO> qcTreatmentList;
 }
