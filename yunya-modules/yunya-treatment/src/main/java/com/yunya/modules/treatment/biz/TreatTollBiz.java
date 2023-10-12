@@ -399,7 +399,7 @@ public class TreatTollBiz {
   private void checkPrepayments(Set<PrepaymentAccountModel> prepayments) {
     if (StringHelper.isNotEmpty(prepayments)) {
       prepayments.forEach(payment->{
-      if (!PatientDepositAccountTypeEnum.isRelTypeId(payment.getAccountItemId())) {
+      if (!PatientDepositAccountTypeEnum.isPrepaymentRelId(payment.getAccountItemId())) {
         throw new ClientServiceException("无效的预付款账户类型", PARAMETERS_IS_ILLEGAL);
       }
       });

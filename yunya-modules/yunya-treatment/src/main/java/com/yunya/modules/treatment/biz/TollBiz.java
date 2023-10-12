@@ -652,7 +652,7 @@ public class TollBiz {
       prepayments.addAll(spPrepayments);
     }
     prepayments.forEach(payment->{
-      if (!PatientDepositAccountTypeEnum.isRelTypeId(payment.getAccountItemId())) {
+      if (!PatientDepositAccountTypeEnum.isPrepaymentRelId(payment.getAccountItemId())) {
         throw new ClientServiceException("无效的预付款账户类型", PARAMETERS_IS_ILLEGAL);
       }
     });

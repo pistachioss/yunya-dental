@@ -262,12 +262,19 @@
 
     <select id="selectDepositAccountBillExpendList"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientDepositAccountVO">
-        SELECT t.*, pbi.name AS patientName
+        SELECT
+            pmi.card_number AS cardNumber,
+            1 AS type,
+            SUM(t.balance) AS balance,
+            SUM(t.principal) AS principal,
+            SUM(t.bonus) AS bonus,
+            t.patientId,
+            pbi.name AS patientName
         FROM (
                SELECT
                      pmi.card_number                              AS cardNumber,
                      pmi.patient_id                               AS patientId,
-                     0                                            AS type,
+                     1                                            AS type,
                      pmi.principal_amount + pmi.bonus_amount AS balance,
                      IFNULL(mer.principal, 0) AS principal,
                      IFNULL(mer.bonus, 0) AS bonus
@@ -286,8 +293,8 @@
               UNION ALL
               SELECT pmi.prepayment_number                                AS cardNumber,
                      pmi.patient_id                                       AS patientId,
-                     1                                                    AS type,
-                     pmi.prepayment_principal + pmi.prepayment_bonus AS balance,
+                     0                                                    AS type,
+                     0 AS balance,
                      IFNULL(mer.principal, 0) AS principal,
                      IFNULL(mer.bonus, 0) AS bonus
               FROM (
@@ -304,6 +311,7 @@
               WHERE mer.order_record_id = #{orderRecordId}
         ) t
         LEFT JOIN patient_base_info pbi ON pbi.id = t.patientId
+        LEFT JOIN patient_member_info pmi ON pmi.card_number = t.cardNumber
     </select>
 
     <select id="selectPatientCumulativeTotalInfo"

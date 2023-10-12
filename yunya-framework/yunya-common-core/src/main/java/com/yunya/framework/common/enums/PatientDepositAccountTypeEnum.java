@@ -19,7 +19,13 @@ public enum PatientDepositAccountTypeEnum {
     /** 会员卡 */
     MEMBER(false, 0, "会员卡", "H", 5),
     /** 预付款 */
-    NORMAL_PREPAYMENT(false, 1, "预付款", "Y", 6)
+    NORMAL_PREPAYMENT(false, 1, "预付款", "Y", 6),
+    /** 正畸预付款 */
+    ORTHADANTIC_PREPAYMENT(true, 2, "正畸预付款", "ZY", 100),
+    /** 美白预付款 */
+    WHITENING_PREPAYMENT(true, 3, "美白预付款", "MY", 101),
+//    /** 种植预付款 */
+//    IMPLANT_PREPAYMENT(true,4, "种植预付款", "ZZY", null),
     ;
 
     /** 是否专项 */
@@ -33,7 +39,7 @@ public enum PatientDepositAccountTypeEnum {
 
     /** 生成编号时使用的前缀 */
     private String prefix;
-    
+
     /** 关联入账方式id */
     private Integer accountItemId;
 
@@ -50,7 +56,7 @@ public enum PatientDepositAccountTypeEnum {
     }
 
     public static List<PatientDepositAccountTypeEnum> prepaymentValues() {
-        return Stream.of(values()).filter(item-> !MEMBER.equals(item.getType())).collect(Collectors.toList());
+        return Stream.of(NORMAL_PREPAYMENT, ORTHADANTIC_PREPAYMENT, WHITENING_PREPAYMENT).collect(Collectors.toList());
     }
 
     /**
@@ -60,7 +66,7 @@ public enum PatientDepositAccountTypeEnum {
      * @return
      */
     public static boolean isPrepaymentType(Integer type) {
-        return Stream.of(values()).filter(item-> !MEMBER.equals(type) && item.equals(type)).findAny().isPresent();
+        return prepaymentValues().stream().filter(item->item.equals(type)).findAny().isPresent();
     }
 
     /**
@@ -96,10 +102,10 @@ public enum PatientDepositAccountTypeEnum {
      * @param accountItemId
      * @return
      */
-    public static Boolean isRelTypeId(Integer accountItemId) {
+    public static Boolean isPrepaymentRelId(Integer accountItemId) {
         if (StringHelper.isNotNull(accountItemId)) {
-            for (PatientDepositAccountTypeEnum item : values()) {
-                if (accountItemId.equals(item.getAccountItemId())) {
+            for (PatientDepositAccountTypeEnum item : prepaymentValues()) {
+                if (item.getAccountItemId().equals(accountItemId)) {
                     return true;
                 }
             }
