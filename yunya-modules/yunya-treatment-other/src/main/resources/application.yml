@@ -78,6 +78,7 @@ netty:
     namespace:
     server-addr: 192.168.31.215:8848
 
+# 全程医疗配置
 qc:
   mall:
     webservice:
