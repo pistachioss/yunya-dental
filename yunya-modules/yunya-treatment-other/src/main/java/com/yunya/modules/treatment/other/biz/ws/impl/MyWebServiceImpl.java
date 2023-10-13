@@ -5,7 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.modules.treatment.biz.BillRecordBiz;
-import com.yunya.modules.treatment.biz.ws.MyWebService;
+import com.yunya.modules.treatment.other.biz.ws.MyWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
