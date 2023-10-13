@@ -1,12 +1,8 @@
 package com.yunya.modules.treatment.other.biz.ws.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
-import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
-import com.yunya.modules.treatment.biz.BillRecordBiz;
 import com.yunya.modules.treatment.other.biz.ws.MyWebService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
@@ -17,14 +13,11 @@ import javax.jws.WebService;
         endpointInterface = "com.yunya.modules.treatment.biz.ws.MyWebService" // 接口类全路径
 )
 public class MyWebServiceImpl implements MyWebService {
-    @Autowired
-    private BillRecordBiz billRecordBiz;
 
     @Override
     public String findPatientInfoById(String queryStr) {
         System.out.println(">>>>>>>>获取到请求参数：" + queryStr);
         BillOfReceivableQuery query = JSONObject.parseObject(queryStr, BillOfReceivableQuery.class);
-        PageInfo<BillRestReceivableAmountVO> result = billRecordBiz.findDebtList(query);
-        return JSONObject.toJSONString(result);
+        return JSONObject.toJSONString(query);
     }
 }
