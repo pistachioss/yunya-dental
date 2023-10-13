@@ -299,54 +299,15 @@ public class BenefitBiz {
      *
      * @param summary
      */
-    private List<OrderBenefitDetailVo> findSetMixMatchBenefit(OrderBenefit summary, PatientOrderBenefitVo result) {
-        Map<Integer, OrderBenefitDetailVo> resultMap = new LinkedHashMap<>(16);
-        List<CardBenefit> cardBenefits = getOrderBenefitDetail(summary.getOrderId(), CardBenefit.class, cardBenefitMapper, null);
-        if (CollectionUtils.isNotEmpty(cardBenefits)) {
-            Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
-            listMap.forEach((k, v) -> {
-                BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-                if (itemBenefitAmount.compareTo(BigDecimal.ZERO) == 0) {
-                    return;
-                }
-                BigDecimal supplyWorkTotalLoad = v.stream()
-                        .filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
-                        .map(CardBenefit::getSupplyWorkload).reduce(BigDecimal.ZERO, BigDecimal::add);
-                log.info("查询账单优惠明细，开单明细id：{}，计算补入工作量：{}", k, supplyWorkTotalLoad);
-                OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
-                vo.setOrderDetailId(k);
-                vo.setItemBenefitAmount(itemBenefitAmount);
-                //按照优惠提交顺序排序
-                v.sort(Comparator.comparing(CardBenefit::getSort));
-                List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
-                    ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
-                    benefitVo.setBenefitId(obj.getCardId());
-                    benefitVo.setBenefitType(obj.getBenefitType());
-                    benefitVo.setCouponType(obj.getCouponType());
-                    if (MEMBER_TYPE.equals(obj.getBenefitType())) {
-                        MemberType memberType = systemServiceFeign.findMemberTypeById(obj.getCardId());
-                        benefitVo.setBenefitName(memberType == null ? null : memberType.getName());
-                    }
-                    if (COUPON_TYPE.equals(obj.getBenefitType())) {
-                        CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(obj.getCouponId());
-                        benefitVo.setBenefitName(coupon == null ? null : coupon.getName());
-                    }
-                    benefitVo.setBenefitAmount(obj.getBenefitAmount());
-                    return benefitVo;
-                }).collect(toList());
-                vo.setItemBenefitList(itemBenefits);
-                vo.setSupplyWorkload(supplyWorkTotalLoad);
-                resultMap.put(k, vo);
-            });
-        }
-
+    private void findSetMixMatchBenefit(OrderBenefit summary, PatientOrderBenefitVo result) {
+        Map<Integer, PatientItemBenefitVo> resultMap = findCardBenefitAsMap(summary, result);
         List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(summary.getOrderId(), AuthDiscountBenefit.class, authDiscountBenefitMapper, null);
         if (CollectionUtils.isNotEmpty(authBenefit)) {
-            Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream()/*.filter(vo->vo.getItemType().equals(1))*/.collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
+            Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().filter(vo->StringHelper.gtZero(vo.getBenefitAmount())).collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
             listMap.forEach((k, v) -> {
                 BigDecimal itemBenefitAmount = v.stream().map(AuthDiscountBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
                 if (itemBenefitAmount.compareTo(BigDecimal.ZERO) > 0) {
-                    OrderBenefitDetailVo vo = resultMap.computeIfAbsent(k, o->new OrderBenefitDetailVo());
+                    PatientItemBenefitVo vo = resultMap.computeIfAbsent(k, o->new PatientItemBenefitVo());
                     vo.setOrderDetailId(k);
                     vo.setItemBenefitAmount(vo.getItemBenefitAmount().add(itemBenefitAmount));
                     List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
@@ -362,8 +323,17 @@ public class BenefitBiz {
                     vo.getItemBenefitList().addAll(itemBenefits);
                 }
             });
+            result.setItemList(Lists.newArrayList(resultMap.values()));
         }
-        return new ArrayList<>(resultMap.values());
+    }
+
+    private Map<Integer, PatientItemBenefitVo> findCardBenefitAsMap(OrderBenefit summary, PatientOrderBenefitVo result) {
+        findSetCardBenefit(summary, result);
+        List<PatientItemBenefitVo> itemList = result.getItemList();
+        if (StringHelper.isNotEmpty(itemList)) {
+            return itemList.stream().collect(toMap(PatientItemBenefitVo::getOrderDetailId, Function.identity()));
+        }
+        return Maps.newHashMap();
     }
 
     /**
