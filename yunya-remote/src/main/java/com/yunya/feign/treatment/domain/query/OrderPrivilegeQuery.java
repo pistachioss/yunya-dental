@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
@@ -40,5 +39,6 @@ public class OrderPrivilegeQuery implements Serializable {
   @ApiModelProperty("卡券优惠信息")
   private GeneralDiscountModel generalDiscountModel;
   /** 授权折扣 */
+  @ApiModelProperty("授权折扣信息")
   private AccreditDiscountModel accreditDiscountModel;
 }

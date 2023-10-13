@@ -23,7 +23,7 @@ public class PrivilegeCouponInfoVO implements Serializable {
   /** 卡券ID（授权人ID） */
   @ApiModelProperty("卡券ID（授权人ID）")
   private Integer benefitId;
-  /** 卡券类型 */
+  /** 优惠券类型（-1: 授权折扣 0：代金券 1：折扣券 2：兑换券 3：套餐券 99：会员卡 5：划扣卡券） */
   @ApiModelProperty(value = "优惠券类型（-1: 授权折扣 0：代金券 1：折扣券 2：兑换券 3：套餐券 99：会员卡 5：划扣卡券）")
   private Integer couponType;
   /** 卡券名称 */

@@ -4,17 +4,17 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
-import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
+import com.yunya.feign.discount.domain.model.AuthItemBenefitModel;
+import com.yunya.feign.discount.domain.model.MixMatchBenefitModel;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.BillRebate2MemberAccountModel;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
 import com.yunya.feign.treatment.domain.model.*;
-import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
@@ -27,6 +27,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.BillPayRecordLog;
 import com.yunya.models.treatment.BillRecord;
@@ -43,6 +44,7 @@ import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -71,6 +73,7 @@ public class MinorChargeProcessBiz {
     @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
     @Autowired private BillRecordMapper billRecordMapper;
     @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
+    @Autowired private RemoteSystemServiceFeign systemServiceFeign;
     @Value("${sysconfig.memberSystemReleaseDate}")
     private String releaseDate;
 
@@ -395,29 +398,90 @@ public class MinorChargeProcessBiz {
             Integer patientId,
             Integer orderRecordId,
             TreatTollModel model, List<OrderDetailChargeVO> orderDetail) {
-        switch (discountType) {
-            case 1:
-                GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
-                if (StringHelper.isNotNull(generalDiscount)) {
-                    saveCouponPrivilege(patientId, orderRecordId, generalDiscount, orderDetail);
-                }
-                break;
-            default:
-                break;
+        if (discountType.intValue() == 1) {
+            GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
+            AccreditDiscountModel accreditDiscountModel = model.getAccreditDiscountModel();
+            saveOrderPrivilegeDetail(patientId, orderRecordId, generalDiscount, accreditDiscountModel, orderDetail);
         }
     }
 
+
     /**
-     * 保存优惠券使用优惠明细
+     * 将订单明细匹配授权折扣（会员与授权折扣不能共存，卡券与授权折扣不能叠加）
+     *
+     * @param accreditDiscounts
+     * @param warrantId
+     * @param orderDetails
+     */
+    public BigDecimal orderDetailMatcAccreditDiscount(List<AccreditDiscountDetailModel> accreditDiscounts, Integer warrantId, List<OrderDetailChargeVO> orderDetails) {
+        BigDecimal benefitTotalAmount = BigDecimal.ZERO;
+        for (OrderDetailChargeVO item : orderDetails) {
+            Integer itemId = item.getBillingItemId();
+            Byte type = item.getType();
+            Boolean canAccreditDiscount = true;
+            List<PrivilegeCouponInfoVO> discountAppliesCoupons = item.getDiscountAppliesCoupons();
+            for (PrivilegeCouponInfoVO discountAppliesCoupon : discountAppliesCoupons) {
+                if (!discountAppliesCoupon.getCouponType().equals(99)) {
+                    canAccreditDiscount = false;
+                    break;
+                }
+            }
+            if (canAccreditDiscount) {
+                for (AccreditDiscountDetailModel discountItem : accreditDiscounts) {
+                    if (discountItem.getBillingItemId().equals(itemId) && discountItem.getType().equals(type)) {
+                        BigDecimal receivableAmount = item.getReceivableAmount();
+                        BigDecimal actualAmount = discountItem.getActualAmount();
+                        // 订单明细ID相同，参数数量大于明细数量表示前端合并了相同项目，实收金额需重新计算
+                        Integer quantity = item.getQuantity();
+                        Integer modelQuantity = discountItem.getQuantity();
+                        // 优惠单价
+                        BigDecimal discountPrice =
+                                actualAmount.divide(
+                                        BigDecimal.valueOf(modelQuantity), 4, RoundingMode.HALF_UP);
+                        actualAmount = discountPrice.multiply(BigDecimal.valueOf(quantity));
+                        item.setActualAmount(actualAmount);
+                        // 设置折扣率；折扣率 = 实收 / 原价 * 100
+                        if (StringHelper.eqZero(receivableAmount)) {
+                            BigDecimal discountRate =
+                                    actualAmount
+                                            .divide(receivableAmount, 4, RoundingMode.HALF_UP)
+                                            .multiply(BigDecimal.valueOf(100));
+                            item.setDiscountRate(discountRate);
+                        }
+                        // 设置优惠匹配信息
+                        BigDecimal benefitAmount = receivableAmount.subtract(actualAmount);
+                        if (StringHelper.gtZero(benefitAmount)) {
+                            PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();
+                            couponInfoVO.setBenefitId(warrantId);
+                            couponInfoVO.setCouponType(-1);
+                            SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
+                            if (null != employee) {
+                                couponInfoVO.setBenefitName(employee.getName());
+                            }
+                            couponInfoVO.setBenefitAmount(benefitAmount);
+                            discountAppliesCoupons.add(couponInfoVO);
+                            item.setPrivilegeAmount(benefitAmount);
+                            benefitTotalAmount = benefitTotalAmount.add(benefitAmount);
+                        }
+                    }
+                }
+            }
+        }
+        return benefitTotalAmount;
+    }
+
+    /**
+     * 保存订单使用优惠明细
      *
      * @param patientId       患者ID
      * @param orderRecordId   订单记录ID
      * @param generalDiscount 优惠列表
+     * @param accreditDiscountModel 授权折扣列表
      * @param orderDetail 可优惠的订单明细
      */
-    private void saveCouponPrivilege(
-            Integer patientId, Integer orderRecordId, GeneralDiscountModel generalDiscount, List<OrderDetailChargeVO> orderDetail) {
-        PatientOrderBenefitModel benefitModel = new PatientOrderBenefitModel();
+    private void saveOrderPrivilegeDetail(
+            Integer patientId, Integer orderRecordId, GeneralDiscountModel generalDiscount, AccreditDiscountModel accreditDiscountModel, List<OrderDetailChargeVO> orderDetail) {
+        MixMatchBenefitModel benefitModel = new MixMatchBenefitModel();
         benefitModel.setOrderId(orderRecordId);
         benefitModel.setOrderDetail(orderDetail);
         benefitModel.setPatientId(patientId);
@@ -434,11 +498,46 @@ public class MinorChargeProcessBiz {
         benefitModel.setPackageIds(packageIds);
         benefitModel.setVoucherIds(voucherIds);
         benefitModel.setDeductionIds(deductionIds);
+
+        // 授权折扣
+        benefitModel.setAuthorizedId(accreditDiscountModel.getWarrantId());
+        benefitModel.setRemark(accreditDiscountModel.getRemarks());
+        benefitModel.setItemBenefits(convertAccreditBenefits(accreditDiscountModel, orderDetail));
+
+        // TODO: 2023/10/13 打印
         System.out.println(JSON.toJSON(benefitModel));
-        ResponseResult responseResult = discountFeign.saveCardBenefit(benefitModel);
+        ResponseResult responseResult = discountFeign.saveMixMatchBenefit(benefitModel);
         if (responseResult.getStatus() > 0) {
             throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
         }
+    }
+
+    /**
+     * 授权折扣明细类型转换
+     *
+     * @param accreditDiscountModel
+     * @param orderDetail
+     * @return
+     */
+    private List<AuthItemBenefitModel> convertAccreditBenefits(AccreditDiscountModel accreditDiscountModel, List<OrderDetailChargeVO> orderDetail) {
+        List<AccreditDiscountDetailModel> accreditDiscounts = accreditDiscountModel.getAccreditDiscountDetailModels();
+        if (StringHelper.isNotEmpty(accreditDiscounts)) {
+            return accreditDiscounts.stream().filter(discount-> StringHelper.lt(discount.getDiscountRate(), BigDecimal.valueOf(100))).map(discount->{
+                Byte type = discount.getType();
+                Integer itemId = discount.getBillingItemId();
+                AuthItemBenefitModel authDiscountModel = new AuthItemBenefitModel();
+                authDiscountModel.setItemId(itemId);
+                authDiscountModel.setType(type.intValue());
+                orderDetail.forEach(item->{
+                    if (item.getType().equals(type) && item.getBillingItemId().equals(itemId)) {
+                        authDiscountModel.setOrderDetailId(item.getOrderDetailId());
+                        authDiscountModel.setBenefitAmount(item.getReceivableAmount().subtract(item.getActualAmount()));
+                    }
+                });
+                return authDiscountModel;
+            }).collect(Collectors.toList());
+        }
+        return null;
     }
 
 

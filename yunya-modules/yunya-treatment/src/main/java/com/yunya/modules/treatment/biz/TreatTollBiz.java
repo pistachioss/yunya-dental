@@ -2,7 +2,6 @@ package com.yunya.modules.treatment.biz;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.vo.DeductionItemBenefitVo;
@@ -27,6 +26,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.AccountItem;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.*;
 import lombok.extern.slf4j.Slf4j;
@@ -105,23 +105,21 @@ public class TreatTollBiz {
     if (StringHelper.isEmpty(detailList)) {
       throw new ClientServiceException("适用优惠失败，未查询到当前就诊开单数据！", PARAMETERS_IS_ILLEGAL);
     }
-    Byte discountType = query.getDiscountType();
     GeneralDiscountModel generalDiscountModel = query.getGeneralDiscountModel();
     // 校验优惠参数
     checkPrivilegeParam(query);
-    TreatOrderRecordVO result = matchQcTreatmentItemInfo(detailList, query);
-    switch (discountType) {
-      case 1:
-        // 匹配卡券优惠
-        PatientOrderBenefitVo resultData = new PatientOrderBenefitVo();
-        if (StringHelper.isNotNull(generalDiscountModel)) {
-          resultData = findGeneralPrivilege(orderRecordId,null, result.getItemList(), generalDiscountModel);
-        }
-        orderDetailMatchDiscount(resultData, result);
-        break;
-      default:
-        break;
+    // 全程医疗匹配
+    TreatOrderRecordVO result = orderDetailMatchQcTreatmentItemInfo(detailList, query);
+    // 会员卡券匹配
+    PatientOrderBenefitVo resultData = new PatientOrderBenefitVo();
+    if (StringHelper.isNotNull(generalDiscountModel)) {
+      resultData = findGeneralPrivilege(orderRecordId,null, result.getItemList(), generalDiscountModel);
     }
+    orderDetailMatchDiscount(resultData, result);
+    // 授权折扣匹配
+    BigDecimal benefitTotalAmount = minorChargeProcessBiz.orderDetailMatcAccreditDiscount(query.getAccreditDiscountModel().getAccreditDiscountDetailModels(),
+            query.getAccreditDiscountModel().getWarrantId(), result.getItemList());
+    result.setBenefitTotalAmount(benefitTotalAmount);
     return result;
   }
 
@@ -132,7 +130,7 @@ public class TreatTollBiz {
    * @param query
    * @return
    */
-  private TreatOrderRecordVO matchQcTreatmentItemInfo(List<OrderDetailChargeVO> orderDetail, OrderPrivilegeQuery query) {
+  private TreatOrderRecordVO orderDetailMatchQcTreatmentItemInfo(List<OrderDetailChargeVO> orderDetail, OrderPrivilegeQuery query) {
     if (StringHelper.isNotEmpty(query.getQcTreatmentIds())) {
       QcTreatmentImportForm form = new QcTreatmentImportForm();
       form.setQcTreatmentIds(query.getQcTreatmentIds());
@@ -439,8 +437,10 @@ public class TreatTollBiz {
     if (StringHelper.isNotBlank(resultRecordId)) {
       throw new ClientServiceException("收费失败，当前账单已解锁！请联系开单人员提交账单！", PARAMETERS_IS_ILLEGAL);
     }
-    // 校验优惠参数
-    checkPrivilegeParam(model);
+    if (model.getDiscountType().intValue() != 1) {
+      // 校验优惠参数
+      checkPrivilegeParam(model);
+    }
     InvoiceModel invoiceModel = model.getInvoiceModel();
     if (invoiceModel.getInvoice()) {
       if (StringHelper.isBlank(invoiceModel.getInvoiceNumber())) {
@@ -689,7 +689,6 @@ public class TreatTollBiz {
    *
    * @param orderRecordId
    * @param patientId
-   * @param detailMap
    * @param generalDiscountModel
    * @return
    */
@@ -753,14 +752,40 @@ public class TreatTollBiz {
    */
   private void checkPrivilegeParam(OrderPrivilegeQuery model) {
     GeneralDiscountModel generalDiscountModel = model.getGeneralDiscountModel();
-    switch (model.getDiscountType()) {
-      case 1:
-        if (StringHelper.isNotNull(generalDiscountModel)) {
-          checkCardDiscount(generalDiscountModel);
+    AccreditDiscountModel accreditDiscountModel = model.getAccreditDiscountModel();
+    checkAccreditDiscount(accreditDiscountModel);
+    Integer warrantId = model.getAccreditDiscountModel().getWarrantId();
+    if (StringHelper.isNotNull(warrantId)) {
+      // 移除会员卡类型
+      generalDiscountModel.setMemberTypeId(null);
+    }
+    checkCardDiscount(generalDiscountModel);
+    if (StringHelper.isAllNull(accreditDiscountModel, generalDiscountModel)) {
+      throw new ClientServiceException("卡券与授权折扣不能全为空！", PARAMETERS_IS_ILLEGAL);
+    }
+  }
+
+  /**
+   * 检查授权折扣参数
+   *
+   * @param accreditDiscountModel
+   */
+  private void checkAccreditDiscount(AccreditDiscountModel accreditDiscountModel) {
+    if (accreditDiscountModel != null) {
+      Integer warrantId = accreditDiscountModel.getWarrantId();
+      SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
+      if (null != employee) {
+        if (!employee.getDiscount()) {
+          throw new ClientServiceException("您当前选择的授权人不具备授权折扣权限！", PARAMETERS_IS_ILLEGAL);
         }
-        break;
-      default:
-        break;
+        List<AccreditDiscountDetailModel> discountDetailModels =
+                accreditDiscountModel.getAccreditDiscountDetailModels();
+        if (StringHelper.isEmpty(discountDetailModels)) {
+          throw new ClientServiceException("授权折扣订单列表不能为空！", PARAMETERS_IS_ILLEGAL);
+        }
+      } else {
+        throw new ClientServiceException("授权人不存在！", PARAMETERS_IS_ILLEGAL);
+      }
     }
   }
 

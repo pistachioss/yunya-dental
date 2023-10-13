@@ -22,8 +22,8 @@ import java.util.List;
 @Data
 @ToString
 public class AccreditDiscountModel implements Serializable {
-  /** 授权人ID */
-  @ApiModelProperty(value = "授权人ID", required = true)
+  /** ，非空时会员类型无效 */
+  @ApiModelProperty(value = "授权人ID，非空时会员类型无效", required = true)
   @NotNull(message = "授权人ID不能为空！")
   private Integer warrantId;
 

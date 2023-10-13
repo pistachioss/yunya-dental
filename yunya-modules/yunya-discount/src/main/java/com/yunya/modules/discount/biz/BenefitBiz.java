@@ -32,7 +32,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.discount.*;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
-import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.discount.enums.DiscountError;
 import com.yunya.modules.discount.mapper.*;
@@ -963,6 +962,7 @@ public class BenefitBiz {
                 updateCards.forEach(obj -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle));
                 log.info("【订单使用卡券优惠，更新卡券发送消息成功】：卡券ids：{}", updateCards.stream().map(Card::getId).collect(toList()));
             }
+            orderBiz.occur(orderId, 2, model.getPatientId(), null, null);
         } finally {
             //解锁卡券
             cardBiz.manualUnLock(loginUserId, RedisConstants.LOCK_CHOICE_CARD);
