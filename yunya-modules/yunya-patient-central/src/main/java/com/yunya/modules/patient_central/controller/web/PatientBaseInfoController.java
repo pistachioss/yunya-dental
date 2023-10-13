@@ -6,10 +6,7 @@
 package com.yunya.modules.patient_central.controller.web;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientLabelRecordModel;
-import com.yunya.feign.patient_central.domain.model.PicturesCallbackInfoModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
