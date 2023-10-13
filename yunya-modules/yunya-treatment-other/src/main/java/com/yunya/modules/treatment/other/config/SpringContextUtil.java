@@ -1,4 +1,4 @@
-package com.yunya.modules.treatment.config;
+package com.yunya.modules.treatment.other.config;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

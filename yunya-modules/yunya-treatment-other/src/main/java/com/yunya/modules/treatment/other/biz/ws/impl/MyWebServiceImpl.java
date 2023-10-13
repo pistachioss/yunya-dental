@@ -1,4 +1,4 @@
-package com.yunya.modules.treatment.biz.ws.impl;
+package com.yunya.modules.treatment.other.biz.ws.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;

@@ -1,4 +1,4 @@
-package com.yunya.modules.treatment.biz.ws;
+package com.yunya.modules.treatment.other.biz.ws;
 
 import javax.jws.WebService;
 
