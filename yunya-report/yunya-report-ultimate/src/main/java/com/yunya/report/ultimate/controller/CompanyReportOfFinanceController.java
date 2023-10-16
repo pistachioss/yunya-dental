@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.controller;
 import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.base.MultiClinicEmloyeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -971,6 +972,36 @@ public class CompanyReportOfFinanceController {
           HttpServletResponse response, @RequestBody @Validated NonMonthCategoryIncomeQuery query)
           throws IOException {
     billDetailBiz.nonDiscountExport(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工授权折扣表
+   *
+   * @param query 查询条件
+   * @return PageInfo<NonMonthCategoryVO>
+   */
+  @ApiOperation("公司端报表-财务报表-员工授权折扣表")
+  @PostMapping(value = "/employee/accreditDiscount/list", name = "根据条件查询员工授权折扣表")
+  public ResponseResult<PageInfo<EmployeeAccreditDiscountVO>> findEmployeeAccreditDiscountList(
+          @RequestBody @Validated MultiClinicEmloyeeDateRangeQueryForm query) {
+    PageInfo<EmployeeAccreditDiscountVO> resultList = baseCardBiz.findEmployeeAccreditDiscountList(query);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件导出员工授权折扣表
+   * @param response
+   * @param query
+   * @return
+   * @throws IOException
+   */
+  @ApiOperation("公司端报表-财务报表-导出员工授权折扣表")
+  @PostMapping(value = "/category/nonDiscount/export", name = "根据条件导出员工授权折扣表")
+  public ResponseResult<T> exportEmployeeAccreditDiscountList(
+          HttpServletResponse response, @RequestBody @Validated MultiClinicEmloyeeDateRangeQueryForm query)
+          throws IOException {
+    baseCardBiz.exportEmployeeAccreditDiscountList(response, query);
     return ResponseUtil.success(null);
   }
 }

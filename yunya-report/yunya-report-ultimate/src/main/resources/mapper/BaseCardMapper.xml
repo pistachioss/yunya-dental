@@ -2126,4 +2126,83 @@
         group by cb.refund_id
         ORDER BY cb.refund_date DESC
     </select>
+
+    <select id="selectEmployeeAccreditDiscountList"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeAccreditDiscountVO">
+        SELECT
+            bb.bill_id AS billId,
+            bbd.bill_detail_id AS billDetailId,
+            bb.privilege_date AS payeeDate,
+            bo.abbreviation,
+            be.employee_name AS dentistName,
+            bb.bill_date AS billDate,
+            bp.name AS patientName,
+            CONCAT(CONVERT(
+                (bbd.price * bbd.quantity - bf.benefitAmount) / (bbd.price * bbd.quantity) *100,
+                DECIMAL (19, 0)
+            ), '%')AS discountRate,
+            bf.benefitAmount,
+            bb.bill_num AS billNum,
+            be1.employee_name AS operator,
+            be2.employee_name AS discountor,
+            bf.remark
+        FROM (
+            SELECT
+            order_detail_id,
+            SUM(benefit_amount) AS benefitAmount,
+            operate_user_id,
+            authorized_id,
+            remark
+            FROM base_benefit
+            WHERE choice_benefit_type=1 AND benefit_amount>0
+            GROUP BY order_detail_id, remark, operate_user_id, authorized_id
+        ) bf
+        LEFT JOIN base_bill_detail bbd ON bf.order_detail_id=bbd.bill_detail_id
+        LEFT JOIN base_bill bb ON bb.bill_id=bbd.bill_id
+        LEFT JOIN base_patient bp ON bp.patient_id=bb.patient_id
+        LEFT JOIN base_organization bo ON bo.org_id=bb.org_id
+        LEFT JOIN base_treatment_process btp ON btp.treatment_id=bb.treatment_id
+        LEFT JOIN base_employee be ON be.user_id=btp.registered_dentist_id
+        LEFT JOIN base_employee be1 ON be1.user_id=bf.operate_user_id
+        LEFT JOIN base_employee be2 ON be2.user_id=bf.authorized_id
+        <where>
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                AND bb.org_id IN
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.employeeIds!=null and query.employeeIds.size()>0">
+                AND bf.authorized_id IN
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.privilege_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.privilege_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.privilege_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.privilege_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ORDER BY bb.privilege_date DESC, bbd.bill_detail_id
+    </select>
 </mapper>

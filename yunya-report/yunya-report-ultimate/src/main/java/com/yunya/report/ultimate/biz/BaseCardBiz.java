@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.base.MultiClinicEmloyeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -313,5 +314,34 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
             new ExcelUtil<>(Coupon365ActivedDetailVO.class);
     String name = "365卡产品激活明细表";
     excelUtil.exportExcel(response, list, name, name);
+  }
+
+  /**
+   * 根据条件查询员工授权折扣表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<EmployeeAccreditDiscountVO> findEmployeeAccreditDiscountList(MultiClinicEmloyeeDateRangeQueryForm query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeAccreditDiscountVO> result = mapper.selectEmployeeAccreditDiscountList(query);
+    return new PageInfo<>(result);
+  }
+
+  /**
+   * 根据条件导出员工授权折扣表
+   *
+   * @param response
+   * @param query
+   * @throws IOException
+   */
+  public void exportEmployeeAccreditDiscountList(HttpServletResponse response, MultiClinicEmloyeeDateRangeQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    List<EmployeeAccreditDiscountVO> result = findEmployeeAccreditDiscountList(query).getList();
+    ExcelUtil<EmployeeAccreditDiscountVO> excelUtil = new ExcelUtil<>(EmployeeAccreditDiscountVO.class);
+    String name = "员工授权折扣表";
+    excelUtil.exportExcel(response, result, name, name);
   }
 }
