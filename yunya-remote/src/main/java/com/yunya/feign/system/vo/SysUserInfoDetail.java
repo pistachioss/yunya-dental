@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 简介: 用户（员工）信息
@@ -142,6 +143,12 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
   /** 是否有员工折扣 */
   @ApiModelProperty("是否有员工折扣")
   private Boolean discount;
+  /** 最大授权折扣率 */
+  @ApiModelProperty("最大授权折扣率")
+  private BigDecimal discountRate;
+  /** 最大授权折扣金额 */
+  @ApiModelProperty("最大授权折扣金额")
+  private BigDecimal discountAmount;
   /** 个人照片链接 */
   @ApiModelProperty("个人照片链接")
   private String photo;

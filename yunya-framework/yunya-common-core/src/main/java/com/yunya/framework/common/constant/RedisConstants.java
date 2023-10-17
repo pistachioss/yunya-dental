@@ -183,6 +183,8 @@ public class RedisConstants implements Serializable {
   public static final String BJ_TOKEN =  "bj:token";
   /** 会员授权码 */
   public static final String MEMBER_AUTH_CODE = "member:auth:code";
+  /** 员工授权折扣码 */
+  public static final String EMP_ACCREDIT_DISCOUNT_CODE = "emp:accredit:discount:code";
 
   /**
    * 设置key中的占位符

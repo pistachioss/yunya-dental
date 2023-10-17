@@ -1,6 +1,5 @@
 package com.yunya.modules.patient_central.biz;
 
-import cn.hutool.extra.qrcode.QrCodeUtil;
 import cn.hutool.extra.qrcode.QrConfig;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
@@ -55,15 +54,13 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.MESSAGE_CODE_ERROR;
-import static com.yunya.framework.common.constant.RedisConstants.*;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BasePatient;
+import static com.yunya.framework.common.constant.OperationCodeConstants.MESSAGE_CODE_ERROR;
 import static com.yunya.framework.common.constant.RedisConstants.*;
 
 /**
@@ -81,7 +78,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   private static final Logger logger = LoggerFactory.getLogger(PatientBaseInfoBiz.class);
 
 
-  @Autowired private QrConfig qrConig;
+  @Autowired private QrConfig qrConfig;
 
   /** 注入redis */
   @Resource private RedisUtils redisUtils;
@@ -1816,30 +1813,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     String authCode = redisUtils.supplyIfAbsent(UUIDUtils::codeGenerator,
             10, TimeUnit.MINUTES, MEMBER_AUTH_CODE, form.getPatientId().toString());
     logger.info("generate authorized code：{}", authCode);
-    generateAsStream(authCode, response);
+    QRCodeUtl.generateAsStream(authCode, response);
   }
 
-  /**
-   * 生成二维码并保存到指定文件
-   *
-   * @param content
-   * @param file
-   */
-  public void generateFile(String content, File file){
-    //生成到本地文件
-    QrCodeUtil.generate(content, qrConig, file);
-  }
 
-  /**
-   * 生成二维码并输出到响应流
-   *
-   * @param content
-   * @param response
-   * @throws IOException
-   */
-  public void generateAsStream(String content, HttpServletResponse response) throws IOException {
-    QrCodeUtil.generate(content, qrConig,"png", response.getOutputStream());
-  }
 
   /**
    * 验证 会员卡的授权码

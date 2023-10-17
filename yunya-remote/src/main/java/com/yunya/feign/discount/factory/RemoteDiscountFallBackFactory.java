@@ -17,6 +17,7 @@ import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
+import com.yunya.feign.report.domain.query.base.EmployeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.model.ResponseResult;
@@ -173,6 +174,11 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
 
     @Override
     public BigDecimal sumCouponBillCashBalanceReceipt(CashReceiptOrRefundQuery query) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal findAccreditDiscountAmountByQuery(EmployeeDateRangeQueryForm query) {
         return null;
     }
 

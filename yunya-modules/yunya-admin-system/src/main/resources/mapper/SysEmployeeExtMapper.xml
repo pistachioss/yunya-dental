@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.system.mapper.SysEmployeeExtMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.system.SysEmployeeExt">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="discount_rate" jdbcType="DECIMAL" property="discountRate" />
+    <result column="discount_amount" jdbcType="DECIMAL" property="discountAmount" />
+    <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+    <result column="upd_id" jdbcType="INTEGER" property="updId" />
+  </resultMap>
+
+  <insert id="saveByPrimaryKeySelective">
+    INSERT INTO sys_employee_ext
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId!=null">userId,</if>
+      <if test="discountRate!=null">discount_rate,</if>
+      <if test="discountAmount!=null">discount_amount,</if>
+      <if test="inservice!=null">inservice,</if>
+      <if test="crtTime!=null">crt_time,</if>
+      <if test="crtId!=null">crt_id,</if>
+      <if test="updTime!=null">upd_time,</if>
+      <if test="updId!=null">upd_id,</if>
+
+    </trim>
+    <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+      <if test="userId!=null">#{userId},</if>
+      <if test="discountRate!=null"> #{discountRate},</if>
+      <if test="discountAmount!=null">#{discountAmount},</if>
+      <if test="inservice!=null and ">#{inservice},</if>
+      <if test="crtTime!=null">#{crtTime},</if>
+      <if test="crtId!=null">#{crtId},</if>
+      <if test="updTime!=null">#{updTime},</if>
+      <if test="updId!=null">#{updId},</if>
+
+    </trim>
+    ON DUPLICATE KEY UPDATE
+    <trim prefixOverrides="" suffixOverrides=",">
+      <if test="discountRate!=null"> discount_rate= VALUES(discount_rate),</if>
+      <if test="discountAmount!=null"> discount_amount= VALUES(discount_amount),</if>
+      <if test="inservice!=null"> inservice= VALUES(inservice),</if>
+      <if test="updTime!=null"> upd_time= VALUES(upd_time),</if>
+      <if test="updId!=null"> upd_id= VALUES(upd_id),</if>
+    </trim>
+
+
+  </insert>
+</mapper>

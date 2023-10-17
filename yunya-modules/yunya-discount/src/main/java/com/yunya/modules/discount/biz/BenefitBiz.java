@@ -17,6 +17,7 @@ import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.domain.query.base.EmployeeDateRangeQueryForm;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
@@ -998,5 +999,15 @@ public class BenefitBiz {
         orderBenefit.setCrtId(loginUserId);
         orderBenefit.setUpdId(loginUserId);
         orderBenefitMapper.insertSelective(orderBenefit);
+    }
+
+    /**
+     * 根据条件查询员工的剩余年度授权折扣额度
+     *
+     * @param query
+     * @return
+     */
+    public BigDecimal findAccreditDiscountAmountByQuery(EmployeeDateRangeQueryForm query) {
+        return orderBenefitMapper.selectAccreditDiscountAmountByQuery(query);
     }
 }

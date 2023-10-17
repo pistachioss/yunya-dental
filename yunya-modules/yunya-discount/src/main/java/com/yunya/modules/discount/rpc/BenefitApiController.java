@@ -16,6 +16,7 @@ import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
+import com.yunya.feign.report.domain.query.base.EmployeeDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -202,5 +203,17 @@ public class BenefitApiController {
     @GetMapping("/card/listTwoYearsActive")
     public Map<Integer, Long> listTwoYearsActive() {
         return cardBiz.listTwoYearsActive();
+    }
+
+    /**
+     * 根据条件查询员工的剩余年度授权折扣额度
+     *
+     * @param query
+     * @return
+     */
+    @ApiOperation("根据条件查询员工的剩余年度授权折扣额度")
+    @PostMapping("/accredit/discount/total")
+    public BigDecimal findAccreditDiscountAmountByQuery(@RequestBody @Validated EmployeeDateRangeQueryForm query) {
+        return benefitBiz.findAccreditDiscountAmountByQuery(query);
     }
 }

@@ -354,6 +354,8 @@
         se.emergency_contact AS emergencyContact,
         se.emergency_contact_phone AS emergencyContactPhone,
         se.discount,
+        see.discount_rate AS discountRate,
+        see.discount_amount AS discountAmount,
         se.photo,
         se.diploma_photo AS diplomaPhoto,
         se.work_number AS workNumber,
@@ -367,6 +369,7 @@
         FROM
         sys_user su
         LEFT JOIN sys_employee se ON su.id = se.user_id
+        LEFT JOIN sys_employee_ext see ON see.user_id=su.id
         LEFT JOIN (
         SELECT
         sup.user_id,

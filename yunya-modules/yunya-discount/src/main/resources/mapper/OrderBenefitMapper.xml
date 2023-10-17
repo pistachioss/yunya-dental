@@ -15,4 +15,39 @@
         <result column="upd_time" jdbcType="TIMESTAMP" property="updTime"/>
     </resultMap>
 
+    <select id="selectAccreditDiscountAmountByQuery" resultType="java.math.BigDecimal">
+        SELECT
+            IFNULL(SUM(total_amount), 0)
+        FROM order_benefit
+        <where>
+            AND is_deleted = 0
+            AND benefit_type = 1
+            AND authorized_id = #{query.employeeId}
+            <if test="query.dateType==0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(crt_time, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(crt_time, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(crt_time, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(crt_time, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+    </select>
+
 </mapper>

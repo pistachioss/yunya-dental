@@ -10,6 +10,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -84,6 +85,12 @@ public class SysUserForm implements Serializable {
   @ApiModelProperty(value = "是否有授权折扣", required = true)
   @NotNull(message = "是否有授权折扣不能为空！")
   private Boolean discount;
+  /** 最大授权折扣率 */
+  @ApiModelProperty(value = "最大授权折扣率")
+  private BigDecimal discountRate;
+  /** 最大授权折扣金额 */
+  @ApiModelProperty(value = "最大授权折扣金额")
+  private BigDecimal discountAmount;
   /** 学历 */
   @ApiModelProperty(value = "学历", required = true)
   @NotNull(message = "学历不能为空！")

@@ -1,9 +1,14 @@
 package com.yunya.modules.system.biz;
 
+import cn.hutool.extra.qrcode.QrConfig;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.oss.RemoteOssServiceFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.domain.query.base.EmployeeDateRangeQueryForm;
 import com.yunya.feign.sms.model.SmsVerifyCodeModel;
+import com.yunya.feign.system.vo.SysEmployeeExtVO;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -15,6 +20,7 @@ import com.yunya.framework.common.utils.*;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.SysEmployee;
+import com.yunya.models.system.SysEmployeeExt;
 import com.yunya.models.system.SysUser;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.domain.form.ForgetPasswordForm;
@@ -22,9 +28,11 @@ import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.domain.form.ModificationPasswordForm;
 import com.yunya.modules.system.domain.form.SysUserForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
+import com.yunya.modules.system.mapper.SysEmployeeExtMapper;
 import com.yunya.modules.system.mapper.SysEmployeeMapper;
 import com.yunya.modules.system.mapper.SysUserMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +43,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseEmployee;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
@@ -55,6 +65,7 @@ import static com.yunya.framework.common.constant.UserConstant.PW_ENCODER_SALT;
  * @description:
  * @since: 1.0.0
  */
+@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
@@ -67,8 +78,15 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   @Autowired private SysEmployeeMapper sysEmployeeMapper;
   /** 用户可登陆组织 */
   @Autowired private SysUserPostMapper sysUserPostMapper;
+  /** 员工扩展 */
+  @Autowired private SysEmployeeExtMapper sysEmployeeExtMapper;
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
+  /** 优惠服务 */
+  @Autowired private RemoteDiscountFeign remoteDiscountFeign;
+
+  @Autowired private QrConfig qrConfig;
+  private RemoteOssServiceFeign remoteOssServiceFeign;
 
   /**
    * 根据条件查询用户信息详情列表
@@ -151,10 +169,47 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
         // 新增用户与组织、部门、岗位的关系
         insertUserLoginOrganization(userId, organizationForms);
       }
+      saveEmployeeExtention(userId, resource);
       // 发送消息同步员工信息
       rabbitMqServiceFeign.sendMessage(userId, 0, BaseEmployee);
     }
     return userId;
+  }
+
+  /**
+   * 保存员工扩展信息
+   *
+   * @param userId
+   * @param resource
+   */
+  private void saveEmployeeExtention(Integer userId, SysUserForm resource) {
+    if (resource.getDiscount()) {
+      checkAccreditDiscount(resource);
+      int operatorId = Integer.parseInt(BaseContextHandler.getUserID());
+      Date now = BaseContextHandler.getCurTime();
+      SysEmployeeExt entity = new SysEmployeeExt();
+      entity.setUserId(userId);
+      entity.setDiscountRate(resource.getDiscountRate());
+      entity.setDiscountAmount(resource.getDiscountAmount());
+      entity.setCrtId(operatorId);
+      entity.setCrtTime(now);
+      entity.setUpdId(operatorId);
+      entity.setUpdTime(now);
+      sysEmployeeExtMapper.saveByPrimaryKeySelective(entity);
+    }
+  }
+
+  /**
+   * 检查参数
+   * 
+   * @param resource
+   */
+  private void checkAccreditDiscount(SysUserForm resource) {
+    BigDecimal discountRate = resource.getDiscountRate();
+    BigDecimal discountAmount = resource.getDiscountAmount();
+    if (StringHelper.isAnyNull(discountRate, discountAmount)) {
+      throw new ClientServiceException("最大授权折扣信息不能为空", PARAMETERS_IS_ILLEGAL);
+    }
   }
 
   /**
@@ -276,6 +331,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployeeEntity.setUpdName(BaseContextHandler.getName());
       sysEmployeeEntity.setUpdTime(new Date(System.currentTimeMillis()));
       sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
+      saveEmployeeExtention(userId, form);
       redisUtils.delete(REDIS_KEY_EMPLOYEE_INFO + userId);
       // 发送消息同步员工信息
       rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
@@ -372,6 +428,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     }
     int i = mapper.deleteByPrimaryKey(id);
     mapper.deleteEmployeeByUserId(id);
+    sysEmployeeExtMapper.deleteByPrimaryKey(id);
     if (i > 0) {
       // 发送消息同步员工信息
       rabbitMqServiceFeign.sendMessage(id, 2, BaseEmployee);
@@ -513,5 +570,82 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     return ResponseUtil.fail(OBJECT_EDIT_FAIL, "密码重置失败,请确认用户是否存在", null);
   }
 
+  /**
+   * 查询员工的授权折扣权益信息
+   *
+   * @param userId
+   * @return
+   */
+  public SysEmployeeExtVO findEmployeeAccreditDiscount(Integer userId) {
+    SysEmployeeExt employeeExt = sysEmployeeExtMapper.selectByPrimaryKey(userId);
+    if (StringHelper.isNull(employeeExt)) {
+      return null;
+    }
+    SysEmployeeExtVO ext = BeanCopierUtils.generalCopyBean(employeeExt, SysEmployeeExtVO.class);
+    SysEmployee employee = sysEmployeeMapper.selectByUserId(userId);
+    if (StringHelper.isNotNull(employee)) {
+      ext.setEmployeeName(employee.getName());
+    }
+    BigDecimal usedDiscountAmount = computeUsedDiscountAmount(employeeExt);
+    ext.setUsedDiscountAmount(usedDiscountAmount);
+    return ext;
+  }
 
+  /**
+   * 计算授权折扣的年度已用额度
+   *
+   * @param employeeExt
+   * @return
+   */
+  private BigDecimal computeUsedDiscountAmount(SysEmployeeExt employeeExt) {
+    Date now = DateUtil.now();
+    Date crtTime = employeeExt.getCrtTime();
+    if (now.before(crtTime)) {
+      return BigDecimal.ZERO;
+    }
+    String today = DateUtil.format(now);
+    String startDate = DateUtil.yearStart(today);
+    String endDate = DateUtil.yearEnd(today);
+    String setTime = DateUtil.format(crtTime);
+    if (DateUtil.betweenAnd(setTime, startDate, endDate)) {
+      startDate = setTime;
+    }
+    EmployeeDateRangeQueryForm query = new EmployeeDateRangeQueryForm();
+    query.setEmployeeId(employeeExt.getUserId());
+    query.setStartDate(startDate);
+    query.setEndDate(endDate);
+    // 授权折扣年度已用额度
+    return remoteDiscountFeign.findAccreditDiscountAmountByQuery(query);
+  }
+
+  /**
+   * 生成当前登录员工的授权折扣码
+   *
+   */
+  public void generateEmpAccreditDiscountCode(HttpServletResponse response) throws IOException {
+    String userID = BaseContextHandler.getUserID();
+    String authCode = redisUtils.supplyIfAbsent(BaseContextHandler::getUserID,
+            3, TimeUnit.MINUTES, EMP_ACCREDIT_DISCOUNT_CODE, UUIDUtils.codeGenerator(6));
+    log.info("generate employeeId: {}, accredictDiscount code：{}", userID,  authCode);
+    QRCodeUtl.generateAsStream(authCode, response);
+  }
+
+  /**
+   * 验证 会员卡的授权码
+   *
+   * @param code
+   * @return
+   */
+  public Integer verificationCode(String code) {
+    String key = buildLockCacheKey(EMP_ACCREDIT_DISCOUNT_CODE, code);
+    if (!redisUtils.hasKey(key)) {
+      throw new ClientServiceException("授权码已失效！", MESSAGE_CODE_ERROR);
+    }
+    String value = redisUtils.get(key);
+    if (!code.equals(value)) {
+      throw new ClientServiceException("无效的授权码！", MESSAGE_CODE_ERROR);
+    }
+    redisUtils.delete(key);
+    return Integer.parseInt(value);
+  }
 }

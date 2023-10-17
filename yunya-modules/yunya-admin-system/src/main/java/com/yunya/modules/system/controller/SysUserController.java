@@ -1,13 +1,17 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.vo.SysEmployeeExtVO;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.SysUser;
 import com.yunya.modules.system.biz.SysUserBiz;
 import com.yunya.modules.system.domain.form.ForgetPasswordForm;
@@ -24,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.io.IOException;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 
 /**
  * 简单介绍:</br> 系统用户控制层
@@ -209,5 +215,56 @@ public class SysUserController {
   public ResponseResult<T> resetPassword(
       HttpServletRequest request, @PathVariable("userId") Integer userId) {
     return sysUserBiz.resetPassword(request, userId);
+  }
+
+  /**
+   * 获取当前登录员工的授权折扣权益
+   *
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("获取当前登录员工的授权折扣权益")
+  @GetMapping("/employee/accreditDiscount")
+  public ResponseResult<SysEmployeeExtVO> findEmployeeAccreditDiscountByCode() {
+    Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+    SysEmployeeExtVO sysEmployeeExtVO = sysUserBiz.findEmployeeAccreditDiscount(userId);
+    if (StringHelper.isNull(sysEmployeeExtVO)) {
+      ResponseUtil.error("未开通授权折扣，请联系管理员开通！", DATA_NOT_EXIST);
+    }
+    return ResponseUtil.success(sysEmployeeExtVO);
+  }
+
+  /**
+   * 根据授权折扣码获取员工的授权折扣权益
+   *
+   * @return
+   */
+  @ApiOperation("根据员工授权折扣码获取员工的授权折扣权益")
+  @ApiImplicitParams({
+          @ApiImplicitParam(
+                  name = "code",
+                  value = "授权码",
+                  required = true,
+                  dataTypeClass = String.class)
+  })
+  @GetMapping("/accreditDiscount/{code}")
+  public ResponseResult<SysEmployeeExtVO> findEmployeeAccreditDiscountByCode(@PathVariable(value = "code") String code) {
+    SysEmployeeExtVO sysEmployeeExtVO = sysUserBiz.findEmployeeAccreditDiscount(sysUserBiz.verificationCode(code));
+    if (StringHelper.isNull(sysEmployeeExtVO)) {
+      throw new ClientServiceException("员工暂未开启授权折扣！", DATA_NOT_EXIST);
+    }
+    return ResponseUtil.success(sysEmployeeExtVO);
+  }
+
+  /**
+   * 生成当前登录员工的授权折扣码
+   *
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("生成当前登录员工的授权折扣码")
+  @GetMapping("/accreditDiscount/generateCode")
+  public void generateloyeeAccreditDiscountCode(HttpServletResponse response) throws IOException {
+    sysUserBiz.generateEmpAccreditDiscountCode(response);
   }
 }
