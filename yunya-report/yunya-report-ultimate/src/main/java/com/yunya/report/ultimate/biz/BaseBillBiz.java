@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.vo.PatientCostInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
@@ -12,6 +13,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseOrganization;
+import com.yunya.models.system.MemberType;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +23,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介: 账单报表业务层
@@ -44,6 +46,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private BaseOrganizationMapper organizationMapper;
   /** 账单详情 */
   @Autowired private BaseBillDetailMapper billDetailMapper;
+  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /**
    * 根据条件查询开单列表
@@ -283,11 +286,13 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   public BillDiscountVO billDiscountDetailInfo(Integer billId) {
     BillDiscountVO billDiscountVOs = new BillDiscountVO();
     List<BillDiscountDetailInifoVO> billDiscountDetails = Lists.newArrayList();
+    List<MemberType> memberTypes = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
+    Map<Integer, String> memberNames = Optional.ofNullable(memberTypes).orElseGet(ArrayList::new).stream().collect(toMap(MemberType::getId, MemberType::getName));
     // 查询账单详情列表
     List<BaseBillDetailVO> baseBillDetails = billDetailMapper.selectBillDetailByBillId(billId);
     Map<Integer, BaseBillDetailVO> details =
         baseBillDetails.stream()
-            .collect(Collectors.toMap(BaseBillDetailVO::getBillDetailId, (vo) -> vo));
+            .collect(toMap(BaseBillDetailVO::getBillDetailId, (vo) -> vo));
     // 查询该账单下所有的使用了产品优惠
     List<BaseBenefitInfoVO> benefits = mapper.selectBaseBenefitInfoByBillId(billId);
     Map<String, BaseBenefitInfoVO> benefitMap = new HashMap<>(16);
@@ -297,7 +302,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           benefit -> {
             Integer orderDetailId = benefit.getOrderDetailId();
             Integer cardId = benefit.getCardId();
-            String key = orderDetailId + "," + cardId;
+            String key = StringHelper.joinWith(",", orderDetailId, cardId);
             BigDecimal[] amount = total.computeIfAbsent(key, k->new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
             amount[0] = amount[0].add(benefit.getBenefitAmount());
             amount[1] = amount[1].add(BigDecimal.ONE);
@@ -316,7 +321,11 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
             BillDiscountDetailInifoVO vo = new BillDiscountDetailInifoVO();
             BaseBenefitInfoVO benefitInfoVO = benefitMap.get(key);
             if (benefitInfoVO != null) {
-              vo.setCouponName(benefitInfoVO.getCouponName());
+              String couponName = benefitInfoVO.getCouponName();
+              if (benefitInfoVO.getCouponType().equals(99)) {
+                couponName = memberNames.get(benefitInfoVO.getCardId());
+              }
+              vo.setCouponName(couponName);
               vo.setSaleChannelName(benefitInfoVO.getSaleChannelName());
               vo.setCardNumber(benefitInfoVO.getCardNumber());
             }

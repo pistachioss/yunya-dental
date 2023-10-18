@@ -1,10 +1,8 @@
 package com.yunya.modules.system.biz;
 
-import cn.hutool.extra.qrcode.QrConfig;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.RemoteDiscountFeign;
-import com.yunya.feign.oss.RemoteOssServiceFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.query.base.EmployeeDateRangeQueryForm;
 import com.yunya.feign.sms.model.SmsVerifyCodeModel;
@@ -84,9 +82,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   @Autowired private RedisUtils redisUtils;
   /** 优惠服务 */
   @Autowired private RemoteDiscountFeign remoteDiscountFeign;
-
-  @Autowired private QrConfig qrConfig;
-  private RemoteOssServiceFeign remoteOssServiceFeign;
 
   /**
    * 根据条件查询用户信息详情列表

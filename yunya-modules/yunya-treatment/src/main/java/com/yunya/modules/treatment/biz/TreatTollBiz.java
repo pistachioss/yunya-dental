@@ -116,10 +116,13 @@ public class TreatTollBiz {
       resultData = findGeneralPrivilege(orderRecordId,null, result.getItemList(), generalDiscountModel);
     }
     orderDetailMatchDiscount(resultData, result);
-    // 授权折扣匹配
-    BigDecimal benefitTotalAmount = minorChargeProcessBiz.orderDetailMatcAccreditDiscount(query.getAccreditDiscountModel().getAccreditDiscountDetailModels(),
-            query.getAccreditDiscountModel().getWarrantId(), result.getItemList());
-    result.setBenefitTotalAmount(benefitTotalAmount);
+    AccreditDiscountModel accreditDiscountModel = query.getAccreditDiscountModel();
+    if (StringHelper.isNotNull(accreditDiscountModel)) {
+      // 授权折扣匹配
+      BigDecimal benefitTotalAmount = minorChargeProcessBiz.orderDetailMatcAccreditDiscount(accreditDiscountModel.getAccreditDiscountDetailModels(),
+              accreditDiscountModel.getWarrantId(), result.getItemList());
+      result.setBenefitTotalAmount(benefitTotalAmount);
+    }
     return result;
   }
 
@@ -130,7 +133,7 @@ public class TreatTollBiz {
    * @param query
    * @return
    */
-  private TreatOrderRecordVO orderDetailMatchQcTreatmentItemInfo(List<OrderDetailChargeVO> orderDetail, OrderPrivilegeQuery query) {
+  public TreatOrderRecordVO orderDetailMatchQcTreatmentItemInfo(List<OrderDetailChargeVO> orderDetail, OrderPrivilegeQuery query) {
     if (StringHelper.isNotEmpty(query.getQcTreatmentIds())) {
       QcTreatmentImportForm form = new QcTreatmentImportForm();
       form.setQcTreatmentIds(query.getQcTreatmentIds());
@@ -753,11 +756,13 @@ public class TreatTollBiz {
   private void checkPrivilegeParam(OrderPrivilegeQuery model) {
     GeneralDiscountModel generalDiscountModel = model.getGeneralDiscountModel();
     AccreditDiscountModel accreditDiscountModel = model.getAccreditDiscountModel();
-    checkAccreditDiscount(accreditDiscountModel);
-    Integer warrantId = model.getAccreditDiscountModel().getWarrantId();
-    if (StringHelper.isNotNull(warrantId)) {
-      // 移除会员卡类型
-      generalDiscountModel.setMemberTypeId(null);
+    if (StringHelper.isNotNull(accreditDiscountModel)) {
+      checkAccreditDiscount(accreditDiscountModel);
+      Integer warrantId = model.getAccreditDiscountModel().getWarrantId();
+      if (StringHelper.isNotNull(warrantId)) {
+        // 移除会员卡类型
+        generalDiscountModel.setMemberTypeId(null);
+      }
     }
     checkCardDiscount(generalDiscountModel);
     if (StringHelper.isAllNull(accreditDiscountModel, generalDiscountModel)) {

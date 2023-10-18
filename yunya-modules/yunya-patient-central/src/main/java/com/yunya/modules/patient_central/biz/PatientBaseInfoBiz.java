@@ -167,15 +167,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientPublicInfoVo.setPictureCode(memberType.getPictureCode());
       }
     }
-    PatientMemberInfo memberInfo = patientMemberInfoBiz.patientMemberIdentityLevel(id);
-    if (StringHelper.isNotNull(memberInfo)) {
-      MemberType memberType =
-              this.remoteSystemServiceFeign.findMemberTypeById(memberInfo.getMemberTypeId());
-      if (StringHelper.isNotNull(memberType)) {
-        patientPublicInfoVo.setDiscountLevelName(memberType.getName());
-      }
-      patientPublicInfoVo.setIsShowDiscountLevel(Boolean.valueOf(memberInfo.getRemarks()));
-    }
     if (patientPublicInfoVo != null && patientPublicInfoVo.getMasterCardId() != null) {
       PatientPublicInfoVo patientPublicInfoVo2 =
           this.patientBaseInfoMapper.findPatientPublicInfoById(patientPublicInfoVo.getMasterCardId());

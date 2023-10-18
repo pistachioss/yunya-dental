@@ -1713,6 +1713,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     return resultList;
   }
 
+
   /**
    * 查询会员卡绑定信息
    *
@@ -1720,24 +1721,21 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @return List<MemberInfoVo>
    */
   public MemberInfoVo findMemberInfo(PatientMemberInfoQueryForm form) {
-    MemberInfoVo result = new MemberInfoVo();
-    PatientMemberInfo memberInfo = patientMemberIdentityLevel(form.getPatientId());
-    MasertMemberInfoVo master = new MasertMemberInfoVo();
-    MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberInfo.getMemberTypeId());
-    if (StringHelper.isNotNull(memberType)) {
-      master.setMasterMemberCardName(memberType.getName());
-      master.setRate(memberType.getRate());
-      master.setPictureCode(memberType.getPictureCode());
+    MemberInfoVo memberInfoVo = new MemberInfoVo();
+    MasertMemberInfoVo masertMemberInfoVo = patientMemberInfoMapper.selectMasertMemberInfo(form);
+    if (masertMemberInfoVo != null) {
+      // 获取会员卡名称
+      MemberType memberType =
+              this.remoteSystemServiceFeign.findMemberTypeById(
+                      masertMemberInfoVo.getMasterCardTypeId());
+      if (memberType != null) {
+        masertMemberInfoVo.setMasterMemberCardName(memberType.getName());
+        masertMemberInfoVo.setRate(memberType.getRate());
+        masertMemberInfoVo.setPictureCode(memberType.getPictureCode());
+      }
     }
-    master.setId(memberInfo.getId());
-    master.setMasterCardTypeId(memberInfo.getMemberTypeId());
-    master.setMasterCardId(memberInfo.getPatientId());
-    master.setMasterCardNumber(memberInfo.getCardNumber());
-    master.setPoint(memberInfo.getPoint());
-    master.setCrtTime(memberInfo.getCrtTime());
-
-    result.setMasertMemberInfoVo(master);
-    return result;
+    memberInfoVo.setMasertMemberInfoVo(masertMemberInfoVo);
+    return memberInfoVo;
   }
 
   /**
@@ -1832,16 +1830,13 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     List<MemberBaseInfoVo> resultList = new ArrayList<>();
     // 患者本人会员卡
     MemberBaseInfoVo memberBaseInfo = patientMemberInfoMapper.findMemberBaseInfo(id);
-    if (null != memberBaseInfo && memberBaseInfo.getInservice() && memberBaseInfo.getMemberTypeId() != 4) {
+    if (null != memberBaseInfo && memberBaseInfo.getInservice()) {
       resultList.add(memberBaseInfo);
     }
     // 患者作为副卡人可用会员卡
     List<MemberBaseInfoVo> memberBaseInfoVoList =
         patientMemberInfoMapper.selectMemberRelationByMasterPatientId(id);
-    List<MemberBaseInfoVo> memberBaseInfoVoList2 = memberBaseInfoVoList.stream().filter(m -> {
-      return m.getInservice() && m.getMemberTypeId() != 4;
-    }).collect(Collectors.toList());
-    resultList.addAll(memberBaseInfoVoList2);
+    resultList.addAll(memberBaseInfoVoList);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.removeIf(vo -> null == vo.getId());
     }

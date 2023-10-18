@@ -17,7 +17,6 @@ import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
@@ -460,17 +459,17 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       int minTypeSec = 0;
       MasertMemberInfoVo masertMemberInfoVo = memberInfo.getMasertMemberInfoVo();
       if (StringHelper.isNotNull(masertMemberInfoVo) && masertMemberInfoVo.getMasterCardTypeId() != 4) {
-        List<SecondaryMemberInfoVo> secondaryMemberInfoVos = memberInfo.getSecondaryMemberInfoVos();
-        if (CollectionUtils.isNotEmpty(secondaryMemberInfoVos)) {
-          Optional<SecondaryMemberInfoVo> min =
-              secondaryMemberInfoVos.stream()
-                  .min(Comparator.comparing(SecondaryMemberInfoVo::getSecondaryMemberTypeId));
-          if (min.isPresent()) {
-            SecondaryMemberInfoVo secondaryMemberInfoVo = min.get();
-            minTypeSec = secondaryMemberInfoVo.getSecondaryMemberTypeId();
-            map.put(minTypeSec, secondaryMemberInfoVo.getSecondaryCardNumber());
-          }
-        }
+//        List<SecondaryMemberInfoVo> secondaryMemberInfoVos = memberInfo.getSecondaryMemberInfoVos();
+//        if (CollectionUtils.isNotEmpty(secondaryMemberInfoVos)) {
+//          Optional<SecondaryMemberInfoVo> min =
+//              secondaryMemberInfoVos.stream()
+//                  .min(Comparator.comparing(SecondaryMemberInfoVo::getSecondaryMemberTypeId));
+//          if (min.isPresent()) {
+//            SecondaryMemberInfoVo secondaryMemberInfoVo = min.get();
+//            minTypeSec = secondaryMemberInfoVo.getSecondaryMemberTypeId();
+//            map.put(minTypeSec, secondaryMemberInfoVo.getSecondaryCardNumber());
+//          }
+//        }
         // 非普通会员
         int secType = masertMemberInfoVo.getMasterCardTypeId();
         if (minTypeSec == 0) {

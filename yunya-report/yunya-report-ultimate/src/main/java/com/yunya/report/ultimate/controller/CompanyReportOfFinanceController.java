@@ -997,7 +997,7 @@ public class CompanyReportOfFinanceController {
    * @throws IOException
    */
   @ApiOperation("公司端报表-财务报表-导出员工授权折扣表")
-  @PostMapping(value = "/category/nonDiscount/export", name = "根据条件导出员工授权折扣表")
+  @PostMapping(value = "/employee/accreditDiscount/list/export", name = "根据条件导出员工授权折扣表")
   public ResponseResult<T> exportEmployeeAccreditDiscountList(
           HttpServletResponse response, @RequestBody @Validated MultiClinicEmloyeeDateRangeQueryForm query)
           throws IOException {

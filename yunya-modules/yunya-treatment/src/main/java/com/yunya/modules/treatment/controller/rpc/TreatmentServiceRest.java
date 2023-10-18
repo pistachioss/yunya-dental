@@ -395,7 +395,7 @@ public class TreatmentServiceRest {
    */
   @RequestMapping(value = "/order/detail/list/{orderRecordId}", method = RequestMethod.POST)
   public List<OrderDetailChargeVO> findOrderDetailByOrderRecordId(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
-    return orderDetailBiz.findChargeOrderDetailList(orderRecordId);
+    return orderDetailBiz.getChargeOrderDetailList(orderRecordId);
   }
 
   /**
