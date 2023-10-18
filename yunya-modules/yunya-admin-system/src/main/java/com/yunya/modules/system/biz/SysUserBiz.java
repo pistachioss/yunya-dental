@@ -572,27 +572,28 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    * @return
    */
   public SysEmployeeExtVO findEmployeeAccreditDiscount(Integer userId) {
+    SysEmployee employee = sysEmployeeMapper.selectByUserId(userId);
+    if (StringHelper.isNull(employee) || !employee.getDiscount()) {
+      return null;
+    }
     SysEmployeeExt employeeExt = sysEmployeeExtMapper.selectByPrimaryKey(userId);
     if (StringHelper.isNull(employeeExt)) {
       return null;
     }
     SysEmployeeExtVO ext = BeanCopierUtils.generalCopyBean(employeeExt, SysEmployeeExtVO.class);
-    SysEmployee employee = sysEmployeeMapper.selectByUserId(userId);
-    if (StringHelper.isNotNull(employee)) {
-      ext.setEmployeeName(employee.getName());
-    }
-    BigDecimal usedDiscountAmount = computeUsedDiscountAmount(employeeExt);
+    ext.setEmployeeName(employee.getName());
+    BigDecimal usedDiscountAmount = computeThisYearUsedDiscountAmount(employeeExt);
     ext.setUsedDiscountAmount(usedDiscountAmount);
     return ext;
   }
 
   /**
-   * 计算授权折扣的年度已用额度
+   * 计算本年度指定员工的授权折扣的已用额度
    *
    * @param employeeExt
    * @return
    */
-  private BigDecimal computeUsedDiscountAmount(SysEmployeeExt employeeExt) {
+  private BigDecimal computeThisYearUsedDiscountAmount(SysEmployeeExt employeeExt) {
     Date now = DateUtil.now();
     Date crtTime = employeeExt.getCrtTime();
     if (now.before(crtTime)) {
@@ -607,6 +608,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     }
     EmployeeDateRangeQueryForm query = new EmployeeDateRangeQueryForm();
     query.setEmployeeId(employeeExt.getUserId());
+    query.setDateType((byte) 0);
     query.setStartDate(startDate);
     query.setEndDate(endDate);
     // 授权折扣年度已用额度
@@ -619,8 +621,9 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    */
   public void generateEmpAccreditDiscountCode(HttpServletResponse response) throws IOException {
     String userID = BaseContextHandler.getUserID();
-    String authCode = redisUtils.supplyIfAbsent(BaseContextHandler::getUserID,
-            3, TimeUnit.MINUTES, EMP_ACCREDIT_DISCOUNT_CODE, UUIDUtils.codeGenerator(6));
+    String authCode = UUIDUtils.codeGenerator(6);
+    redisUtils.supplyIfAbsent(BaseContextHandler::getUserID,
+            3, TimeUnit.MINUTES, EMP_ACCREDIT_DISCOUNT_CODE, authCode);
     log.info("generate employeeId: {}, accredictDiscount code：{}", userID,  authCode);
     QRCodeUtl.generateAsStream(authCode, response);
   }
@@ -637,9 +640,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       throw new ClientServiceException("授权码已失效！", MESSAGE_CODE_ERROR);
     }
     String value = redisUtils.get(key);
-    if (!code.equals(value)) {
-      throw new ClientServiceException("无效的授权码！", MESSAGE_CODE_ERROR);
-    }
     redisUtils.delete(key);
     return Integer.parseInt(value);
   }

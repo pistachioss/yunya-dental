@@ -224,7 +224,7 @@ public class SysUserController {
    */
   @CurrentUser
   @ApiOperation("获取当前登录员工的授权折扣权益")
-  @GetMapping("/employee/accreditDiscount")
+  @GetMapping("/accredit/discount/logon")
   public ResponseResult<SysEmployeeExtVO> findEmployeeAccreditDiscountByCode() {
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
     SysEmployeeExtVO sysEmployeeExtVO = sysUserBiz.findEmployeeAccreditDiscount(userId);
@@ -247,7 +247,7 @@ public class SysUserController {
                   required = true,
                   dataTypeClass = String.class)
   })
-  @GetMapping("/accreditDiscount/{code}")
+  @GetMapping("/accredit/discount/{code}")
   public ResponseResult<SysEmployeeExtVO> findEmployeeAccreditDiscountByCode(@PathVariable(value = "code") String code) {
     SysEmployeeExtVO sysEmployeeExtVO = sysUserBiz.findEmployeeAccreditDiscount(sysUserBiz.verificationCode(code));
     if (StringHelper.isNull(sysEmployeeExtVO)) {
@@ -263,7 +263,7 @@ public class SysUserController {
    */
   @CurrentUser
   @ApiOperation("生成当前登录员工的授权折扣码")
-  @GetMapping("/accreditDiscount/generateCode")
+  @GetMapping("/accredit/discount/generateCode")
   public void generateloyeeAccreditDiscountCode(HttpServletResponse response) throws IOException {
     sysUserBiz.generateEmpAccreditDiscountCode(response);
   }
