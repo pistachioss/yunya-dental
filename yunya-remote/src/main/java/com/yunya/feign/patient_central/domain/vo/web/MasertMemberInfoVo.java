@@ -2,11 +2,9 @@ package com.yunya.feign.patient_central.domain.vo.web;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -20,7 +18,7 @@ import java.util.Date;
 @Data
 @ToString
 @ApiModel("返回卡主信息参数模型")
-public class MasertMemberInfoVo implements Serializable {
+public class MasertMemberInfoVo extends MemberTypeBaseVO {
 
     /**
      *会员卡信息表主键id
@@ -47,34 +45,11 @@ public class MasertMemberInfoVo implements Serializable {
     private String masterCardNumber;
 
     /**
-     * 主卡人会员卡类型
-     */
-    @ApiModelProperty(value = "主卡人会员卡类型")
-    private Integer masterCardTypeId;
-
-    /**
      * 主卡人姓名
      */
     @ApiModelProperty(value = "主卡人姓名")
     private String masterName;
 
-    /**
-     * 主卡人会员卡类型名称
-     */
-    @ApiModelProperty(value = "主卡人会员卡类型名称")
-    private String masterMemberCardName;
-
-    /**
-     * 折扣率（价目表自动调价的折扣率）
-     */
-    @ApiModelProperty(value = "折扣率（价目表自动调价的折扣率）")
-    private Float rate;
-
-    /**
-     * 会员卡图片
-     */
-    @ApiModelProperty(value = "会员卡图片")
-    private String pictureCode;
     @ApiModelProperty(value = "开卡日期")
     private Date crtTime;
 }

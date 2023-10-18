@@ -8,6 +8,7 @@ import com.yunya.feign.discount.domain.vo.DeductionItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
@@ -25,6 +26,7 @@ import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
@@ -92,6 +94,7 @@ public class TreatTollBiz {
   @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
 
   @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
+  @Autowired private RemotePatientCentralServiceFeign patientFeign;
 
   /**
    * 根据优惠信息匹配订单优惠
@@ -115,7 +118,7 @@ public class TreatTollBiz {
     if (StringHelper.isNotNull(generalDiscountModel)) {
       resultData = findGeneralPrivilege(orderRecordId,null, result.getItemList(), generalDiscountModel);
     }
-    orderDetailMatchDiscount(resultData, result);
+    orderDetailMatchDiscount(resultData, generalDiscountModel.getMemberDiscountType(), result);
     AccreditDiscountModel accreditDiscountModel = query.getAccreditDiscountModel();
     if (StringHelper.isNotNull(accreditDiscountModel)) {
       // 授权折扣匹配
@@ -150,10 +153,11 @@ public class TreatTollBiz {
    * 订单明细匹配优惠信息列表
    *
    * @param privilege  优惠项目列表
-   * @param result 总优惠
+   * @param memberDiscountType  会员优惠类型
+   * @param result 结果集
    */
   public void orderDetailMatchDiscount(
-          PatientOrderBenefitVo privilege, TreatOrderRecordVO result) {
+          PatientOrderBenefitVo privilege, Integer memberDiscountType, TreatOrderRecordVO result) {
     Map<Integer, OrderDetailChargeVO> detailMap = result.getItemList().stream().collect(toMap(OrderDetailChargeVO::getOrderDetailId, Function.identity(),
             (u,v)->{ throw new IllegalStateException(String.format("Duplicate key %s", u));}, LinkedHashMap::new));
     List<OrderDetailChargeVO> swipeItemList = Lists.newArrayList();
@@ -182,7 +186,7 @@ public class TreatTollBiz {
           deductItem.setReceivableAmount(receivableAmount);
           deductItem.setDiscountRate(BigDecimal.ZERO);
           deductItem.setActualAmount(BigDecimal.ZERO);
-          List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(deduct.getItemBenefitList());
+          List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(deduct.getItemBenefitList(), memberDiscountType);
           deductItem.setDiscountAppliesCoupons(privilegeInfo);
           deductItem.setCouponWorkload(deduct.getSupplyWorkload());
           deductItem.setPrivilegeAmount(receivableAmount);
@@ -209,7 +213,7 @@ public class TreatTollBiz {
               vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
               // 设置订单明细卡券匹配信息
               if (StringHelper.gt(receivableAmount, actualAmount)) {
-                List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(benefitVo.getItemBenefitList());
+                List<PrivilegeCouponInfoVO> privilegeInfo = getPrivilegeInfo(benefitVo.getItemBenefitList(), memberDiscountType);
                 vo.setDiscountAppliesCoupons(privilegeInfo);
               }
               privilegeAmount = privilegeAmount.add(itemBenefitAmount);
@@ -229,9 +233,10 @@ public class TreatTollBiz {
   /**
    * 获取订单卡券优惠信息
    *
-   * @param benefitList 匹配卡券列表
+   * @param benefitList        匹配卡券列表
+   * @param memberDiscountType
    */
-  private List<PrivilegeCouponInfoVO> getPrivilegeInfo(List<ItemUseBenefitVo> benefitList) {
+  private List<PrivilegeCouponInfoVO> getPrivilegeInfo(List<ItemUseBenefitVo> benefitList, Integer memberDiscountType) {
     List<PrivilegeCouponInfoVO> discountAppliesCoupon = Lists.newArrayList();
     if (StringHelper.isNotEmpty(benefitList)) {
       benefitList.forEach(
@@ -239,8 +244,16 @@ public class TreatTollBiz {
           Integer benefitType = benefitVo.getBenefitType();
           PrivilegeCouponInfoVO couponInfo = new PrivilegeCouponInfoVO();
           couponInfo.setBenefitId(benefitVo.getBenefitId());
-          // 99-会员卡，-1-授权折扣
-          couponInfo.setCouponType(0 == benefitType ? 99 : 2==benefitType?-1:benefitVo.getCouponType());
+          // 99-本人会员优惠，100、推荐人次一级会员优惠，101-亲密付会员优惠，-1-授权折扣
+          Integer couponType = benefitVo.getCouponType();
+          if (benefitType == 0) {
+            if (StringHelper.isNotNull(memberDiscountType)) {
+              couponType = memberDiscountType;
+            }
+          } else if (benefitType == 2) {
+            couponType = -1;
+          }
+          couponInfo.setCouponType(couponType);
           couponInfo.setBenefitName(benefitVo.getBenefitName());
           couponInfo.setCardNumber(benefitVo.getCardNumber());
           couponInfo.setBenefitAmount(benefitVo.getBenefitAmount());
@@ -353,6 +366,12 @@ public class TreatTollBiz {
     BillPayRecordLog logEntity = new BillPayRecordLog();
     logEntity.setBillPayRecordId(billPayRecord.getId());
     logEntity.setOrderRecordId(billPayRecord.getOrderRecordId());
+    logEntity.setPatientId(billPayRecord.getPatientId());
+    GeneralDiscountModel generalDiscountModel = model.getGeneralDiscountModel();
+    if (StringHelper.isNotNull(generalDiscountModel)) {
+      logEntity.setMemberId(generalDiscountModel.getMemberId());
+      logEntity.setMemberDiscountType(generalDiscountModel.getMemberDiscountType());
+    }
     logEntity.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     logEntity.setTotalCharge(totalCharge);
     logEntity.setTotalPrincipal(totalPrincipal);
@@ -696,7 +715,6 @@ public class TreatTollBiz {
    * @return
    */
   private PatientOrderBenefitVo findGeneralPrivilege(Integer orderRecordId, Integer patientId, List<OrderDetailChargeVO> orderDetail, GeneralDiscountModel generalDiscountModel) {
-    PatientChooseBenefitForm form = new PatientChooseBenefitForm();
     if (StringHelper.isNull(patientId)) {
       OrderRecord order = orderRecordBiz.selectById(orderRecordId);
       if (StringHelper.isNull(order)) {
@@ -704,11 +722,18 @@ public class TreatTollBiz {
       }
       patientId = order.getPatientId();
     }
+    Integer memberCardId = null;
+    PatientMemberInfo memberInfo = matchPatientMemberInfoByDiscountType(patientId, generalDiscountModel.getMemberDiscountType());
+    if (StringHelper.isNotNull(memberInfo)) {
+      memberCardId = memberInfo.getMemberTypeId();
+    }
+
+    PatientChooseBenefitForm form = new PatientChooseBenefitForm();
     form.setOrderDetail(orderDetail);
     form.setPatientId(patientId);
     form.setOrderId(orderRecordId);
     form.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-    form.setMemberCardId(generalDiscountModel.getMemberTypeId());
+    form.setMemberCardId(memberCardId);
     form.setDiscountId(generalDiscountModel.getDiscountCouponId());
     List<Integer> exchangeIds = Lists.newArrayList();
     List<Integer> voucherIds = Lists.newArrayList();
@@ -728,6 +753,20 @@ public class TreatTollBiz {
       throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
     }
     return resultData;
+  }
+
+  /**
+   * 根据会员优惠类型匹配患者相关的会员信息
+   *
+   * @param patientId
+   * @param memberDiscountType
+   * @return
+   */
+  private PatientMemberInfo matchPatientMemberInfoByDiscountType(Integer patientId, Integer memberDiscountType) {
+    if (StringHelper.isAnyNull(patientId, memberDiscountType)) {
+      return null;
+    }
+    return patientFeign.matchPatientMemberInfo(patientId, memberDiscountType);
   }
 
   /**
@@ -761,7 +800,7 @@ public class TreatTollBiz {
       Integer warrantId = model.getAccreditDiscountModel().getWarrantId();
       if (StringHelper.isNotNull(warrantId)) {
         // 移除会员卡类型
-        generalDiscountModel.setMemberTypeId(null);
+        generalDiscountModel.setMemberDiscountType(null);
       }
     }
     checkCardDiscount(generalDiscountModel);
@@ -795,11 +834,11 @@ public class TreatTollBiz {
   }
 
   private void checkCardDiscount(GeneralDiscountModel generalDiscountModel) {
-    Integer memberTypeId = generalDiscountModel.getMemberTypeId();
+    Integer memberDiscountType = generalDiscountModel.getMemberDiscountType();
     Integer discountCouponId = generalDiscountModel.getDiscountCouponId();
     List<CouponDiscountInfoModel> discountInfoModels =
             generalDiscountModel.getCouponDiscountInfoModels();
-    if (null == memberTypeId
+    if (null == memberDiscountType
             && null == discountCouponId
             && StringHelper.isEmpty(discountInfoModels)) {
       throw new ClientServiceException("当前未选择任何卡券！", PARAMETERS_IS_ILLEGAL);

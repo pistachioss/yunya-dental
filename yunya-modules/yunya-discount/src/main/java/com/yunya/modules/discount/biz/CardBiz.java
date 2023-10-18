@@ -26,13 +26,9 @@ import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
-import com.yunya.feign.patient_central.domain.vo.web.PatientEventVO;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
@@ -64,7 +60,6 @@ import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
-import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.discount.enums.*;
 import com.yunya.modules.discount.mapper.*;
@@ -2116,7 +2111,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             if (CollectionUtils.isNotEmpty(secondaryMemberInfoVos)) {
                 memberCardVos = secondaryMemberInfoVos.stream().map(obj -> {
                     PatientMemberCardVo memberCardVo = new PatientMemberCardVo();
-                    memberCardVo.setMemberCardId(obj.getSecondaryMemberTypeId());
+                    memberCardVo.setMemberCardId(obj.getMemberTypeId());
                     memberCardVo.setMemberCardName(obj.getMemberCardName());
                     //卡号
                     memberCardVo.setMemberCardNumber(obj.getSecondaryCardNumber());
@@ -2129,17 +2124,29 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 }).collect(toList());
             }
             if (masertMemberInfoVo != null) {
-                PatientMemberCardVo memberCardVo = new PatientMemberCardVo();
-                memberCardVo.setMemberCardId(masertMemberInfoVo.getMasterCardTypeId());
-                memberCardVo.setMemberCardName(masertMemberInfoVo.getMasterMemberCardName());
-                //卡号
-                memberCardVo.setMemberCardNumber(masertMemberInfoVo.getMasterCardNumber());
-                memberCardVo.setMemberCardRate(BigDecimal.valueOf(masertMemberInfoVo.getRate()).setScale(2, BigDecimal.ROUND_HALF_UP));
-                memberCardVo.setPath(masertMemberInfoVo.getPictureCode());
-                memberCardVos.add(memberCardVo);
+                memberCardVos.add(convertMemberCard(masertMemberInfoVo));
+            }
+            MasertMemberInfoVo intimatePayMember = memberInfo.getIntimatePayMember();
+            if (StringHelper.isNotNull(intimatePayMember)) {
+                memberCardVos.add(convertMemberCard(intimatePayMember));
+            }
+            MasertMemberInfoVo recommendSecondMember = memberInfo.getRecommendSecondMember();
+            if (StringHelper.isNotNull(recommendSecondMember)) {
+                memberCardVos.add(convertMemberCard(recommendSecondMember));
             }
         }
         return memberCardVos;
+    }
+
+    private PatientMemberCardVo convertMemberCard(MasertMemberInfoVo masertMemberInfoVo) {
+        PatientMemberCardVo memberCardVo = new PatientMemberCardVo();
+        memberCardVo.setMemberCardId(masertMemberInfoVo.getMemberTypeId());
+        memberCardVo.setMemberCardName(masertMemberInfoVo.getMemberCardName());
+        //卡号
+        memberCardVo.setMemberCardNumber(masertMemberInfoVo.getMasterCardNumber());
+        memberCardVo.setMemberCardRate(BigDecimal.valueOf(masertMemberInfoVo.getRate()).setScale(2, BigDecimal.ROUND_HALF_UP));
+        memberCardVo.setPath(masertMemberInfoVo.getPictureCode());
+        return memberCardVo;
     }
 
     private CardQrCodeVo checkCouponDeadline(Integer couponId, Integer type) {

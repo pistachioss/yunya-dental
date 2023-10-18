@@ -8,6 +8,9 @@
     <id column="bill_pay_record_id" property="billPayRecordId" jdbcType="INTEGER" />
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
     <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="member_id" property="memberId" jdbcType="INTEGER" />
+    <result column="member_discount_type" property="memberDiscountType" jdbcType="TINYINT" />
     <result column="total_charge" property="totalCharge" jdbcType="DECIMAL" />
     <result column="total_principal" property="totalPrincipal" jdbcType="DECIMAL" />
     <result column="param" property="param" jdbcType="VARCHAR" />
@@ -19,4 +22,13 @@
     <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
     <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="selectBillFirstPayRecordLogByOrderId" resultType="com.yunya.models.treatment.BillPayRecordLog">
+    SELECT bprl.*
+    FROM bill_pay_record_log bprl
+    LEFT JOIN bill_pay_record bpr ON bpr.id = bprl.bill_pay_record_id
+    WHERE bpr.inservice = 1 AND bpr.order_record_id = #{orderRecordId}
+    ORDER BY bpr.crt_time ASC
+    LIMIT 1
+  </select>
 </mapper>

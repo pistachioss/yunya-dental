@@ -110,6 +110,10 @@ public class PatientPublicInfoVo implements Serializable {
     @ApiModelProperty(value = "预付款赠金")
     private BigDecimal prepaymentBonus;
 
+    /** 会员卡id */
+    @ApiModelProperty("会员卡id")
+    private Integer memberId;
+
     /**
      * 会员卡类型id
      */
@@ -145,13 +149,6 @@ public class PatientPublicInfoVo implements Serializable {
     @ApiModelProperty(value = "会员卡是否激活、是否退卡")
     private Boolean inservice;
 
-    /** 是否显示折扣等级 */
-    @ApiModelProperty("是否显示折扣等级")
-    private Boolean isShowDiscountLevel;
-    
-    @ApiModelProperty("会员优惠-身份等级")
-    private String discountLevelName;
-
     /** 主卡人患者id */
     @ApiModelProperty("主卡人患者id")
     private Integer masterCardId;
@@ -159,4 +156,13 @@ public class PatientPublicInfoVo implements Serializable {
     /** 主卡人患者信息 */
     @ApiModelProperty("主卡人患者信息")
     private PatientPublicInfoVo masterCardInfo;
+
+
+    /** 推荐关系人会员卡id */
+    @ApiModelProperty("推荐关系人会员卡id")
+    private Integer recommendMemberId;
+
+    /** 推荐关系人会员优惠类型id */
+    @ApiModelProperty("推荐关系人会员优惠类型id")
+    private Integer recommendMemberTypeId;
 }

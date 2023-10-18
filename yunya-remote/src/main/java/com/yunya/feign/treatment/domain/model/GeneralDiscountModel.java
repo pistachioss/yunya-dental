@@ -21,9 +21,12 @@ import java.util.List;
 @ToString
 public class GeneralDiscountModel implements Serializable {
 
-  /** 会员卡类型id */
-  @ApiModelProperty("会员卡类型ID")
-  private Integer memberTypeId;
+  /** 会员卡ID */
+  @ApiModelProperty("会员卡ID")
+  private Integer memberId;
+  /** 会员卡优惠类型：99-本人会员优惠，100、推荐人次一级会员优惠，101-亲密付会员优惠 */
+  @ApiModelProperty("会员卡优惠类型：99-本人会员优惠，100、推荐人次一级会员优惠，101-亲密付会员优惠")
+  private Integer memberDiscountType;
   /** 折扣券ID */
   @ApiModelProperty("折扣券ID")
   private Integer discountCouponId;

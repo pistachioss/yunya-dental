@@ -157,29 +157,36 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
     PatientPublicInfoVo patientPublicInfoVo =
             this.patientBaseInfoMapper.findPatientPublicInfoById(id);
-    if (patientPublicInfoVo != null && patientPublicInfoVo.getMemberTypeId() != null) {
-      MemberType memberType =
-              this.remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
-      if (memberType != null) {
-        patientPublicInfoVo.setMemberCardName(memberType.getName());
-        patientPublicInfoVo.setMemberCardOldName(memberType.getOldName());
-        patientPublicInfoVo.setIcon(memberType.getIcon());
-        patientPublicInfoVo.setPictureCode(memberType.getPictureCode());
+    if (StringHelper.isNotNull(patientPublicInfoVo)) {
+      PatientMemberInfo recommendMember = patientMemberInfoBiz.findPatientRecommendSecondaryMember(id);
+      if (StringHelper.isNotNull(recommendMember)) {
+        patientPublicInfoVo.setRecommendMemberId(recommendMember.getId());
+        patientPublicInfoVo.setRecommendMemberTypeId(recommendMember.getMemberTypeId());
       }
-    }
-    if (patientPublicInfoVo != null && patientPublicInfoVo.getMasterCardId() != null) {
-      PatientPublicInfoVo patientPublicInfoVo2 =
-          this.patientBaseInfoMapper.findPatientPublicInfoById(patientPublicInfoVo.getMasterCardId());
-      if (patientPublicInfoVo2 != null && patientPublicInfoVo2.getMemberTypeId() != null) {
+      if (patientPublicInfoVo.getMemberTypeId() != null) {
         MemberType memberType =
-            this.remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo2.getMemberTypeId());
+                this.remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
         if (memberType != null) {
-          patientPublicInfoVo2.setMemberCardName(memberType.getName());
-          patientPublicInfoVo2.setMemberCardOldName(memberType.getOldName());
-          patientPublicInfoVo2.setIcon(memberType.getIcon());
-          patientPublicInfoVo2.setPictureCode(memberType.getPictureCode());
+          patientPublicInfoVo.setMemberCardName(memberType.getName());
+          patientPublicInfoVo.setMemberCardOldName(memberType.getOldName());
+          patientPublicInfoVo.setIcon(memberType.getIcon());
+          patientPublicInfoVo.setPictureCode(memberType.getPictureCode());
         }
-        patientPublicInfoVo.setMasterCardInfo(patientPublicInfoVo2);
+      }
+      if (patientPublicInfoVo.getMasterCardId() != null) {
+        PatientPublicInfoVo patientPublicInfoVo2 =
+                this.patientBaseInfoMapper.findPatientPublicInfoById(patientPublicInfoVo.getMasterCardId());
+        if (patientPublicInfoVo2 != null && patientPublicInfoVo2.getMemberTypeId() != null) {
+          MemberType memberType =
+                  this.remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo2.getMemberTypeId());
+          if (memberType != null) {
+            patientPublicInfoVo2.setMemberCardName(memberType.getName());
+            patientPublicInfoVo2.setMemberCardOldName(memberType.getOldName());
+            patientPublicInfoVo2.setIcon(memberType.getIcon());
+            patientPublicInfoVo2.setPictureCode(memberType.getPictureCode());
+          }
+          patientPublicInfoVo.setMasterCardInfo(patientPublicInfoVo2);
+        }
       }
     }
     return patientPublicInfoVo;

@@ -4,8 +4,6 @@ import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
-import java.io.Serializable;
-
 /**
  * 简单介绍:</br> 返回副卡人信息模型
  *
@@ -18,7 +16,7 @@ import java.io.Serializable;
 @Data
 @ToString
 @ApiModel("返回副卡人信息模型")
-public class SecondaryMemberInfoVo implements Serializable {
+public class SecondaryMemberInfoVo extends MemberTypeBaseVO {
 
     /**
      * 副卡人会员信息表主键id
@@ -35,28 +33,9 @@ public class SecondaryMemberInfoVo implements Serializable {
      */
     private String secondaryCardNumber;
 
-    /**
-     * 副卡人会员卡类型
-     */
-    private Integer secondaryMemberTypeId;
 
     /**
      * 副卡人姓名
      */
     private String secondaryName;
-
-    /**
-     * 副卡人会员卡类型名称
-     */
-    private String memberCardName;
-
-    /**
-     * 折扣率（价目表自动调价的折扣率）
-     */
-    private Float rate;
-
-    /**
-     * 会员卡图片
-     */
-    private String pictureCode;
 }

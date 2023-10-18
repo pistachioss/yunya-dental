@@ -464,4 +464,10 @@ public class PatientServiceRest {
   public PatientKinRelationVo findPatientKinReferrerById(@PathVariable(value = "patientId") Integer patientId) {
     return patientKinRelationBiz.findPatientKinReferrer(patientId);
   }
+
+  @ApiOperation("匹配患者的会员信息")
+  @PostMapping("/member/match/{patientId}/{memberDiscountType}")
+  public PatientMemberInfo matchPatientMemberInfo(@PathVariable(value = "patientId") Integer patientId, @PathVariable(value = "memberDiscountType") Integer memberDiscountType) {
+    return patientMemberInfoBiz.matchPatientMemberInfoByDiscountType(patientId, memberDiscountType);
+  }
 }

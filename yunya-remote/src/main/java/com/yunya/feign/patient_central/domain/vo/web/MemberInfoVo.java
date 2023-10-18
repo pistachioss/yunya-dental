@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -30,4 +31,12 @@ public class MemberInfoVo implements Serializable {
      * 副卡人信息
      */
     private List<SecondaryMemberInfoVo> secondaryMemberInfoVos;
+
+    /** 亲密付主卡人会员 */
+    @ApiModelProperty("亲密付主卡人会员")
+    private MasertMemberInfoVo intimatePayMember;
+
+    /** 推荐关系人会员的次一级会员 */
+    @ApiModelProperty("推荐关系人会员的次一级会员")
+    private MasertMemberInfoVo recommendSecondMember;
 }

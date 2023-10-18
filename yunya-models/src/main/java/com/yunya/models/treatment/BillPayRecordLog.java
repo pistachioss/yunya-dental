@@ -31,6 +31,24 @@ public class BillPayRecordLog {
     private Integer orderRecordId;
 
     /**
+     * 患者id
+     */
+    @Column(name = "patient_id")
+    private Integer patientId;
+
+    /**
+     * 使用优惠的会员卡id
+     */
+    @Column(name = "member_id")
+    private Integer memberId;
+
+    /**
+     * 会员卡优惠类型：99-本人会员优惠，100、推荐人次一级会员优惠，101-亲密付会员优惠
+     */
+    @Column(name = "member_discount_type")
+    private Integer memberDiscountType;
+
+    /**
      * 总收费
      */
     @Column(name = "total_charge")
@@ -139,6 +157,60 @@ public class BillPayRecordLog {
      */
     public void setOrderRecordId(Integer orderRecordId) {
         this.orderRecordId = orderRecordId;
+    }
+
+    /**
+     * 获取患者id
+     *
+     * @return
+     */
+    public Integer getPatientId() {
+        return patientId;
+    }
+
+    /**
+     * 设置患者id
+     *
+     * @param patientId
+     */
+    public void setPatientId(Integer patientId) {
+        this.patientId = patientId;
+    }
+
+    /**
+     * 获取使用优惠的会员卡id
+     *
+     * @return
+     */
+    public Integer getMemberId() {
+        return memberId;
+    }
+
+    /**
+     * 设置使用优惠的会员卡id
+     *
+     * @param memberId
+     */
+    public void setMemberId(Integer memberId) {
+        this.memberId = memberId;
+    }
+
+    /**
+     * 获取会员卡优惠类型：99-本人会员优惠，100、推荐人次一级会员优惠，101-亲密付会员优惠
+     *
+     * @return
+     */
+    public Integer getMemberDiscountType() {
+        return memberDiscountType;
+    }
+
+    /**
+     * 设置会员卡优惠类型：99-本人会员优惠，100、推荐人次一级会员优惠，101-亲密付会员优惠
+     *
+     * @param memberDiscountType
+     */
+    public void setMemberDiscountType(Integer memberDiscountType) {
+        this.memberDiscountType = memberDiscountType;
     }
 
     /**

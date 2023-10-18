@@ -50,6 +50,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.clinic_base.SpecialistProject;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
@@ -458,7 +459,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (StringHelper.isNotNull(memberInfo)) {
       int minTypeSec = 0;
       MasertMemberInfoVo masertMemberInfoVo = memberInfo.getMasertMemberInfoVo();
-      if (StringHelper.isNotNull(masertMemberInfoVo) && masertMemberInfoVo.getMasterCardTypeId() != 4) {
+      if (StringHelper.isNotNull(masertMemberInfoVo)) {
 //        List<SecondaryMemberInfoVo> secondaryMemberInfoVos = memberInfo.getSecondaryMemberInfoVos();
 //        if (CollectionUtils.isNotEmpty(secondaryMemberInfoVos)) {
 //          Optional<SecondaryMemberInfoVo> min =
@@ -471,7 +472,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 //          }
 //        }
         // 非普通会员
-        int secType = masertMemberInfoVo.getMasterCardTypeId();
+        int secType = masertMemberInfoVo.getMemberTypeId();
         if (minTypeSec == 0) {
           map.put(secType, masertMemberInfoVo.getMasterCardNumber());
         } else if (minTypeSec > secType) {

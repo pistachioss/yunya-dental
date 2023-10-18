@@ -395,4 +395,8 @@ import java.util.List;
   @ApiOperation("根据患者id查询推荐关系对应的患者")
   @GetMapping("/api/kinrelation/{patientId}")
   PatientKinRelationVo findPatientKinReferrerById(@PathVariable(value = "patientId") Integer patientId);
+
+  @ApiOperation("匹配患者的会员信息")
+  @PostMapping("/api/member/match/{patientId}/{memberDiscountType}")
+  PatientMemberInfo matchPatientMemberInfo(@PathVariable(value = "patientId") Integer patientId, @PathVariable(value = "memberDiscountType") Integer memberDiscountType);
 }

@@ -24,10 +24,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
-import com.yunya.modules.treatment.mapper.BillExceptionHandleDetailRecordMapper;
-import com.yunya.modules.treatment.mapper.BillExceptionHandleRecordMapper;
-import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
-import com.yunya.modules.treatment.mapper.BillRecordMapper;
+import com.yunya.modules.treatment.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,6 +73,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
   @Autowired private OrderDetailPayRecordBiz orderDetailPayRecordBiz;
   /** 收费项目分摊明细 */
   @Autowired private BillPayShareDetailBiz billPayShareDetailBiz;
+  @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
 
   /**
    * 根据账单收费记录ID撤销账单收费记录
@@ -370,5 +368,15 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
    */
   public List<Integer> selectAdjustPayIds(StatementStatisticQuery query) {
     return mapper.selectAdjustPayIds(query);
+  }
+
+  /**
+   * 查询账单首次收费日志
+   *
+   * @param orderRecordId
+   * @return
+   */
+  public BillPayRecordLog findBillFirstPayRecordLogByOrderId(Integer orderRecordId) {
+    return billPayRecordLogMapper.selectBillFirstPayRecordLogByOrderId(orderRecordId);
   }
 }
