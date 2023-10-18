@@ -478,7 +478,8 @@ public class MinorChargeProcessBiz {
      * @param orderDetail 可优惠的订单明细
      */
     private void saveOrderPrivilegeDetail(
-            Integer patientId, Integer orderRecordId, GeneralDiscountModel generalDiscount, AccreditDiscountModel accreditDiscountModel, List<OrderDetailChargeVO> orderDetail) {
+            Integer patientId, Integer orderRecordId, GeneralDiscountModel generalDiscount,
+            AccreditDiscountModel accreditDiscountModel, List<OrderDetailChargeVO> orderDetail) {
         MixMatchBenefitModel benefitModel = new MixMatchBenefitModel();
         benefitModel.setOrderId(orderRecordId);
         benefitModel.setOrderDetail(orderDetail);
@@ -503,8 +504,7 @@ public class MinorChargeProcessBiz {
         benefitModel.setRemark(accreditDiscountModel.getRemarks());
         benefitModel.setItemBenefits(convertAccreditBenefits(accreditDiscountModel, orderDetail));
 
-        // TODO: 2023/10/13 打印
-        System.out.println(JSON.toJSON(benefitModel));
+        log.info("saveMixMatchBenefit param: {}", JSON.toJSON(benefitModel));
         ResponseResult responseResult = discountFeign.saveMixMatchBenefit(benefitModel);
         if (responseResult.getStatus() > 0) {
             throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());

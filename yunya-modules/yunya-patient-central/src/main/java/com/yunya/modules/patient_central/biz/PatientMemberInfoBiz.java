@@ -1719,7 +1719,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param form 查询患者会员信息form
    * @return List<MemberInfoVo>
    */
-  @Deprecated
   public MemberInfoVo findMemberInfo(PatientMemberInfoQueryForm form) {
     MemberInfoVo memberInfoVo = new MemberInfoVo();
     MasertMemberInfoVo masertMemberInfoVo = patientMemberInfoMapper.selectMasertMemberInfo(form);
@@ -1736,13 +1735,13 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     memberInfoVo.setSecondaryMemberInfoVos(secondaryMemberInfoVos);
 
     // 亲密付主卡人会员
-    PatientMemberInfo intimatePayMember = patientMemberInfoMapper.selectPatientBindMemberInfo(form.getPatientId());
+    PatientMemberInfo intimatePayMember = findPatientIntimatePayMasterMember(form.getPatientId());
     if (StringHelper.isNotNull(intimatePayMember) && intimatePayMember.getInservice()) {
       memberInfoVo.setIntimatePayMember(convertMasterMemberInfo(intimatePayMember, false));
     }
 
     // 推荐关系人会员信息
-    PatientMemberInfo recommendMember = patientMemberInfoMapper.selectPatientReferrerMemberInfo(form.getPatientId());
+    PatientMemberInfo recommendMember = findPatientRecommendSecondaryMember(form.getPatientId());
     if (StringHelper.isNotNull(recommendMember) && recommendMember.getInservice()) {
       memberInfoVo.setRecommendSecondMember(convertMasterMemberInfo(recommendMember, true));
     }
@@ -1805,7 +1804,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       return memberInfo;
     }
     // 亲密付主卡人
-    memberInfo = findPatientIntimatePayMember(patientId);
+    memberInfo = findPatientIntimatePayMasterMember(patientId);
     // 推荐人次一级
     memberInfo = findPatientRecommendSecondaryMember(patientId);
     // 普通会员
@@ -1839,7 +1838,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param patientId
    * @return
    */
-  public PatientMemberInfo findPatientIntimatePayMember(Integer patientId) {
+  public PatientMemberInfo findPatientIntimatePayMasterMember(Integer patientId) {
     PatientMemberInfo memberInfo = patientMemberInfoMapper.selectPatientBindMemberInfo(patientId);
     if (StringHelper.isNotNull(memberInfo) && memberInfo.getInservice()) {
       return memberInfo;
@@ -1872,6 +1871,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     // 患者作为副卡人可用会员卡
     List<MemberBaseInfoVo> memberBaseInfoVoList =
         patientMemberInfoMapper.selectMemberRelationByMasterPatientId(id);
+
+    List<PatientCardOwnerInfoVo> patientCardOwnerInfo = findPatientCardOwnerInfo(id);
     resultList.addAll(memberBaseInfoVoList);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.removeIf(vo -> null == vo.getId());
@@ -2197,7 +2198,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     Integer acceptorId = null;
     if (model.getRebateRatioType().intValue() == 2) {
       // 患者消费时给亲密付主卡人或推荐关系人返点
-      PatientMemberInfo memberInfo = patientMemberInfoMapper.selectPatientBindMemberInfo(patientId);
+      PatientMemberInfo memberInfo = findPatientIntimatePayMasterMember(patientId);
       if (StringHelper.isNotNull(memberInfo)) {
         acceptorId = memberInfo.getPatientId();
       } else {
@@ -2443,7 +2444,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       }
       case 101: {
         // 患者亲密付主卡人会员
-        return findPatientIntimatePayMember(patientId);
+        return findPatientIntimatePayMasterMember(patientId);
       }
       default:break;
     }

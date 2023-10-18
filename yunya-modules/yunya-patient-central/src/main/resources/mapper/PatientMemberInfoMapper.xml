@@ -181,6 +181,8 @@
             ( SELECT pmr.master_card_id FROM patient_member_relation pmr WHERE bind_type = 1 AND pmr.secondary_card_id = #{patientId} GROUP BY pmr.master_card_id ) pmr
             INNER JOIN patient_member_info pmi ON pmr.master_card_id = pmi.patient_id
             LEFT JOIN patient_base_info pbi ON pmr.master_card_id = pbi.id
+        --todo: 待改
+        WHERE pmi.member_type_id !=4
     </select>
 
     <select id="sumMemberAndPrepayRechargeCash" resultType="java.math.BigDecimal">
