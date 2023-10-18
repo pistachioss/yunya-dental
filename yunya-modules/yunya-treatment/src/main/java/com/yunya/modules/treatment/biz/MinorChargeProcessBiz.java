@@ -22,11 +22,9 @@ import com.yunya.feign.wechat.enums.TemplateEnum;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.BeanUtil;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.BillPayRecordLog;
@@ -418,15 +416,15 @@ public class MinorChargeProcessBiz {
         for (OrderDetailChargeVO item : orderDetails) {
             Integer itemId = item.getBillingItemId();
             Byte type = item.getType();
-            Boolean canAccreditDiscount = true;
+            Boolean canMatchAccreditDiscount = true;
             List<PrivilegeCouponInfoVO> discountAppliesCoupons = item.getDiscountAppliesCoupons();
             for (PrivilegeCouponInfoVO discountAppliesCoupon : discountAppliesCoupons) {
-                if (!discountAppliesCoupon.getCouponType().equals(99)) {
-                    canAccreditDiscount = false;
+                if (!NumberUtil.betweenAnd(discountAppliesCoupon.getCouponType(), 99, 101)) {
+                    canMatchAccreditDiscount = false;
                     break;
                 }
             }
-            if (canAccreditDiscount) {
+            if (canMatchAccreditDiscount) {
                 for (AccreditDiscountDetailModel discountItem : accreditDiscounts) {
                     if (discountItem.getBillingItemId().equals(itemId) && discountItem.getType().equals(type)) {
                         BigDecimal receivableAmount = item.getReceivableAmount();
@@ -486,7 +484,8 @@ public class MinorChargeProcessBiz {
         benefitModel.setOrderDetail(orderDetail);
         benefitModel.setPatientId(patientId);
         benefitModel.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-        benefitModel.setMemberCardId(generalDiscount.getMemberTypeId());
+
+        benefitModel.setMemberCardId(findMemberTypeByDiscountType(patientId, generalDiscount));
         benefitModel.setDiscountId(generalDiscount.getDiscountCouponId());
         List<CouponDiscountInfoModel> coupons = generalDiscount.getCouponDiscountInfoModels();
         List<Integer> voucherIds = Lists.newArrayList();
@@ -580,5 +579,27 @@ public class MinorChargeProcessBiz {
                 }
             }
         }
+    }
+
+    public Integer findMemberTypeByDiscountType(Integer patientId, GeneralDiscountModel generalDiscountModel) {
+        PatientMemberInfo memberInfo = findPatientMemberInfoByDiscountType(patientId, generalDiscountModel.getMemberDiscountType());
+        if (StringHelper.isNotNull(memberInfo)) {
+            return memberInfo.getMemberTypeId();
+        }
+        return null;
+    }
+
+    /**
+     * 根据会员优惠类型匹配患者相关的会员信息
+     *
+     * @param patientId
+     * @param memberDiscountType
+     * @return
+     */
+    public PatientMemberInfo findPatientMemberInfoByDiscountType(Integer patientId, Integer memberDiscountType) {
+        if (StringHelper.isAnyNull(patientId, memberDiscountType)) {
+            return null;
+        }
+        return patientFeign.matchPatientMemberInfo(patientId, memberDiscountType);
     }
 }

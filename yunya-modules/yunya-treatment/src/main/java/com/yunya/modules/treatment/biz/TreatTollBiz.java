@@ -8,7 +8,6 @@ import com.yunya.feign.discount.domain.vo.DeductionItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.form.QcTreatmentImportForm;
@@ -26,7 +25,6 @@ import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
@@ -94,7 +92,6 @@ public class TreatTollBiz {
   @Autowired private BillPayRecordLogMapper billPayRecordLogMapper;
 
   @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
-  @Autowired private RemotePatientCentralServiceFeign patientFeign;
 
   /**
    * 根据优惠信息匹配订单优惠
@@ -722,18 +719,12 @@ public class TreatTollBiz {
       }
       patientId = order.getPatientId();
     }
-    Integer memberCardId = null;
-    PatientMemberInfo memberInfo = matchPatientMemberInfoByDiscountType(patientId, generalDiscountModel.getMemberDiscountType());
-    if (StringHelper.isNotNull(memberInfo)) {
-      memberCardId = memberInfo.getMemberTypeId();
-    }
-
     PatientChooseBenefitForm form = new PatientChooseBenefitForm();
     form.setOrderDetail(orderDetail);
     form.setPatientId(patientId);
     form.setOrderId(orderRecordId);
     form.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-    form.setMemberCardId(memberCardId);
+    form.setMemberCardId(minorChargeProcessBiz.findMemberTypeByDiscountType(patientId, generalDiscountModel));
     form.setDiscountId(generalDiscountModel.getDiscountCouponId());
     List<Integer> exchangeIds = Lists.newArrayList();
     List<Integer> voucherIds = Lists.newArrayList();
@@ -753,20 +744,6 @@ public class TreatTollBiz {
       throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
     }
     return resultData;
-  }
-
-  /**
-   * 根据会员优惠类型匹配患者相关的会员信息
-   *
-   * @param patientId
-   * @param memberDiscountType
-   * @return
-   */
-  private PatientMemberInfo matchPatientMemberInfoByDiscountType(Integer patientId, Integer memberDiscountType) {
-    if (StringHelper.isAnyNull(patientId, memberDiscountType)) {
-      return null;
-    }
-    return patientFeign.matchPatientMemberInfo(patientId, memberDiscountType);
   }
 
   /**
