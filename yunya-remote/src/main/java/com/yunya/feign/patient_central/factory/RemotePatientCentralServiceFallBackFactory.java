@@ -306,4 +306,9 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public PatientKinRelationVo findPatientKinReferrerById(Integer patientId) {
         return null;
     }
+
+    @Override
+    public PatientMemberInfo matchPatientMemberInfo(Integer patientId, Integer memberDiscountType) {
+        return null;
+    }
 }

@@ -50,7 +50,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.clinic_base.SpecialistProject;
-import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
@@ -414,7 +413,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       if (StringHelper.isNotEmpty(maxType)) {
         OrderPrivilegeQuery query = new OrderPrivilegeQuery();
         GeneralDiscountModel generalDiscountModel = new GeneralDiscountModel();
-        generalDiscountModel.setMemberTypeId(Lists.newArrayList(maxType.keySet()).get(0));
+        generalDiscountModel.setMemberDiscountType(99);
         query.setOrderRecordId(orderRecordId);
         query.setDiscountType((byte) 1);
         query.setGeneralDiscountModel(generalDiscountModel);

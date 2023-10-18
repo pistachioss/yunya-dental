@@ -993,7 +993,7 @@ public class TollBiz {
     paramForm.setPatientId(patientId);
     paramForm.setOrderId(orderRecordId);
     paramForm.setOrgId(orgId);
-    paramForm.setMemberCardId(generalDiscount.getMemberTypeId());
+    paramForm.setMemberCardId(generalDiscount.getMemberDiscountType());
     paramForm.setDiscountId(generalDiscount.getDiscountCouponId());
     List<Integer> voucherIds = Lists.newArrayList();
     List<Integer> exchangeIds = Lists.newArrayList();
@@ -1239,7 +1239,7 @@ public class TollBiz {
     form.setPatientId(patientId);
     form.setOrderId(orderRecordId);
     form.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-    form.setMemberCardId(generalDiscountModel.getMemberTypeId());
+    form.setMemberCardId(generalDiscountModel.getMemberDiscountType());
     form.setDiscountId(generalDiscountModel.getDiscountCouponId());
     List<Integer> exchangeIds = Lists.newArrayList();
     List<Integer> voucherIds = Lists.newArrayList();
@@ -1386,7 +1386,7 @@ public class TollBiz {
   }
 
   private void checkCardDiscount(GeneralDiscountModel generalDiscountModel) {
-    Integer memberTypeId = generalDiscountModel.getMemberTypeId();
+    Integer memberTypeId = generalDiscountModel.getMemberDiscountType();
     Integer discountCouponId = generalDiscountModel.getDiscountCouponId();
     List<CouponDiscountInfoModel> discountInfoModels =
             generalDiscountModel.getCouponDiscountInfoModels();
@@ -1682,7 +1682,7 @@ public class TollBiz {
             });
     model.setItemBenefits(items);
 
-    model.setMemberCardId(generalDiscount.getMemberTypeId());
+    model.setMemberCardId(generalDiscount.getMemberDiscountType());
     model.setDiscountId(generalDiscount.getDiscountCouponId());
     List<CouponDiscountInfoModel> coupons = generalDiscount.getCouponDiscountInfoModels();
     List<Integer> voucherIds = Lists.newArrayList();
@@ -1745,7 +1745,7 @@ public class TollBiz {
     benefitModel.setOrderId(orderRecordId);
     benefitModel.setPatientId(patientId);
     benefitModel.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-    benefitModel.setMemberCardId(generalDiscount.getMemberTypeId());
+    benefitModel.setMemberCardId(generalDiscount.getMemberDiscountType());
     benefitModel.setDiscountId(generalDiscount.getDiscountCouponId());
     List<CouponDiscountInfoModel> coupons = generalDiscount.getCouponDiscountInfoModels();
     List<Integer> voucherIds = Lists.newArrayList();
