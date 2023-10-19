@@ -98,6 +98,7 @@ public class BusinessConstants {
   /** 免单项目ID */
   public static final Integer FREE_TARIFF_ITEM_ID = 679;
   public static final String DOT = ",";
+  public static final String DES_SALT = "30198257";
 
     /** 电子待审批状态 */
   public static Integer MEDICAL_AUDIT_PENDING_STATUS = 1;

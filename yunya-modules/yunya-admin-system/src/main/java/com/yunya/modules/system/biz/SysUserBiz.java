@@ -10,6 +10,7 @@ import com.yunya.feign.system.vo.SysEmployeeExtVO;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -44,7 +45,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseEmployee;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
@@ -619,28 +619,24 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    * 生成当前登录员工的授权折扣码
    *
    */
-  public void generateEmpAccreditDiscountCode(HttpServletResponse response) throws IOException {
+  public void generateEmpAccreditDiscountCode(HttpServletResponse response) throws Exception {
     String userID = BaseContextHandler.getUserID();
-    String authCode = UUIDUtils.codeGenerator(6);
-    redisUtils.supplyIfAbsent(BaseContextHandler::getUserID,
-            3, TimeUnit.MINUTES, EMP_ACCREDIT_DISCOUNT_CODE, authCode);
+    String authCode = DESUtils.encrypt(userID, BusinessConstants.DES_SALT);
     log.info("generate employeeId: {}, accredictDiscount code：{}", userID,  authCode);
     QRCodeUtl.generateAsStream(authCode, response);
   }
 
   /**
-   * 验证 会员卡的授权码
+   * 解析 授权码
    *
    * @param code
    * @return
    */
-  public Integer verificationCode(String code) {
-    String key = buildLockCacheKey(EMP_ACCREDIT_DISCOUNT_CODE, code);
-    if (!redisUtils.hasKey(key)) {
-      throw new ClientServiceException("授权码已失效！", MESSAGE_CODE_ERROR);
+  public Integer parseCode(String code) throws Exception {
+    String userId = DESUtils.decrypt(code, BusinessConstants.DES_SALT);
+    if (StringHelper.isEmpty(userId)) {
+      throw new ClientServiceException("无效的授权码", DATA_ERROR);
     }
-    String value = redisUtils.get(key);
-    redisUtils.delete(key);
-    return Integer.parseInt(value);
+    return Integer.parseInt(userId);
   }
 }

@@ -248,8 +248,8 @@ public class SysUserController {
                   dataTypeClass = String.class)
   })
   @GetMapping("/accredit/discount/{code}")
-  public ResponseResult<SysEmployeeExtVO> findEmployeeAccreditDiscountByCode(@PathVariable(value = "code") String code) {
-    SysEmployeeExtVO sysEmployeeExtVO = sysUserBiz.findEmployeeAccreditDiscount(sysUserBiz.verificationCode(code));
+  public ResponseResult<SysEmployeeExtVO> findEmployeeAccreditDiscountByCode(@PathVariable(value = "code") String code) throws Exception {
+    SysEmployeeExtVO sysEmployeeExtVO = sysUserBiz.findEmployeeAccreditDiscount(sysUserBiz.parseCode(code));
     if (StringHelper.isNull(sysEmployeeExtVO)) {
       throw new ClientServiceException("员工暂未开启授权折扣！", DATA_NOT_EXIST);
     }
@@ -264,7 +264,7 @@ public class SysUserController {
   @CurrentUser
   @ApiOperation("生成当前登录员工的授权折扣码")
   @GetMapping("/accredit/discount/generateCode")
-  public void generateloyeeAccreditDiscountCode(HttpServletResponse response) throws IOException {
+  public void generateloyeeAccreditDiscountCode(HttpServletResponse response) throws Exception {
     sysUserBiz.generateEmpAccreditDiscountCode(response);
   }
 }
