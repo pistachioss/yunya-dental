@@ -187,14 +187,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     MasertMemberInfoVo masertMemberInfoVo = patientMemberInfoMapper.selectMasertMemberInfo(form);
     if (masertMemberInfoVo != null) {
       // 获取会员卡名称
-      MemberType memberType =
-          this.remoteSystemServiceFeign.findMemberTypeById(
-              masertMemberInfoVo.getMemberTypeId());
-      if (memberType != null) {
-        masertMemberInfoVo.setMemberCardName(memberType.getName());
-        masertMemberInfoVo.setRate(memberType.getRate());
-        masertMemberInfoVo.setPictureCode(memberType.getPictureCode());
-      }
+      fillMemberCardInfo(masertMemberInfoVo);
     }
     return masertMemberInfoVo;
   }

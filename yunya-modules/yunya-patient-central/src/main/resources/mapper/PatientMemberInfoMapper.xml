@@ -156,7 +156,7 @@
 
     <!-- 查询主卡人信息 -->
     <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo">
-        select id,patient_id masterCardId, member_type_id masterCardTypeId,
+        select id,patient_id masterCardId, member_type_id memberTypeId,
         (select name from patient_base_info where id = patient_id) masterName,card_number masterCardNumber,point,crt_time crtTime
         from patient_member_info where patient_id = #{form.patientId}
     </select>
