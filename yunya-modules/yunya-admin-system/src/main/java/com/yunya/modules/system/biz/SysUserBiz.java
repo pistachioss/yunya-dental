@@ -619,11 +619,11 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    * 生成当前登录员工的授权折扣码
    *
    */
-  public void generateEmpAccreditDiscountCode(HttpServletResponse response) throws Exception {
+  public String generateEmpAccreditDiscountCode() throws Exception {
     String userID = BaseContextHandler.getUserID();
     String authCode = DESUtils.encrypt(userID, BusinessConstants.DES_SALT);
     log.info("generate employeeId: {}, accredictDiscount code：{}", userID,  authCode);
-    QRCodeUtl.generateAsStream(authCode, response);
+    return authCode;
   }
 
   /**

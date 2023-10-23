@@ -264,7 +264,7 @@ public class SysUserController {
   @CurrentUser
   @ApiOperation("生成当前登录员工的授权折扣码")
   @GetMapping("/accredit/discount/generateCode")
-  public void generateloyeeAccreditDiscountCode(HttpServletResponse response) throws Exception {
-    sysUserBiz.generateEmpAccreditDiscountCode(response);
+  public ResponseResult<String> generateloyeeAccreditDiscountCode() throws Exception {
+    return ResponseUtil.success(sysUserBiz.generateEmpAccreditDiscountCode());
   }
 }
