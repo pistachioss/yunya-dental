@@ -158,10 +158,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     PatientPublicInfoVo patientPublicInfoVo =
             this.patientBaseInfoMapper.findPatientPublicInfoById(id);
     if (StringHelper.isNotNull(patientPublicInfoVo)) {
-      PatientMemberInfo recommendMember = patientMemberInfoBiz.findPatientRecommendSecondaryMember(id);
+      PatientMemberInfoVo recommendMember = patientMemberInfoBiz.findRecommendSecondaryMember(id);
       if (StringHelper.isNotNull(recommendMember)) {
         patientPublicInfoVo.setRecommendMemberId(recommendMember.getId());
         patientPublicInfoVo.setRecommendMemberTypeId(recommendMember.getMemberTypeId());
+        patientPublicInfoVo.setRecommendMemberDiscount(recommendMember.getSecondaryMemberDiscount());
       }
       if (patientPublicInfoVo.getMemberTypeId() != null) {
         MemberType memberType =

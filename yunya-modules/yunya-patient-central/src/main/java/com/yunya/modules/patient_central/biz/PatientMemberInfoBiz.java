@@ -37,6 +37,7 @@ import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -2442,5 +2443,18 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       default:break;
     }
     return null;
+  }
+
+  public PatientMemberInfoVo findRecommendSecondaryMember(Integer patientId) {
+    PatientMemberInfoVo result = null;
+    PatientMemberInfo member = findPatientRecommendSecondaryMember(patientId);
+    if (StringHelper.isNotNull(member)) {
+      result = BeanCopierUtils.generalCopyBean(member, PatientMemberInfoVo.class);
+      MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(result.getMemberTypeId());
+      if (StringHelper.isNotNull(memberType) && memberType.getInservice()) {
+        result.setSecondaryMemberDiscount(BigDecimal.valueOf(memberType.getRate()));
+      }
+    }
+    return result;
   }
 }

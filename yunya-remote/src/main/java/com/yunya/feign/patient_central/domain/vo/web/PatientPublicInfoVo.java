@@ -162,7 +162,11 @@ public class PatientPublicInfoVo implements Serializable {
     @ApiModelProperty("推荐关系人会员卡id")
     private Integer recommendMemberId;
 
-    /** 推荐关系人会员优惠类型id */
-    @ApiModelProperty("推荐关系人会员优惠类型id")
+    /** 推荐关系人次一级会员类型id */
+    @ApiModelProperty("推荐关系人次一级会员类型id")
     private Integer recommendMemberTypeId;
+
+    /** 推荐关系人次一级会员折扣 */
+    @ApiModelProperty("推荐关系人次一级会员折扣")
+    private BigDecimal recommendMemberDiscount;
 }
