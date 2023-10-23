@@ -27,6 +27,9 @@ public enum EmrError implements RestError {
     XHQ_PC_ERROR(30022, "西湖区获取批次任务异常"),
     XHQ_DC_ERROR(30023, "西湖区获取单次任务异常"),
     XHQ_DATA_NULL(30024, "%s,西湖区没有病例数据"),
+    SC_DATA_NULL(30025, "%s,上城区没有病例数据"),
+    SC_PC_ERROR(30026, "西湖区%s获取批次任务异常"),
+    SC_DC_ERROR(30027, "西湖区%s获取单次任务异常"),
     ;
     private final Integer code;
     private final String message;

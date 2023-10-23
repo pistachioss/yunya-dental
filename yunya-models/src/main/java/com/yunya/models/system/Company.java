@@ -60,6 +60,12 @@ public class Company {
   @Column(name = "xhq_institution_code")
   private String xhqInstitutionCode;
 
+    @Column(name = "enable_sc_sync")
+    private Boolean enableScSync;
+
+    @Column(name = "sc_institution_code")
+    private String scInstitutionCode;
+
   /** 是否启用 */
   @ApiModelProperty("是否启用")
   private Boolean inservice;
@@ -367,4 +373,20 @@ public class Company {
   public void setXhqInstitutionCode(String xhqInstitutionCode) {
     this.xhqInstitutionCode = xhqInstitutionCode;
   }
+
+    public Boolean getEnableScSync() {
+        return enableScSync;
+    }
+
+    public void setEnableScSync(Boolean enableScSync) {
+        this.enableScSync = enableScSync;
+    }
+
+    public String getScInstitutionCode() {
+        return scInstitutionCode;
+    }
+
+    public void setScInstitutionCode(String scInstitutionCode) {
+        this.scInstitutionCode = scInstitutionCode;
+    }
 }

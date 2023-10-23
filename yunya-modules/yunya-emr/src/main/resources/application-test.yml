@@ -30,3 +30,7 @@ bj:
 
 xhq:
   prefix: https://www.aioclinic.com/collect_data/api/dataUpload/xiHu
+
+sc:
+  domain: https://www.aioclinic.com
+  prefix: https://www.aioclinic.com/collect_data/api/dataUpload/sc

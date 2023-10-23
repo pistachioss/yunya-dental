@@ -73,6 +73,11 @@ public class ThreadPoolManager {
                 customizeThreadFactory(), customizeRejectHandler());
     }
 
+    @Bean(value = "scheduledPool")
+    public ScheduledThreadPoolExecutor getScheduledExecutor() {
+        return new ScheduledThreadPoolExecutor(CORE_POOL_SIZE, customizeThreadFactory());
+    }
+
     /**
      * 把任务移除等待队列
      *

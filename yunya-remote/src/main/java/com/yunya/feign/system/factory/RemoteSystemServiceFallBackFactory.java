@@ -331,4 +331,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
     public List<Company> xhqCompanys() {
         return null;
     }
+
+    @Override
+    public List<Company> scCompanys() {
+        return null;
+    }
 }

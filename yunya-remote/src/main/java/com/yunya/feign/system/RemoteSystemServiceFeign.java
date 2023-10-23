@@ -491,4 +491,7 @@ public interface RemoteSystemServiceFeign {
 
   @GetMapping("/xhq/company/list")
   List<Company> xhqCompanys();
+
+    @GetMapping("/sc/company/list")
+    public List<Company> scCompanys();
 }

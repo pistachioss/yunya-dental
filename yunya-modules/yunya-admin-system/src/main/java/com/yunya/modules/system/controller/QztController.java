@@ -57,4 +57,9 @@ public class QztController {
     public List<Company> xhqCompanys() {
         return doctorBiz.certXhqCompanys();
     }
+
+    @GetMapping("/sc/company/list")
+    public List<Company> scCompanys() {
+        return doctorBiz.certScCompanys();
+    }
 }

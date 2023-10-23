@@ -177,6 +177,7 @@ public class RedisConstants implements Serializable {
   /** ---------------------------滨江----------------------------------------------- */
   public static final String BJ_TOKEN =  "bj:token";
 
+    public static final String SC_TOKEN =  "sc:token:";
   /**
    * 设置key中的占位符
    *

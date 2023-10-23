@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.List;
 
@@ -78,4 +77,6 @@ public class OrganizationInfoVO implements Serializable {
   private String bjInstitutionCode;
   private Boolean enableXhqSync;
   private String xhqInstitutionCode;
+  private Boolean enableScSync;
+  private String scInstitutionCode;
 }

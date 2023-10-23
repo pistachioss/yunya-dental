@@ -8,11 +8,13 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.constant.XhqConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.service.XhqRestTemplateApi;
+import com.yunya.framework.common.service.ScRestTemplateApi;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.QztXmlToMap;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.models.system.Company;
 import com.yunya.models.system.QztDoctor;
@@ -27,10 +29,12 @@ import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.yunya.modules.emr.enums.EmrError.*;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 /**
  * @auther: xy
@@ -38,33 +42,37 @@ import static java.util.stream.Collectors.toMap;
  */
 @Service
 @Slf4j
-public class XhqMedicalBiz {
-    private static final Map<String, String> xhqMap = Maps.newHashMap();
+public class ScMedicalBiz {
+    private static final Map<String, String> scMap = Maps.newHashMap();
 
     static {
-        xhqMap.put("MA28TTLGX33010617D1522", "杭州艾维医疗投资管理有限公司古墩路口腔门诊部");
-        xhqMap.put("MA2B2YN7833010619D1522", "杭州艾维医疗投资管理有限公司西溪路口腔门诊部");
+        scMap.put("MA27YRTQ333010490D1522", "杭州艾维乾元口腔门诊部");
+        scMap.put("MA2B0EH6633010219D1522", "杭州艾维医疗投资管理有限公司春江花月口腔门诊部");
+        scMap.put("31127261-X33010213D1522", "杭州艾维鲲鹏路口腔门诊部");
     }
 
     @Resource
     private MedicalCommonRecordBiz medicalCommonRecordBiz;
     @Resource
-    private XhqRestTemplateApi xhqRestTemplateApi;
-    @Value("${xhq.prefix}")
-    private String xhqPrefix;
+    private ScRestTemplateApi scRestTemplateApi;
+    @Value("${sc.prefix}")
+    private String scPrefix;
     @Resource
     private RemoteSystemServiceFeign systemServiceFeign;
     @Resource
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
     @Resource
     private RemotePatientCentralServiceFeign patientCentralServiceFeign;
+    @Resource
+    private RedisUtils redisUtils;
 
     public void sync() {
         //查询已认证的医生
         List<QztDoctor> qztDoctors = systemServiceFeign.certDoctors();
         //过滤的医生ids
         Map<Integer, QztDoctor> doctorMap = certDoctorIds(qztDoctors);
-        List<Integer> certClinicIds = certClinicIds(qztDoctors);
+        List<Company> companies = certClinicIds();
+        List<Integer> certClinicIds =  companies.stream().map(Company::getId).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(certClinicIds)) {
             log.info("不存在医疗机构");
             return;
@@ -75,56 +83,68 @@ public class XhqMedicalBiz {
                 .andIn("majorDentistId", doctorMap.keySet())
                 .andGreaterThanOrEqualTo("crtTime", preDay);
         example.orderBy("id").asc();
-        List<MedicalCommonRecord> medicalCommonRecords = medicalCommonRecordBiz.selectByExample(example);
-        if (CollectionUtils.isEmpty(medicalCommonRecords)) {
-            log.info("西湖区昨天：{}，没有新增病例:{}", preDay, medicalCommonRecords.size());
-            throw ClientServiceException.wrap(XHQ_DATA_NULL, preDay);
+        List<MedicalCommonRecord> medicalCommonRecords1 = medicalCommonRecordBiz.selectByExample(example);
+        if (CollectionUtils.isEmpty(medicalCommonRecords1)) {
+            log.info("上城区昨天：{}，没有新增病例:{}", preDay, medicalCommonRecords1.size());
+            throw ClientServiceException.wrap(SC_DATA_NULL, preDay);
         }
-        Map<Integer, TreatmentRecordExtendVO> treatMap = treat(medicalCommonRecords);
+        Map<Integer, List<MedicalCommonRecord>> medicalMap = Maps.newHashMap();
+        Map<Integer, TreatmentRecordExtendVO> treatMap = treat(medicalCommonRecords1, medicalMap);
         //过滤未认证门诊
-        filterClinic(medicalCommonRecords, treatMap, certClinicIds);
-        int medicalSize = medicalCommonRecords.size();
-        Date date = new Date();
-        //调用病例记录批次任务接口
-        String pcTaskId = getTaskId(date, medicalSize, XhqConstants.MEDICAL_CODE);
-        Map<Integer, PatientBaseInfoVo> patientMap = transferPatient(medicalCommonRecords);
-        Map<Integer, Company> orgMap = systemServiceFeign.certCompanys().stream().collect(toMap(Company::getId, Function.identity()));
-        List<List<MedicalCommonRecord>> lists = Lists.partition(medicalCommonRecords, 1000);
-        for (int i = 1; i <= lists.size(); i++) {
-            String dcTaskId = getDcTaskId(date, XhqConstants.MEDICAL_CODE, pcTaskId, i);
-            //businessData
-            Map<String, Object> medical = medical(medicalCommonRecords, patientMap, doctorMap, orgMap, treatMap);
-            String xml = QztXmlToMap.mapToXml(medical, false);
-            log.info("西湖区病例业务数据：{}", xml);
-            String businessData = QztXmlToMap.stringGZIP(xml);
-            String toXml = QztXmlToMap.mapToXml(QztXmlToMap.sjXmlToMap(XhqConstants.SJ_PATH
-                    , dcTaskId, XhqConstants.MEDICAL_CODE, businessData), true);
-            String sj_Medical = xhqRestTemplateApi.postObject(xhqPrefix + XhqConstants.SJ_URL, toXml);
-            log.info("西湖区病例业务数据上传成功，批次：{}，任务：{}", i, dcTaskId);
+        filterClinic(medicalCommonRecords1, treatMap, certClinicIds);
+        Map<Integer, String> collect = companies.stream().collect(toMap(Company::getId, Company::getScInstitutionCode));
+        for (Integer certClinicId : certClinicIds) {
+            String orgName = scMap.get(collect.get(certClinicId));
+            String shortToken = redisUtils.get(RedisConstants.SC_TOKEN + orgName);
+            List<MedicalCommonRecord> medicalCommonRecords = medicalMap.get(certClinicId);
+            if (CollectionUtils.isEmpty(medicalCommonRecords) || StringUtils.isBlank(shortToken)) {
+                log.info("昨天门诊：{}：{}，没有新增病例:{}", orgName, preDay, medicalCommonRecords.size());
+                continue;
+            }
+            int medicalSize = medicalCommonRecords.size();
+            Date date = new Date();
+            //调用病例记录批次任务接口
+            String pcTaskId = getTaskId(date, medicalSize, XhqConstants.MEDICAL_CODE, orgName,shortToken);
+            Map<Integer, PatientBaseInfoVo> patientMap = transferPatient(medicalCommonRecords);
+            Map<Integer, Company> orgMap = systemServiceFeign.certCompanys().stream().collect(toMap(Company::getId, Function.identity()));
+            List<List<MedicalCommonRecord>> lists = Lists.partition(medicalCommonRecords, 1000);
+            for (int i = 1; i <= lists.size(); i++) {
+                String dcTaskId = getDcTaskId(date, XhqConstants.MEDICAL_CODE, pcTaskId, i,shortToken);
+                //businessData
+                Map<String, Object> medical = medical(medicalCommonRecords, patientMap, doctorMap, orgMap, treatMap);
+                String xml = QztXmlToMap.mapToXml(medical, false);
+                log.info("上城区门诊：{}，病例业务数据：{}", orgName, xml);
+                String businessData = QztXmlToMap.stringGZIP(xml);
+                String toXml = QztXmlToMap.mapToXml(QztXmlToMap.sjXmlToMap(XhqConstants.SJ_PATH
+                        , dcTaskId, XhqConstants.MEDICAL_CODE, businessData), true);
+                String sj_Medical = scRestTemplateApi.postObject(scPrefix + XhqConstants.SJ_URL + "?short-access-token=" + shortToken, toXml);
+                log.info("上城区门诊：{}，病例业务数据上传成功，批次：{}，任务：{}", orgName, i, dcTaskId);
+            }
+            syncTreat(medicalCommonRecords, patientMap, doctorMap, orgMap, treatMap, orgName, shortToken);
+            syncTreatDetail(medicalCommonRecords, patientMap, doctorMap, orgMap, treatMap, orgName, shortToken);
         }
-        syncTreat(medicalCommonRecords, patientMap, doctorMap, orgMap, treatMap);
-        syncTreatDetail(medicalCommonRecords, patientMap, doctorMap, orgMap, treatMap);
     }
 
     private void syncTreat(List<MedicalCommonRecord> medicalCommonRecords, Map<Integer, PatientBaseInfoVo> patientMap
-            , Map<Integer, QztDoctor> doctorMap, Map<Integer, Company> orgMap, Map<Integer, TreatmentRecordExtendVO> treatMap) {
+            , Map<Integer, QztDoctor> doctorMap, Map<Integer, Company> orgMap, Map<Integer, TreatmentRecordExtendVO> treatMap
+                ,String orgName,String token) {
 
         int medicalSize = medicalCommonRecords.size();
         Date date = new Date();
         //调用病例记录批次任务接口
-        String pcTaskId = getTaskId(date, medicalSize, XhqConstants.TREAT_CODE);
+        String pcTaskId = getTaskId(date, medicalSize, XhqConstants.TREAT_CODE, orgName, token);
         List<List<MedicalCommonRecord>> lists = Lists.partition(medicalCommonRecords, 1000);
         for (int i = 1; i <= lists.size(); i++) {
-            String dcTaskId = getDcTaskId(date, XhqConstants.TREAT_CODE, pcTaskId, i);
+            String dcTaskId = getDcTaskId(date, XhqConstants.TREAT_CODE, pcTaskId, i, token);
             //businessData
             Map<String, Object> treat = treat(medicalCommonRecords, patientMap, doctorMap, orgMap, treatMap);
             String xml = QztXmlToMap.mapToXml(treat, false);
-            log.info("西湖区就诊业务数据：{}", xml);
+            log.info("上城区门诊：{}，就诊业务数据：{}", orgName,xml);
             String businessData = QztXmlToMap.stringGZIP(xml);
             String toXml = QztXmlToMap.mapToXml(QztXmlToMap.sjXmlToMap(XhqConstants.SJ_PATH
                     , dcTaskId, XhqConstants.TREAT_CODE, businessData), true);
-            String sj_Medical = xhqRestTemplateApi.postObject(xhqPrefix + XhqConstants.SJ_URL, toXml);
-            log.info("西湖区就诊业务数据上传成功，批次：{}，任务：{}", i, dcTaskId);
+            String sj_Medical = scRestTemplateApi.postObject(scPrefix + XhqConstants.SJ_URL + "?short-access-token=" + token, toXml);
+            log.info("上城区门诊：{}，就诊业务数据上传成功，批次：{}，任务：{}", orgName,i, dcTaskId);
         }
     }
 
@@ -133,56 +153,57 @@ public class XhqMedicalBiz {
 //    }
 
     private void syncTreatDetail(List<MedicalCommonRecord> medicalCommonRecords, Map<Integer, PatientBaseInfoVo> patientMap
-            , Map<Integer, QztDoctor> doctorMap, Map<Integer, Company> orgMap, Map<Integer, TreatmentRecordExtendVO> treatMap) {
+            , Map<Integer, QztDoctor> doctorMap, Map<Integer, Company> orgMap, Map<Integer, TreatmentRecordExtendVO> treatMap
+            ,String orgName,String token) {
 
         int medicalSize = medicalCommonRecords.size();
         Date date = new Date();
         //调用病例记录批次任务接口
-        String pcTaskId = getTaskId(date, medicalSize, XhqConstants.TREAT_DETAIL_CODE);
+        String pcTaskId = getTaskId(date, medicalSize, XhqConstants.TREAT_DETAIL_CODE,orgName, token);
         List<List<MedicalCommonRecord>> lists = Lists.partition(medicalCommonRecords, 1000);
         for (int i = 1; i <= lists.size(); i++) {
-            String dcTaskId = getDcTaskId(date, XhqConstants.TREAT_DETAIL_CODE, pcTaskId, i);
+            String dcTaskId = getDcTaskId(date, XhqConstants.TREAT_DETAIL_CODE, pcTaskId, i, token);
             //businessData
             Map<String, Object> treat = treatDetail(medicalCommonRecords, patientMap, doctorMap, orgMap, treatMap);
             String xml = QztXmlToMap.mapToXml(treat, false);
-            log.info("西湖区就诊详情业务数据：{}", xml);
+            log.info("上城区门诊：{}，就诊详情业务数据：{}", orgName,xml);
             String businessData = QztXmlToMap.stringGZIP(xml);
             String toXml = QztXmlToMap.mapToXml(QztXmlToMap.sjXmlToMap(XhqConstants.SJ_PATH
                     , dcTaskId, XhqConstants.TREAT_DETAIL_CODE, businessData), true);
-            String sj_treatDetail = xhqRestTemplateApi.postObject(xhqPrefix + XhqConstants.SJ_URL, toXml);
-            log.info("西湖区就诊详情业务数据上传成功，批次：{}，任务：{}", i, dcTaskId);
+            String sj_treatDetail = scRestTemplateApi.postObject(scPrefix + XhqConstants.SJ_URL + "?short-access-token=" + token, toXml);
+            log.info("上城区门诊：{}，就诊详情业务数据上传成功，批次：{}，任务：{}", orgName, i, dcTaskId);
         }
     }
 
-    private String getTaskId(Date date, int size, String code) {
+    private String getTaskId(Date date, int size, String code,String orgName,String token) {
         //调用病例记录批次任务接口
-        String pc_Task = xhqRestTemplateApi.postObject(xhqPrefix + XhqConstants.PC_URL
+        String pc_Task = scRestTemplateApi.postObject(scPrefix + XhqConstants.PC_URL + "?short-access-token=" + token
                 , QztXmlToMap.mapToXml(QztXmlToMap.pcXmlToMap(XhqConstants.PC_PATH
                         , date, size, code), true));
         String pcTaskId = QztXmlToMap.getNode(pc_Task, "taskid").getTextContent();
         if (StringUtils.isBlank(pcTaskId)) {
-            throw ClientServiceException.wrap(XHQ_PC_ERROR);
+            throw ClientServiceException.wrap(SC_PC_ERROR, orgName);
         }
         return pcTaskId;
     }
 
-    private String getDcTaskId(Date date, String code, String pcTaskId, int i) {
-        String dc_Task = xhqRestTemplateApi.postObject(xhqPrefix + XhqConstants.DC_URL
+    private String getDcTaskId(Date date, String code, String pcTaskId, int i,String token) {
+        String dc_Task = scRestTemplateApi.postObject(scPrefix + XhqConstants.DC_URL + "?short-access-token=" + token
                 , QztXmlToMap.mapToXml(QztXmlToMap.dcXmlToMap(XhqConstants.DC_PATH
                         , date, code, pcTaskId, i), true));
         String dcTaskId = QztXmlToMap.getNode(dc_Task, "taskid").getTextContent();
         if (StringUtils.isBlank(dcTaskId)) {
-            throw ClientServiceException.wrap(XHQ_DC_ERROR);
+            throw ClientServiceException.wrap(SC_DC_ERROR);
         }
         return dcTaskId;
     }
 
-    private List<Integer> certClinicIds(List<QztDoctor> qztDoctors) {
-        List<Company> companies = systemServiceFeign.xhqCompanys();
+    private List<Company> certClinicIds() {
+        List<Company> companies = systemServiceFeign.scCompanys();
         if (CollectionUtils.isEmpty(companies)) {
             return Lists.newArrayList();
         }
-        return companies.stream().map(Company::getId).collect(Collectors.toList());
+        return companies;
 //        return qztDoctors.stream()
 //                .reduce(Lists.newArrayList()
 //                        , (u, t) -> {
@@ -231,11 +252,18 @@ public class XhqMedicalBiz {
 //        return userList.stream().collect(toMap(SysUserInfoDetail::getUserId, Function.identity()));
 //    }
 
-    private Map<Integer, TreatmentRecordExtendVO> treat(List<MedicalCommonRecord> medicalCommonRecords) {
+    private Map<Integer, TreatmentRecordExtendVO> treat(List<MedicalCommonRecord> medicalCommonRecords
+            ,Map<Integer, List<MedicalCommonRecord>> medicalMap) {
         Set<Integer> treatIds = medicalCommonRecords.stream().map(MedicalCommonRecord::getTreatmentId).collect(Collectors.toSet());
         List<TreatmentRecordExtendVO> treatmentRecords = treatmentServiceFeign.findTreatmentRecordByIds(treatIds);
-        return treatmentRecords.stream()
-                .collect(Collectors.toMap(TreatmentRecordExtendVO::getId, Function.identity(), (o, v) -> o));
+        Map<Integer, TreatmentRecordExtendVO> treatMap = treatmentRecords.stream()
+                .collect(toMap(TreatmentRecordExtendVO::getId, Function.identity(), (o, v) -> o));
+        Map<Integer, Integer> treatOrgMap = treatmentRecords.stream()
+                .collect(toMap(TreatmentRecordExtendVO::getId, TreatmentRecordExtendVO::getOrgId, (o, v) -> o));
+        Map<Integer, List<MedicalCommonRecord>> collect = medicalCommonRecords.stream().filter(t -> treatOrgMap.containsKey(t.getTreatmentId()))
+                .collect(groupingBy(t -> treatOrgMap.get(t.getTreatmentId()), toList()));
+        medicalMap.putAll(collect);
+        return treatMap;
     }
 
 
@@ -407,8 +435,8 @@ public class XhqMedicalBiz {
             setdetails.put("CT08_01_025_28", "口腔科");
             setdetails.put("WS08_01_025_28", XhqConstants.KE_SHI_CODE_1);
             setdetails.put("WS99_99_902_680", org.getCreditCode());
-            setdetails.put("WS08_10_052_01", org.getXhqInstitutionCode());
-            setdetails.put("CT08_10_052_01", xhqMap.get(org.getXhqInstitutionCode()));
+            setdetails.put("WS08_10_052_01", org.getScInstitutionCode());
+            setdetails.put("CT08_10_052_01", scMap.get(org.getScInstitutionCode()));
             setdetails.put("WS08_10_903_01", "0");
             setdetails.put("WS08_10_903_02", org.getName());
             setdetails.put("WS99_99_902_622", "9");
@@ -525,7 +553,10 @@ public class XhqMedicalBiz {
             setdetails.put("WS02_01_031_01", "01");
             setdetails.put("CT02_01_031_01", "居民身份证");
             setdetails.put("WS02_01_906_01", "330106201705020046");
-            setdetails.put("WS02_01_010_26", patient.getMobile());
+            String regex = "1[3456789]\\d{9}";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(patient.getMobile());
+            setdetails.put("WS02_01_010_26", matcher.matches() ? patient.getMobile() : "15876985563");
             setdetails.put("WS01_00_001_02", patient.getMedicalNumber());
             setdetails.put("WS01_00_010_01", treat.getId());
             setdetails.put("WS01_00_020_01", treat.getId());
@@ -566,10 +597,10 @@ public class XhqMedicalBiz {
             setdetails.put("CT08_01_025_28", "口腔科");
             setdetails.put("WS08_01_025_28", XhqConstants.KE_SHI_CODE_1);
             setdetails.put("WS99_99_902_680", org.getCreditCode());
-            setdetails.put("WS08_10_052_01", org.getXhqInstitutionCode());
-            setdetails.put("CT08_10_052_01", xhqMap.get(org.getXhqInstitutionCode()));
+            setdetails.put("WS08_10_052_01", org.getScInstitutionCode());
+            setdetails.put("CT08_10_052_01", scMap.get(org.getScInstitutionCode()));
             setdetails.put("WS08_10_903_01", "001");
-            setdetails.put("WS08_10_903_02", xhqMap.get(org.getXhqInstitutionCode()));
+            setdetails.put("WS08_10_903_02", scMap.get(org.getScInstitutionCode()));
             setdetails.put("WS09_00_916_01", DateUtil.format(treat.getCrtTime(), "yyyyMMddHHmmss"));
             setdetails.put("WJ01_02_001_001", treat.getId());
             setdetails.put("WJ01_02_001_002", record.getId());
@@ -730,8 +761,8 @@ public class XhqMedicalBiz {
             setdetails.put("CT08_01_025_28", "12.08");
             setdetails.put("WS08_01_025_28", "口腔种植专业");
             setdetails.put("WS99_99_902_680", org.getCreditCode());
-            setdetails.put("WS08_10_052_01", org.getXhqInstitutionCode());
-            setdetails.put("CT08_10_052_01", xhqMap.get(org.getXhqInstitutionCode()));
+            setdetails.put("WS08_10_052_01", org.getScInstitutionCode());
+            setdetails.put("CT08_10_052_01", scMap.get(org.getScInstitutionCode()));
             setdetails.put("WS08_10_903_01", org.getId());
             setdetails.put("WS08_10_903_02", org.getName());
             setdetails.put("WS06_00_901_01", "0");

@@ -130,6 +130,8 @@
         ccb.bjInstitutionCode,
         ccb.enableXhqSync,
         ccb.xhqInstitutionCode,
+        ccb.enableScSync,
+        ccb.scInstitutionCode,
         ccb.businessEndTime
         FROM
         (
@@ -146,6 +148,8 @@
         c.bj_institution_code as bjInstitutionCode,
         c.enable_xhq_sync as enableXhqSync,
         c.xhq_institution_code as xhqInstitutionCode,
+        c.enable_sc_sync as enableScSync,
+        c.sc_institution_code as scInstitutionCode,
         cb.abbreviation,
         cb.clinic_number AS clinicNumber,
         cb.brandName,

@@ -225,4 +225,11 @@ public class QztDoctorBiz extends BaseBiz<QztDoctorMapper, QztDoctor> {
                 .andEqualTo("enableXhqSync", true);
         return companyMapper.selectByExample(example);
     }
+
+    public List<Company> certScCompanys() {
+        Example example = new Example(Company.class);
+        example.createCriteria()
+                .andEqualTo("enableScSync", true);
+        return companyMapper.selectByExample(example);
+    }
 }

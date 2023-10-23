@@ -2,6 +2,7 @@ package com.yunya.modules.emr.task;
 
 import com.yunya.modules.emr.biz.BjMedicalBiz;
 import com.yunya.modules.emr.biz.QztMedicalBiz;
+import com.yunya.modules.emr.biz.ScMedicalBiz;
 import com.yunya.modules.emr.biz.XhqMedicalBiz;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -28,6 +29,8 @@ public class Task {
     private BjMedicalBiz bjMedicalBiz;
     @Resource
     private XhqMedicalBiz xhqMedicalBiz;
+    @Resource
+    private ScMedicalBiz scMedicalBiz;
 
     @Scheduled(cron = "00 00 01 * * ?")
     @RequestMapping("/white/qztMedical/sync")
@@ -45,6 +48,12 @@ public class Task {
     @RequestMapping("/white/xhqMedical/sync")
     public void syncXhqDoctor() {
         xhqMedicalBiz.sync();
+    }
+
+    @Scheduled(cron = "00 40 01 * * ?")
+    @RequestMapping("/white/scMedical/sync")
+    public void syncScDoctor() {
+        scMedicalBiz.sync();
     }
 
 
