@@ -73,8 +73,8 @@ alter table `test_yunya_patient_central`.`patient_member_relation` modify column
 alter table `test_yunya_patient_central`.`patient_member_relation` modify column `crt_id` int(11) DEFAULT NULL comment '创建人ID';
 ALTER TABLE `test_yunya_patient_central`.`patient_origin` ADD COLUMN `gift_rebate_rate`  decimal(19,4) NULL COMMENT '赠金返点比例' AFTER `qr_code_path`;
 
--- 默认全部会员卡未激活
-update `test_yunya_patient_central`.`patient_member_info` set inservice = 0;
+-- 默认全部会员卡未激活 (普通会员无需激活)
+update `test_yunya_patient_central`.`patient_member_info` set inservice = 0 where member_type_id != 4;
 -- 更新之前异常会员卡与诊所ID的关联
 update test_yunya_patient_central.patient_member_info m
 left join test_yunya_system.clinic_ext_info c on substr(m.card_number, 2, 3) = c.clinic_number
@@ -89,10 +89,9 @@ where substr(m.card_number, 2, 3) = '000'
 ALTER TABLE `test_yunya_patient_central`.`patient_member_info`
 ADD COLUMN `nonauto` BIT(1) NOT NULL DEFAULT b'0' COMMENT '非自动升级、降级会员等级' AFTER `v1_id`,
 ADD COLUMN `min_type_id` INT(11) NOT NULL DEFAULT 0 COMMENT '可降级的最低等级会员ID' AFTER `nonauto`,
-ADD UNIQUE INDEX `card_number_UNIQUE` (`card_number` ASC);
-
-ALTER TABLE `test_yunya_patient_central`.`patient_member_info`
-ADD COLUMN `calc_amount_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '开始计算累计充值的时间' AFTER `min_type_id`;
+ADD COLUMN `calc_amount_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '开始计算累计充值的时间' AFTER `min_type_id`,
+ADD UNIQUE INDEX `card_number_UNIQUE` (`card_number` ASC)
+;
 
 
 ALTER TABLE `test_yunya_patient_central`.`patient_kin_relation`
