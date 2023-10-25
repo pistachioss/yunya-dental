@@ -2348,11 +2348,18 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     patientMemberRelationMapper.deleteOtherMemberRelation(
             form.getSecondaryCardId(), new ArrayList<>());
 
-    // 是否普通会员
+    // 是否 更高等级会员
     PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(form.getSecondaryCardId());
-    if (patientMemberInfo != null && patientMemberInfo.getMemberTypeId() != 4) {
-      return ResponseUtil.fail(
-              OperationCodeConstants.SAME_DATA_EXIST, "非普通会员无法绑定！", isPatientMemberRelation);
+    if (patientMemberInfo != null) {
+      patientMemberInfo.getMemberTypeId();
+      PatientMemberInfo patientMemberInfo1 = patientMemberInfoMapper.selectOneByPatientId(form.getPatientId());
+      List<MemberType> memberTypeList = remoteSystemServiceFeign.findMemberTypeList(new MemberType());
+      BigDecimal bd1 = memberTypeList.stream().filter(m->m.getId()==patientMemberInfo1.getMemberTypeId()).collect(Collectors.toList()).get(0).getTotalAmount();
+      BigDecimal bd2= memberTypeList.stream().filter(m->m.getId()==patientMemberInfo.getMemberTypeId()).collect(Collectors.toList()).get(0).getTotalAmount();
+      if(bd1.compareTo(bd2)<0) {
+        return ResponseUtil.fail(
+                OperationCodeConstants.SAME_DATA_EXIST, "当前患者会员等级过高，无法绑定！", isPatientMemberRelation);
+      }
     }
 
     PatientMemberRelation MemberRelation =
