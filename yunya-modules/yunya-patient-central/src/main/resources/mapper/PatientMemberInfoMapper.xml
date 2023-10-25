@@ -181,7 +181,6 @@
             ( SELECT pmr.master_card_id FROM patient_member_relation pmr WHERE bind_type = 1 AND pmr.secondary_card_id = #{patientId} GROUP BY pmr.master_card_id ) pmr
             INNER JOIN patient_member_info pmi ON pmr.master_card_id = pmi.patient_id
             LEFT JOIN patient_base_info pbi ON pmr.master_card_id = pbi.id
-        WHERE pmi.member_type_id != 4
     </select>
 
     <select id="sumMemberAndPrepayRechargeCash" resultType="java.math.BigDecimal">
@@ -340,7 +339,7 @@
             'true' AS remark
         FROM patient_member_relation pmr
         INNER JOIN patient_member_info pmio ON pmio.patient_id = pmr.master_card_id
-        WHERE pmr.bind_type = 1 AND pmr.inservice = 1 AND pmio.member_type_id !=4
+        WHERE pmr.bind_type = 1 AND pmr.inservice = 1
         AND pmr.secondary_card_id = #{patientId}
         ORDER BY pmr.crt_time DESC
         LIMIT 1

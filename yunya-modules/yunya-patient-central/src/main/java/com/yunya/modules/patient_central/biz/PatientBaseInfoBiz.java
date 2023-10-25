@@ -1838,7 +1838,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /**
    * 判断患者的会员卡授权码是否有效
->>>>>>>>> Temporary merge branch 2
    *
    * @param patientId
    * @return

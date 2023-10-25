@@ -1794,7 +1794,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public PatientMemberInfo patientMemberIdentityLevel(Integer patientId) {
     // 自身会员卡
     PatientMemberInfo memberInfo = patientMemberInfoMapper.selectOneByPatientId(patientId);
-    if (StringHelper.isNotNull(memberInfo) && memberInfo.getInservice() && memberInfo.getMemberTypeId()!=4) {
+    if (StringHelper.isNotNull(memberInfo) && memberInfo.getInservice()) {
       return memberInfo;
     }
     // 亲密付主卡人

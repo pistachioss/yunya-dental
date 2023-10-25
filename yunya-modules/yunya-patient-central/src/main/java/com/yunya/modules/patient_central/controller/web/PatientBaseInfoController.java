@@ -74,6 +74,7 @@ public class PatientBaseInfoController {
    * @param id 患者id
    * @return ResponseResult<PatientPublicInfoVo>
    */
+  @CurrentUser
   @ApiOperation("根据Id查询患者信息公用信息")
   @GetMapping("/publicInformation/{id}")
   public ResponseResult<PatientPublicInfoVo> findPatientPublicInfoById(
