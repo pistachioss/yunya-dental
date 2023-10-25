@@ -768,14 +768,14 @@ public class ScMedicalBiz {
             setdetails.put("WS06_00_901_01", "0");
             setdetails.put("WS09_00_916_01", DateUtil.format(treat.getCrtTime(), "yyyyMMddHHmmss"));
             setdetails.put("WJ01_02_001_001", treat.getId());
-            setdetails.put("WJ01_02_001_002", "001");
-            setdetails.put("WJ01_02_001_003", "001");
+//            setdetails.put("WJ01_02_001_002", "001");
+//            setdetails.put("WJ01_02_001_003", "001");
             setdetails.put("WJ01_02_001_004", 1);
-            setdetails.put("WJ01_02_001_005", 1);
-            setdetails.put("WJ01_02_001_006", 9);
+//            setdetails.put("WJ01_02_001_005", 1);
+//            setdetails.put("WJ01_02_001_006", 9);
             setdetails.put("WJ01_02_001_007", 1);
             setdetails.put("WJ01_02_001_008", 1);
-            setdetails.put("WJ01_02_001_009", 3);
+//            setdetails.put("WJ01_02_001_009", 3);
             list.add(setdetailss);
             datasets.put("setdetails", list);
         }
