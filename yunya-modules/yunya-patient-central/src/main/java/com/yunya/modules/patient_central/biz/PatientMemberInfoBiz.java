@@ -624,7 +624,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (patientMemberInfo == null) {
       throw new ClientServiceException("未找到会员卡信息", DATA_NOT_EXIST);
     }
-    patientMemberInfo.setInservice(false);
+//    patientMemberInfo.setInservice(false);// 普通会员不用激活
     patientMemberInfo.setMemberTypeId(4);
     patientMemberInfo.setMinTypeId(0);
     patientMemberInfo.setCalcAmountTime(DateTime.now());
@@ -2387,14 +2387,16 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         patientMemberRelation.setCrtName(name);
         this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
         // 添加会员双向关联
-        remoteRabbitMqServiceFeign.sendMessage(
-                patientMemberRelation.getId(), 0, 0, MsgCategoryEnum.BasePatientMemberRelation);
-        int masterCardI = patientMemberRelation.getMasterCardId();
-        patientMemberRelation.setMasterCardId(patientMemberRelation.getSecondaryCardId());
-        patientMemberRelation.setSecondaryCardId(masterCardI);
-        patientMemberRelation.setId(null);
-        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
+        // 移除双向关联
+//        remoteRabbitMqServiceFeign.sendMessage(
+//                patientMemberRelation.getId(), 0, 0, MsgCategoryEnum.BasePatientMemberRelation);
+//        int masterCardI = patientMemberRelation.getMasterCardId();
+//        patientMemberRelation.setMasterCardId(patientMemberRelation.getSecondaryCardId());
+//        patientMemberRelation.setSecondaryCardId(masterCardI);
+//        patientMemberRelation.setId(null);
+//        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
         // 添加会员双向关联
+
         sendMemberRelationMessages(patientMemberRelation.getId(), 0);
       }
 
