@@ -29,4 +29,7 @@ public class OtherCardActiveForm implements Serializable {
     private String soldPhoneNumber;
     @ApiModelProperty(value = "共享人", example = "1,2,3", required = true)
     private String sharerIdStr;
+    @ApiModelProperty(value = "会员类型id", required = true)
+    @NotNull
+    private Integer memberTypeId;
 }

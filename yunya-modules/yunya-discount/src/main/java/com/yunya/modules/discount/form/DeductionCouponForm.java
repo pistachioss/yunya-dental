@@ -134,4 +134,7 @@ public class DeductionCouponForm {
 
     @ApiModelProperty(value = "销售来源", required = true)
     private Integer salesSourceId;
+
+    @ApiModelProperty("会员类型id")
+    private Integer memberTypeId;
 }

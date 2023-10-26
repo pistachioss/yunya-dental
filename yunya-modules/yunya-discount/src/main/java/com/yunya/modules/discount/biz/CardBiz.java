@@ -2743,6 +2743,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         RestErrorBo errorBo = RestErrorBo.getInstance();
         String cardNumber = form.getThirdCardNumber();
         CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(form.getCouponId());
+        if (Objects.equals(couponInfo.getType().intValue(), 5) && !Objects.equals(couponInfo.getMemberTypeId(), form.getMemberTypeId())) {
+            log.warn("【第三方平台激活失败】第三方激活划扣患者会员类型不匹配，不可激活：{}", cardNumber);
+            errorBo.setError(DiscountError.HK_ACTIVE_MEMBER_ERROR);
+            return errorBo;
+        }
         if (Objects.isNull(card) && Objects.equals(couponInfo.getType().intValue(), 5)) {
             log.warn("【第三方平台激活失败】第三方激活划扣类型卡券应通过分配卡号生成：{}", cardNumber);
             errorBo.setError(DiscountError.HK_OTHER_NUMBER_ERROR);

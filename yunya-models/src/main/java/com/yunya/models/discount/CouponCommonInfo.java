@@ -81,6 +81,10 @@ public class CouponCommonInfo {
      */
     @Column(name = "is_online_sale")
     private Boolean isOnlineSale;
+
+    @Column(name = "member_type_id")
+    private Integer memberTypeId;
+
     /**
      * 销量
      */
