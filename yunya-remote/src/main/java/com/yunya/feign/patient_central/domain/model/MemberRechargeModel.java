@@ -64,5 +64,21 @@ public class MemberRechargeModel implements Serializable {
     @ApiModelProperty(value = "备注")
     private String remarks;
 
+    /**
+     * 充值卡卡号
+     */
+    @ApiModelProperty(value = "充值卡卡号")
+    private String rechargeCardNumber;
 
+    /**
+     * 充值类型：0普通充值 1充值卡充值
+     */
+    @ApiModelProperty(value = "充值类型 0普通充值 1充值卡充值")
+    private Byte rechargeType;
+
+
+    /** 充值卡卡券id */
+    @ApiModelProperty(value = "充值卡卡券id", required = true)
+    @NotNull
+    private Integer cardId;
 }
