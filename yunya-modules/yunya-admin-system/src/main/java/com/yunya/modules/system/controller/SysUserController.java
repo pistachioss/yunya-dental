@@ -226,11 +226,7 @@ public class SysUserController {
   @ApiOperation("获取当前登录员工的授权折扣权益")
   @GetMapping("/accredit/discount/logon")
   public ResponseResult<SysEmployeeExtVO> findEmployeeAccreditDiscountByCode() {
-    Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-    SysEmployeeExtVO sysEmployeeExtVO = sysUserBiz.findEmployeeAccreditDiscount(userId);
-    if (StringHelper.isNull(sysEmployeeExtVO)) {
-      ResponseUtil.error("未开通授权折扣，请联系管理员开通！", DATA_NOT_EXIST);
-    }
+    SysEmployeeExtVO sysEmployeeExtVO = sysUserBiz.findEmployeeAccreditDiscount(Integer.parseInt(BaseContextHandler.getUserID()));
     return ResponseUtil.success(sysEmployeeExtVO);
   }
 
