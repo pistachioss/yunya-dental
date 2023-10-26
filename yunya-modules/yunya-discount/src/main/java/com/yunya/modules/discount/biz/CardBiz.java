@@ -953,6 +953,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             RestErrorBo errorBo;
             //3. 检查卡券
             Card card = mapper.selectByPrimaryKey(cardId);
+            Integer couponId = card.getCouponId();
             if (Objects.equals(MINI_CARD_REMARK, card.getRemark())) {
                 boolean refund = ivyMiniServiceFeign.cardRefund(cardId);
                 if (refund) {
@@ -970,7 +971,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             }
             //4. 卡券激活
             card = updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId(), card);
-            if (Objects.equals(couponMapper.selectByPrimaryKey(card.getCouponId()).getType().intValue(), DEDUCTION.getCode())) {
+            if (Objects.equals(couponMapper.selectByPrimaryKey(couponId).getType().intValue(), DEDUCTION.getCode())) {
                 couponOrderBiz.occur(null, 1, patientId, cardId, null);
             }
             mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
