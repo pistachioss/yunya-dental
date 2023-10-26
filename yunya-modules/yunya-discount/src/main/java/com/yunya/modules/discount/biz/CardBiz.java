@@ -970,7 +970,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             }
             //4. 卡券激活
             card = updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId(), card);
-            couponOrderBiz.occur(null, 1, patientId, cardId, null);
+            if (Objects.equals(couponMapper.selectByPrimaryKey(card.getCouponId()).getType().intValue(), DEDUCTION.getCode())) {
+                couponOrderBiz.occur(null, 1, patientId, cardId, null);
+            }
             mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
             log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
             cardActivedSendSms(card);
