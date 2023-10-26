@@ -658,4 +658,8 @@ public class CouponOrderBiz {
             couponOrderMapper.updateByPrimaryKeySelective(order);
         }
     }
+
+    private void checkMember(Map<Integer, CouponCommonInfo> collect) {
+        Collection<CouponCommonInfo> values = collect.values();
+    }
 }

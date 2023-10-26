@@ -29,5 +29,5 @@ public interface CouponCommonInfoMapper extends Mapper<CouponCommonInfo> {
      */
     List<CouponCommonInfoVO> selectCouponCommonList(@Param("query") CouponCommonInfoQuery query);
 
-    List<CouponGoodsVO> listCouponGoods(@Param("couponIds") Collection<Integer> couponIds, @Param("categoryId") Integer categoryId);
+    List<CouponGoodsVO> listCouponGoods(@Param("couponIds") Collection<Integer> couponIds, @Param("categoryId") Integer categoryId, @Param("memberTypeId") Integer memberTypeId);
 }

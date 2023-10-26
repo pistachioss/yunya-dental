@@ -80,6 +80,7 @@ public enum DiscountError implements RestError {
     PATIENT_NOT_OWN_DEDUCTION(70, "患者不能使用该划扣券%s，没有适用项目"),
     HK_OTHER_NUMBER_ERROR(71, "第三方激活划扣类型卡券应通过分配卡号生成"),
     HK_NUMBER_ERROR(72, "划扣卡号错误，和选择礼包不匹配"),
+    HK_ACTIVE_MEMBER_ERROR(73, "当前患者会员等级低于卡的可购会员等级，不可激活"),
     ;
     private final Integer code;
     private final String value;

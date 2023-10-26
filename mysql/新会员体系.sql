@@ -611,3 +611,6 @@ ALTER TABLE `test_yunya_discount`.`coupon_common_info`
 
 ALTER TABLE `test_yunya_report`.`base_coupon`
     CHANGE COLUMN `coupon_type` `coupon_type` TINYINT(6) NULL DEFAULT NULL COMMENT '卡券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券；5-划扣卡）' ;
+
+ALTER TABLE `test_yunya_discount`.`coupon_common_info`
+    ADD COLUMN `member_type_id`  int(11) NOT NULL DEFAULT 0 COMMENT '可售卖会员等级（0-不限等级）' AFTER `is_online_sale`

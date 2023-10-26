@@ -3,6 +3,7 @@ package com.yunya.modules.discount.controller;
 import com.yunya.feign.discount.domain.form.CouponOrderForm;
 import com.yunya.feign.discount.domain.model.CouponOrderModel;
 import com.yunya.feign.discount.domain.query.CouponOrderQuery;
+import com.yunya.feign.discount.domain.query.CouponProductQuery;
 import com.yunya.feign.discount.domain.vo.CouponGoodsVO;
 import com.yunya.feign.discount.domain.vo.CouponOrderVO;
 import com.yunya.feign.discount.domain.vo.DeductionCategoryVO;
@@ -34,17 +35,17 @@ public class CouponOrderController {
     private CouponOrderBiz couponOrderBiz;
 
     @ApiOperation(value = "划扣卡购买列表")
-    @GetMapping("/coupon/goods/list")
+    @PostMapping("/coupon/goods/list")
     @CurrentUser
-    public ResponseResult<List<CouponGoodsVO>> hkList(@NotNull @RequestParam Integer categoryId) {
-        return ResponseUtil.success(couponGoodsBiz.hkList(categoryId));
+    public ResponseResult<List<CouponGoodsVO>> hkList(@Valid @RequestBody CouponProductQuery query) {
+        return ResponseUtil.success(couponGoodsBiz.hkList(query));
     }
 
     @ApiOperation(value = "划扣卡分类")
-    @PostMapping("/coupon/goods/category")
+    @GetMapping("/coupon/goods/category")
     @CurrentUser
-    public ResponseResult<Set<DeductionCategoryVO>> category() {
-        return ResponseUtil.success(couponGoodsBiz.category());
+    public ResponseResult<Set<DeductionCategoryVO>> category(@NotNull @RequestParam Integer memberTypeId) {
+        return ResponseUtil.success(couponGoodsBiz.category(memberTypeId));
     }
 
     @ApiOperation(value = "划扣卡下单")

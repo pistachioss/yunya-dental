@@ -91,6 +91,9 @@
             <if test="categoryId != null and categoryId != 0">
                 and cci.product_type_id = #{categoryId}
             </if>
+           <if test="memberTypeId != null and memberTypeId != 0">
+                and (cci.member_type_id = #{memberTypeId} or and cci.member_type_id = 0)
+            </if>
             <if test="couponIds != null and couponIds.size > 0">
                 and cci.id in
                 <foreach collection="couponIds" item="item" open="(" separator="," close=")">
