@@ -83,7 +83,8 @@
         pmrn.secondary_card_id secondaryCardId,
         pmio.card_number secondaryCardNumber,
         pmio.member_type_id memberTypeId,
-        pbio.NAME secondaryName
+        pbio.NAME secondaryName,
+        pmio.inservice
         FROM
         patient_member_relation pmrn
         JOIN patient_member_info pmio ON pmrn.master_card_id = pmio.patient_id

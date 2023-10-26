@@ -18,9 +18,12 @@ import java.math.BigDecimal;
 @ToString
 @ApiModel("患者储蓄账户（会员卡or预付款）详情数据模型")
 public class PatientDepositAccountVO implements Serializable {
+    /** 关联卡号（真实卡号） */
+    @ApiModelProperty("关联卡号（真实卡号）")
+    private String relateNumber;
     
-    /** 账户编号 */
-    @ApiModelProperty("账户编号")
+    /** 患者会员卡号 */
+    @ApiModelProperty("患者会员卡号")
     private String cardNumber;
     
     /** 账户类型: 0-预付款, 1-会员卡 */

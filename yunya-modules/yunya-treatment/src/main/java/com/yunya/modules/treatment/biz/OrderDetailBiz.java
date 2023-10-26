@@ -458,7 +458,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (StringHelper.isNotNull(memberInfo)) {
       int minTypeSec = 0;
       MasertMemberInfoVo masertMemberInfoVo = memberInfo.getMasertMemberInfoVo();
-      if (StringHelper.isNotNull(masertMemberInfoVo)) {
+      if (StringHelper.isNotNull(masertMemberInfoVo) && masertMemberInfoVo.getInservice()) {
 //        List<SecondaryMemberInfoVo> secondaryMemberInfoVos = memberInfo.getSecondaryMemberInfoVos();
 //        if (CollectionUtils.isNotEmpty(secondaryMemberInfoVos)) {
 //          Optional<SecondaryMemberInfoVo> min =

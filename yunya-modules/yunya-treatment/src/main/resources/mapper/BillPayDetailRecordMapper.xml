@@ -434,7 +434,11 @@
         select
             bpdr.order_record_id as billPayRecordId,
             bpdr.account_item_id as accountItemId,
-            IF(bpdr.account_item_id=5, 1, 2)  as type,
+            CASE
+            WHEN bpdr.account_item_id in(6,100,101) THEN 0
+            WHEN bpdr.account_item_id = 5 THEN 1
+            ELSE 2
+            END AS type,
             IFNULL(bpdr.amount, 0) - IFNULL(brd.refundAmount,0) as amount,
             IFNULL(brd.principal_amount, 0) AS refundPrincipal,
             IFNULL(brd.gift_amount, 0) AS refundBonus,
@@ -448,13 +452,13 @@
             FROM (
                 SELECT
                     order_record_id,
-                    IF(account_item_id in(5,6), 5, -1) AS account_item_id,
+                    IF(account_item_id in(5,6,100,101), account_item_id, -1) AS account_item_id,
                     remark,
                     amount
                 FROM bill_pay_detail_record
                 WHERE inservice = true AND account_item_id not in (23, 26)
             ) t
-            GROUP BY order_record_id, account_item_id
+            GROUP BY order_record_id, account_item_id, remark
         ) bpdr
         LEFT JOIN (
             SELECT
@@ -467,7 +471,7 @@
             FROM (
                 SELECT
                     brd.order_record_id,
-                    IF(brpdr.account_item_id in(5,6), 5, -1) AS account_item_id,
+                    IF(brpdr.account_item_id in(5,6,100,101), brpdr.account_item_id, -1) AS account_item_id,
                     brpdr.remark,
                     refund_pay_amount,
                     principal_amount,
@@ -476,8 +480,8 @@
                 LEFT JOIN bill_refund_pay_detail_record brpdr ON brd.id = brpdr.bill_refund_record_id
                 WHERE brd.inservice = true AND brpdr.account_item_id not in (23, 26)
             ) brd
-            GROUP BY order_record_id, account_item_id
-        ) brd ON bpdr.order_record_id=brd.order_record_id AND bpdr.account_item_id = brd.account_item_id
+            GROUP BY order_record_id, account_item_id, remark
+        ) brd ON bpdr.order_record_id=brd.order_record_id AND bpdr.account_item_id=brd.account_item_id AND bpdr.remark=brd.remark
         <where>
             <if test="orderRecordId != null">
                 and bpdr.order_record_id = #{orderRecordId}

@@ -446,7 +446,7 @@ public class BillPayDetailRecordBiz
     List<BillPayAccountVO> result = new ArrayList<>();
     List<BillPayDetailRecordVO> details = mapper.selectBillRefundableAccountItemList(orderRecordId);
     List<PatientDepositAccountVO> patientDepositAccounts = remotePatientCentralServiceFeign.findDepositAccountBillPayExpendList(orderRecordId);
-    Map<Integer, PatientDepositAccountVO> accountMap = patientDepositAccounts.stream().collect(toMap(PatientDepositAccountVO::getType, Function.identity()));
+    Map<String, PatientDepositAccountVO> accountMap = patientDepositAccounts.stream().collect(toMap(PatientDepositAccountVO::getRelateNumber, Function.identity()));
 
 //    int memberIndex = -1;
 //    BigDecimal totalPrincipal = BigDecimal.ZERO;
@@ -459,34 +459,44 @@ public class BillPayDetailRecordBiz
       BigDecimal principal = detail.getAmount();
       BigDecimal bonus = BigDecimal.ZERO;
       BigDecimal principalRatio = null;
-      PatientDepositAccountVO depositAccount = accountMap.get(detail.getType());
+      Integer type = detail.getType();
+      String relateNumber = detail.getRemark();
+      PatientDepositAccountVO depositAccount = accountMap.get(relateNumber);
       if (StringHelper.isNotNull(depositAccount)) {
-        cardNumber = depositAccount.getCardNumber();
-        belonger = depositAccount.getPatientName();
-        balance = depositAccount.getBalance();
         principal = depositAccount.getPrincipal().subtract(detail.getRefundPrincipal());
         bonus = depositAccount.getBonus().subtract(detail.getRefundBonus());
-        principalRatio = principal.divide(principal.add(bonus), 4, RoundingMode.DOWN);
+        if (type == 1) {
+          cardNumber = depositAccount.getCardNumber();
+          belonger = depositAccount.getPatientName();
+          balance = depositAccount.getBalance();
+          principalRatio = principal.divide(principal.add(bonus), 4, RoundingMode.DOWN);
+        } else if (type == 0) {
+          // 预付款账号合计到对应患者的会员卡账号中
+          PatientDepositAccountVO memberAccount = accountMap.get(depositAccount.getCardNumber());
+          memberAccount.setPrincipal(memberAccount.getPrincipal().add(principal));
+          memberAccount.setBonus(memberAccount.getBonus().add(bonus));
+        }
       }
 //      totalPrincipal = totalPrincipal.add(principal);
 //      totalBonus = totalBonus.add(bonus);
-
-      Integer accountItemId = detail.getAccountItemId();
-      String accountItemName = "其他";
-      PatientDepositAccountTypeEnum accountType = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
-      if (StringHelper.isNotNull(accountType)) {
-        accountItemName = accountType.getName();
+      if (type != 0) {
+        Integer accountItemId = detail.getAccountItemId();
+        String accountItemName = "其他";
+        PatientDepositAccountTypeEnum accountType = PatientDepositAccountTypeEnum.getTypeEnumRelId(accountItemId);
+        if (StringHelper.isNotNull(accountType)) {
+          accountItemName = accountType.getName();
+        }
+        result.add(BillPayAccountVO.builder()
+                .accountItemName(accountItemName)
+                .accountItemId(accountItemId)
+                .cardNumber(cardNumber)
+                .belonger(belonger)
+                .balance(balance)
+                .principal(principal)
+                .bonus(bonus)
+                .principalRatio(principalRatio)
+                .build());
       }
-      result.add(BillPayAccountVO.builder()
-              .accountItemName(accountItemName)
-              .accountItemId(accountItemId)
-              .cardNumber(cardNumber)
-              .belonger(belonger)
-              .balance(balance)
-              .principal(principal)
-              .bonus(bonus)
-              .principalRatio(principalRatio)
-              .build());
 //      if (MEMBER.equals(detail.getType())) {
 //        memberIndex = i;
 //      }

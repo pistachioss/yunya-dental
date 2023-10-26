@@ -156,7 +156,7 @@
 
     <!-- 查询主卡人信息 -->
     <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo">
-        select id,patient_id masterCardId, member_type_id memberTypeId,
+        select id,patient_id masterCardId, member_type_id memberTypeId, inservice,
         (select name from patient_base_info where id = patient_id) masterName,card_number masterCardNumber,point,crt_time crtTime
         from patient_member_info where patient_id = #{form.patientId}
     </select>
@@ -263,8 +263,9 @@
     <select id="selectDepositAccountBillExpendList"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientDepositAccountVO">
         SELECT
-            pmi.card_number AS cardNumber,
-            1 AS type,
+            t.relateNumber,
+            t.cardNumber,
+            t.type,
             SUM(t.balance) AS balance,
             SUM(t.principal) AS principal,
             SUM(t.bonus) AS bonus,
@@ -272,6 +273,7 @@
             pbi.name AS patientName
         FROM (
                SELECT
+                     pmi.card_number                              AS relateNumber,
                      pmi.card_number                              AS cardNumber,
                      pmi.patient_id                               AS patientId,
                      1                                            AS type,
@@ -291,7 +293,9 @@
               LEFT JOIN patient_member_info pmi ON pmi.card_number = mer.member_id
               WHERE mer.order_record_id = #{orderRecordId}
               UNION ALL
-              SELECT pmi.prepayment_number                                AS cardNumber,
+              SELECT
+                     mi.card_number                                       AS relateNumber,
+                     pmi.prepayment_number                                AS cardNumber,
                      pmi.patient_id                                       AS patientId,
                      0                                                    AS type,
                      0 AS balance,
@@ -308,10 +312,12 @@
                 GROUP BY prepaid_id, order_record_id
               ) mer
               LEFT JOIN patient_prepayments_info pmi ON pmi.prepayment_number = mer.prepaid_id
+              LEFT JOIN patient_member_info mi ON mi.patient_id = pmi.patient_id
               WHERE mer.order_record_id = #{orderRecordId}
         ) t
         LEFT JOIN patient_base_info pbi ON pbi.id = t.patientId
-        LEFT JOIN patient_member_info pmi ON pmi.card_number = t.cardNumber
+        GROUP BY t.relateNumber
+        ORDER BY t.type, t.relateNumber
     </select>
 
     <select id="selectPatientCumulativeTotalInfo"

@@ -42,4 +42,8 @@ public class MemberTypeBaseVO implements Serializable {
      */
     @ApiModelProperty(value = "会员卡图片")
     private String pictureCode;
+
+    /** 是否激活 */
+    @ApiModelProperty("是否激活")
+    private Boolean inservice;
 }
