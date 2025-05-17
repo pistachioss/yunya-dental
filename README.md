@@ -52,3 +52,5 @@ com.yunya
 
 ## 演示图
 
+
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/pistachioss/yunya-dental?utm_source=oss&utm_medium=github&utm_campaign=pistachioss%2Fyunya-dental&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
